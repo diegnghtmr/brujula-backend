@@ -1,0 +1,91 @@
+# ============================================================
+# Brújula — Full Stack Compose (DC-001, TRD §16)
+# "Completo" mode: includes backend and frontend on top of deps.
+# Includes compose.yaml for the infrastructure dependencies.
+#
+# Usage:
+#   docker compose -f ops/local/compose.full.yaml up -d
+#   docker compose -f ops/local/compose.full.yaml down -v
+# ============================================================
+
+include:
+  - compose.yaml
+
+name: brujula-local-full
+
+services:
+
+  # ------------------------------------------------------------
+  # Spring Boot 4 / Java 25 backend
+  # Image: eclipse-temurin:25-jdk base (build from source)
+  # ------------------------------------------------------------
+  backend:
+    build:
+      context: ../../
+      dockerfile: ops/local/Dockerfile.backend
+    container_name: brujula-backend
+    restart: unless-stopped
+    networks:
+      - brujula-net
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      SPRING_DATASOURCE_URL: ${BRUJULA_DB_URL:-jdbc:postgresql://postgres:5432/planner_db}
+      SPRING_DATASOURCE_USERNAME: ${BRUJULA_DB_USERNAME:-brujula}
+      SPRING_DATASOURCE_PASSWORD: ${BRUJULA_DB_PASSWORD:-brujula_dev}
+      SERVER_PORT: "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  # ------------------------------------------------------------
+  # React / Vite frontend (Node 24 build → static preview)
+  # ------------------------------------------------------------
+  frontend:
+    build:
+      context: ../../brujula-frontend
+      dockerfile: ../brujula-backend/ops/local/Dockerfile.frontend
+    container_name: brujula-frontend
+    restart: unless-stopped
+    networks:
+      - brujula-net
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://backend:8080}
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5173 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ------------------------------------------------------------
+  # pgAdmin — optional, only in tools profile
+  # docker compose --profile tools up
+  # ------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:9.4
+    container_name: brujula-pgadmin
+    restart: unless-stopped
+    networks:
+      - brujula-net
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@brujula.local
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin_dev}
+    profiles:
+      - tools
