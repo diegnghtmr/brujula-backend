@@ -14,7 +14,7 @@ import org.springframework.modulith.Modulith;
 @Modulith
 public class BrujulaApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(BrujulaApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(BrujulaApplication.class, args);
+  }
 }

@@ -15,132 +15,132 @@ import com.tngtech.archunit.library.Architectures;
  * <p>Rules run on the empty Fase 0 skeleton. All should pass with zero violations.
  */
 @AnalyzeClasses(
-        packages = "co.edu.uniquindio.brujula",
-        importOptions = {ImportOption.DoNotIncludeTests.class})
+    packages = "co.edu.uniquindio.brujula",
+    importOptions = {ImportOption.DoNotIncludeTests.class})
 class ArchitectureRulesTest {
 
-    private static final String BASE_PKG = "co.edu.uniquindio.brujula";
+  private static final String BASE_PKG = "co.edu.uniquindio.brujula";
 
-    /**
-     * ARQ-001 — Controllers must not access domain classes directly. Controllers may only call
-     * application port/in interfaces.
-     */
-    @ArchTest
-    static final ArchRule ARQ_001_controllers_do_not_access_domain_directly =
-            noClasses()
-                    .that()
-                    .resideInAPackage("..adapter.in.rest..")
-                    .should()
-                    .dependOnClassesThat()
-                    .resideInAPackage("..domain..");
+  /**
+   * ARQ-001 — Controllers must not access domain classes directly. Controllers may only call
+   * application port/in interfaces.
+   */
+  @ArchTest
+  static final ArchRule ARQ_001_controllers_do_not_access_domain_directly =
+      noClasses()
+          .that()
+          .resideInAPackage("..adapter.in.rest..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..domain..");
 
-    /**
-     * ARQ-002 — Domain classes are framework-free. Domain must not depend on Spring, Jakarta
-     * Persistence, servlet types, or generated API model DTOs.
-     */
-    @ArchTest
-    static final ArchRule ARQ_002_domain_is_framework_free =
-            noClasses()
-                    .that()
-                    .resideInAPackage("..domain..")
-                    .should()
-                    .dependOnClassesThat()
-                    .resideInAnyPackage(
-                            "org.springframework..",
-                            "jakarta.persistence..",
-                            "jakarta.servlet..",
-                            "..generated.model..",
-                            "..adapter..");
+  /**
+   * ARQ-002 — Domain classes are framework-free. Domain must not depend on Spring, Jakarta
+   * Persistence, servlet types, or generated API model DTOs.
+   */
+  @ArchTest
+  static final ArchRule ARQ_002_domain_is_framework_free =
+      noClasses()
+          .that()
+          .resideInAPackage("..domain..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.springframework..",
+              "jakarta.persistence..",
+              "jakarta.servlet..",
+              "..generated.model..",
+              "..adapter..");
 
-    /**
-     * ARQ-003 — Application port/in interfaces must be interfaces (not classes or enums). All
-     * use-case entry points are interfaces.
-     */
-    @ArchTest
-    static final ArchRule ARQ_003_application_ports_in_are_interfaces =
-            classes()
-                    .that()
-                    .resideInAPackage("..application.port.in..")
-                    .should()
-                    .beInterfaces();
+  /**
+   * ARQ-003 — Application port/in interfaces must be interfaces (not classes or enums). All
+   * use-case entry points are interfaces.
+   */
+  @ArchTest
+  static final ArchRule ARQ_003_application_ports_in_are_interfaces =
+      classes().that().resideInAPackage("..application.port.in..").should().beInterfaces();
 
-    /**
-     * ARQ-004 — Application layer must not depend on persistence adapters. Application depends on
-     * port.out interfaces, not on concrete adapter implementations.
-     */
-    @ArchTest
-    static final ArchRule ARQ_004_application_does_not_depend_on_persistence_adapters =
-            noClasses()
-                    .that()
-                    .resideInAPackage("..application..")
-                    .should()
-                    .dependOnClassesThat()
-                    .resideInAPackage("..adapter.out.persistence..");
+  /**
+   * ARQ-004 — Application layer must not depend on persistence adapters. Application depends on
+   * port.out interfaces, not on concrete adapter implementations.
+   */
+  @ArchTest
+  static final ArchRule ARQ_004_application_does_not_depend_on_persistence_adapters =
+      noClasses()
+          .that()
+          .resideInAPackage("..application..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..adapter.out.persistence..");
 
-    /**
-     * ARQ-005 — Generated API DTOs must not leak into application or domain layers. Generated model
-     * DTOs are confined to infrastructure/adapter/in/rest adapters.
-     */
-    @ArchTest
-    static final ArchRule ARQ_005_generated_dtos_confined_to_adapters =
-            noClasses()
-                    .that()
-                    .resideInAnyPackage("..application..", "..domain..")
-                    .should()
-                    .dependOnClassesThat()
-                    .resideInAPackage("..generated..");
+  /**
+   * ARQ-005 — Generated API DTOs must not leak into application or domain layers. Generated model
+   * DTOs are confined to infrastructure/adapter/in/rest adapters.
+   */
+  @ArchTest
+  static final ArchRule ARQ_005_generated_dtos_confined_to_adapters =
+      noClasses()
+          .that()
+          .resideInAnyPackage("..application..", "..domain..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..generated..");
 
-    /**
-     * ARQ-006 — No cross-module access to internal persistence adapters. A module's
-     * adapter.out.persistence sub-packages are internal; other modules may not import them.
-     */
-    @ArchTest
-    static final ArchRule ARQ_006_no_cross_module_persistence_access =
-            noClasses()
-                    .that()
-                    .resideInAPackage(BASE_PKG + "..")
-                    .and()
-                    .resideOutsideOfPackage("..adapter.out.persistence..")
-                    .should()
-                    .dependOnClassesThat()
-                    .resideInAPackage("..adapter.out.persistence..");
+  /**
+   * ARQ-006 — No cross-module access to internal persistence adapters. A module's
+   * adapter.out.persistence sub-packages are internal; other modules may not import them.
+   */
+  @ArchTest
+  static final ArchRule ARQ_006_no_cross_module_persistence_access =
+      noClasses()
+          .that()
+          .resideInAPackage(BASE_PKG + "..")
+          .and()
+          .resideOutsideOfPackage("..adapter.out.persistence..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..adapter.out.persistence..");
 
-    /**
-     * ARQ-007 — Covered by ModularityTest (Spring Modulith verify()). Listed here for traceability.
-     * This ArchTest serves as documentation marker; the actual enforcement is in ModularityTest.
-     */
-    @ArchTest
-    static final ArchRule ARQ_007_no_module_cycles_see_modularity_test =
-            noClasses()
-                    .that()
-                    .resideInAPackage(BASE_PKG + ".*")
-                    .should()
-                    .dependOnClassesThat()
-                    .resideInAPackage(BASE_PKG + ".*")
-                    // Allow cross-module access only to sharedkernel (open module) and audit (sink)
-                    .because(
-                            "ARQ-007 cycle enforcement is delegated to Spring Modulith verify() in"
-                                    + " ModularityTest");
+  /**
+   * ARQ-007 — Covered by ModularityTest (Spring Modulith verify()). Listed here for traceability.
+   * This ArchTest serves as documentation marker; the actual enforcement is in ModularityTest.
+   */
+  @ArchTest
+  static final ArchRule ARQ_007_no_module_cycles_see_modularity_test =
+      noClasses()
+          .that()
+          .resideInAPackage(BASE_PKG + ".*")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage(BASE_PKG + ".*")
+          // Allow cross-module access only to sharedkernel (open module) and audit (sink)
+          .because(
+              "ARQ-007 cycle enforcement is delegated to Spring Modulith verify() in"
+                  + " ModularityTest");
 
-    /**
-     * ARQ-008 — Layered architecture: domain is innermost, application next, infrastructure
-     * outermost. Infrastructure may depend on application; application may depend on domain; domain
-     * depends on nothing outside itself.
-     */
-    @ArchTest
-    static final ArchRule ARQ_008_layered_architecture =
-            Architectures.layeredArchitecture()
-                    .consideringOnlyDependenciesInLayers()
-                    .layer("Domain")
-                    .definedBy("..domain..")
-                    .layer("Application")
-                    .definedBy("..application..")
-                    .layer("Infrastructure")
-                    .definedBy("..infrastructure..")
-                    .whereLayer("Domain")
-                    .mayOnlyBeAccessedByLayers("Application", "Infrastructure")
-                    .whereLayer("Application")
-                    .mayOnlyBeAccessedByLayers("Infrastructure")
-                    .whereLayer("Infrastructure")
-                    .mayNotBeAccessedByAnyLayer();
+  /**
+   * ARQ-008 — Layered architecture: domain is innermost, application next, infrastructure
+   * outermost. Infrastructure may depend on application; application may depend on domain; domain
+   * depends on nothing outside itself.
+   *
+   * <p>allowEmptyShould(true) is required for the Fase 0 empty skeleton — no implementation classes
+   * exist yet in domain/application/infrastructure. Fase 1 removes this allowance.
+   */
+  @ArchTest
+  static final ArchRule ARQ_008_layered_architecture =
+      Architectures.layeredArchitecture()
+          .consideringOnlyDependenciesInLayers()
+          .layer("Domain")
+          .definedBy("..domain..")
+          .layer("Application")
+          .definedBy("..application..")
+          .layer("Infrastructure")
+          .definedBy("..infrastructure..")
+          .whereLayer("Domain")
+          .mayOnlyBeAccessedByLayers("Application", "Infrastructure")
+          .whereLayer("Application")
+          .mayOnlyBeAccessedByLayers("Infrastructure")
+          .whereLayer("Infrastructure")
+          .mayNotBeAccessedByAnyLayer()
+          .allowEmptyShould(true);
 }

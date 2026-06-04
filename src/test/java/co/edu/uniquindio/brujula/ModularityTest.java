@@ -2,7 +2,6 @@ package co.edu.uniquindio.brujula;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
-import org.springframework.modulith.docs.Documenter;
 
 /**
  * Verifies Spring Modulith module structure constraints.
@@ -12,11 +11,10 @@ import org.springframework.modulith.docs.Documenter;
  */
 class ModularityTest {
 
-    static final ApplicationModules MODULES =
-            ApplicationModules.of(BrujulaApplication.class);
+  static final ApplicationModules MODULES = ApplicationModules.of(BrujulaApplication.class);
 
-    @Test
-    void verifyModularStructure() {
-        MODULES.verify();
-    }
+  @Test
+  void verifyModularStructure() {
+    MODULES.verify();
+  }
 }

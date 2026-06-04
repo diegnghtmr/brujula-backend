@@ -6,9 +6,10 @@ springModulith = "2.0.2"
 springdocOpenapi = "3.0.3"
 openapiGenerator = "7.14.0"
 spotless = "7.0.4"
-googleJavaFormat = "1.25.2"
+googleJavaFormat = "1.27.0"
 archunit = "1.4.1"
-testcontainersPostgres = "1.21.0"
+testcontainers = "1.21.0"
+dockerJava = "3.5.0"
 jacoco = "0.8.13"
 
 [libraries]
@@ -30,6 +31,9 @@ spring-modulith-starter-test = { module = "org.springframework.modulith:spring-m
 springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdocOpenapi" }
 
 # Flyway (version managed by Boot BOM)
+# spring-boot-flyway is a Spring Boot 4 module that provides FlywayAutoConfiguration
+# (Boot 4 moved all tech-specific autoconfiguration to dedicated modules)
+spring-boot-flyway = { module = "org.springframework.boot:spring-boot-flyway" }
 flyway-core = { module = "org.flywaydb:flyway-core" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
 
@@ -40,8 +44,12 @@ postgresql = { module = "org.postgresql:postgresql" }
 archunit-junit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 
 # Testcontainers (version managed by Boot BOM)
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter" }
 testcontainers-postgresql = { module = "org.testcontainers:postgresql" }
+# Force newer docker-java to fix Docker 29.x API version incompatibility (3.4.2 sends v1.32, Docker 29.x requires >=1.40)
+docker-java-api = { module = "com.github.docker-java:docker-java-api", version.ref = "dockerJava" }
+docker-java-transport-zerodep = { module = "com.github.docker-java:docker-java-transport-zerodep", version.ref = "dockerJava" }
 
 # OpenAPI generated code dependencies
 swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version = "2.2.30" }

@@ -1,8 +1,8 @@
 /**
  * Offering module — academic periods, course offerings, schedule options, and sessions.
  *
- * <p>Allowed outbound dependencies: {@code sharedkernel}, {@code audit}, {@code curriculum},
- * {@code programcatalog}.
+ * <p>Allowed outbound dependencies: {@code sharedkernel}, {@code audit}, {@code curriculum}, {@code
+ * programcatalog}.
  */
 @org.springframework.modulith.ApplicationModule(
     allowedDependencies = {"sharedkernel", "audit", "curriculum", "programcatalog"})
