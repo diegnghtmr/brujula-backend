@@ -1,0 +1,22 @@
+# Local profile — enables springdoc/Swagger UI and dev-friendly settings.
+# Activate with: SPRING_PROFILES_ACTIVE=local (or -Dspring.profiles.active=local)
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/planner_db
+    username: brujula
+    password: brujula
+  jpa:
+    show-sql: false
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui/index.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
