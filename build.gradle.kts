@@ -69,6 +69,8 @@ dependencies {
     // Force newer docker-java to fix Docker 29.x API version incompatibility (3.4.2 hardcodes v1.32)
     testImplementation(libs.docker.java.api)
     testImplementation(libs.docker.java.transport.zerodep)
+    // H2 in-memory database for tests that do not need a full PostgreSQL container (e.g. profile guard tests)
+    testRuntimeOnly(libs.h2)
 }
 
 // ============================================================
@@ -97,8 +99,27 @@ openApiGenerate {
             "hideGenerationTimestamp" to "true",
         )
     )
-    // Suppress validation failures on generation — we handle validation separately
+    // Validation is performed separately by the openApiValidate task (task 2.4)
     validateSpec.set(false)
+}
+
+// ============================================================
+// Task 2.4 — Contract validation gate
+// A schema-invalid YAML causes a non-zero exit (fails the build).
+// The openapi-generator plugin provides a built-in validate task.
+// We wire it so 'check' always validates the contract first.
+// ============================================================
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.ValidateTask>("openApiValidateContract") {
+    inputSpec.set("$projectDir/openapi/brujula-api.v1.yaml")
+    recommend.set(true)
+}
+
+// Wire validation into the build: check → openApiValidateContract → openApiGenerate
+tasks.named("openApiGenerate") {
+    dependsOn("openApiValidateContract")
+}
+tasks.named("check") {
+    dependsOn("openApiValidateContract")
 }
 
 // Add generated sources to the main source set

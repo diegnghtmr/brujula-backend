@@ -56,6 +56,9 @@ swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", versi
 jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version = "3.0.0" }
 jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version = "0.2.6" }
 
+# H2 in-memory DB for non-container test slices
+h2 = { module = "com.h2database:h2", version = "2.3.232" }
+
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
