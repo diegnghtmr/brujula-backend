@@ -27,6 +27,7 @@ dependencyManagement {
     imports {
         mavenBom("org.springframework.boot:spring-boot-dependencies:${libs.versions.springBoot.get()}")
         mavenBom("org.springframework.modulith:spring-modulith-bom:${libs.versions.springModulith.get()}")
+        mavenBom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}")
     }
 }
 
@@ -45,6 +46,8 @@ dependencies {
     implementation(libs.springdoc.openapi.starter.webmvc.ui)
 
     // Flyway
+    // spring-boot-flyway provides FlywayAutoConfiguration (Boot 4 decomposed autoconfigure into modules)
+    implementation(libs.spring.boot.flyway)
     implementation(libs.flyway.core)
     runtimeOnly(libs.flyway.database.postgresql)
 
@@ -63,6 +66,9 @@ dependencies {
     testImplementation(libs.archunit.junit5)
     testImplementation(libs.testcontainers.junit.jupiter)
     testImplementation(libs.testcontainers.postgresql)
+    // Force newer docker-java to fix Docker 29.x API version incompatibility (3.4.2 hardcodes v1.32)
+    testImplementation(libs.docker.java.api)
+    testImplementation(libs.docker.java.transport.zerodep)
 }
 
 // ============================================================
@@ -175,6 +181,12 @@ tasks.jacocoTestCoverageVerification {
 // ============================================================
 tasks.test {
     useJUnitPlatform()
+    // Pass Docker environment to forked JVM for Testcontainers
+    // docker-java 3.x hardcodes API path /v1.32/ — must use DOCKER_HOST env var so that
+    // the EnvironmentAndSystemPropertyClientProviderStrategy picks up the socket override.
+    environment("DOCKER_HOST", System.getenv("DOCKER_HOST") ?: "unix:///var/run/docker.sock")
+    // Disable Ryuk in CI environments where it may cause issues
+    environment("TESTCONTAINERS_RYUK_DISABLED", System.getenv("TESTCONTAINERS_RYUK_DISABLED") ?: "false")
     testLogging {
         events = setOf(
             TestLogEvent.PASSED,
