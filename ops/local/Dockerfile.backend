@@ -1,0 +1,36 @@
+# Brújula backend — local development image
+# Base: eclipse-temurin:25-jdk (Java 25, version-pins #1533)
+# Build: Gradle wrapper builds the fat jar, then runs it.
+# Note: For faster iteration, mount the pre-built jar instead of building inside Docker.
+
+FROM eclipse-temurin:25-jdk AS builder
+
+WORKDIR /workspace
+
+# Copy gradle wrapper and build files first (layer cache)
+COPY gradlew gradlew.bat ./
+COPY gradle/ gradle/
+COPY build.gradle.kts settings.gradle.kts gradle.properties ./
+
+# Download dependencies (separate layer for caching)
+RUN ./gradlew dependencies --no-daemon -q 2>/dev/null || true
+
+# Copy source and build
+COPY src/ src/
+COPY openapi/ openapi/
+
+RUN ./gradlew bootJar --no-daemon -x test -x spotlessCheck
+
+# ----------------------------------------------------------------
+FROM eclipse-temurin:25-jre AS runtime
+
+WORKDIR /app
+
+RUN addgroup --system brujula && adduser --system --ingroup brujula brujula
+USER brujula
+
+COPY --from=builder /workspace/build/libs/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

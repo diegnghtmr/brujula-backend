@@ -1,0 +1,108 @@
+# ============================================================
+# Brújula — Local Dependencies Compose (DC-001, TRD §16)
+# "Dependencias" mode: postgres + keycloak + mailpit only.
+# No `latest` tags. All images pinned to specific versions.
+#
+# Usage:
+#   docker compose -f ops/local/compose.yaml up -d
+#   docker compose -f ops/local/compose.yaml down -v    # destroy volumes
+# ============================================================
+
+name: brujula-local
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  brujula-net:
+    driver: bridge
+
+services:
+
+  # ------------------------------------------------------------
+  # PostgreSQL 18.4
+  # Hosts: planner_db (application) + keycloak_db (Keycloak IAM)
+  # ------------------------------------------------------------
+  postgres:
+    image: postgres:18.4
+    container_name: brujula-postgres
+    restart: unless-stopped
+    networks:
+      - brujula-net
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-brujula}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brujula_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-planner_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-brujula} -d ${POSTGRES_DB:-planner_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ------------------------------------------------------------
+  # Keycloak 26.4.x — OIDC identity provider
+  # Placeholder realm imported from ops/local/keycloak/realm-export.json
+  # Real realm configuration: PEN-005 (Fase 1)
+  # ------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.5
+    container_name: brujula-keycloak
+    restart: unless-stopped
+    networks:
+      - brujula-net
+    ports:
+      - "8090:8080"
+      - "9000:9000"
+    command: start-dev --import-realm --health-enabled=true
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_dev}
+      KC_DB: ${KC_DB:-postgres}
+      KC_DB_URL: ${KC_DB_URL:-jdbc:postgresql://postgres:5432/keycloak_db}
+      KC_DB_USERNAME: ${KC_DB_USERNAME:-brujula}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-brujula_dev}
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/health/ready || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  # ------------------------------------------------------------
+  # Mailpit v1.27 — local SMTP + web UI for email testing
+  # SMTP: localhost:1025 | Web UI: http://localhost:8025
+  # ------------------------------------------------------------
+  mailpit:
+    image: axllent/mailpit:v1.27.3
+    container_name: brujula-mailpit
+    restart: unless-stopped
+    networks:
+      - brujula-net
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    environment:
+      MP_MAX_MESSAGES: "500"
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8025 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

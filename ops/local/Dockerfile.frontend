@@ -1,0 +1,40 @@
+# Brújula frontend — local development image
+# Base: node:24-alpine (version-pins #1533)
+# Build: pnpm install + build → static files served via vite preview
+
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package manifests (layer cache)
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies (ignore build scripts to avoid post-install issues in Docker)
+RUN pnpm install --frozen-lockfile --ignore-scripts
+
+# Copy source
+COPY . .
+
+# Build production bundle
+RUN pnpm build
+
+# ----------------------------------------------------------------
+FROM node:24-alpine AS runtime
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy built assets and vite for preview server
+COPY --from=builder /app/dist dist/
+COPY --from=builder /app/node_modules node_modules/
+COPY --from=builder /app/package.json package.json
+COPY --from=builder /app/vite.config.ts vite.config.ts
+COPY --from=builder /app/tsconfig.json tsconfig.json
+
+EXPOSE 5173
+
+CMD ["pnpm", "preview", "--host", "0.0.0.0", "--port", "5173"]
