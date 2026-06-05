@@ -9,7 +9,38 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: false
+  session:
+    store-type: jdbc
+    jdbc:
+      # G1 RESOLVED: Spring Session 4 qualified table-name for schema-prefixed tables.
+      # The property key is spring.session.jdbc.table-name; value uses schema.TABLE_NAME format.
+      # initialize-schema=never because Flyway owns the DDL (V006, DB-002/003, ADR-F1-004).
+      table-name: "platform.SPRING_SESSION"
+      initialize-schema: never
   security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: brujula-backend
+            # Client secret is overridden per environment (local: .env, prod: secret manager).
+            # Placeholder here — real secret must not be committed.
+            client-secret: CHANGE_ME
+            authorization-grant-type: authorization_code
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          keycloak:
+            # Static URIs avoid OIDC discovery at startup (issuer-uri triggers an HTTP call).
+            # These values are defaults for local Keycloak on port 9090; override per environment.
+            authorization-uri: http://localhost:9090/realms/brujula-dev/protocol/openid-connect/auth
+            token-uri: http://localhost:9090/realms/brujula-dev/protocol/openid-connect/token
+            jwk-set-uri: http://localhost:9090/realms/brujula-dev/protocol/openid-connect/certs
+            user-info-uri: http://localhost:9090/realms/brujula-dev/protocol/openid-connect/userinfo
+            user-name-attribute: sub
     user:
       name: actuator
       password: actuator
