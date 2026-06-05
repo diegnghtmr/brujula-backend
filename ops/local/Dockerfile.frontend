@@ -1,8 +1,8 @@
 # Brújula frontend — local development image
-# Base: node:24-alpine (version-pins #1533)
+# Base: node:24.3.0-alpine3.22 (Node 24.3.0 LTS, version-pins #1533)
 # Build: pnpm install + build → static files served via vite preview
 
-FROM node:24-alpine AS builder
+FROM node:24.3.0-alpine3.22 AS builder
 
 WORKDIR /app
 
@@ -22,7 +22,7 @@ COPY . .
 RUN pnpm build
 
 # ----------------------------------------------------------------
-FROM node:24-alpine AS runtime
+FROM node:24.3.0-alpine3.22 AS runtime
 
 WORKDIR /app
 
