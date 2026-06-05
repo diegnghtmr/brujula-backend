@@ -87,9 +87,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/admin/staff")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isForbidden());
   }
 
@@ -100,9 +98,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/admin/staff")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
         .andExpect(
             result -> {
               int status = result.getResponse().getStatus();
@@ -115,9 +111,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/staff/something")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(
             result -> {
               int status = result.getResponse().getStatus();
@@ -130,9 +124,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/staff/something")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isForbidden());
   }
 
@@ -146,9 +138,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             post("/admin/staff")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .contentType("application/json")
                 .content("{}"))
         .andExpect(status().isForbidden());
@@ -159,10 +149,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
     // GET does not require CSRF token — safe method
     mockMvc
         .perform(
-            get("/me")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+            get("/me").with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(
             result -> {
               int status = result.getResponse().getStatus();
@@ -180,9 +167,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/admin/staff")
                 .with(csrf())
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .contentType("application/json")
                 .content("{}"))
         .andExpect(

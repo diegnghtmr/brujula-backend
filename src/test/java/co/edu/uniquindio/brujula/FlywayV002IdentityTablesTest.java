@@ -33,9 +33,7 @@ class FlywayV002IdentityTablesTest extends AbstractPostgresIntegrationTest {
             """,
             Integer.class);
 
-    assertThat(count)
-        .as("identity.app_user table must exist after V002 migration")
-        .isEqualTo(1);
+    assertThat(count).as("identity.app_user table must exist after V002 migration").isEqualTo(1);
   }
 
   @Test

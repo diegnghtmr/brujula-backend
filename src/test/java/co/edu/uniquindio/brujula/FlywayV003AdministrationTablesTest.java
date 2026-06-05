@@ -11,9 +11,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * RED test for V003__create_administration_tables.sql.
  *
- * <p>Verifies that {@code administration.staff_account}, {@code administration.allowed_email_domain},
- * and {@code administration.staff_program_assignment} exist with correct columns and constraints.
- * Fails until the migration file exists.
+ * <p>Verifies that {@code administration.staff_account}, {@code
+ * administration.allowed_email_domain}, and {@code administration.staff_program_assignment} exist
+ * with correct columns and constraints. Fails until the migration file exists.
  *
  * <p>Satisfies: S1-A-3, Spec §Admin Staff Account Management (RF-ADM-002, RN-127..132), Design §3
  * V003.
@@ -157,8 +157,7 @@ class FlywayV003AdministrationTablesTest extends AbstractPostgresIntegrationTest
             Integer.class);
 
     assertThat(count)
-        .as(
-            "administration.staff_program_assignment must have a FK staff_id → staff_account.id")
+        .as("administration.staff_program_assignment must have a FK staff_id → staff_account.id")
         .isGreaterThanOrEqualTo(1);
   }
 }
