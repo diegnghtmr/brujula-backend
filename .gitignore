@@ -17,7 +17,7 @@ docs/internal/
 build/
 build/generated/
 .gradle/
-out/
+/out/
 
 # ============================================================
 # Secrets and environment files
