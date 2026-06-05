@@ -9,11 +9,96 @@
   "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
   "bruteForceProtected": false,
+
+  "smtpServer": {
+    "host": "mailpit",
+    "port": "1025",
+    "from": "noreply@brujula.local",
+    "fromDisplayName": "Brújula Dev",
+    "auth": "false",
+    "ssl": "false",
+    "starttls": "false"
+  },
+
+  "roles": {
+    "realm": [
+      {
+        "name": "STUDENT",
+        "description": "Estudiante — acceso a planeación curricular personal"
+      },
+      {
+        "name": "STAFF",
+        "description": "Personal administrativo — acceso a datos de programas asignados"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Administrador de la plataforma — acceso total a /admin/**"
+      }
+    ]
+  },
+
+  "users": [
+    {
+      "username": "admin-brujula",
+      "email": "admin@uniquindio.edu.co",
+      "firstName": "Admin",
+      "lastName": "Brújula",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "CHANGE_ME_BEFORE_USE",
+          "temporary": true
+        }
+      ],
+      "realmRoles": ["ADMIN"],
+      "_comment": "Seed ADMIN user. Change password on first login. Never use in production."
+    }
+  ],
+
   "clients": [
     {
+      "clientId": "brujula-backend",
+      "name": "Brújula Backend (Slice 1 — confidential OIDC)",
+      "description": "Confidential backend client for server-side OIDC login flow (authorization_code). Slice 1.",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "CHANGE_ME",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": [
+        "http://localhost:8080"
+      ],
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "realm-roles-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
       "clientId": "brujula-frontend",
-      "name": "Brújula Frontend (Dev)",
-      "description": "Public OIDC client for the Brújula SPA (Fase 0 placeholder — real config in Fase 1)",
+      "name": "Brújula Frontend (SPA — public client)",
+      "description": "Public OIDC client for the Brújula SPA. Fase 0 placeholder updated for Fase 1.",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "publicClient": true,
@@ -32,21 +117,6 @@
       "fullScopeAllowed": true
     }
   ],
-  "roles": {
-    "realm": [
-      {
-        "name": "student",
-        "description": "Estudiante — acceso a planeación curricular personal"
-      },
-      {
-        "name": "staff",
-        "description": "Personal administrativo — acceso de solo lectura a datos agregados"
-      },
-      {
-        "name": "admin",
-        "description": "Administrador de la plataforma"
-      }
-    ]
-  },
-  "_comment": "PLACEHOLDER realm for Fase 0 local development. Real users, OIDC flows, and session wiring are implemented in Fase 1 (PEN-005). Do not use these credentials in production."
+
+  "_comment": "Slice-1 realm export for brujula-dev. Contains backend confidential client + ADMIN seed user. Slice-2 service-account client (brujula-registration-svc with manage-users role) is a TODO for WU-E. Do not commit real secrets — all client secrets and passwords are placeholders."
 }
