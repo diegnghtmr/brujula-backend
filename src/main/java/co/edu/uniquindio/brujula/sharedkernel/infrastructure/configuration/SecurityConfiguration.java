@@ -1,10 +1,14 @@
 package co.edu.uniquindio.brujula.sharedkernel.infrastructure.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -23,9 +27,9 @@ import org.springframework.security.web.SecurityFilterChain;
  *   <li>Method-level security via {@code @EnableMethodSecurity} — BOLA defense, TRD §10.
  * </ul>
  *
- * <p>The {@code SecurityFilterChain} is the cross-cutting composition root and stays in
- * {@code sharedkernel} (ADR-F1-002). OIDC provisioning logic is in
- * {@code identity.infrastructure.adapter.in.oidc} (wired in WU-B).
+ * <p>The {@code SecurityFilterChain} is the cross-cutting composition root and stays in {@code
+ * sharedkernel} (ADR-F1-002). OIDC provisioning logic is in {@code
+ * identity.infrastructure.adapter.in.oidc} (wired in WU-B).
  *
  * <p>Satisfies: S1-A-8, Spec §OIDC Login Flow §CSRF Protection §Role-Based Authorization §Logout.
  * ADR-F1-001, ADR-F1-002, ADR-F1-004, RNF-SEG-001..005.
@@ -34,6 +38,16 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
+
+  /**
+   * OIDC user service — wired from identity module (WU-B, S1-B-5). Triggers user provisioning on
+   * Keycloak OIDC login. Injected by the generic Spring interface so this sharedkernel config does
+   * NOT import a concrete class from the identity module (Modulith boundary: sharedkernel has no
+   * allowed outbound module dependencies). Optional: allows startup when identity beans are absent
+   * (e.g. slice tests that don't load the full context).
+   */
+  @Autowired(required = false)
+  private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService;
 
   /**
    * Production security filter chain.
@@ -64,13 +78,17 @@ public class SecurityConfiguration {
         // OIDC login — Keycloak provider (registration id: keycloak)
         // ----------------------------------------------------------------
         .oauth2Login(
-            oauth2 ->
-                oauth2
-                    // Default authorization endpoint: /oauth2/authorization/keycloak
-                    // Default redirect-uri (callback): /login/oauth2/code/keycloak
-                    // On success: session established via Spring Session JDBC.
-                    // OidcUserService wired in WU-B (S1-B-5) for user provisioning.
-                    .defaultSuccessUrl("/", true))
+            oauth2 -> {
+              // Default authorization endpoint: /oauth2/authorization/keycloak
+              // Default redirect-uri (callback): /login/oauth2/code/keycloak
+              // On success: session established via Spring Session JDBC.
+              oauth2.defaultSuccessUrl("/", true);
+              // Wire IdentityOidcUserService for user provisioning (WU-B, S1-B-5).
+              // When present, maps Keycloak claims → AppUser and sets ROLE_ authorities.
+              if (oidcUserService != null) {
+                oauth2.userInfoEndpoint(ui -> ui.oidcUserService(oidcUserService));
+              }
+            })
 
         // ----------------------------------------------------------------
         // CSRF — SPA mode (Security 7 verified fact #1)
@@ -119,10 +137,7 @@ public class SecurityConfiguration {
         // Storage: Spring Session JDBC via spring-boot-starter-session-jdbc
         // (properties: spring.session.jdbc.table-name, initialize-schema=never)
         // ----------------------------------------------------------------
-        .sessionManagement(
-            session ->
-                session.sessionFixation(
-                    fixation -> fixation.newSession()))
+        .sessionManagement(session -> session.sessionFixation(fixation -> fixation.newSession()))
 
         // ----------------------------------------------------------------
         // Logout — POST /auth/logout (G2 RESOLUTION)

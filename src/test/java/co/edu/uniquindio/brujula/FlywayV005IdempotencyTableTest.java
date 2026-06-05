@@ -54,7 +54,11 @@ class FlywayV005IdempotencyTableTest extends AbstractPostgresIntegrationTest {
     assertThat(columns)
         .as("platform.idempotency_record must have all required columns")
         .contains(
-            "idempotency_key", "operation", "request_hash", "response_status", "response_body",
+            "idempotency_key",
+            "operation",
+            "request_hash",
+            "response_status",
+            "response_body",
             "created_at");
   }
 

@@ -33,9 +33,7 @@ class FlywayV004AuditTablesTest extends AbstractPostgresIntegrationTest {
             """,
             Integer.class);
 
-    assertThat(count)
-        .as("audit.audit_event table must exist after V004 migration")
-        .isEqualTo(1);
+    assertThat(count).as("audit.audit_event table must exist after V004 migration").isEqualTo(1);
   }
 
   @Test
@@ -80,9 +78,7 @@ class FlywayV004AuditTablesTest extends AbstractPostgresIntegrationTest {
             """,
             Integer.class);
 
-    assertThat(count)
-        .as("audit.audit_event.previous_value must be of type jsonb")
-        .isEqualTo(1);
+    assertThat(count).as("audit.audit_event.previous_value must be of type jsonb").isEqualTo(1);
   }
 
   @Test
@@ -99,9 +95,7 @@ class FlywayV004AuditTablesTest extends AbstractPostgresIntegrationTest {
             """,
             Integer.class);
 
-    assertThat(count)
-        .as("audit.audit_event.new_value must be of type jsonb")
-        .isEqualTo(1);
+    assertThat(count).as("audit.audit_event.new_value must be of type jsonb").isEqualTo(1);
   }
 
   @Test
