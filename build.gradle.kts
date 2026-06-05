@@ -205,6 +205,12 @@ tasks.jacocoTestCoverageVerification {
 // ============================================================
 tasks.test {
     useJUnitPlatform()
+    // Testcontainers stability: run test JVM forks sequentially so that each Spring
+    // ApplicationContext spin-up gets a fresh, non-contested Postgres container.
+    // Without this, parallel forks reuse cached JDBC URLs pointing to dead containers
+    // (HikariPool interruption on context cache miss). maxParallelForks=1 is the
+    // standard Testcontainers fix for single-machine developer builds.
+    maxParallelForks = 1
     // Pass Docker environment to forked JVM for Testcontainers
     // docker-java 3.x hardcodes API path /v1.32/ — must use DOCKER_HOST env var so that
     // the EnvironmentAndSystemPropertyClientProviderStrategy picks up the socket override.
