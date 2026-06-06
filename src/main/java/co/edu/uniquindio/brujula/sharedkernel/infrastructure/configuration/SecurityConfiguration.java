@@ -3,6 +3,8 @@ package co.edu.uniquindio.brujula.sharedkernel.infrastructure.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -10,6 +12,9 @@ import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.util.AntPathMatcher;
 
 /**
  * Security configuration for Fase 1.
@@ -48,6 +53,7 @@ public class SecurityConfiguration {
    */
   @Autowired(required = false)
   private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService;
+
 
   /**
    * Production security filter chain.
@@ -125,12 +131,31 @@ public class SecurityConfiguration {
                     // STAFF or ADMIN: staff endpoints
                     .requestMatchers("/staff/**")
                     .hasAnyRole("STAFF", "ADMIN")
+                    // S2-E: Academic functions — require ONBOARDING_ACTIVE authority.
+                    // PENDING_VERIFICATION users lack this authority → 403 with problem detail.
+                    // ACTIVE users have this authority (added by IdentityOidcUserService on login).
+                    // Rationale (Option B): authority carried in session — no DB hit per request.
+                    // Authority refreshed on next login after email verification (sync-on-login,
+                    // obs #1574). SecurityConfiguration stays in sharedkernel with no identity
+                    // module import — the authority name is a plain String constant.
+                    .requestMatchers("/api/v1/academic/**")
+                    .hasAuthority("ONBOARDING_ACTIVE")
                     // Authenticated: profile and logout
                     .requestMatchers("/me/**", "/auth/logout")
                     .authenticated()
                     // Anything else: must be authenticated
                     .anyRequest()
                     .authenticated())
+
+        // ----------------------------------------------------------------
+        // Exception handling — path-scoped AccessDeniedHandler (W-001)
+        // ONLY /api/v1/academic/** receives EMAIL_VERIFICATION_REQUIRED problem detail.
+        // All other access-denied cases (e.g. STUDENT→/admin/**) get the default generic 403.
+        // Modulith-safe: no identity module import; uses plain String code + path check only.
+        // ----------------------------------------------------------------
+        .exceptionHandling(
+            exceptions ->
+                exceptions.accessDeniedHandler(academicAccessDeniedHandler()))
 
         // ----------------------------------------------------------------
         // Session management — new session on login (TRD §10 rotation)
@@ -154,5 +179,55 @@ public class SecurityConfiguration {
                         (request, response, authentication) -> response.setStatus(204)));
 
     return http.build();
+  }
+
+  /**
+   * Path-scoped {@link AccessDeniedHandler} for the academic guard (W-001).
+   *
+   * <p>Behavior:
+   *
+   * <ul>
+   *   <li>Request path matches {@code /api/v1/academic/**}: respond with 403 +
+   *       {@code Content-Type: application/problem+json} + body containing
+   *       {@code "code": "EMAIL_VERIFICATION_REQUIRED"} (RFC 9457 ProblemDetail extension). This
+   *       satisfies the spec contract: "403 with problem detail indicating email verification
+   *       required".
+   *   <li>Any other path: delegate to {@link AccessDeniedHandlerImpl} (default Spring Security
+   *       behavior — generic 403, no body). This preserves existing semantics for admin/staff
+   *       authorization failures and does NOT relabel them as email-verification issues.
+   * </ul>
+   *
+   * <p>Modulith-safe: uses {@code AntPathMatcher} + plain String constants — no identity module
+   * import. The handler lives in {@code sharedkernel} and has zero domain-module dependencies.
+   * JSON is written inline to avoid an ObjectMapper dependency in sharedkernel configuration.
+   */
+  private AccessDeniedHandler academicAccessDeniedHandler() {
+    AntPathMatcher pathMatcher = new AntPathMatcher();
+    AccessDeniedHandlerImpl defaultHandler = new AccessDeniedHandlerImpl();
+
+    return (request, response, accessDeniedException) -> {
+      String path = request.getRequestURI();
+
+      if (pathMatcher.match("/api/v1/academic/**", path)) {
+        // Spec contract: 403 + application/problem+json + code=EMAIL_VERIFICATION_REQUIRED.
+        // JSON is written inline — keeps sharedkernel free from ObjectMapper dependency.
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+        response
+            .getWriter()
+            .write(
+                """
+                {
+                  "title": "Access Denied",
+                  "status": 403,
+                  "detail": "Se requiere verificar el correo electr\\u00f3nico para acceder a funciones acad\\u00e9micas.",
+                  "code": "EMAIL_VERIFICATION_REQUIRED"
+                }
+                """);
+      } else {
+        // All other paths: default Spring Security behavior (generic 403, no body).
+        defaultHandler.handle(request, response, accessDeniedException);
+      }
+    };
   }
 }
