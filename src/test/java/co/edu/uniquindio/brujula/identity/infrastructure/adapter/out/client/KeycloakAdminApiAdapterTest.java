@@ -12,6 +12,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.queryParam;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -88,6 +89,12 @@ class KeycloakAdminApiAdapterTest {
         .andExpect(method(POST))
         .andExpect(header("Authorization", "Bearer " + ACCESS_TOKEN))
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        // F-001: assert request body fields per Keycloak 26.4 Admin API shape (obs #1574).
+        // username = email, enabled = true, emailVerified = false (Keycloak verifies via email).
+        .andExpect(content().string(containsString("\"username\"")))
+        .andExpect(content().string(containsString("\"email\"")))
+        .andExpect(content().string(containsString("\"enabled\":true")))
+        .andExpect(content().string(containsString("\"emailVerified\":false")))
         .andRespond(
             withStatus(HttpStatus.CREATED)
                 .headers(locationHeader(ADMIN_BASE_URL + "/users/" + expectedUserId)));
@@ -108,21 +115,29 @@ class KeycloakAdminApiAdapterTest {
   // -------------------------------------------------------------------------
 
   @Test
-  void triggerEmailVerification_shouldPutExecuteActionsEmail_withVerifyEmailAction() {
+  void triggerEmailVerification_shouldPutExecuteActionsEmail_withVerifyEmailAndUpdatePasswordActions() {
     stubTokenEndpoint(ACCESS_TOKEN, 300);
 
     var userId = "a2f0e8c1-1234-5678-9abc-def012345678";
+    var redirectUri = "http://localhost:5173/verify-email";
     mockServer
-        .expect(requestTo(containsString("/users/" + userId + "/execute-actions-email")))
+        // C-001 + F-002: assert both ?redirectUri= and ?clientId=brujula-frontend in the URL.
+        // OPTION A requires BOTH VERIFY_EMAIL and UPDATE_PASSWORD so the user sets their password
+        // on Keycloak's page after clicking the verification link (obs #1574).
+        .expect(requestTo(allOf(
+            containsString("/users/" + userId + "/execute-actions-email"),
+            containsString("redirectUri="),
+            containsString("clientId=brujula-frontend"))))
         .andExpect(method(PUT))
         .andExpect(header("Authorization", "Bearer " + ACCESS_TOKEN))
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        // C-001: body must contain BOTH actions
         .andExpect(content().string(containsString("VERIFY_EMAIL")))
+        .andExpect(content().string(containsString("UPDATE_PASSWORD")))
         .andRespond(withStatus(HttpStatus.NO_CONTENT));
 
     // Should complete without exception
-    adapter.triggerEmailVerification(
-        new KeycloakUserId(userId), "http://localhost:5173/verify-email");
+    adapter.triggerEmailVerification(new KeycloakUserId(userId), redirectUri);
 
     mockServer.verify();
   }
@@ -137,25 +152,35 @@ class KeycloakAdminApiAdapterTest {
 
     var userId = "b3a1c2d4-5678-1234-abcd-ef0123456789";
     var email = "student@uniquindio.edu.co";
+    var redirectUri = "http://localhost:5173/reset-password";
 
-    // Stub GET /users?email=... to return user list
+    // F-003: assert ?email=...&exact=true query params on the user lookup GET.
+    // Keycloak's user search without exact=true would also return partial email matches;
+    // exact=true ensures we only match the exact email address.
+    // Note: Spring RestClient URL-encodes the @ in the email address (%40).
     mockServer
-        .expect(requestTo(containsString("/users")))
+        .expect(requestTo(allOf(
+            containsString("/users"),
+            containsString("email=student%40uniquindio.edu.co"),
+            containsString("exact=true"))))
         .andExpect(method(GET))
         .andExpect(header("Authorization", "Bearer " + ACCESS_TOKEN))
         .andRespond(
             withSuccess(
                 "[{\"id\":\"" + userId + "\",\"email\":\"" + email + "\"}]", APPLICATION_JSON));
 
-    // Stub PUT execute-actions-email with UPDATE_PASSWORD
+    // Stub PUT execute-actions-email with UPDATE_PASSWORD + F-002 query params
+    // F-002: also assert clientId=brujula-frontend on password reset action.
     mockServer
-        .expect(requestTo(containsString("/users/" + userId + "/execute-actions-email")))
+        .expect(requestTo(allOf(
+            containsString("/users/" + userId + "/execute-actions-email"),
+            containsString("clientId=brujula-frontend"))))
         .andExpect(method(PUT))
         .andExpect(header("Authorization", "Bearer " + ACCESS_TOKEN))
         .andExpect(content().string(containsString("UPDATE_PASSWORD")))
         .andRespond(withStatus(HttpStatus.NO_CONTENT));
 
-    adapter.triggerPasswordReset(email, "http://localhost:5173/reset-password");
+    adapter.triggerPasswordReset(email, redirectUri);
 
     mockServer.verify();
   }
@@ -291,6 +316,61 @@ class KeycloakAdminApiAdapterTest {
         new KeycloakUserProvisioningPort.ProvisionUserCommand(
             "student@uniquindio.edu.co", "Juan Pérez");
     adapter.createUser(command);
+
+    mockServer.verify();
+  }
+
+  // -------------------------------------------------------------------------
+  // 8. Token refresh — expired token triggers a second token POST (F-007)
+  // -------------------------------------------------------------------------
+
+  @Test
+  void resolveToken_shouldRefreshToken_whenCachedTokenHasExpired() {
+    var firstToken = "first-token-expired";
+    var secondToken = "second-token-fresh";
+    var userId = "refresh-test-user-id";
+
+    // First token — expires_in=0 means it expires immediately (before the buffer kicks in).
+    // The adapter subtracts REFRESH_BUFFER_SECONDS (30s) from expires_in: max(0, 0 - 30) = 0,
+    // so expiresAt = Instant.now() — the token is expired from the moment it is stored.
+    mockServer
+        .expect(ExpectedCount.once(), requestTo(TOKEN_URL))
+        .andExpect(method(POST))
+        .andRespond(withSuccess(tokenResponse(firstToken, 0), APPLICATION_JSON));
+
+    // First createUser call uses firstToken
+    mockServer
+        .expect(requestTo(ADMIN_BASE_URL + "/users"))
+        .andExpect(method(POST))
+        .andExpect(header("Authorization", "Bearer " + firstToken))
+        .andRespond(
+            withStatus(HttpStatus.CREATED)
+                .headers(locationHeader(ADMIN_BASE_URL + "/users/" + userId)));
+
+    // Second token acquisition — triggered because firstToken is already expired
+    mockServer
+        .expect(ExpectedCount.once(), requestTo(TOKEN_URL))
+        .andExpect(method(POST))
+        .andRespond(withSuccess(tokenResponse(secondToken, 300), APPLICATION_JSON));
+
+    // Second createUser call uses secondToken (refreshed)
+    mockServer
+        .expect(requestTo(ADMIN_BASE_URL + "/users"))
+        .andExpect(method(POST))
+        .andExpect(header("Authorization", "Bearer " + secondToken))
+        .andRespond(
+            withStatus(HttpStatus.CREATED)
+                .headers(locationHeader(ADMIN_BASE_URL + "/users/" + userId + "-2")));
+
+    var cmd1 =
+        new KeycloakUserProvisioningPort.ProvisionUserCommand(
+            "student1@uniquindio.edu.co", "Student One");
+    var cmd2 =
+        new KeycloakUserProvisioningPort.ProvisionUserCommand(
+            "student2@uniquindio.edu.co", "Student Two");
+
+    adapter.createUser(cmd1);
+    adapter.createUser(cmd2);
 
     mockServer.verify();
   }

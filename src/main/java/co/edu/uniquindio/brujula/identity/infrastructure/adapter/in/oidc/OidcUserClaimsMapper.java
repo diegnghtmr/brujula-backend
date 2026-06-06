@@ -32,7 +32,9 @@ public class OidcUserClaimsMapper {
     String email = oidcUser.getEmail();
     String fullName = resolveFullName(oidcUser);
     Set<String> roles = extractRealmRoles(oidcUser);
-    return new ProvisionCommand(sub, email, fullName, roles);
+    // S2-B-4 sync-on-login: extract email_verified claim for onboardingState transition.
+    Boolean emailVerified = oidcUser.getEmailVerified();
+    return new ProvisionCommand(sub, email, fullName, roles, emailVerified);
   }
 
   private String resolveFullName(OidcUser oidcUser) {

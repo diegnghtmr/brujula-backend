@@ -68,6 +68,16 @@ management:
 # All secrets MUST be provided via environment variables — never committed as real values.
 # G4 RESOLVED: service-account client brujula-registration-svc added to realm-export.json (Slice 2).
 brujula:
+  registration:
+    # G6 RESOLVED: Consent terms/version source = configuration properties (Slice 2, S2-B-0).
+    # Version bumps require only a config change and restart (no code release).
+    # The client sends acceptedTerms/acceptedDataProcessing booleans; the backend records the
+    # CONFIGURED current version as evidence — versions are not client-supplied per this contract.
+    current-terms-version: "1.0"
+    current-privacy-version: "1.0"
+    # SPA landing URI for Keycloak's email verification redirect (obs #1574).
+    # Must be registered as a valid redirect URI for the SPA client in the realm.
+    verify-redirect-uri: "http://localhost:5173/verify-email"
   keycloak:
     # Keycloak server base URL (overridden per environment via env vars or profile yaml).
     auth-server-url: http://localhost:9090

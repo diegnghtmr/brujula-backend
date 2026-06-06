@@ -13,4 +13,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 interface AppUserJpaRepository extends JpaRepository<AppUserJpaEntity, UUID> {
 
   Optional<AppUserJpaEntity> findByOidcSubject(String oidcSubject);
+
+  Optional<AppUserJpaEntity> findByEmail(String email);
+
+  boolean existsByEmail(String email);
 }

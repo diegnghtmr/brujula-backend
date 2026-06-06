@@ -26,4 +26,20 @@ public interface LoadAppUserPort {
    * @return the user if found
    */
   Optional<AppUser> findById(UUID id);
+
+  /**
+   * Find an app_user by email address.
+   *
+   * @param email the institutional email address
+   * @return the user if found
+   */
+  Optional<AppUser> findByEmail(String email);
+
+  /**
+   * Check whether an app_user with the given email already exists.
+   *
+   * @param email the institutional email address
+   * @return {@code true} if a user with this email exists
+   */
+  boolean existsByEmail(String email);
 }

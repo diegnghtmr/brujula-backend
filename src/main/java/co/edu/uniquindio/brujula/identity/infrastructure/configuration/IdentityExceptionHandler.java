@@ -1,5 +1,6 @@
 package co.edu.uniquindio.brujula.identity.infrastructure.configuration;
 
+import co.edu.uniquindio.brujula.identity.application.EmailAlreadyRegisteredException;
 import co.edu.uniquindio.brujula.identity.domain.DomainNotAllowedException;
 import co.edu.uniquindio.brujula.identity.domain.UserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <ul>
  *   <li>{@link UserNotFoundException} → 404 Not Found
  *   <li>{@link DomainNotAllowedException} → 422 Unprocessable Entity
+ *   <li>{@link EmailAlreadyRegisteredException} → 409 Conflict (S2-B-3)
  * </ul>
  */
 @RestControllerAdvice
@@ -34,5 +36,11 @@ class IdentityExceptionHandler {
   @ExceptionHandler(DomainNotAllowedException.class)
   ProblemDetail handleDomainNotAllowed(DomainNotAllowedException ex) {
     return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+  }
+
+  /** S2-B-3: email already registered → 409 Conflict per OpenAPI contract. */
+  @ExceptionHandler(EmailAlreadyRegisteredException.class)
+  ProblemDetail handleEmailAlreadyRegistered(EmailAlreadyRegisteredException ex) {
+    return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
   }
 }
