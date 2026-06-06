@@ -1,0 +1,11 @@
+# Test profile overrides — prevents test suite from requiring a live Keycloak instance.
+# The KeycloakAdminApiAdapter tests use MockRestServiceServer for offline testing.
+# These are placeholder values; actual HTTP calls are intercepted by the mock server.
+brujula:
+  keycloak:
+    auth-server-url: http://localhost:9090
+    realm: brujula-dev
+    registration-svc:
+      client-id: brujula-registration-svc
+      # Test-only placeholder — no real secret in test config.
+      client-secret: test-client-secret-placeholder

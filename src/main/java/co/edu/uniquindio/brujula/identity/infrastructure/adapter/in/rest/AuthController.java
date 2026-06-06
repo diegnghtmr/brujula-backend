@@ -1,8 +1,6 @@
 package co.edu.uniquindio.brujula.identity.infrastructure.adapter.in.rest;
 
 import co.edu.uniquindio.brujula.generated.api.AuthApi;
-import co.edu.uniquindio.brujula.generated.model.ConfirmEmailVerificationRequest;
-import co.edu.uniquindio.brujula.generated.model.ConfirmPasswordRecoveryRequest;
 import co.edu.uniquindio.brujula.generated.model.RegistrationAccepted;
 import co.edu.uniquindio.brujula.generated.model.RequestPasswordRecoveryRequest;
 import co.edu.uniquindio.brujula.generated.model.ResendEmailVerificationRequest;
@@ -19,10 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
  * filter BEFORE the DispatcherServlet. This shim returns 204 in the unlikely event the request
  * reaches this controller (Spring Security's filter runs first). No domain logic here.
  *
- * <p>All other auth operations (registration, verification, recovery) are Slice 2 — they return 501
- * Not Implemented in WU-B. They will be implemented in the Slice 2 apply batch.
+ * <p>S2-A-3 CONTRACT UPDATE: confirmEmailVerification and confirmPasswordRecovery have been removed
+ * from the API contract. Keycloak handles email verification and password reset natively on its own
+ * pages. No backend token-confirm endpoints are needed. See architecture decision #1574.
  *
- * <p>Satisfies: S1-B-5 (G2 resolve), Design §2.1 AuthApi shim.
+ * <p>All other auth operations (registration, verification, recovery) are Slice 2 — they return 501
+ * Not Implemented here. They will be fully implemented in Slice 2 apply batches S2-B..D.
+ *
+ * <p>Satisfies: S1-B-5 (G2 resolve), Design §2.1 AuthApi shim, S2-A-3 contract audit.
  */
 @RestController
 class AuthController implements AuthApi {
@@ -35,35 +37,23 @@ class AuthController implements AuthApi {
     return ResponseEntity.noContent().build();
   }
 
-  /** Slice 2 — not implemented in WU-B. */
+  /** Slice 2 — not implemented until WU-E-B. */
   @Override
   public ResponseEntity<RegistrationAccepted> registerStudent(
       UUID idempotencyKey, StudentRegistrationRequest body) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
-  /** Slice 2 — not implemented in WU-B. */
-  @Override
-  public ResponseEntity<Void> confirmEmailVerification(ConfirmEmailVerificationRequest body) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-  }
-
-  /** Slice 2 — not implemented in WU-B. */
+  /** Slice 2 — resend email verification trigger. Not fully implemented until WU-E-C. */
   @Override
   public ResponseEntity<Void> resendEmailVerification(
       UUID idempotencyKey, ResendEmailVerificationRequest body) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
-  /** Slice 2 — not implemented in WU-B. */
+  /** Slice 2 — not implemented until WU-E-D. */
   @Override
   public ResponseEntity<Void> requestPasswordRecovery(RequestPasswordRecoveryRequest body) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-  }
-
-  /** Slice 2 — not implemented in WU-B. */
-  @Override
-  public ResponseEntity<Void> confirmPasswordRecovery(ConfirmPasswordRecoveryRequest body) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 }
