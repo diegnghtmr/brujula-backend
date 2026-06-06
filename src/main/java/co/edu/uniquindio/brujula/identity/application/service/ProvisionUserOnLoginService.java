@@ -1,5 +1,7 @@
 package co.edu.uniquindio.brujula.identity.application.service;
 
+import co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand;
+import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.identity.application.dto.ProvisionCommand;
 import co.edu.uniquindio.brujula.identity.application.port.in.ProvisionUserOnLoginUseCase;
 import co.edu.uniquindio.brujula.identity.application.port.out.LoadAllowedDomainsPort;
@@ -21,6 +23,9 @@ import java.util.Set;
  *
  * <p>Enforces allowed-email-domain policy (RN-007, RNF-SEG-006 dual enforcement).
  *
+ * <p>Records a {@code USER_PROVISIONED} audit event on first login via {@link AuditRecorder}
+ * (RNF-SEG-007 synchronous, same transaction). Satisfies S1-C wiring requirement.
+ *
  * <p>No Spring annotations here — wired by the infrastructure configuration. Satisfies S1-B-3.
  */
 public class ProvisionUserOnLoginService implements ProvisionUserOnLoginUseCase {
@@ -28,14 +33,17 @@ public class ProvisionUserOnLoginService implements ProvisionUserOnLoginUseCase 
   private final LoadAppUserPort loadAppUserPort;
   private final SaveAppUserPort saveAppUserPort;
   private final LoadAllowedDomainsPort loadAllowedDomainsPort;
+  private final AuditRecorder auditRecorder;
 
   public ProvisionUserOnLoginService(
       LoadAppUserPort loadAppUserPort,
       SaveAppUserPort saveAppUserPort,
-      LoadAllowedDomainsPort loadAllowedDomainsPort) {
+      LoadAllowedDomainsPort loadAllowedDomainsPort,
+      AuditRecorder auditRecorder) {
     this.loadAppUserPort = loadAppUserPort;
     this.saveAppUserPort = saveAppUserPort;
     this.loadAllowedDomainsPort = loadAllowedDomainsPort;
+    this.auditRecorder = auditRecorder;
   }
 
   @Override
@@ -59,7 +67,14 @@ public class ProvisionUserOnLoginService implements ProvisionUserOnLoginUseCase 
     // 4. Provision and persist
     AppUser newUser =
         AppUser.provision(command.oidcSubject(), command.email(), command.fullName(), role);
-    return saveAppUserPort.save(newUser);
+    AppUser saved = saveAppUserPort.save(newUser);
+
+    // 5. Record audit event for first-time provisioning (RNF-SEG-007)
+    auditRecorder.record(
+        new RecordAuditEventCommand(
+            saved.id(), role.name(), "USER_PROVISIONED", "app_user", saved.id(), null, null, null));
+
+    return saved;
   }
 
   /**

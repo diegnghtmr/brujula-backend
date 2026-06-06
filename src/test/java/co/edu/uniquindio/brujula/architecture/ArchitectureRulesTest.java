@@ -37,12 +37,17 @@ class ArchitectureRulesTest {
   /**
    * ARQ-002 — Domain classes are framework-free. Domain must not depend on Spring, Jakarta
    * Persistence, servlet types, or generated API model DTOs.
+   *
+   * <p>package-info files are excluded because they carry package-level annotations (e.g.
+   * {@code @NamedInterface}) that are module-structure metadata, not domain logic.
    */
   @ArchTest
   static final ArchRule ARQ_002_domain_is_framework_free =
       noClasses()
           .that()
           .resideInAPackage("..domain..")
+          .and()
+          .doNotHaveSimpleName("package-info")
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage(

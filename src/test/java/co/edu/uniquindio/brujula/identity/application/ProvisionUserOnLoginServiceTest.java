@@ -3,10 +3,12 @@ package co.edu.uniquindio.brujula.identity.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.identity.application.dto.ProvisionCommand;
 import co.edu.uniquindio.brujula.identity.application.port.out.LoadAllowedDomainsPort;
 import co.edu.uniquindio.brujula.identity.application.port.out.LoadAppUserPort;
@@ -41,13 +43,15 @@ class ProvisionUserOnLoginServiceTest {
   @Mock private LoadAppUserPort loadAppUserPort;
   @Mock private SaveAppUserPort saveAppUserPort;
   @Mock private LoadAllowedDomainsPort loadAllowedDomainsPort;
+  @Mock private AuditRecorder auditRecorder;
 
   private ProvisionUserOnLoginService service;
 
   @BeforeEach
   void setUp() {
     service =
-        new ProvisionUserOnLoginService(loadAppUserPort, saveAppUserPort, loadAllowedDomainsPort);
+        new ProvisionUserOnLoginService(
+            loadAppUserPort, saveAppUserPort, loadAllowedDomainsPort, auditRecorder);
   }
 
   // -------------------------------------------------------------------------
@@ -70,6 +74,16 @@ class ProvisionUserOnLoginServiceTest {
     assertThat(result.oidcSubject()).isEqualTo("sub-new");
     assertThat(result.email()).isEqualTo("alice@uniquindio.edu.co");
     verify(saveAppUserPort).save(any());
+    // Spec §Audit Log: first login MUST record USER_PROVISIONED with the new user as both
+    // actor and entityId (the user is provisioning themselves via OIDC).
+    verify(auditRecorder)
+        .record(
+            argThat(
+                cmd ->
+                    "USER_PROVISIONED".equals(cmd.action())
+                        && "app_user".equals(cmd.entityType())
+                        && saved.id().equals(cmd.actorId())
+                        && saved.id().equals(cmd.entityId())));
   }
 
   @Test
@@ -161,6 +175,8 @@ class ProvisionUserOnLoginServiceTest {
     assertThat(result.id()).isEqualTo(existing.id());
     assertThat(result.version()).isEqualTo(1L);
     verify(saveAppUserPort, never()).save(any());
+    // Subsequent login must NOT record a USER_PROVISIONED event (already provisioned)
+    verify(auditRecorder, never()).record(any());
   }
 
   // -------------------------------------------------------------------------
