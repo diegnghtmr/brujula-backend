@@ -78,6 +78,9 @@ brujula:
     # SPA landing URI for Keycloak's email verification redirect (obs #1574).
     # Must be registered as a valid redirect URI for the SPA client in the realm.
     verify-redirect-uri: "http://localhost:5173/verify-email"
+    # SPA landing URI for Keycloak's password recovery redirect (OPTION A, S2-D).
+    # Keycloak redirects the user here after they complete the password reset on Keycloak's page.
+    recovery-redirect-uri: "http://localhost:5173/reset-password"
   keycloak:
     # Keycloak server base URL (overridden per environment via env vars or profile yaml).
     auth-server-url: http://localhost:9090

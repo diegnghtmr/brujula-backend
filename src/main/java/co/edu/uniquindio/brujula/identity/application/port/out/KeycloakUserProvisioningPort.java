@@ -66,6 +66,20 @@ public interface KeycloakUserProvisioningPort {
    */
   void triggerPasswordReset(String email, String redirectUri);
 
+  /**
+   * Resend the email verification action for a user identified by email.
+   *
+   * <p>Used by the email-verification resend endpoint (S2-C). Looks up the Keycloak user by email,
+   * then triggers {@code execute-actions-email ["VERIFY_EMAIL", "UPDATE_PASSWORD"]} (OPTION A).
+   * If no user is found in Keycloak, returns silently (no user enumeration).
+   *
+   * @param email the institutional email of the user to look up in Keycloak
+   * @param redirectUri the SPA landing URI to redirect after verification
+   * @throws KeycloakProvisioningException if Keycloak returns a non-2xx error (caller decides
+   *     whether to swallow or propagate)
+   */
+  void resendEmailVerification(String email, String redirectUri);
+
   // -------------------------------------------------------------------------
   // Value objects (nested in the port — framework-free, application-layer VO)
   // -------------------------------------------------------------------------

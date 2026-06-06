@@ -73,6 +73,11 @@ paths:
         correos cuyo dominio esté habilitado. La credencial se delega al
         proveedor de identidad (Keycloak); el backend **no** almacena contraseñas.
         Conserva evidencia de aceptación de términos y tratamiento de datos.
+
+        **CSRF**: aunque el endpoint es público (`security: []`), la protección CSRF está activa
+        globalmente (modo SPA). El cliente SPA debe leer la cookie `XSRF-TOKEN` e incluirla
+        en la cabecera `X-XSRF-TOKEN` en cada solicitud de escritura (POST/PUT/DELETE/PATCH).
+        Una solicitud sin esta cabecera recibirá 403.
       operationId: registerStudent
       security: []
       parameters:
@@ -111,6 +116,14 @@ paths:
     post:
       tags: [Auth]
       summary: Reenviar correo de verificación
+      description: |
+        Solicita el reenvío del correo de verificación de cuenta. Responde siempre 202 para
+        no revelar existencia de cuentas.
+
+        **CSRF**: aunque el endpoint es público (`security: []`), la protección CSRF está activa
+        globalmente (modo SPA). El cliente SPA debe leer la cookie `XSRF-TOKEN` e incluirla
+        en la cabecera `X-XSRF-TOKEN` en cada solicitud de escritura (POST/PUT/DELETE/PATCH).
+        Una solicitud sin esta cabecera recibirá 403.
       operationId: resendEmailVerification
       security: []
       parameters:
@@ -136,7 +149,14 @@ paths:
     post:
       tags: [Auth]
       summary: Solicitar recuperación de contraseña
-      description: Inicia recuperación mediante enlace temporal a correo verificado. Responde siempre 202 para no revelar existencia de cuentas.
+      description: |
+        Inicia recuperación mediante enlace temporal a correo verificado. Responde siempre
+        202 para no revelar existencia de cuentas.
+
+        **CSRF**: aunque el endpoint es público (`security: []`), la protección CSRF está activa
+        globalmente (modo SPA). El cliente SPA debe leer la cookie `XSRF-TOKEN` e incluirla
+        en la cabecera `X-XSRF-TOKEN` en cada solicitud de escritura (POST/PUT/DELETE/PATCH).
+        Una solicitud sin esta cabecera recibirá 403.
       operationId: requestPasswordRecovery
       security: []
       requestBody:

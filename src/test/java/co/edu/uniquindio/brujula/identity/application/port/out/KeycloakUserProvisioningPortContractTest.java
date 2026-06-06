@@ -54,6 +54,14 @@ class KeycloakUserProvisioningPortContractTest {
             "Keycloak error", "KEYCLOAK_ERROR");
       }
     }
+
+    @Override
+    public void resendEmailVerification(String email, String redirectUri) {
+      if (shouldThrow) {
+        throw new KeycloakUserProvisioningPort.KeycloakProvisioningException(
+            "Keycloak error", "KEYCLOAK_ERROR");
+      }
+    }
   }
 
   // -------------------------------------------------------------------------

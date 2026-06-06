@@ -191,6 +191,69 @@ public class KeycloakAdminApiAdapter implements KeycloakUserProvisioningPort {
 
   /** {@inheritDoc} */
   @Override
+  public void resendEmailVerification(String email, String redirectUri) {
+    var token = resolveToken();
+
+    // Step 1: look up user by email — GET /users?email={email}&exact=true
+    var users =
+        restClient
+            .get()
+            .uri(adminBaseUrl + "/users?email={email}&exact=true", email)
+            .header("Authorization", "Bearer " + token)
+            .retrieve()
+            .onStatus(
+                HttpStatusCode::isError,
+                (req, resp) -> {
+                  throw new KeycloakProvisioningException(
+                      "Keycloak returned "
+                          + resp.getStatusCode()
+                          + " when looking up user by email for resend verification",
+                      "KEYCLOAK_" + resp.getStatusCode().value());
+                })
+            .body(KeycloakUserSearchResult[].class);
+
+    if (users == null || users.length == 0) {
+      // No user found — return silently (no user enumeration).
+      log.warn(
+          "resendEmailVerification: no Keycloak user found for email {} (silently suppressed)",
+          email);
+      return;
+    }
+
+    var keycloakUserId = users[0].id();
+    log.debug("Found Keycloak user {} for email verification resend", keycloakUserId);
+
+    // Step 2: trigger VERIFY_EMAIL + UPDATE_PASSWORD (OPTION A, same as initial trigger)
+    restClient
+        .put()
+        .uri(
+            adminBaseUrl
+                + "/users/{id}/execute-actions-email?redirectUri={redirectUri}&clientId={clientId}",
+            keycloakUserId,
+            redirectUri,
+            "brujula-frontend")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(List.of("VERIFY_EMAIL", "UPDATE_PASSWORD"))
+        .retrieve()
+        .onStatus(
+            HttpStatusCode::isError,
+            (req, resp) -> {
+              throw new KeycloakProvisioningException(
+                  "Keycloak returned "
+                      + resp.getStatusCode()
+                      + " for execute-actions-email"
+                      + " [VERIFY_EMAIL, UPDATE_PASSWORD] for user "
+                      + keycloakUserId,
+                  "KEYCLOAK_" + resp.getStatusCode().value());
+            })
+        .toBodilessEntity();
+
+    log.debug("Email verification resent for Keycloak user: {}", keycloakUserId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public void triggerPasswordReset(String email, String redirectUri) {
     var token = resolveToken();
 

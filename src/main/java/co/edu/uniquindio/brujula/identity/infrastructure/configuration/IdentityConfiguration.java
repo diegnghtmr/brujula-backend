@@ -7,9 +7,11 @@ import co.edu.uniquindio.brujula.identity.application.port.out.LoadAppUserPort;
 import co.edu.uniquindio.brujula.identity.application.port.out.ReadActivityPort;
 import co.edu.uniquindio.brujula.identity.application.port.out.SaveAppUserPort;
 import co.edu.uniquindio.brujula.identity.application.service.GetCurrentUserService;
+import co.edu.uniquindio.brujula.identity.application.service.InitiatePasswordRecoveryService;
 import co.edu.uniquindio.brujula.identity.application.service.ListMyActivityService;
 import co.edu.uniquindio.brujula.identity.application.service.ProvisionUserOnLoginService;
 import co.edu.uniquindio.brujula.identity.application.service.RegisterStudentService;
+import co.edu.uniquindio.brujula.identity.application.service.ResendEmailVerificationService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +50,38 @@ class IdentityConfiguration {
   @Bean
   ListMyActivityService listMyActivityService(ReadActivityPort readActivityPort) {
     return new ListMyActivityService(readActivityPort);
+  }
+
+  /**
+   * Resend email verification use case service (S2-C).
+   *
+   * <p>Reuses the same verify-redirect-uri as registration — same SPA landing page for the
+   * verification flow. No user enumeration: service returns silently for unknown emails.
+   */
+  @Bean
+  ResendEmailVerificationService resendEmailVerificationService(
+      LoadAppUserPort loadAppUserPort,
+      KeycloakUserProvisioningPort keycloakUserProvisioningPort,
+      @Value("${brujula.registration.verify-redirect-uri:http://localhost:5173/verify-email}")
+          String verifyRedirectUri) {
+    return new ResendEmailVerificationService(
+        loadAppUserPort, keycloakUserProvisioningPort, verifyRedirectUri);
+  }
+
+  /**
+   * Initiate password recovery use case service (S2-D).
+   *
+   * <p>OPTION A / DT-011: triggers Keycloak execute-actions-email [UPDATE_PASSWORD]. Backend never
+   * stores passwords. No user enumeration: service returns silently for unknown emails.
+   */
+  @Bean
+  InitiatePasswordRecoveryService initiatePasswordRecoveryService(
+      LoadAppUserPort loadAppUserPort,
+      KeycloakUserProvisioningPort keycloakUserProvisioningPort,
+      @Value("${brujula.registration.recovery-redirect-uri:http://localhost:5173/reset-password}")
+          String recoveryRedirectUri) {
+    return new InitiatePasswordRecoveryService(
+        loadAppUserPort, keycloakUserProvisioningPort, recoveryRedirectUri);
   }
 
   /**
