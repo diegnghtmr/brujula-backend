@@ -148,4 +148,22 @@ class ArchitectureRulesTest {
           .whereLayer("Infrastructure")
           .mayNotBeAccessedByAnyLayer()
           .allowEmptyShould(true);
+
+  /**
+   * ARQ-009 — Domain and application layers must not access external client adapters.
+   * {@code adapter.out.client} packages contain driven adapters that call external services
+   * (e.g. Keycloak Admin API). Only infrastructure/configuration classes may wire these adapters;
+   * domain and application depend only on port interfaces, never on concrete client implementations.
+   *
+   * <p>Added in Slice 2 to guard the KeycloakAdminApiAdapter boundary after S2-A introduced
+   * the {@code identity.infrastructure.adapter.out.client} package.
+   */
+  @ArchTest
+  static final ArchRule ARQ_009_no_domain_or_application_access_to_client_adapters =
+      noClasses()
+          .that()
+          .resideInAnyPackage("..domain..", "..application..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("..adapter.out.client..");
 }
