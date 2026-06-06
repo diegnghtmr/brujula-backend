@@ -8,7 +8,9 @@ import co.edu.uniquindio.brujula.generated.model.ResendEmailVerificationRequest;
 import co.edu.uniquindio.brujula.generated.model.StudentRegistrationRequest;
 import co.edu.uniquindio.brujula.identity.application.dto.RegisterStudentCommand;
 import co.edu.uniquindio.brujula.identity.application.dto.RegisterStudentResult;
+import co.edu.uniquindio.brujula.identity.application.port.in.InitiatePasswordRecoveryUseCase;
 import co.edu.uniquindio.brujula.identity.application.port.in.RegisterStudentUseCase;
+import co.edu.uniquindio.brujula.identity.application.port.in.ResendEmailVerificationUseCase;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,15 +32,29 @@ import org.springframework.web.bind.annotation.RestController;
  * {@link RegistrationAccepted} (202 Accepted). ARQ-001: no domain types are referenced directly —
  * only application DTOs and generated model types.
  *
- * <p>Satisfies: S1-B-5 (G2 resolve), Design §2.1 AuthApi shim, S2-A-3 contract audit, S2-B-5.
+ * <p>S2-C: resendEmailVerification delegates to {@link ResendEmailVerificationUseCase}. Always
+ * returns 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown emails.
+ *
+ * <p>S2-D: requestPasswordRecovery delegates to {@link InitiatePasswordRecoveryUseCase}. Always
+ * returns 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown emails.
+ *
+ * <p>Satisfies: S1-B-5 (G2 resolve), Design §2.1 AuthApi shim, S2-A-3 contract audit, S2-B-5,
+ * S2-C, S2-D.
  */
 @RestController
 class AuthController implements AuthApi {
 
   private final RegisterStudentUseCase registerStudentUseCase;
+  private final ResendEmailVerificationUseCase resendEmailVerificationUseCase;
+  private final InitiatePasswordRecoveryUseCase initiatePasswordRecoveryUseCase;
 
-  AuthController(RegisterStudentUseCase registerStudentUseCase) {
+  AuthController(
+      RegisterStudentUseCase registerStudentUseCase,
+      ResendEmailVerificationUseCase resendEmailVerificationUseCase,
+      InitiatePasswordRecoveryUseCase initiatePasswordRecoveryUseCase) {
     this.registerStudentUseCase = registerStudentUseCase;
+    this.resendEmailVerificationUseCase = resendEmailVerificationUseCase;
+    this.initiatePasswordRecoveryUseCase = initiatePasswordRecoveryUseCase;
   }
 
   /** Shim — Spring Security handles POST /auth/logout before DispatcherServlet. */
@@ -89,16 +105,29 @@ class AuthController implements AuthApi {
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
   }
 
-  /** Slice 2 — resend email verification trigger. Not fully implemented until WU-E-C. */
+  /**
+   * S2-C: Resend email verification.
+   *
+   * <p>NO USER ENUMERATION: always returns 202 Accepted regardless of whether the email is
+   * registered. The use case handles the conditional Keycloak call internally.
+   */
   @Override
   public ResponseEntity<Void> resendEmailVerification(
       UUID idempotencyKey, ResendEmailVerificationRequest body) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    resendEmailVerificationUseCase.resend(body.getEmail());
+    return ResponseEntity.accepted().build();
   }
 
-  /** Slice 2 — not implemented until WU-E-D. */
+  /**
+   * S2-D: Initiate password recovery.
+   *
+   * <p>NO USER ENUMERATION: always returns 202 Accepted regardless of whether the email is
+   * registered. OPTION A (DT-011): Keycloak handles the reset page natively; the backend never
+   * receives or stores passwords.
+   */
   @Override
   public ResponseEntity<Void> requestPasswordRecovery(RequestPasswordRecoveryRequest body) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    initiatePasswordRecoveryUseCase.initiateRecovery(body.getEmail());
+    return ResponseEntity.accepted().build();
   }
 }
