@@ -146,7 +146,13 @@ public class KeycloakAdminApiAdapter implements KeycloakUserProvisioningPort {
     return new KeycloakUserId(userId);
   }
 
-  /** {@inheritDoc} */
+  /**
+   * {@inheritDoc}
+   *
+   * <p>OPTION A (obs #1574): sends {@code ["VERIFY_EMAIL","UPDATE_PASSWORD"]} so the user both
+   * verifies their email and sets their initial password on Keycloak's page in one flow. The
+   * backend never handles a password — Keycloak stores the credential exclusively (DT-011).
+   */
   @Override
   public void triggerEmailVerification(KeycloakUserId userId, String redirectUri) {
     var token = resolveToken();
@@ -162,7 +168,10 @@ public class KeycloakAdminApiAdapter implements KeycloakUserProvisioningPort {
             "brujula-frontend")
         .header("Authorization", "Bearer " + token)
         .contentType(MediaType.APPLICATION_JSON)
-        .body(List.of("VERIFY_EMAIL"))
+        // OPTION A (obs #1574): VERIFY_EMAIL sets emailVerified=true; UPDATE_PASSWORD prompts the
+        // user to set their initial password on Keycloak's page after clicking the email link.
+        // Without UPDATE_PASSWORD the Keycloak user has no credential and cannot log in.
+        .body(List.of("VERIFY_EMAIL", "UPDATE_PASSWORD"))
         .retrieve()
         .onStatus(
             HttpStatusCode::isError,
@@ -171,7 +180,7 @@ public class KeycloakAdminApiAdapter implements KeycloakUserProvisioningPort {
                   "Keycloak returned "
                       + resp.getStatusCode()
                       + " for execute-actions-email"
-                      + " [VERIFY_EMAIL] for user "
+                      + " [VERIFY_EMAIL, UPDATE_PASSWORD] for user "
                       + userId.value(),
                   "KEYCLOAK_" + resp.getStatusCode().value());
             })
@@ -249,9 +258,12 @@ public class KeycloakAdminApiAdapter implements KeycloakUserProvisioningPort {
   /**
    * Resolve a valid access token, using the cache if still valid.
    *
-   * <p>Uses CAS on the {@link AtomicReference} to ensure at most one token refresh occurs
-   * concurrently. If two threads detect expiry simultaneously, only one will set the new token; the
-   * other will read the already-updated reference.
+   * <p>F-004 RESOLVED: Uses CAS on the {@link AtomicReference} to make the slot update atomic. If
+   * two threads detect expiry simultaneously, BOTH will call {@link #acquireToken()} — the CAS
+   * ensures only one token wins the slot, but does NOT prevent dual token acquisition. This is
+   * acceptable: Keycloak handles duplicate client-credentials tokens fine, and the window is very
+   * small. A locking strategy would prevent the double call at the cost of contention; given the
+   * low concurrency of token refreshes (once per ~5–10 minutes), the current approach is correct.
    */
   private String resolveToken() {
     var current = cachedToken.get();

@@ -4,7 +4,9 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/planner_db
     username: brujula
-    password: brujula
+    # F-006 RESOLVED: password aligned with compose.yaml default (POSTGRES_PASSWORD=brujula_dev).
+    # Override via SPRING_DATASOURCE_PASSWORD env var for environments with different passwords.
+    password: brujula_dev
   jpa:
     show-sql: false
   security:

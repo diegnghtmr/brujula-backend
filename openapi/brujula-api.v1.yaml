@@ -2568,14 +2568,13 @@ components:
       type: object
       additionalProperties: false
       required:
-        [fullName, email, password, acceptedTerms, acceptedDataProcessing]
+        [fullName, email, acceptedTerms, acceptedDataProcessing]
       properties:
         fullName: { type: string, minLength: 1, maxLength: 160 }
         email: { $ref: "#/components/schemas/InstitutionalEmail" }
-        password:
-          { type: string, format: password, minLength: 10, maxLength: 128 }
-        passwordConfirmation:
-          { type: string, format: password, minLength: 10, maxLength: 128 }
+        # OPTION A (DT-011): backend NEVER handles a password. Keycloak sends an
+        # UPDATE_PASSWORD action-email so the user sets their credential on Keycloak's page.
+        # password and passwordConfirmation fields are intentionally absent from this contract.
         acceptedTerms:
           type: boolean
           description: >

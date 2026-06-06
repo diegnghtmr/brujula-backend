@@ -2,6 +2,7 @@ package co.edu.uniquindio.brujula.identity.infrastructure.adapter.out.persistenc
 
 import co.edu.uniquindio.brujula.identity.domain.AccountStatus;
 import co.edu.uniquindio.brujula.identity.domain.AppUser;
+import co.edu.uniquindio.brujula.identity.domain.OnboardingState;
 import co.edu.uniquindio.brujula.identity.domain.Role;
 import co.edu.uniquindio.brujula.identity.infrastructure.adapter.out.persistence.AppUserJpaEntity.AccountStatusJpa;
 import co.edu.uniquindio.brujula.identity.infrastructure.adapter.out.persistence.AppUserJpaEntity.RoleJpa;
@@ -9,13 +10,16 @@ import co.edu.uniquindio.brujula.identity.infrastructure.adapter.out.persistence
 /**
  * Mapper between {@link AppUser} domain objects and {@link AppUserJpaEntity} JPA entities.
  *
- * <p>Confined to the persistence adapter package (ARQ-005 / ARQ-006).
+ * <p>Confined to the persistence adapter package (ARQ-005 / ARQ-006). Updated for V008 fields:
+ * consent evidence (consentTimestamp, termsVersion, privacyVersion) and onboardingState.
  */
 final class AppUserMapper {
 
   private AppUserMapper() {}
 
   static AppUser toDomain(AppUserJpaEntity entity) {
+    OnboardingState onboardingState = toOnboardingState(entity.getOnboardingState());
+
     return AppUser.reconstitute(
         entity.getId(),
         entity.getOidcSubject(),
@@ -24,18 +28,30 @@ final class AppUserMapper {
         toRole(entity.getRole()),
         toStatus(entity.getStatus()),
         entity.isOnboardingCompleted(),
-        entity.getVersion());
+        entity.getVersion(),
+        onboardingState,
+        entity.getConsentTimestamp(),
+        entity.getTermsVersion(),
+        entity.getPrivacyVersion());
   }
 
   static AppUserJpaEntity toEntity(AppUser user) {
-    return new AppUserJpaEntity(
-        user.id(),
-        user.oidcSubject(),
-        user.email(),
-        user.fullName(),
-        toRoleJpa(user.role()),
-        toStatusJpa(user.status()),
-        user.onboardingCompleted());
+    var entity =
+        new AppUserJpaEntity(
+            user.id(),
+            user.oidcSubject(),
+            user.email(),
+            user.fullName(),
+            toRoleJpa(user.role()),
+            toStatusJpa(user.status()),
+            user.onboardingCompleted(),
+            user.onboardingState() != null ? user.onboardingState().name() : OnboardingState.ACTIVE.name());
+
+    entity.setConsentTimestamp(user.consentTimestamp());
+    entity.setTermsVersion(user.termsVersion());
+    entity.setPrivacyVersion(user.privacyVersion());
+
+    return entity;
   }
 
   private static Role toRole(RoleJpa jpaRole) {
@@ -68,5 +84,17 @@ final class AppUserMapper {
       case INACTIVE -> AccountStatusJpa.INACTIVE;
       case PENDING_VERIFICATION -> AccountStatusJpa.PENDING_VERIFICATION;
     };
+  }
+
+  private static OnboardingState toOnboardingState(String value) {
+    if (value == null || value.isBlank()) {
+      return OnboardingState.ACTIVE;
+    }
+    try {
+      return OnboardingState.valueOf(value);
+    } catch (IllegalArgumentException e) {
+      // Unknown value from DB — default to ACTIVE for safety.
+      return OnboardingState.ACTIVE;
+    }
   }
 }

@@ -1,6 +1,7 @@
 package co.edu.uniquindio.brujula.identity.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.identity.application.port.out.KeycloakUserProvisioningPort;
 import co.edu.uniquindio.brujula.identity.application.port.out.LoadAllowedDomainsPort;
 import co.edu.uniquindio.brujula.identity.application.port.out.LoadAppUserPort;
 import co.edu.uniquindio.brujula.identity.application.port.out.ReadActivityPort;
@@ -8,6 +9,8 @@ import co.edu.uniquindio.brujula.identity.application.port.out.SaveAppUserPort;
 import co.edu.uniquindio.brujula.identity.application.service.GetCurrentUserService;
 import co.edu.uniquindio.brujula.identity.application.service.ListMyActivityService;
 import co.edu.uniquindio.brujula.identity.application.service.ProvisionUserOnLoginService;
+import co.edu.uniquindio.brujula.identity.application.service.RegisterStudentService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,6 +23,9 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>Injects {@link AuditRecorder} (cross-module SPI from the audit module) into {@link
  * ProvisionUserOnLoginService} to satisfy S1-C wiring requirement (RNF-SEG-007).
+ *
+ * <p>S2-B additions: {@link RegisterStudentService} wired with Keycloak port + config properties
+ * (G6 RESOLVED: consent terms/version source = configuration properties).
  */
 @Configuration
 class IdentityConfiguration {
@@ -42,5 +48,34 @@ class IdentityConfiguration {
   @Bean
   ListMyActivityService listMyActivityService(ReadActivityPort readActivityPort) {
     return new ListMyActivityService(readActivityPort);
+  }
+
+  /**
+   * Register student use case service (S2-B).
+   *
+   * <p>G6 RESOLVED: consent terms/version source = config properties {@code
+   * brujula.registration.current-terms-version} and {@code current-privacy-version}. The verify
+   * redirect URI is the SPA landing page for the email verification flow (obs #1574).
+   */
+  @Bean
+  RegisterStudentService registerStudentService(
+      LoadAllowedDomainsPort loadAllowedDomainsPort,
+      LoadAppUserPort loadAppUserPort,
+      SaveAppUserPort saveAppUserPort,
+      KeycloakUserProvisioningPort keycloakUserProvisioningPort,
+      AuditRecorder auditRecorder,
+      @Value("${brujula.registration.current-terms-version:1.0}") String currentTermsVersion,
+      @Value("${brujula.registration.current-privacy-version:1.0}") String currentPrivacyVersion,
+      @Value("${brujula.registration.verify-redirect-uri:http://localhost:5173/verify-email}")
+          String verifyRedirectUri) {
+    return new RegisterStudentService(
+        loadAllowedDomainsPort,
+        loadAppUserPort,
+        saveAppUserPort,
+        keycloakUserProvisioningPort,
+        auditRecorder,
+        currentTermsVersion,
+        currentPrivacyVersion,
+        verifyRedirectUri);
   }
 }

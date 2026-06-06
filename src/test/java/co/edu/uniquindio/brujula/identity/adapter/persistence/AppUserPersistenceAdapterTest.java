@@ -101,6 +101,32 @@ class AppUserPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
         .isInstanceOf(DataIntegrityViolationException.class);
   }
 
+  /**
+   * W-003/S-002: two app_user rows with oidcSubject=null (distinct emails) must both persist
+   * without a unique constraint violation. PostgreSQL allows multiple NULLs in UNIQUE columns by
+   * default. This is the persistence-adapter proof that C-002's design assumption holds.
+   */
+  @Test
+  void two_null_oidc_subject_rows_with_distinct_emails_both_persist_without_constraint_violation() {
+    // register() creates rows with oidcSubject=null
+    AppUser user1 =
+        AppUser.register("null-sub-1-" + UUID.randomUUID() + "@uniquindio.edu.co", "Null Sub 1");
+    AppUser user2 =
+        AppUser.register("null-sub-2-" + UUID.randomUUID() + "@uniquindio.edu.co", "Null Sub 2");
+
+    // Both saves must succeed — PostgreSQL UNIQUE on oidc_subject allows multiple NULLs
+    AppUser saved1 = saveAppUserPort.save(user1);
+    AppUser saved2 = saveAppUserPort.save(user2);
+
+    assertThat(saved1.oidcSubject()).isNull();
+    assertThat(saved2.oidcSubject()).isNull();
+    assertThat(saved1.id()).isNotEqualTo(saved2.id());
+
+    // Both rows are findable by email
+    assertThat(loadAppUserPort.findByEmail(user1.email())).isPresent();
+    assertThat(loadAppUserPort.findByEmail(user2.email())).isPresent();
+  }
+
   @Test
   void duplicate_email_violates_unique_constraint() {
     String email = "dupmail_" + UUID.randomUUID() + "@uniquindio.edu.co";

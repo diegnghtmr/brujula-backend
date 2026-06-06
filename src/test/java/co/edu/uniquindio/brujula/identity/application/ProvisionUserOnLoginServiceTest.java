@@ -17,6 +17,7 @@ import co.edu.uniquindio.brujula.identity.application.service.ProvisionUserOnLog
 import co.edu.uniquindio.brujula.identity.domain.AccountStatus;
 import co.edu.uniquindio.brujula.identity.domain.AppUser;
 import co.edu.uniquindio.brujula.identity.domain.DomainNotAllowedException;
+import co.edu.uniquindio.brujula.identity.domain.OnboardingState;
 import co.edu.uniquindio.brujula.identity.domain.Role;
 import java.util.Optional;
 import java.util.Set;
@@ -177,6 +178,128 @@ class ProvisionUserOnLoginServiceTest {
     verify(saveAppUserPort, never()).save(any());
     // Subsequent login must NOT record a USER_PROVISIONED event (already provisioned)
     verify(auditRecorder, never()).record(any());
+  }
+
+  // -------------------------------------------------------------------------
+  // C-002: self-registered user + first OIDC login → link, no duplicate
+  // -------------------------------------------------------------------------
+
+  /**
+   * C-002 happy path: a self-registered app_user row with oidcSubject=null and email
+   * x@uniquindio.edu.co exists. When OIDC login completes for that email with a real sub claim,
+   * the EXISTING row must be found (by email), linked (oidcSubject set to the real sub,
+   * onboardingState synced from email_verified), and saved — NO new row created.
+   */
+  @Test
+  void selfRegisteredUser_firstOidcLogin_linksExistingRowByEmail_notDuplicate() {
+    when(loadAllowedDomainsPort.loadAllowedDomains()).thenReturn(Set.of("uniquindio.edu.co"));
+
+    // Pre-registered null-subject row (AppUser.register() creates PENDING_VERIFICATION, null subject)
+    AppUser preRegistered =
+        AppUser.reconstitute(
+            UUID.randomUUID(),
+            null, // oidcSubject = null
+            "x@uniquindio.edu.co",
+            "X Student",
+            Role.STUDENT,
+            AccountStatus.ACTIVE,
+            false,
+            0L,
+            OnboardingState.PENDING_VERIFICATION,
+            null,
+            null,
+            null);
+
+    // findByOidcSubject misses (sub is new), findByEmail finds the null-subject row
+    when(loadAppUserPort.findByOidcSubject("real-sub-abc")).thenReturn(Optional.empty());
+    when(loadAppUserPort.findByEmail("x@uniquindio.edu.co")).thenReturn(Optional.of(preRegistered));
+
+    // save() returns whatever we pass in (simulate persistence)
+    when(saveAppUserPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+    var command =
+        new ProvisionCommand(
+            "real-sub-abc",
+            "x@uniquindio.edu.co",
+            "X Student",
+            Set.of("STUDENT"),
+            true); // email_verified=true from Keycloak
+
+    AppUser result = service.provision(command);
+
+    // MUST be the same row (same id), not a new one
+    assertThat(result.id()).isEqualTo(preRegistered.id());
+    // MUST have the OIDC subject linked
+    assertThat(result.oidcSubject()).isEqualTo("real-sub-abc");
+    // MUST be ACTIVE (email_verified=true triggered the transition)
+    assertThat(result.onboardingState()).isEqualTo(OnboardingState.ACTIVE);
+
+    // MUST save the linked user (not create a new one)
+    verify(saveAppUserPort).save(any());
+    // Must NOT record USER_PROVISIONED because we're linking an existing self-registered row
+    verify(auditRecorder, never()).record(any());
+  }
+
+  /**
+   * C-002 regression guard: no pre-registered row for the email → first OIDC login creates a new
+   * user as before. No regression.
+   */
+  @Test
+  void firstOidcLogin_noPreRegisteredRow_createsNewUser() {
+    when(loadAllowedDomainsPort.loadAllowedDomains()).thenReturn(Set.of("uniquindio.edu.co"));
+    when(loadAppUserPort.findByOidcSubject("brand-new-sub")).thenReturn(Optional.empty());
+    when(loadAppUserPort.findByEmail("fresh@uniquindio.edu.co")).thenReturn(Optional.empty());
+
+    AppUser saved =
+        AppUser.provision("brand-new-sub", "fresh@uniquindio.edu.co", "Fresh User", Role.STUDENT);
+    when(saveAppUserPort.save(any())).thenReturn(saved);
+
+    var command =
+        new ProvisionCommand(
+            "brand-new-sub", "fresh@uniquindio.edu.co", "Fresh User", Set.of("STUDENT"));
+
+    AppUser result = service.provision(command);
+
+    assertThat(result.oidcSubject()).isEqualTo("brand-new-sub");
+    verify(saveAppUserPort).save(any());
+    verify(auditRecorder).record(any()); // USER_PROVISIONED for genuinely new users
+  }
+
+  /**
+   * C-002 idempotency: subject already set on subsequent OIDC logins — hits findByOidcSubject
+   * directly, no findByEmail call needed.
+   */
+  @Test
+  void subsequentOidcLogin_subjectAlreadyLinked_usesSubjectLookup_notEmailFallback() {
+    when(loadAllowedDomainsPort.loadAllowedDomains()).thenReturn(Set.of("uniquindio.edu.co"));
+
+    AppUser linked =
+        AppUser.reconstitute(
+            UUID.randomUUID(),
+            "real-sub-abc",
+            "x@uniquindio.edu.co",
+            "X Student",
+            Role.STUDENT,
+            AccountStatus.ACTIVE,
+            false,
+            1L,
+            OnboardingState.ACTIVE,
+            null,
+            null,
+            null);
+
+    when(loadAppUserPort.findByOidcSubject("real-sub-abc")).thenReturn(Optional.of(linked));
+
+    var command =
+        new ProvisionCommand(
+            "real-sub-abc", "x@uniquindio.edu.co", "X Student", Set.of("STUDENT"), true);
+
+    AppUser result = service.provision(command);
+
+    assertThat(result.id()).isEqualTo(linked.id());
+    // findByEmail must NOT be called — subject lookup was sufficient
+    verify(loadAppUserPort, never()).findByEmail(any());
+    verify(saveAppUserPort, never()).save(any());
   }
 
   // -------------------------------------------------------------------------

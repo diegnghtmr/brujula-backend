@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
  * entity conversion. Optimistic locking is handled by the {@code @Version} annotation on {@link
  * AppUserJpaEntity}.
  *
- * <p>Satisfies: S1-B-6, Design §2.1 adapter.out.persistence.
+ * <p>Satisfies: S1-B-6, S2-B-1, Design §2.1 adapter.out.persistence.
  */
 @Component
 class AppUserPersistenceAdapter implements LoadAppUserPort, SaveAppUserPort {
@@ -37,6 +37,18 @@ class AppUserPersistenceAdapter implements LoadAppUserPort, SaveAppUserPort {
   @Transactional(readOnly = true)
   public Optional<AppUser> findById(UUID id) {
     return repository.findById(id).map(AppUserMapper::toDomain);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<AppUser> findByEmail(String email) {
+    return repository.findByEmail(email).map(AppUserMapper::toDomain);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public boolean existsByEmail(String email) {
+    return repository.existsByEmail(email);
   }
 
   @Override
