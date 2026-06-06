@@ -62,3 +62,23 @@ management:
       probes:
         enabled: true
       show-details: always
+
+# Brújula Keycloak Admin API configuration (S2-A slice-2 additions)
+# These properties configure the KeycloakAdminApiAdapter used for app-driven student registration.
+# All secrets MUST be provided via environment variables — never committed as real values.
+# G4 RESOLVED: service-account client brujula-registration-svc added to realm-export.json (Slice 2).
+brujula:
+  keycloak:
+    # Keycloak server base URL (overridden per environment via env vars or profile yaml).
+    auth-server-url: http://localhost:9090
+    # Realm for Admin API calls (brujula-dev in local/dev; override per environment).
+    realm: brujula-dev
+    # Derived Admin REST API base URL: {auth-server-url}/admin/realms/{realm}
+    admin-base-url: "${brujula.keycloak.auth-server-url}/admin/realms/${brujula.keycloak.realm}"
+    # Token endpoint for client-credentials grant (obs #1574: realm-scoped, not master).
+    token-url: "${brujula.keycloak.auth-server-url}/realms/${brujula.keycloak.realm}/protocol/openid-connect/token"
+    registration-svc:
+      # Service-account client for Keycloak Admin API (manage-users role in realm-management).
+      # Secret must be provided via BRUJULA_KEYCLOAK_REGISTRATION_SVC_CLIENT_SECRET env var.
+      client-id: brujula-registration-svc
+      client-secret: "${BRUJULA_KEYCLOAK_REGISTRATION_SVC_CLIENT_SECRET:CHANGE_ME_REGISTRATION_SVC}"

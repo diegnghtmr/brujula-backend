@@ -59,6 +59,7 @@
 
   "clients": [
     {
+      "_slice": "1",
       "clientId": "brujula-backend",
       "name": "Brújula Backend (Slice 1 — confidential OIDC)",
       "description": "Confidential backend client for server-side OIDC login flow (authorization_code). Slice 1.",
@@ -96,9 +97,10 @@
       ]
     },
     {
+      "_slice": "1",
       "clientId": "brujula-frontend",
       "name": "Brújula Frontend (SPA — public client)",
-      "description": "Public OIDC client for the Brújula SPA. Fase 0 placeholder updated for Fase 1.",
+      "description": "Public OIDC client for the Brújula SPA. Slice 1 + Slice 2 (verify-email redirect URI added in Slice 2).",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "publicClient": true,
@@ -115,8 +117,35 @@
       ],
       "protocol": "openid-connect",
       "fullScopeAllowed": true
+    },
+    {
+      "_slice": "2",
+      "_comment": "Slice 2 addition (S2-A): service-account client for app-driven student registration via Keycloak Admin API. Confidential + service accounts enabled. Secret via env BRUJULA_KEYCLOAK_REGISTRATION_SVC_CLIENT_SECRET — NEVER commit real secret.",
+      "clientId": "brujula-registration-svc",
+      "name": "Brújula Registration Service Account (Slice 2)",
+      "description": "Confidential service-account client for backend-driven user provisioning (registration, email verification trigger, password reset trigger) via Keycloak Admin API. Requires manage-users + view-users roles on realm-management.",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "CHANGE_ME_REGISTRATION_SVC",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": false
     }
   ],
 
-  "_comment": "Slice-1 realm export for brujula-dev. Contains backend confidential client + ADMIN seed user. Slice-2 service-account client (brujula-registration-svc with manage-users role) is a TODO for WU-E. Do not commit real secrets — all client secrets and passwords are placeholders."
+  "clientScopeMappings": {
+    "_slice2_comment": "Slice 2 addition: grant realm-management roles to brujula-registration-svc service account. manage-users allows POST /admin/realms/{realm}/users. view-users allows GET /admin/realms/{realm}/users.",
+    "realm-management": [
+      {
+        "client": "brujula-registration-svc",
+        "roles": ["manage-users", "view-users"]
+      }
+    ]
+  },
+
+  "_comment": "realm-export.json for brujula-dev. Slice-1: backend OIDC client + SPA public client + ADMIN seed user. Slice-2 (S2-A): brujula-registration-svc service-account client with manage-users role. G4 RESOLVED: validate via docker compose exec keycloak /opt/keycloak/bin/kc.sh import --file /opt/keycloak/data/import/realm-export.json. Do NOT commit real secrets."
 }

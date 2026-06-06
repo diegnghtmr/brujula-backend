@@ -100,31 +100,12 @@ paths:
               schema: { $ref: "#/components/schemas/ProblemDetail" }
         "422": { $ref: "#/components/responses/UnprocessableEntity" }
 
-  /auth/email-verifications/confirm:
-    post:
-      tags: [Auth]
-      summary: Confirmar verificación de correo
-      description: Activa la cuenta a partir del token enviado por correo. Hasta verificar, el estudiante no puede configurar programas ni registrar historial.
-      operationId: confirmEmailVerification
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              required: [token]
-              properties:
-                token: { type: string, minLength: 16, maxLength: 512 }
-      responses:
-        "204": { description: Correo verificado; la cuenta queda activa. }
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "410":
-          description: Token expirado o ya utilizado.
-          content:
-            application/problem+json:
-              schema: { $ref: "#/components/schemas/ProblemDetail" }
+  # NOTE (S2-A-3 contract audit): /auth/email-verifications/confirm (token-confirm) has been
+  # REMOVED. Architecture decision: Keycloak handles email verification natively on its own page.
+  # The backend does NOT receive a verification token to confirm. Keycloak verifies the user and
+  # sets emailVerified=true; the backend syncs onboardingState PENDING_VERIFICATION→ACTIVE on the
+  # next OIDC login (claim email_verified=true). /auth/email-verifications is a RESEND trigger only.
+  # Decision recorded: #1574 (Keycloak 26.4 verified API facts).
 
   /auth/email-verifications/resend:
     post:
@@ -175,40 +156,12 @@ paths:
           }
         "400": { $ref: "#/components/responses/BadRequest" }
 
-  /auth/password-recovery/confirm:
-    post:
-      tags: [Auth]
-      summary: Confirmar restablecimiento de contraseña
-      operationId: confirmPasswordRecovery
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties: false
-              required: [token, newPassword]
-              properties:
-                token: { type: string, minLength: 16, maxLength: 512 }
-                newPassword:
-                  {
-                    type: string,
-                    format: password,
-                    minLength: 10,
-                    maxLength: 128,
-                  }
-      responses:
-        "204":
-          {
-            description: Contraseña restablecida (gestionada por el proveedor de identidad).,
-          }
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "410":
-          description: Token expirado o ya utilizado.
-          content:
-            application/problem+json:
-              schema: { $ref: "#/components/schemas/ProblemDetail" }
+  # NOTE (S2-A-3 contract audit): /auth/password-recovery/confirm (token+newPassword) has been
+  # REMOVED. Architecture decision: Keycloak handles password reset natively on its own page.
+  # The backend does NOT receive or process reset tokens. Flow: POST /auth/password-recovery
+  # triggers execute-actions-email [UPDATE_PASSWORD] via Keycloak Admin API; Keycloak sends a link;
+  # user clicks link → Keycloak's own reset form → no backend confirm endpoint needed.
+  # Decision: Option A (Keycloak-native reset) per S2-A-3 decision. Recorded: #1574.
 
   /auth/logout:
     post:
