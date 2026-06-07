@@ -48,7 +48,7 @@ class GetCourseServiceTest {
 
     when(loadCoursePort.loadById(courseId)).thenReturn(Optional.of(course));
 
-    CourseView view = service.getCourse(courseId);
+    CourseView view = service.getCourse(courseId.value());
 
     assertThat(view.id()).isEqualTo(courseId.value());
     assertThat(view.name()).isEqualTo("Ingeniería de Software I");
@@ -60,7 +60,7 @@ class GetCourseServiceTest {
     CourseId missingId = CourseId.generate();
     when(loadCoursePort.loadById(missingId)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> service.getCourse(missingId))
+    assertThatThrownBy(() -> service.getCourse(missingId.value()))
         .isInstanceOf(CourseNotFoundException.class);
   }
 
@@ -69,7 +69,7 @@ class GetCourseServiceTest {
     CourseId missingId = CourseId.generate();
     when(loadCoursePort.loadById(missingId)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> service.getCourse(missingId))
+    assertThatThrownBy(() -> service.getCourse(missingId.value()))
         .isInstanceOf(CourseNotFoundException.class)
         .hasMessageContaining(missingId.value().toString());
   }

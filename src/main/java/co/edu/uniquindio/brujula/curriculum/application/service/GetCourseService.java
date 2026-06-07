@@ -8,6 +8,7 @@ import co.edu.uniquindio.brujula.curriculum.domain.CourseId;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseNotFoundException;
 import co.edu.uniquindio.brujula.curriculum.domain.RecommendedSemester;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Use case implementation: get a single course by ID.
@@ -24,9 +25,10 @@ public class GetCourseService implements GetCourseQuery {
   }
 
   @Override
-  public CourseView getCourse(CourseId courseId) {
-    Course course = loadCoursePort.loadById(courseId)
-        .orElseThrow(() -> new CourseNotFoundException(courseId));
+  public CourseView getCourse(UUID courseId) {
+    CourseId typedId = new CourseId(courseId);
+    Course course = loadCoursePort.loadById(typedId)
+        .orElseThrow(() -> new CourseNotFoundException(typedId));
     return toView(course);
   }
 

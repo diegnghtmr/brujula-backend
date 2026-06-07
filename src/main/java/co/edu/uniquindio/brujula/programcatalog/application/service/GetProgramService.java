@@ -6,6 +6,7 @@ import co.edu.uniquindio.brujula.programcatalog.application.port.out.LoadProgram
 import co.edu.uniquindio.brujula.programcatalog.domain.AcademicProgram;
 import co.edu.uniquindio.brujula.programcatalog.domain.ProgramId;
 import co.edu.uniquindio.brujula.programcatalog.domain.ProgramNotFoundException;
+import java.util.UUID;
 
 /**
  * Use case implementation: get a single academic program by ID.
@@ -22,7 +23,8 @@ public class GetProgramService implements GetProgramQuery {
   }
 
   @Override
-  public ProgramView getProgram(ProgramId programId) {
+  public ProgramView getProgram(UUID rawId) {
+    ProgramId programId = new ProgramId(rawId);
     AcademicProgram program = loadProgramPort.loadById(programId)
         .orElseThrow(() -> new ProgramNotFoundException(programId));
     return toView(program);

@@ -39,16 +39,23 @@ public class ListPlanCoursesService implements ListPlanCoursesQuery {
   // ---------------------------------------------------------------------------
 
   private boolean isVisible(Course course, String callerRole) {
-    if (isStudentRole(callerRole)) {
-      // STUDENT cannot see ARCHIVED (soft-deleted) or INACTIVE (temporarily disabled) courses
-      return course.status() != CourseStatus.ARCHIVED
-          && course.status() != CourseStatus.INACTIVE;
+    if (isPrivilegedRole(callerRole)) {
+      return true; // STAFF and ADMIN see all statuses
     }
-    return true; // STAFF and ADMIN see all statuses
+    // STUDENT, null, or any unknown role: only ACTIVE courses visible (allowlist; W2 fix)
+    return course.status() != CourseStatus.ARCHIVED
+        && course.status() != CourseStatus.INACTIVE;
   }
 
-  private boolean isStudentRole(String callerRole) {
-    return "STUDENT".equalsIgnoreCase(callerRole);
+  /**
+   * Returns {@code true} only for explicitly privileged roles.
+   *
+   * <p>Allowlist: {@code "STAFF"} and {@code "ADMIN"}. {@code null} and any other value returns
+   * {@code false}, defaulting to the most restrictive visibility — consistent with
+   * {@code ListProgramPlansService.isPrivilegedRole()} (FIX-4 / W2 allowlist alignment).
+   */
+  private boolean isPrivilegedRole(String callerRole) {
+    return "STAFF".equalsIgnoreCase(callerRole) || "ADMIN".equalsIgnoreCase(callerRole);
   }
 
   // ---------------------------------------------------------------------------
