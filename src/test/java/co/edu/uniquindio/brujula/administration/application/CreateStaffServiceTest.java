@@ -16,7 +16,7 @@ import co.edu.uniquindio.brujula.administration.application.port.out.LoadAllowed
 import co.edu.uniquindio.brujula.administration.application.port.out.LoadStaffPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.SaveStaffPort;
 import co.edu.uniquindio.brujula.administration.application.service.CreateStaffService;
-import co.edu.uniquindio.brujula.administration.application.service.IdempotencyKeyConflictException;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.administration.domain.StaffAccount;
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;

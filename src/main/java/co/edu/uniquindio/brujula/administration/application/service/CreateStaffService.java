@@ -11,6 +11,7 @@ import co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand;
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.identity.domain.AllowedEmailDomainPolicy;
 import co.edu.uniquindio.brujula.identity.domain.DomainNotAllowedException;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import java.util.Optional;

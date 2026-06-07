@@ -7,7 +7,7 @@ import co.edu.uniquindio.brujula.AbstractPostgresIntegrationTest;
 import co.edu.uniquindio.brujula.administration.application.dto.CreateStaffCommand;
 import co.edu.uniquindio.brujula.administration.application.dto.StaffAccountView;
 import co.edu.uniquindio.brujula.administration.application.port.in.CreateStaffUseCase;
-import co.edu.uniquindio.brujula.administration.application.service.IdempotencyKeyConflictException;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

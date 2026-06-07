@@ -1,28 +1,41 @@
 package co.edu.uniquindio.brujula.architecture;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
-import org.junit.jupiter.api.Disabled;
+import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchRule;
 
 /**
- * WU1-T08 skeleton / WU2-T04 (to be filled): ADR-F3-001 — {@code progress.domain} must have zero
- * Spring/JPA/HTTP/generated imports.
+ * WU2-T04: {@code progress.domain} must have zero Spring/JPA/HTTP/generated imports.
  *
  * <p>Mirrors {@link PrerequisiteAcyclicityServicePurityTest} for the {@code progress} module.
- * Assertions will be added when the {@code progress.domain} package is populated in WU2–WU4.
+ * Populated in WU2 once {@code progress.domain} production classes exist.
  *
- * <p>This class is intentionally empty until WU2 introduces {@code progress.domain} production
- * classes. Without {@code @Disabled}, ArchUnit JUnit5 generates zero test cases and the class
- * appears as a silent, inert non-contributor to the suite — giving false confidence that purity is
- * being checked. Adding {@code @Disabled} makes the placeholder intent explicit and visible.
- *
- * <p>Satisfies: ARQ-002, ADR-F3-001 (progress side). FIX-3 (SUGGESTION-001).
+ * <p>Satisfies: ARQ-002, ADR-F3-001 (progress side).
  */
-@Disabled("placeholder until WU2 introduces progress.domain production classes (WU2-T04)")
 @AnalyzeClasses(
     packages = "co.edu.uniquindio.brujula.progress.domain",
     importOptions = {ImportOption.DoNotIncludeTests.class})
 class ProgressDomainPurityTest {
-  // @ArchTest fields will be added in WU2-T04 when progress.domain classes exist.
-  // Skeleton kept here so WU1 can commit cleanly and WU2 picks up an existing file.
+
+  /**
+   * progress.domain must not import Spring Framework, JPA, servlet, or generated model types.
+   *
+   * <p>Enforces ARQ-002 for the progress module.
+   */
+  @ArchTest
+  static final ArchRule progress_domain_must_not_import_spring_jpa_or_generated =
+      noClasses()
+          .that()
+          .resideInAPackage("co.edu.uniquindio.brujula.progress.domain..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "org.springframework..",
+              "jakarta.persistence..",
+              "jakarta.servlet..",
+              "..generated.model..",
+              "..adapter..");
 }
