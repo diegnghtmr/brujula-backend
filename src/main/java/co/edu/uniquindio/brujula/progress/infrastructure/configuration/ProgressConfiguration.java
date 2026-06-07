@@ -1,10 +1,15 @@
 package co.edu.uniquindio.brujula.progress.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMallaQuery;
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.ListJourneysQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateSubscriptionUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteSubscriptionUseCase;
+import co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionCurriculumQuery;
+import co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionProgressQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.UpdateCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.UpdateSubscriptionUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadCourseAttemptPort;
@@ -16,6 +21,8 @@ import co.edu.uniquindio.brujula.progress.application.service.CreateSubscription
 import co.edu.uniquindio.brujula.progress.application.service.DeleteCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.DeleteSubscriptionService;
 import co.edu.uniquindio.brujula.progress.application.service.GetCourseAttemptService;
+import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionCurriculumService;
+import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionProgressService;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService;
 import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
 import co.edu.uniquindio.brujula.progress.application.service.UpdateCourseAttemptService;
@@ -45,6 +52,8 @@ import org.springframework.context.annotation.Configuration;
  *       {@code ListMyCourseAttemptsQuery} (PRG-2) [WU3]
  *   <li>{@link UpdateCourseAttemptService} (PRG-3) [WU3]
  *   <li>{@link DeleteCourseAttemptService} (PRG-4) [WU3]
+ *   <li>{@link GetSubscriptionCurriculumService} (AVL-1) [WU4]
+ *   <li>{@link GetSubscriptionProgressService} (AVL-2) [WU4]
  * </ul>
  *
  * <p>{@code GetCurrentUserQuery} is injected by Spring's auto-wiring into {@link
@@ -154,5 +163,29 @@ class ProgressConfiguration {
       AuditRecorder auditRecorder) {
     return new DeleteCourseAttemptService(
         loadCourseAttemptPort, loadSubscriptionPort, saveCourseAttemptPort, auditRecorder);
+  }
+
+  // -------------------------------------------------------------------------
+  // WU4: Curriculum and progress summary beans
+  // -------------------------------------------------------------------------
+
+  @Bean
+  GetSubscriptionCurriculumQuery getSubscriptionCurriculumService(
+      LoadSubscriptionPort loadSubscriptionPort,
+      LoadCourseAttemptPort loadCourseAttemptPort,
+      AssemblePlanMallaQuery assemblePlanMallaQuery,
+      ListJourneysQuery listJourneysQuery) {
+    return new GetSubscriptionCurriculumService(
+        loadSubscriptionPort, loadCourseAttemptPort, assemblePlanMallaQuery, listJourneysQuery);
+  }
+
+  @Bean
+  GetSubscriptionProgressQuery getSubscriptionProgressService(
+      LoadSubscriptionPort loadSubscriptionPort,
+      LoadCourseAttemptPort loadCourseAttemptPort,
+      AssemblePlanMallaQuery assemblePlanMallaQuery,
+      GetProgramQuery getProgramQuery) {
+    return new GetSubscriptionProgressService(
+        loadSubscriptionPort, loadCourseAttemptPort, assemblePlanMallaQuery, getProgramQuery);
   }
 }

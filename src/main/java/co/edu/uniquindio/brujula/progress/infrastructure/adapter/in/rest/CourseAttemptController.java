@@ -5,19 +5,31 @@ import co.edu.uniquindio.brujula.generated.model.CourseAttempt;
 import co.edu.uniquindio.brujula.generated.model.CourseAttemptCreateRequest;
 import co.edu.uniquindio.brujula.generated.model.CourseAttemptPage;
 import co.edu.uniquindio.brujula.generated.model.CourseAttemptUpdateRequest;
+import co.edu.uniquindio.brujula.generated.model.CourseProgressStatus;
+import co.edu.uniquindio.brujula.generated.model.CourseType;
+import co.edu.uniquindio.brujula.generated.model.CurriculumCourse;
 import co.edu.uniquindio.brujula.generated.model.CurriculumView;
+import co.edu.uniquindio.brujula.generated.model.CurriculumViewSemestersInner;
+import co.edu.uniquindio.brujula.generated.model.JourneyRef;
+import co.edu.uniquindio.brujula.generated.model.PeriodAverage;
 import co.edu.uniquindio.brujula.generated.model.ProgressSummary;
-import org.springframework.http.HttpStatus;
 import co.edu.uniquindio.brujula.identity.application.dto.UserProfile;
 import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
 import co.edu.uniquindio.brujula.progress.application.dto.CourseAttemptPageView;
 import co.edu.uniquindio.brujula.progress.application.dto.CourseAttemptView;
 import co.edu.uniquindio.brujula.progress.application.dto.CreateCourseAttemptCommand;
+import co.edu.uniquindio.brujula.progress.application.dto.CurriculumCourseData;
+import co.edu.uniquindio.brujula.progress.application.dto.CurriculumSemesterData;
+import co.edu.uniquindio.brujula.progress.application.dto.CurriculumViewData;
 import co.edu.uniquindio.brujula.progress.application.dto.ListCourseAttemptsQuery;
+import co.edu.uniquindio.brujula.progress.application.dto.PeriodAverageView;
+import co.edu.uniquindio.brujula.progress.application.dto.ProgressSummaryView;
 import co.edu.uniquindio.brujula.progress.application.dto.UpdateCourseAttemptCommand;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.GetCourseAttemptQuery;
+import co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionCurriculumQuery;
+import co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionProgressQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.ListMyCourseAttemptsQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.UpdateCourseAttemptUseCase;
 import java.math.BigDecimal;
@@ -42,10 +54,15 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>Implements the generated {@link ProgressApi} contract-first interface (ARQ-001). Package-private
  * per ARQ-006b. STUDENT-only; STAFF/ADMIN access rejected via {@code @PreAuthorize("hasRole('STUDENT')")}.
  *
- * <p>Also implements curriculum and progress summary endpoints ({@code WU4-SEAM}) with placeholder
- * responses. The full implementation is in WU4.
+ * <p>Also implements curriculum and progress summary endpoints ({@code AVL-1}, {@code AVL-2}).
+ * Delegates to {@link GetSubscriptionCurriculumQuery} and {@link GetSubscriptionProgressQuery}.
  *
- * <p>Satisfies: PRG-1..4, CROSS-2, CROSS-3, CROSS-4. ARQ-001.
+ * <p>Satisfies: PRG-1..4, AVL-1, AVL-2, CROSS-2, CROSS-3, CROSS-4. ARQ-001.
+ *
+ * <p>FIX-W2: {@code ProgressSummary.programName} is now resolved via {@code GetSubscriptionProgressService}
+ * which calls the programcatalog published port. No longer a UUID placeholder.
+ * <p>CONTRACT GAP (W-3-doc): {@code PeriodAverage.periodName} still uses {@code periodId.toString()}
+ * as placeholder until a period catalog lookup port is implemented (known debt).
  */
 @RestController
 class CourseAttemptController implements ProgressApi {
@@ -56,6 +73,8 @@ class CourseAttemptController implements ProgressApi {
   private final UpdateCourseAttemptUseCase updateCourseAttemptUseCase;
   private final DeleteCourseAttemptUseCase deleteCourseAttemptUseCase;
   private final GetCurrentUserQuery getCurrentUserQuery;
+  private final GetSubscriptionCurriculumQuery getSubscriptionCurriculumQuery;
+  private final GetSubscriptionProgressQuery getSubscriptionProgressQuery;
 
   CourseAttemptController(
       CreateCourseAttemptUseCase createCourseAttemptUseCase,
@@ -63,13 +82,17 @@ class CourseAttemptController implements ProgressApi {
       GetCourseAttemptQuery getCourseAttemptQuery,
       UpdateCourseAttemptUseCase updateCourseAttemptUseCase,
       DeleteCourseAttemptUseCase deleteCourseAttemptUseCase,
-      GetCurrentUserQuery getCurrentUserQuery) {
+      GetCurrentUserQuery getCurrentUserQuery,
+      GetSubscriptionCurriculumQuery getSubscriptionCurriculumQuery,
+      GetSubscriptionProgressQuery getSubscriptionProgressQuery) {
     this.createCourseAttemptUseCase = createCourseAttemptUseCase;
     this.listMyCourseAttemptsQuery = listMyCourseAttemptsQuery;
     this.getCourseAttemptQuery = getCourseAttemptQuery;
     this.updateCourseAttemptUseCase = updateCourseAttemptUseCase;
     this.deleteCourseAttemptUseCase = deleteCourseAttemptUseCase;
     this.getCurrentUserQuery = getCurrentUserQuery;
+    this.getSubscriptionCurriculumQuery = getSubscriptionCurriculumQuery;
+    this.getSubscriptionProgressQuery = getSubscriptionProgressQuery;
   }
 
   // -------------------------------------------------------------------------
@@ -200,23 +223,29 @@ class CourseAttemptController implements ProgressApi {
   }
 
   // -------------------------------------------------------------------------
-  // WU4-SEAM: curriculum and progress summary (placeholder stubs)
+  // AVL-1: GET /me/subscriptions/{id}/curriculum
   // -------------------------------------------------------------------------
 
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<CurriculumView> getSubscriptionCurriculum(UUID subscriptionId) {
-    // WU4-SEAM: full implementation in WU4 (CourseAvailabilityService + curriculum integration).
-    // Returning 501 so consumers can distinguish "not implemented" from "zero progress".
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    UUID callerId = resolveCallerId();
+    CurriculumViewData data = getSubscriptionCurriculumQuery.getSubscriptionCurriculum(subscriptionId, callerId);
+    CurriculumView response = toCurriculumViewDto(data);
+    return ResponseEntity.ok(response);
   }
+
+  // -------------------------------------------------------------------------
+  // AVL-2: GET /me/subscriptions/{id}/progress
+  // -------------------------------------------------------------------------
 
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<ProgressSummary> getSubscriptionProgress(UUID subscriptionId) {
-    // WU4-SEAM: full implementation in WU4 (ProgressSummaryCalculator).
-    // Returning 501 so consumers can distinguish "not implemented" from "zero progress".
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    UUID callerId = resolveCallerId();
+    ProgressSummaryView view = getSubscriptionProgressQuery.getSubscriptionProgress(subscriptionId, callerId);
+    ProgressSummary response = toProgressSummaryDto(subscriptionId, view);
+    return ResponseEntity.ok(response);
   }
 
   // -------------------------------------------------------------------------
@@ -241,6 +270,90 @@ class CourseAttemptController implements ProgressApi {
   }
 
   // -------------------------------------------------------------------------
+  // DTO mappers: application DTOs → generated contract models (ARQ-001, ARQ-005)
+  // -------------------------------------------------------------------------
+
+  private CurriculumView toCurriculumViewDto(CurriculumViewData data) {
+    JourneyRef journeyRef = new JourneyRef(
+        data.referenceJourneyCode(),
+        data.referenceJourneyName());
+
+    List<CurriculumViewSemestersInner> semesters = data.semesters().stream()
+        .map(this::toSemesterDto)
+        .toList();
+
+    return new CurriculumView(data.subscriptionId(), journeyRef, semesters);
+  }
+
+  private CurriculumViewSemestersInner toSemesterDto(CurriculumSemesterData semesterData) {
+    List<CurriculumCourse> courses = semesterData.courses().stream()
+        .map(this::toCurriculumCourseDto)
+        .toList();
+    return new CurriculumViewSemestersInner(semesterData.recommendedSemester(), courses);
+  }
+
+  private CurriculumCourse toCurriculumCourseDto(CurriculumCourseData courseData) {
+    // Map String type to generated enum (ARQ-001: no domain enums in REST layer)
+    CourseType courseType = CourseType.fromValue(courseData.type());
+    // Map String progressStatus to generated enum
+    CourseProgressStatus progressStatus = CourseProgressStatus.fromValue(courseData.progressStatus());
+
+    return new CurriculumCourse(
+        courseData.courseId(),
+        courseData.name(),
+        courseData.credits(),
+        courseType,
+        progressStatus)
+        .officialCode(courseData.officialCode())
+        .unmetRequirements(courseData.unmetRequirements());
+  }
+
+  /**
+   * Maps {@link ProgressSummaryView} to the generated {@link ProgressSummary} contract model.
+   *
+   * <p>FIX-W2: {@code programName} is now resolved from the application view (programcatalog port).
+   * <p>CONTRACT GAP (W-3-doc): {@code PeriodAverage.periodName} uses {@code periodId.toString()}
+   * as placeholder until a period catalog lookup port is implemented (known debt; TODO below).
+   */
+  private ProgressSummary toProgressSummaryDto(UUID subscriptionId, ProgressSummaryView view) {
+    // FIX-W2: programName is now the human-readable name resolved from programcatalog
+    String programName = view.programName();
+
+    Double estimatedAvg = view.estimatedHistoricalAverage() != null
+        ? view.estimatedHistoricalAverage().doubleValue()
+        : null;
+
+    List<PeriodAverage> periodAverages = view.averagesByPeriod() != null
+        ? view.averagesByPeriod().stream()
+            .map(this::toPeriodAverageDto)
+            .toList()
+        : List.of();
+
+    return new ProgressSummary(
+        subscriptionId,
+        programName,
+        view.totalPlanCredits(),
+        view.approvedCredits(),
+        view.pendingCredits(),
+        view.progressPercentage().doubleValue(),
+        view.passedCourses(),
+        view.pendingFailedCourses(),
+        view.disclaimer())
+        .estimatedHistoricalAverage(estimatedAvg)
+        .averagesByPeriod(periodAverages);
+  }
+
+  private PeriodAverage toPeriodAverageDto(PeriodAverageView periodView) {
+    // TODO (W-3-doc): periodName is periodId.toString() — known debt.
+    // Requires a period catalog lookup port (out of WU4 scope; ADR-F3 deferred).
+    String periodName = periodView.periodId().toString();
+    return new PeriodAverage(
+        periodView.periodId(),
+        periodName,
+        periodView.estimatedAverage().doubleValue());
+  }
+
+  // -------------------------------------------------------------------------
   // DTO mapper: CourseAttemptView → generated CourseAttempt model (ARQ-005)
   // -------------------------------------------------------------------------
 
@@ -251,8 +364,7 @@ class CourseAttemptController implements ProgressApi {
         ? view.registeredAt().atOffset(ZoneOffset.UTC)
         : OffsetDateTime.now(ZoneOffset.UTC);
 
-    // FIX-S2: periodId is nullable/opaque per ADR-F3-009 and the contract schema.
-    // Pass null through as null; do NOT substitute a sentinel zero UUID.
+    // FIX-W4: periodId is contract-REQUIRED (non-null since domain enforces it). Pass through directly.
     UUID periodId = view.periodId();
 
     co.edu.uniquindio.brujula.generated.model.AttemptStatus contractStatus =

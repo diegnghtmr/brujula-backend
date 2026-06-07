@@ -70,6 +70,9 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   @MockitoBean private GetCourseAttemptQuery getCourseAttemptQuery;
   @MockitoBean private UpdateCourseAttemptUseCase updateCourseAttemptUseCase;
   @MockitoBean private DeleteCourseAttemptUseCase deleteCourseAttemptUseCase;
+  // WU4: mock new query services so this test class doesn't wire real application services
+  @MockitoBean private co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionCurriculumQuery getSubscriptionCurriculumQuery;
+  @MockitoBean private co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionProgressQuery getSubscriptionProgressQuery;
 
   private MockMvc mockMvc;
   private String studentSubject;
@@ -238,25 +241,29 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
         .andExpect(status().isNoContent());
   }
 
-  // FIX-W1: WU4-SEAM stubs must return 501 NOT_IMPLEMENTED, not 200+dummy data
+  // WU4: stubs replaced with real delegation — unknown subscription returns 404 (BOLA/not found)
   @Test
-  void get_subscription_curriculum_returns_501() throws Exception {
+  void get_subscription_curriculum_unknown_returns_404() throws Exception {
     UUID subId = UUID.randomUUID();
+    when(getSubscriptionCurriculumQuery.getSubscriptionCurriculum(any(), any()))
+        .thenThrow(new co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException(subId));
     mockMvc.perform(get("/me/subscriptions/" + subId + "/curriculum")
             .with(oidcLogin()
                 .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
                 .idToken(t -> t.subject(studentSubject))))
-        .andExpect(status().isNotImplemented());
+        .andExpect(status().isNotFound());
   }
 
   @Test
-  void get_subscription_progress_returns_501() throws Exception {
+  void get_subscription_progress_unknown_returns_404() throws Exception {
     UUID subId = UUID.randomUUID();
+    when(getSubscriptionProgressQuery.getSubscriptionProgress(any(), any()))
+        .thenThrow(new co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException(subId));
     mockMvc.perform(get("/me/subscriptions/" + subId + "/progress")
             .with(oidcLogin()
                 .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
                 .idToken(t -> t.subject(studentSubject))))
-        .andExpect(status().isNotImplemented());
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -286,21 +293,22 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
         .andExpect(status().isConflict());
   }
 
-  // FIX-S2: when the service view returns null periodId, the response must serialize it as null,
-  // NOT as the zero UUID "00000000-0000-0000-0000-000000000000".
-  // ADR-F3-009: periodId is opaque and nullable in the domain/application layers.
+  // FIX-W4 note: the domain now enforces periodId non-null at register() time (contract-required).
+  // However the CourseAttemptView application DTO still supports null periodId for
+  // reconstituted/legacy rows. The controller must pass it through as-is without substitution.
   @Test
   void attempt_view_with_null_period_id_serializes_as_null_not_zero_uuid() throws Exception {
-    // Arrange: the service returns a view with null periodId (nullable per ADR-F3-009)
+    // Arrange: simulate a mocked service returning a view where periodId is null
+    // (e.g. legacy data row reconstituted from DB). Controller must not substitute.
     CourseAttemptView viewWithNullPeriod = new CourseAttemptView(
         UUID.randomUUID(),
         UUID.randomUUID(),
         UUID.randomUUID(),
         "Test Course",
-        null, // periodId = null — the domain allows null (ADR-F3-009)
+        null, // periodId = null — legacy/reconstituted row; controller passes through as-is
         null,
         "DIURNA",
-        AttemptStatus.PASSED,
+        "PASSED", // FIX-S1: plain String
         new BigDecimal("4.2"),
         Instant.now(),
         0L);
@@ -344,7 +352,7 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
         null,
         null,
         "DIURNA",
-        AttemptStatus.PASSED,
+        "PASSED", // FIX-S1: plain String
         new BigDecimal("4.2"),
         Instant.now(),
         0L);

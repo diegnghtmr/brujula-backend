@@ -26,6 +26,8 @@ import org.springframework.boot.test.context.SpringBootTest;
  *
  * <p>Uses {@link AbstractPostgresIntegrationTest} ({@code @SpringBootTest} + real Postgres V015).
  * Validates save, load, list-by-subscription, and get-by-id ownership queries.
+ *
+ * <p>FIX-W4: all {@code CourseAttempt.register()} calls now use a non-null periodId.
  */
 @SpringBootTest
 class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
@@ -39,6 +41,8 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
   private final UUID programId = UUID.randomUUID();
   private final UUID planId = UUID.randomUUID();
   private final UUID courseId = UUID.randomUUID();
+  // FIX-W4: use a stable test period UUID
+  private final UUID testPeriodId = UUID.fromString("00000000-0000-4000-a000-000000000001");
 
   @Test
   void save_and_load_attempt_round_trip() {
@@ -50,7 +54,7 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
         courseId,
         AttemptStatus.PASSED,
         grade,
-        null,
+        testPeriodId,
         "DIURNA");
 
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
@@ -71,10 +75,10 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
 
     CourseAttempt a1 = CourseAttempt.register(
         AttemptId.generate(), sub.getId(), courseId, AttemptStatus.PASSED,
-        new Grade(new BigDecimal("4.0")), null, "DIURNA");
+        new Grade(new BigDecimal("4.0")), testPeriodId, "DIURNA");
     CourseAttempt a2 = CourseAttempt.register(
         AttemptId.generate(), sub.getId(), courseId2, AttemptStatus.FAILED,
-        new Grade(new BigDecimal("2.0")), null, "DIURNA");
+        new Grade(new BigDecimal("2.0")), testPeriodId, "DIURNA");
 
     saveCourseAttemptPort.save(a1);
     saveCourseAttemptPort.save(a2);
@@ -95,7 +99,8 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
   void cancelled_attempt_has_null_grade() {
     Subscription sub = createSubscription();
     CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(), sub.getId(), courseId, AttemptStatus.CANCELLED, null, null, "DIURNA");
+        AttemptId.generate(), sub.getId(), courseId, AttemptStatus.CANCELLED,
+        null, testPeriodId, "DIURNA");
 
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
     Optional<CourseAttempt> loaded = loadCourseAttemptPort.loadById(saved.getId().value());
@@ -110,7 +115,7 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
     Subscription sub = createSubscription();
     CourseAttempt attempt = CourseAttempt.register(
         AttemptId.generate(), sub.getId(), courseId, AttemptStatus.FAILED,
-        new Grade(new BigDecimal("2.0")), null, "DIURNA");
+        new Grade(new BigDecimal("2.0")), testPeriodId, "DIURNA");
 
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
     long initialVersion = saved.getVersion();
