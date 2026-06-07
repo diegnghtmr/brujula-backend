@@ -1,11 +1,14 @@
 package co.edu.uniquindio.brujula.administration.application;
 
-import co.edu.uniquindio.brujula.administration.domain.StaffAccount;
+import co.edu.uniquindio.brujula.administration.application.dto.StaffAccountView;
 
 /**
- * Test-only helper: represents a stored idempotency replay result.
+ * Test-only helper: represents a stored idempotency replay result for administration tests.
  *
- * <p>In production the adapter returns this shape via {@link
- * co.edu.uniquindio.brujula.administration.application.port.out.IdempotencyStorePort}.
+ * <p>In production the adapter returns {@link
+ * co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort.StoredRecord};
+ * callers (e.g. {@link
+ * co.edu.uniquindio.brujula.administration.application.service.CreateStaffService}) own the
+ * (de)serialization of the view. ADR-F3-001.
  */
-public record IdempotencyReplay(String requestHash, StaffAccount storedResult) {}
+public record IdempotencyReplay(String requestHash, StaffAccountView storedView) {}
