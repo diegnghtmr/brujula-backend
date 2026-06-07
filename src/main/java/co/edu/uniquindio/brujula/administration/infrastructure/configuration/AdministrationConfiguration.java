@@ -1,6 +1,5 @@
 package co.edu.uniquindio.brujula.administration.infrastructure.configuration;
 
-import co.edu.uniquindio.brujula.administration.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.administration.application.port.out.LoadAllowedEmailDomainsPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.LoadStaffPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.SaveAllowedEmailDomainPort;
@@ -10,6 +9,8 @@ import co.edu.uniquindio.brujula.administration.application.service.ListStaffSer
 import co.edu.uniquindio.brujula.administration.application.service.ManageAllowedEmailDomainsService;
 import co.edu.uniquindio.brujula.administration.application.service.UpdateStaffService;
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
+import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -30,12 +31,14 @@ class AdministrationConfiguration {
       SaveStaffPort saveStaffPort,
       LoadAllowedEmailDomainsPort loadAllowedEmailDomainsPort,
       IdempotencyStorePort idempotencyStorePort,
+      JsonCodecPort jsonCodecPort,
       AuditRecorder auditRecorder) {
     return new CreateStaffService(
         loadStaffPort,
         saveStaffPort,
         loadAllowedEmailDomainsPort,
         idempotencyStorePort,
+        jsonCodecPort,
         auditRecorder);
   }
 

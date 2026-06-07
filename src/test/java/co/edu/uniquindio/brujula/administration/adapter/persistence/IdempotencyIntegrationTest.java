@@ -24,6 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Also verifies that same key + different hash yields 409 (IdempotencyKeyConflictException).
  *
+ * <p>FIX-2 (WARNING-002): replay assertions now cover all five fields of {@link StaffAccountView}
+ * (id, email, fullName, status, version) to guard the Jackson round-trip through PostgreSQL JSONB.
+ *
  * <p>Satisfies: Spec §Idempotent Create (W-004 verify finding). Uses {@link
  * AbstractPostgresIntegrationTest} singleton Testcontainers pattern.
  */
@@ -54,9 +57,13 @@ class IdempotencyIntegrationTest extends AbstractPostgresIntegrationTest {
     // Replay — same key, same hash
     StaffAccountView replay = createStaffUseCase.createStaff(command);
 
-    // (a) Both calls return the same staff id
+    // (a) All five StaffAccountView fields survive the Jackson round-trip through PostgreSQL JSONB
+    // FIX-2 (WARNING-002): previously only id + email were asserted; fullName/status/version added
     assertThat(replay.id()).isEqualTo(first.id());
     assertThat(replay.email()).isEqualTo(first.email());
+    assertThat(replay.fullName()).isEqualTo(first.fullName());
+    assertThat(replay.status()).isEqualTo(first.status());
+    assertThat(replay.version()).isEqualTo(first.version());
 
     // (b) Exactly ONE row in administration.staff_account for this email
     int staffRowCount =
