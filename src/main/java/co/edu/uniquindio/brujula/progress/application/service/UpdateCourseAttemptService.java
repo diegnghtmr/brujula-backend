@@ -88,7 +88,7 @@ public class UpdateCourseAttemptService implements UpdateCourseAttemptUseCase {
         attempt.getPeriodId(),
         null,   // periodName resolved by WU4
         attempt.getJourneyCode(),
-        attempt.getStatus(),
+        attempt.getStatus().name(), // FIX-S1: plain String, no domain type in application DTO
         gradeValue,
         attempt.getRegisteredAt(),
         attempt.getVersion());

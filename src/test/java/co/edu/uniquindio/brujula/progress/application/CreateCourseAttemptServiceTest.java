@@ -18,7 +18,6 @@ import co.edu.uniquindio.brujula.progress.application.port.out.LoadCourseAttempt
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.SaveCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.service.CreateCourseAttemptService;
-import co.edu.uniquindio.brujula.progress.domain.AttemptStatus;
 import co.edu.uniquindio.brujula.progress.domain.AttemptNotFoundException;
 import co.edu.uniquindio.brujula.progress.domain.GradeStatusMismatchException;
 import co.edu.uniquindio.brujula.progress.domain.Subscription;
@@ -38,6 +37,8 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Covers: PRG-1-HP, PRG-1-GRADE-MISMATCH, PRG-1-CANCELLED-WITH-GRADE, PRG-1-OPAQUE-PERIOD,
  * PRG-1-MULTI-ATTEMPT, PRG-1-FOREIGN-SUB, PRG-1-IDEM.
+ *
+ * <p>FIX-W4: periodId is contract-REQUIRED (non-null). All commands now use a non-null periodId.
  */
 class CreateCourseAttemptServiceTest {
 
@@ -54,6 +55,8 @@ class CreateCourseAttemptServiceTest {
   private final UUID courseId = UUID.randomUUID();
   private final UUID planId = UUID.randomUUID();
   private final UUID programId = UUID.randomUUID();
+  // FIX-W4: stable test period UUID — always non-null
+  private final UUID testPeriodId = UUID.fromString("00000000-0000-4000-a000-000000000001");
 
   @BeforeEach
   void setUp() {
@@ -85,7 +88,7 @@ class CreateCourseAttemptServiceTest {
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
 
     CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
+        idempotencyKey, actorId, subscriptionId, courseId, testPeriodId, "DIURNA",
         "PASSED", new BigDecimal("4.2"), "hash1");
 
     CourseAttemptView view = sut.createCourseAttempt(command);
@@ -93,7 +96,7 @@ class CreateCourseAttemptServiceTest {
     assertThat(view).isNotNull();
     assertThat(view.subscriptionId()).isEqualTo(subscriptionId);
     assertThat(view.courseId()).isEqualTo(courseId);
-    assertThat(view.status()).isEqualTo(AttemptStatus.PASSED);
+    assertThat(view.statusName()).isEqualTo("PASSED"); // FIX-S1: plain String
     verify(auditRecorder).record(any());
   }
 
@@ -108,7 +111,7 @@ class CreateCourseAttemptServiceTest {
     when(loadSubscriptionPort.loadById(subscriptionId)).thenReturn(Optional.of(foreignSub));
 
     CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
+        idempotencyKey, actorId, subscriptionId, courseId, testPeriodId, "DIURNA",
         "PASSED", new BigDecimal("4.2"), "hash1");
 
     assertThatThrownBy(() -> sut.createCourseAttempt(command))
@@ -127,7 +130,7 @@ class CreateCourseAttemptServiceTest {
     when(loadSubscriptionPort.loadById(subscriptionId)).thenReturn(Optional.of(subscription));
 
     CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
+        idempotencyKey, actorId, subscriptionId, courseId, testPeriodId, "DIURNA",
         "PASSED", new BigDecimal("2.5"), "hash1");
 
     assertThatThrownBy(() -> sut.createCourseAttempt(command))
@@ -144,7 +147,7 @@ class CreateCourseAttemptServiceTest {
     when(loadSubscriptionPort.loadById(subscriptionId)).thenReturn(Optional.of(subscription));
 
     CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
+        idempotencyKey, actorId, subscriptionId, courseId, testPeriodId, "DIURNA",
         "CANCELLED", new BigDecimal("3.0"), "hash1");
 
     assertThatThrownBy(() -> sut.createCourseAttempt(command))
@@ -176,13 +179,14 @@ class CreateCourseAttemptServiceTest {
   void idempotent_replay_returns_original_view_without_persisting() {
     UUID idempotencyKey = UUID.randomUUID();
     CourseAttemptView originalView = new CourseAttemptView(
-        UUID.randomUUID(), subscriptionId, courseId, "N/A", null, null, "DIURNA",
-        AttemptStatus.PASSED, new BigDecimal("4.2"), Instant.now(), 0L);
+        UUID.randomUUID(), subscriptionId, courseId, "N/A", testPeriodId, null, "DIURNA",
+        "PASSED", new BigDecimal("4.2"), Instant.now(), 0L); // FIX-S1: plain String
 
     when(idempotencyStorePort.find(idempotencyKey, CreateCourseAttemptService.OPERATION))
         .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord("hash1", 201, "{}")));
     when(jsonCodecPort.fromJson("{}", CourseAttemptView.class)).thenReturn(originalView);
 
+    // idempotency replay happens BEFORE periodId is checked in domain, so null is safe here
     CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
         idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
         "PASSED", new BigDecimal("4.2"), "hash1");
@@ -200,6 +204,7 @@ class CreateCourseAttemptServiceTest {
     when(idempotencyStorePort.find(idempotencyKey, CreateCourseAttemptService.OPERATION))
         .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord("old-hash", 201, "{}")));
 
+    // idempotency conflict check happens BEFORE periodId validation, so null is safe here
     CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
         idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
         "PASSED", new BigDecimal("4.2"), "new-hash"); // different hash
@@ -216,6 +221,7 @@ class CreateCourseAttemptServiceTest {
         .thenReturn(Optional.empty());
     when(loadSubscriptionPort.loadById(subscriptionId)).thenReturn(Optional.empty());
 
+    // subscription not found check happens BEFORE CourseAttempt.register(), so null is safe here
     CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
         idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
         "PASSED", new BigDecimal("4.2"), "hash1");

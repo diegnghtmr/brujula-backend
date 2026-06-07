@@ -61,7 +61,7 @@ class GetCourseAttemptServiceTest {
     CourseAttemptView view = sut.getCourseAttempt(attempt.getId().value(), actorId);
 
     assertThat(view.id()).isEqualTo(attempt.getId().value());
-    assertThat(view.status()).isEqualTo(AttemptStatus.PASSED);
+    assertThat(view.statusName()).isEqualTo("PASSED"); // FIX-S1: plain String
   }
 
   @Test

@@ -73,7 +73,7 @@ class UpdateCourseAttemptServiceTest {
 
     CourseAttemptView view = sut.updateCourseAttempt(command);
 
-    assertThat(view.status()).isEqualTo(AttemptStatus.PASSED);
+    assertThat(view.statusName()).isEqualTo("PASSED"); // FIX-S1: plain String
     verify(auditRecorder).record(any());
   }
 

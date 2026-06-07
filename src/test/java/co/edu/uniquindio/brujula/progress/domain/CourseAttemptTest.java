@@ -11,11 +11,17 @@ import org.junit.jupiter.api.Test;
  * WU3-T02 RED: unit tests for {@link CourseAttempt} domain aggregate.
  *
  * <p>Scenarios: PRG-1-GRADE-MISMATCH, PRG-1-CANCELLED-WITH-GRADE, and grade-status coherence rules.
+ *
+ * <p>FIX-W4: periodId is contract-REQUIRED (non-null, per OpenAPI CourseAttempt and
+ * CourseAttemptCreateRequest required fields). All {@code register()} calls must supply a non-null
+ * periodId; the domain now enforces this with {@link NullPointerException}.
  */
 class CourseAttemptTest {
 
   private final SubscriptionId subscriptionId = SubscriptionId.generate();
   private final UUID courseId = UUID.randomUUID();
+  // FIX-W4: use a fixed test periodId instead of null
+  private final UUID testPeriodId = UUID.fromString("00000000-0000-4000-a000-000000000001");
 
   @Test
   void register_passed_attempt_with_passing_grade_succeeds() {
@@ -26,7 +32,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.PASSED,
         grade,
-        null,
+        testPeriodId,
         "DIURNA");
 
     assertThat(attempt.getStatus()).isEqualTo(AttemptStatus.PASSED);
@@ -44,7 +50,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.FAILED,
         grade,
-        null,
+        testPeriodId,
         "NOCTURNA");
 
     assertThat(attempt.getStatus()).isEqualTo(AttemptStatus.FAILED);
@@ -59,7 +65,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.CANCELLED,
         null,
-        null,
+        testPeriodId,
         "DIURNA");
 
     assertThat(attempt.getStatus()).isEqualTo(AttemptStatus.CANCELLED);
@@ -75,7 +81,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.PASSED,
         badGrade,
-        null,
+        testPeriodId,
         "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
@@ -88,7 +94,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.PASSED,
         null,
-        null,
+        testPeriodId,
         "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
@@ -102,7 +108,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.FAILED,
         passingGrade,
-        null,
+        testPeriodId,
         "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
@@ -115,7 +121,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.FAILED,
         null,
-        null,
+        testPeriodId,
         "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
@@ -129,7 +135,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.CANCELLED,
         grade,
-        null,
+        testPeriodId,
         "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
@@ -150,19 +156,40 @@ class CourseAttemptTest {
     assertThat(attempt.getPeriodId()).isEqualTo(opaquePeriodId);
   }
 
+  /**
+   * FIX-W4: periodId is contract-REQUIRED (non-null). Null must be rejected at the domain level.
+   * See: OpenAPI CourseAttempt.required includes periodId; ADR-F3-009 said "opaque OPTIONAL" but
+   * the contract wins per decision #1630.
+   */
   @Test
-  void period_id_can_be_null() {
+  void register_with_null_period_id_throws_null_pointer_exception() {
     Grade grade = new Grade(new BigDecimal("4.0"));
-    CourseAttempt attempt = CourseAttempt.register(
+    assertThatThrownBy(() -> CourseAttempt.register(
         AttemptId.generate(),
         subscriptionId,
         courseId,
         AttemptStatus.PASSED,
         grade,
         null,
+        "DIURNA"))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessageContaining("periodId");
+  }
+
+  @Test
+  void register_with_non_null_period_id_is_stored() {
+    Grade grade = new Grade(new BigDecimal("4.0"));
+    UUID periodId = UUID.randomUUID();
+    CourseAttempt attempt = CourseAttempt.register(
+        AttemptId.generate(),
+        subscriptionId,
+        courseId,
+        AttemptStatus.PASSED,
+        grade,
+        periodId,
         "DIURNA");
 
-    assertThat(attempt.getPeriodId()).isNull();
+    assertThat(attempt.getPeriodId()).isEqualTo(periodId);
   }
 
   @Test
@@ -174,7 +201,7 @@ class CourseAttemptTest {
         courseId,
         AttemptStatus.PASSED,
         grade,
-        null,
+        testPeriodId,
         "DIURNA");
 
     assertThat(attempt.getRegisteredAt()).isNotNull();
@@ -184,8 +211,9 @@ class CourseAttemptTest {
   void update_changes_status_and_grade() {
     Grade originalGrade = new Grade(new BigDecimal("2.0"));
     AttemptId id = AttemptId.generate();
+    // reconstitute is still nullable (DB may have old rows without periodId from before FIX-W4)
     CourseAttempt attempt = CourseAttempt.reconstitute(
-        id, subscriptionId, courseId, AttemptStatus.FAILED, originalGrade, null, "DIURNA",
+        id, subscriptionId, courseId, AttemptStatus.FAILED, originalGrade, testPeriodId, "DIURNA",
         java.time.Instant.now(), 0L);
 
     Grade newGrade = new Grade(new BigDecimal("3.5"));
@@ -200,7 +228,7 @@ class CourseAttemptTest {
     Grade originalGrade = new Grade(new BigDecimal("2.0"));
     AttemptId id = AttemptId.generate();
     CourseAttempt attempt = CourseAttempt.reconstitute(
-        id, subscriptionId, courseId, AttemptStatus.FAILED, originalGrade, null, "DIURNA",
+        id, subscriptionId, courseId, AttemptStatus.FAILED, originalGrade, testPeriodId, "DIURNA",
         java.time.Instant.now(), 0L);
 
     Grade invalidGrade = new Grade(new BigDecimal("2.5")); // PASSED requires >= 3.0

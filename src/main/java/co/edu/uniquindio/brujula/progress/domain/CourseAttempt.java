@@ -27,7 +27,7 @@ public final class CourseAttempt {
   private final UUID courseId;
   private AttemptStatus status;
   private Grade grade; // nullable; null for CANCELLED
-  private UUID periodId; // opaque, nullable
+  private UUID periodId; // opaque; contract-required non-null (FIX-W4; ADR-F3-009 deferred)
   private String journeyCode;
   private final Instant registeredAt;
   private final long version;
@@ -60,14 +60,19 @@ public final class CourseAttempt {
   /**
    * Register a new course attempt.
    *
+   * <p>FIX-W4: {@code periodId} is contract-REQUIRED (non-null). The OpenAPI schema
+   * {@code CourseAttempt} and {@code CourseAttemptCreateRequest} both list {@code periodId} in
+   * {@code required}. The domain now enforces this — null is rejected.
+   *
    * @param id generated attempt ID
    * @param subscriptionId owning subscription
    * @param courseId course being attempted
    * @param status declared outcome
    * @param grade nullable; must comply with grade-status coherence rules
-   * @param periodId opaque period UUID (nullable; ADR-F3-009)
+   * @param periodId opaque period UUID — REQUIRED, non-null (ADR-F3-009 deferred; contract wins)
    * @param journeyCode journey code (non-blank)
    * @return the new CourseAttempt with version=0
+   * @throws NullPointerException if periodId is null
    * @throws GradeStatusMismatchException if grade↔status coherence is violated
    */
   public static CourseAttempt register(
@@ -82,6 +87,7 @@ public final class CourseAttempt {
     Objects.requireNonNull(subscriptionId, "subscriptionId must not be null");
     Objects.requireNonNull(courseId, "courseId must not be null");
     Objects.requireNonNull(status, "status must not be null");
+    Objects.requireNonNull(periodId, "periodId must not be null (contract-required; ADR-F3-009 deferred)");
     requireNonBlankJourney(journeyCode);
     validateGradeStatusCoherence(status, grade);
 

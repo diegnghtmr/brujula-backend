@@ -14,7 +14,8 @@ import java.util.UUID;
  * @param actorId authenticated student's user ID
  * @param subscriptionId owning subscription UUID (BOLA validated in use case)
  * @param courseId course being attempted
- * @param periodId opaque period UUID (nullable; ADR-F3-009)
+ * @param periodId opaque period UUID (REQUIRED, non-null; contract-required per OpenAPI schema;
+ *     ADR-F3-009 originally said optional but contract wins per decision #1630)
  * @param journeyCode journey code (non-blank)
  * @param statusName declared attempt status name (e.g. "PASSED", "FAILED", "CANCELLED")
  * @param finalGrade nullable grade (coherence with status validated in domain)

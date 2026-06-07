@@ -130,7 +130,7 @@ public class CreateCourseAttemptService implements CreateCourseAttemptUseCase {
         attempt.getPeriodId(),
         null,   // periodName resolved by query service (WU4)
         attempt.getJourneyCode(),
-        attempt.getStatus(),
+        attempt.getStatus().name(), // FIX-S1: plain String, no domain type in application DTO
         gradeValue,
         attempt.getRegisteredAt(),
         attempt.getVersion());
