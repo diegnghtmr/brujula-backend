@@ -1,7 +1,7 @@
 package co.edu.uniquindio.brujula.administration.infrastructure.configuration;
 
-import co.edu.uniquindio.brujula.administration.application.service.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.administration.application.service.StaffNotFoundException;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
