@@ -64,21 +64,38 @@ class UpdateSubscriptionServiceTest {
     verify(auditRecorder).record(any());
   }
 
+  // FIX-W3 RED: SUB-3-PLAN-WITH-ACK happy path — hasAttempts=true + ack=true → plan change succeeds,
+  // version increments, no attempt rows deleted/mutated (DP-009 guarantee).
   @Test
-  void plan_change_with_ack_and_attempts_succeeds() {
+  void plan_change_with_ack_and_attempts_succeeds_spec_sub3_plan_with_ack() {
     UUID subId = UUID.randomUUID();
+    UUID oldPlanId = UUID.randomUUID();
     UUID newPlanId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    UUID programId = UUID.randomUUID();
+    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, programId, oldPlanId, "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
-    when(saveSubscriptionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    // Mock hasAttempts=true — spec SUB-3-PLAN-WITH-ACK: subscription with 3 existing attempts
+    when(loadSubscriptionPort.hasAttempts(subId)).thenReturn(true);
+
+    // Simulate persistence returning subscription with incremented version (DB @Version)
+    Subscription savedWithNewPlan = Subscription.reconstitute(
+        SubscriptionId.of(subId), userId, programId, newPlanId, "DIURNA",
+        SubscriptionStatus.ACTIVE, sub.getCreatedAt(), 1L);
+    when(saveSubscriptionPort.save(any())).thenReturn(savedWithNewPlan);
 
     UpdateSubscriptionCommand command =
         new UpdateSubscriptionCommand(subId, userId, newPlanId, "DIURNA", true, 0L);
 
-    // Simulate hasAttempts=true by providing acknowledgeHistoryImpact=true
     SubscriptionView result = sut.updateSubscription(command);
 
+    // Plan must have changed to newPlanId
     assertThat(result.planId()).isEqualTo(newPlanId);
+    // Version must have incremented (DP-009: subscription saved, attempts preserved not deleted)
+    assertThat(result.version()).isEqualTo(1L);
+    // save was called exactly once — no attempt rows were deleted/mutated
+    verify(saveSubscriptionPort).save(any());
+    // audit must have been recorded
+    verify(auditRecorder).record(any());
   }
 
   // -------------------------------------------------------------------------

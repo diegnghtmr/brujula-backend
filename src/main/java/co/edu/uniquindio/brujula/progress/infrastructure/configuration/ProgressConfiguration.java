@@ -1,15 +1,24 @@
 package co.edu.uniquindio.brujula.progress.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.progress.application.port.in.CreateCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateSubscriptionUseCase;
+import co.edu.uniquindio.brujula.progress.application.port.in.DeleteCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteSubscriptionUseCase;
+import co.edu.uniquindio.brujula.progress.application.port.in.UpdateCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.UpdateSubscriptionUseCase;
+import co.edu.uniquindio.brujula.progress.application.port.out.LoadCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
+import co.edu.uniquindio.brujula.progress.application.port.out.SaveCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.SaveSubscriptionPort;
+import co.edu.uniquindio.brujula.progress.application.service.CreateCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.CreateSubscriptionService;
+import co.edu.uniquindio.brujula.progress.application.service.DeleteCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.DeleteSubscriptionService;
+import co.edu.uniquindio.brujula.progress.application.service.GetCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService;
 import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
+import co.edu.uniquindio.brujula.progress.application.service.UpdateCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.UpdateSubscriptionService;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
@@ -31,6 +40,11 @@ import org.springframework.context.annotation.Configuration;
  *       {@code ListMySubscriptionsQuery} (SUB-2)
  *   <li>{@link UpdateSubscriptionService} (SUB-3)
  *   <li>{@link DeleteSubscriptionService} (SUB-4)
+ *   <li>{@link CreateCourseAttemptService} (PRG-1, CROSS-1) [WU3]
+ *   <li>{@link GetCourseAttemptService} — implements both {@code GetCourseAttemptQuery} and
+ *       {@code ListMyCourseAttemptsQuery} (PRG-2) [WU3]
+ *   <li>{@link UpdateCourseAttemptService} (PRG-3) [WU3]
+ *   <li>{@link DeleteCourseAttemptService} (PRG-4) [WU3]
  * </ul>
  *
  * <p>{@code GetCurrentUserQuery} is injected by Spring's auto-wiring into {@link
@@ -84,5 +98,61 @@ class ProgressConfiguration {
       SaveSubscriptionPort saveSubscriptionPort,
       AuditRecorder auditRecorder) {
     return new DeleteSubscriptionService(loadSubscriptionPort, saveSubscriptionPort, auditRecorder);
+  }
+
+  // -------------------------------------------------------------------------
+  // WU3: CourseAttempt beans
+  // -------------------------------------------------------------------------
+
+  @Bean
+  CreateCourseAttemptUseCase createCourseAttemptService(
+      LoadSubscriptionPort loadSubscriptionPort,
+      SaveCourseAttemptPort saveCourseAttemptPort,
+      LoadCourseAttemptPort loadCourseAttemptPort,
+      IdempotencyStorePort idempotencyStorePort,
+      JsonCodecPort jsonCodecPort,
+      AuditRecorder auditRecorder) {
+    return new CreateCourseAttemptService(
+        loadSubscriptionPort,
+        saveCourseAttemptPort,
+        loadCourseAttemptPort,
+        idempotencyStorePort,
+        jsonCodecPort,
+        auditRecorder);
+  }
+
+  /**
+   * {@link GetCourseAttemptService} implements both {@link
+   * co.edu.uniquindio.brujula.progress.application.port.in.GetCourseAttemptQuery} and {@link
+   * co.edu.uniquindio.brujula.progress.application.port.in.ListMyCourseAttemptsQuery}.
+   *
+   * <p>Registering the concrete class lets Spring satisfy both interface autowiring points from a
+   * single bean instance.
+   */
+  @Bean
+  GetCourseAttemptService getCourseAttemptService(
+      LoadCourseAttemptPort loadCourseAttemptPort,
+      LoadSubscriptionPort loadSubscriptionPort) {
+    return new GetCourseAttemptService(loadCourseAttemptPort, loadSubscriptionPort);
+  }
+
+  @Bean
+  UpdateCourseAttemptUseCase updateCourseAttemptService(
+      LoadCourseAttemptPort loadCourseAttemptPort,
+      LoadSubscriptionPort loadSubscriptionPort,
+      SaveCourseAttemptPort saveCourseAttemptPort,
+      AuditRecorder auditRecorder) {
+    return new UpdateCourseAttemptService(
+        loadCourseAttemptPort, loadSubscriptionPort, saveCourseAttemptPort, auditRecorder);
+  }
+
+  @Bean
+  DeleteCourseAttemptUseCase deleteCourseAttemptService(
+      LoadCourseAttemptPort loadCourseAttemptPort,
+      LoadSubscriptionPort loadSubscriptionPort,
+      SaveCourseAttemptPort saveCourseAttemptPort,
+      AuditRecorder auditRecorder) {
+    return new DeleteCourseAttemptService(
+        loadCourseAttemptPort, loadSubscriptionPort, saveCourseAttemptPort, auditRecorder);
   }
 }

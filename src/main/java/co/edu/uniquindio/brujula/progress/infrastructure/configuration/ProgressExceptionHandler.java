@@ -1,7 +1,9 @@
 package co.edu.uniquindio.brujula.progress.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
+import co.edu.uniquindio.brujula.progress.domain.AttemptNotFoundException;
 import co.edu.uniquindio.brujula.progress.domain.DuplicateProgramSubscriptionException;
+import co.edu.uniquindio.brujula.progress.domain.GradeStatusMismatchException;
 import co.edu.uniquindio.brujula.progress.domain.HistoryImpactNotAcknowledgedException;
 import co.edu.uniquindio.brujula.progress.domain.InactivePlanException;
 import co.edu.uniquindio.brujula.progress.domain.LastActiveSubscriptionException;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <ul>
  *   <li>{@link SubscriptionNotFoundException} → 404 Not Found (BOLA-safe: also used for
  *       ownership violations to avoid resource enumeration).
+ *   <li>{@link AttemptNotFoundException} → 404 Not Found (BOLA-safe for course attempt ownership).
+ *   <li>{@link GradeStatusMismatchException} → 422 Unprocessable Entity (grade-status coherence).
  *   <li>{@link MaxSubscriptionsExceededException} → 409 Conflict (cap=2).
  *   <li>{@link DuplicateProgramSubscriptionException} → 409 Conflict.
  *   <li>{@link HistoryImpactNotAcknowledgedException} → 422 Unprocessable Entity (spec SUB-3-PLAN-NO-ACK).
@@ -33,7 +37,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   <li>{@link OptimisticLockingFailureException} → 409 Conflict (version conflict, CROSS-3).
  * </ul>
  *
- * <p>Satisfies: SUB-1..4, CROSS-3. ADR-F3. FIX-W2: 422 for history-impact ack (spec SUB-3-PLAN-NO-ACK).
+ * <p>Satisfies: SUB-1..4, PRG-1..4, CROSS-3. ADR-F3. FIX-W2: 422 for history-impact ack (spec
+ * SUB-3-PLAN-NO-ACK). WU3: 404 for AttemptNotFoundException, 422 for GradeStatusMismatchException.
  */
 @RestControllerAdvice
 class ProgressExceptionHandler {
@@ -41,6 +46,19 @@ class ProgressExceptionHandler {
   @ExceptionHandler(SubscriptionNotFoundException.class)
   ProblemDetail handleSubscriptionNotFound(SubscriptionNotFoundException ex) {
     return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+  }
+
+  @ExceptionHandler(AttemptNotFoundException.class)
+  ProblemDetail handleAttemptNotFound(AttemptNotFoundException ex) {
+    // BOLA-safe: also surfaces when the caller does not own the attempt.
+    return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+  }
+
+  @ExceptionHandler(GradeStatusMismatchException.class)
+  ProblemDetail handleGradeStatusMismatch(GradeStatusMismatchException ex) {
+    // Grade-status coherence failure (PRG-1, PRG-3): PASSED requires grade ≥ 3.0,
+    // FAILED requires grade < 3.0, CANCELLED must not have a grade.
+    return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
   }
 
   @ExceptionHandler(MaxSubscriptionsExceededException.class)
