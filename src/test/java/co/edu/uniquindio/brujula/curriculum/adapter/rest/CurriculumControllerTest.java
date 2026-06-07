@@ -202,6 +202,46 @@ class CurriculumControllerTest extends AbstractPostgresIntegrationTest {
         .andExpect(jsonPath("$.semesterBuckets[0].recommendedSemester").value(5));
   }
 
+  /**
+   * W-1 (INT-5): asserts that the malla HTTP JSON exposes requirement confidence/inferred fields
+   * and graduationRequirements. Uses the Flyway-seeded Sistemas plan (V012):
+   * Programación I (Sem 2 DIURNA) has a COURSE_PASSED prerequisite → Lógica de Programación
+   * with confidence=HIGH and inferred=false. The graduation advisory must also be non-empty.
+   */
+  @Test
+  void get_plan_malla_seeded_sistemas_exposes_requirements_confidence_and_graduation_requirements()
+      throws Exception {
+    // Sistemas plan seeded by V012 — fixed UUID, no @Transactional (read-only against real seed)
+    String sistemasPlanId = "33333333-0000-4000-a000-000000000001";
+
+    mockMvc.perform(get("/plans/{planId}/malla", sistemasPlanId)
+            .param("journeyCode", "DIURNA")
+            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+        .andExpect(status().isOk())
+        // graduationRequirements must be present and non-empty (CUR-008 §3)
+        .andExpect(jsonPath("$.graduationRequirements").isString())
+        .andExpect(jsonPath("$.graduationRequirements").isNotEmpty())
+        // Semester 2 must exist (Programación I → Lógica de Programación edge is seeded there)
+        .andExpect(jsonPath(
+            "$.semesterBuckets[?(@.recommendedSemester == 2)]").exists())
+        // Programación I (c0020000-…-003) in Sem 2 must have at least one requirement
+        .andExpect(jsonPath(
+            "$.semesterBuckets[?(@.recommendedSemester == 2)].courses"
+                + "[?(@.officialCode == 'ISC-S2-PROGRAMACIONI')].requirements").exists())
+        .andExpect(jsonPath(
+            "$.semesterBuckets[?(@.recommendedSemester == 2)].courses"
+                + "[?(@.officialCode == 'ISC-S2-PROGRAMACIONI')].requirements[0]").exists())
+        // The requirement edge must carry confidence and inferred fields (W-1 regression guard)
+        .andExpect(jsonPath(
+            "$.semesterBuckets[?(@.recommendedSemester == 2)].courses"
+                + "[?(@.officialCode == 'ISC-S2-PROGRAMACIONI')].requirements[0].confidence")
+            .value("HIGH"))
+        .andExpect(jsonPath(
+            "$.semesterBuckets[?(@.recommendedSemester == 2)].courses"
+                + "[?(@.officialCode == 'ISC-S2-PROGRAMACIONI')].requirements[0].inferred")
+            .value(false));
+  }
+
   // ---------------------------------------------------------------------------
   // SQL insert helpers
   // ---------------------------------------------------------------------------
