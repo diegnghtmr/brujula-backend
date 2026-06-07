@@ -22,7 +22,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "app_user", schema = "identity")
-public class AppUserJpaEntity {
+class AppUserJpaEntity {
 
   @Id
   @Column(name = "id", nullable = false, updatable = false)

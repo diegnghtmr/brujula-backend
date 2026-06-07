@@ -172,4 +172,82 @@ class ListPlanCoursesServiceTest {
 
     assertThat(result).hasSize(1);
   }
+
+  // -------------------------------------------------------------------------
+  // FIX-4 (W2): null and unknown callerRole must be treated as unprivileged (allowlist)
+  // -------------------------------------------------------------------------
+
+  @Test
+  void nullCallerRoleExcludesArchivedAndInactiveCourses() {
+    // null role must behave as unprivileged: only ACTIVE courses visible (allowlist pattern)
+    CourseId activeId = CourseId.generate();
+    CourseId archivedId = CourseId.generate();
+    CourseId inactiveId = CourseId.generate();
+
+    Course active = Course.reconstitute(
+        activeId, planId, programId, "ISC-A", "Active Course",
+        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
+    Course archived = Course.reconstitute(
+        archivedId, planId, programId, "ISC-ARCH", "Archived Course",
+        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ARCHIVED, 1L);
+    Course inactive = Course.reconstitute(
+        inactiveId, planId, programId, "ISC-INACT", "Inactive Course",
+        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+
+    when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(active, archived, inactive));
+
+    List<CourseView> result = service.listPlanCourses(planId, null);
+
+    assertThat(result).hasSize(1);
+    assertThat(result.get(0).id()).isEqualTo(activeId.value());
+  }
+
+  @Test
+  void unknownCallerRoleExcludesArchivedAndInactiveCourses() {
+    // Unknown role (e.g. "UNKNOWN", "VIEWER") must behave as unprivileged (not STAFF/ADMIN)
+    CourseId activeId = CourseId.generate();
+    CourseId archivedId = CourseId.generate();
+    CourseId inactiveId = CourseId.generate();
+
+    Course active = Course.reconstitute(
+        activeId, planId, programId, "ISC-A", "Active Course",
+        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
+    Course archived = Course.reconstitute(
+        archivedId, planId, programId, "ISC-ARCH", "Archived Course",
+        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ARCHIVED, 1L);
+    Course inactive = Course.reconstitute(
+        inactiveId, planId, programId, "ISC-INACT", "Inactive Course",
+        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+
+    when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(active, archived, inactive));
+
+    List<CourseView> resultUnknown = service.listPlanCourses(planId, "UNKNOWN");
+    List<CourseView> resultViewer = service.listPlanCourses(planId, "VIEWER");
+
+    assertThat(resultUnknown).hasSize(1);
+    assertThat(resultUnknown.get(0).id()).isEqualTo(activeId.value());
+
+    assertThat(resultViewer).hasSize(1);
+    assertThat(resultViewer.get(0).id()).isEqualTo(activeId.value());
+  }
+
+  @Test
+  void staffAndAdminStillSeeAllStatusesAfterAllowlistRefactor() {
+    // Regression guard: allowlist refactor must not break STAFF/ADMIN visibility
+    CourseId activeId = CourseId.generate();
+    CourseId archivedId = CourseId.generate();
+    CourseId inactiveId = CourseId.generate();
+
+    Course active = Course.reconstitute(
+        activeId, planId, programId, "ISC-A", "Active", CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
+    Course archived = Course.reconstitute(
+        archivedId, planId, programId, "ISC-ARCH", "Archived", CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ARCHIVED, 1L);
+    Course inactive = Course.reconstitute(
+        inactiveId, planId, programId, "ISC-INACT", "Inactive", CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+
+    when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(active, archived, inactive));
+
+    assertThat(service.listPlanCourses(planId, "STAFF")).hasSize(3);
+    assertThat(service.listPlanCourses(planId, "ADMIN")).hasSize(3);
+  }
 }

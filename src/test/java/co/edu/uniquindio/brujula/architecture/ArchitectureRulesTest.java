@@ -150,6 +150,25 @@ class ArchitectureRulesTest {
           .allowEmptyShould(true);
 
   /**
+   * ARQ-006b — JPA entities must be package-private (not public).
+   *
+   * <p>Strengthens the ARQ-006 convention that adapter internals (JPA entities) are never public.
+   * Package-private entities prevent accidental access from other modules and enforce the adapter
+   * boundary (hexagonal architecture: only the persistence adapter touches JPA entities directly).
+   *
+   * <p>All 10 existing entities (programcatalog: 3, curriculum: 7) must pass this rule.
+   * Machine-enforced from FIX-6 / S1 of the WU4 verify cycle.
+   */
+  @ArchTest
+  static final ArchRule ARQ_006b_jpa_entities_must_not_be_public =
+      noClasses()
+          .that()
+          .areAnnotatedWith("jakarta.persistence.Entity")
+          .should()
+          .bePublic()
+          .because("JPA entities are adapter internals and must be package-private (ARQ-006)");
+
+  /**
    * ARQ-009 — Domain and application layers must not access external client adapters.
    * {@code adapter.out.client} packages contain driven adapters that call external services
    * (e.g. Keycloak Admin API). Only infrastructure/configuration classes may wire these adapters;

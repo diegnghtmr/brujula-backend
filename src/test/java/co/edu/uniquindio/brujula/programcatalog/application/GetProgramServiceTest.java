@@ -40,7 +40,7 @@ class GetProgramServiceTest {
 
     when(loadProgramPort.loadById(id)).thenReturn(Optional.of(program));
 
-    ProgramView view = service.getProgram(id);
+    ProgramView view = service.getProgram(id.value());
 
     assertThat(view.id()).isEqualTo(id.value());
     assertThat(view.name()).isEqualTo("Ingeniería de Sistemas");
@@ -55,7 +55,7 @@ class GetProgramServiceTest {
 
     when(loadProgramPort.loadById(id)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> service.getProgram(id))
+    assertThatThrownBy(() -> service.getProgram(id.value()))
         .isInstanceOf(ProgramNotFoundException.class);
   }
 
@@ -65,7 +65,7 @@ class GetProgramServiceTest {
 
     when(loadProgramPort.loadById(id)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> service.getProgram(id))
+    assertThatThrownBy(() -> service.getProgram(id.value()))
         .isInstanceOf(ProgramNotFoundException.class)
         .hasMessageContaining(id.value().toString());
   }
