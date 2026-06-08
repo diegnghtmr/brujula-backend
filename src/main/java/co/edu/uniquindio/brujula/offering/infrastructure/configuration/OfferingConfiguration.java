@@ -7,6 +7,7 @@ import co.edu.uniquindio.brujula.offering.application.port.in.CreatePeriodUseCas
 import co.edu.uniquindio.brujula.offering.application.port.in.GetOfferingQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
+import co.edu.uniquindio.brujula.offering.application.port.in.PublishOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.ResolvePeriodQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ResolveScheduleOptionQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.UpdateOfferingUseCase;
@@ -20,6 +21,7 @@ import co.edu.uniquindio.brujula.offering.application.service.CreateOfferingServ
 import co.edu.uniquindio.brujula.offering.application.service.CreatePeriodService;
 import co.edu.uniquindio.brujula.offering.application.service.GetOfferingService;
 import co.edu.uniquindio.brujula.offering.application.service.ListPeriodsService;
+import co.edu.uniquindio.brujula.offering.application.service.PublishOfferingService;
 import co.edu.uniquindio.brujula.offering.application.service.ResolvePeriodService;
 import co.edu.uniquindio.brujula.offering.application.service.ResolveScheduleOptionService;
 import co.edu.uniquindio.brujula.offering.application.service.UpdateOfferingService;
@@ -47,6 +49,7 @@ import org.springframework.context.annotation.Configuration;
  *   <li>{@link UpdatePeriodService} — implements {@link UpdatePeriodUseCase} (OFFW-002)
  *   <li>{@link CreateOfferingService} — implements {@link CreateOfferingUseCase} (OFFW-003)
  *   <li>{@link UpdateOfferingService} — implements {@link UpdateOfferingUseCase} (OFFW-004)
+ *   <li>{@link PublishOfferingService} — implements {@link PublishOfferingUseCase} (OFFW-005)
  * </ul>
  */
 @Configuration
@@ -110,5 +113,16 @@ class OfferingConfiguration {
   UpdateOfferingUseCase updateOfferingService(
       SaveOfferingPort saveOfferingPort, AuditRecorder auditRecorder) {
     return new UpdateOfferingService(saveOfferingPort, auditRecorder);
+  }
+
+  @Bean
+  PublishOfferingUseCase publishOfferingService(
+      SaveOfferingPort saveOfferingPort,
+      IdempotencyStorePort idempotencyStorePort,
+      JsonCodecPort jsonCodecPort,
+      AuditRecorder auditRecorder,
+      GetCourseQuery getCourseQuery) {
+    return new PublishOfferingService(
+        saveOfferingPort, idempotencyStorePort, jsonCodecPort, auditRecorder, getCourseQuery);
   }
 }

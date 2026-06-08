@@ -109,6 +109,46 @@ public class CourseOffering {
         status, notes, scheduleOptions, version);
   }
 
+  /**
+   * Transitions this offering to the given {@code target} status and returns a new instance.
+   *
+   * <p>Preconditions (both checked in order):
+   * <ol>
+   *   <li>The transition must be legal per {@link OfferingStatus#canTransitionTo}; otherwise
+   *       {@link IllegalOfferingTransitionException} is thrown (→ HTTP 409).
+   *   <li>When {@code target} is {@code PRELIMINARY} or {@code FINAL} the offering must have at
+   *       least one schedule option; otherwise {@link OfferingNotPublishableException} is thrown
+   *       (→ HTTP 422). Transitioning to {@code ARCHIVED} does NOT require any options.
+   * </ol>
+   *
+   * <p>The returned instance carries the same version as this one; the @Version increment
+   * happens at JPA flush time (staleness activation invariant, OFFW-005, OFFW-006).
+   *
+   * <p>Satisfies: OFFW-005.
+   */
+  public CourseOffering publishTo(OfferingStatus target) {
+    if (!status.canTransitionTo(target)) {
+      throw new IllegalOfferingTransitionException(id, status, target);
+    }
+    requireSchedulableForPublish(target);
+    return new CourseOffering(id, courseId, courseName, programId, periodId,
+        target, notes, scheduleOptions, version);
+  }
+
+  /**
+   * Guards publication to PRELIMINARY or FINAL: the offering must have at least one
+   * schedule option.
+   *
+   * @throws OfferingNotPublishableException when {@code target} is PRELIMINARY or FINAL and
+   *         the offering has no schedule options.
+   */
+  private void requireSchedulableForPublish(OfferingStatus target) {
+    if ((target == OfferingStatus.PRELIMINARY || target == OfferingStatus.FINAL)
+        && scheduleOptions.isEmpty()) {
+      throw new OfferingNotPublishableException(id);
+    }
+  }
+
   /** True when this offering is visible to students (PRELIMINARY or FINAL). */
   public boolean isPublished() {
     return status.isPublished();

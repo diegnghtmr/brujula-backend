@@ -17,11 +17,13 @@ import co.edu.uniquindio.brujula.offering.application.dto.CreateOfferingCommand;
 import co.edu.uniquindio.brujula.offering.application.dto.ListOfferingsCriteria;
 import co.edu.uniquindio.brujula.offering.application.dto.OfferingDetailView;
 import co.edu.uniquindio.brujula.offering.application.dto.OfferingPageView;
+import co.edu.uniquindio.brujula.offering.application.dto.PublishOfferingCommand;
 import co.edu.uniquindio.brujula.offering.application.dto.UpdateOfferingCommand;
 import co.edu.uniquindio.brujula.offering.application.port.in.CreateOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.GetOfferingQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
+import co.edu.uniquindio.brujula.offering.application.port.in.PublishOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.UpdateOfferingUseCase;
 
 import org.springframework.http.ResponseEntity;
@@ -55,6 +57,7 @@ class OfferingController implements OfferingsApi {
   private final GetOfferingQuery getOfferingQuery;
   private final CreateOfferingUseCase createOfferingUseCase;
   private final UpdateOfferingUseCase updateOfferingUseCase;
+  private final PublishOfferingUseCase publishOfferingUseCase;
   private final GetCurrentUserQuery getCurrentUserQuery;
   private final ObjectMapper objectMapper;
   private final OfferingRestMapper restMapper;
@@ -65,6 +68,7 @@ class OfferingController implements OfferingsApi {
       GetOfferingQuery getOfferingQuery,
       CreateOfferingUseCase createOfferingUseCase,
       UpdateOfferingUseCase updateOfferingUseCase,
+      PublishOfferingUseCase publishOfferingUseCase,
       GetCurrentUserQuery getCurrentUserQuery,
       ObjectMapper objectMapper) {
     this.listPeriodsQuery = listPeriodsQuery;
@@ -72,6 +76,7 @@ class OfferingController implements OfferingsApi {
     this.getOfferingQuery = getOfferingQuery;
     this.createOfferingUseCase = createOfferingUseCase;
     this.updateOfferingUseCase = updateOfferingUseCase;
+    this.publishOfferingUseCase = publishOfferingUseCase;
     this.getCurrentUserQuery = getCurrentUserQuery;
     this.objectMapper = objectMapper;
     this.restMapper = new OfferingRestMapper();
@@ -165,10 +170,16 @@ class OfferingController implements OfferingsApi {
   }
 
   @Override
+  @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
   public ResponseEntity<OfferingDetail> publishOffering(
       UUID idempotencyKey, String X_XSRF_TOKEN, UUID offeringId,
       PublishOfferingRequest publishOfferingRequest) {
-    throw new UnsupportedOperationException("publishOffering not implemented in WU1");
+    UUID actorId = resolveActorId();
+    String requestHash = hashRequest(publishOfferingRequest);
+    PublishOfferingCommand command = restMapper.fromPublishRequest(
+        idempotencyKey, offeringId, publishOfferingRequest, requestHash, actorId);
+    OfferingDetailView view = publishOfferingUseCase.publishOffering(command);
+    return ResponseEntity.ok(restMapper.toContractDetail(view));
   }
 
   @Override
