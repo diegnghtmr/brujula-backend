@@ -1,10 +1,12 @@
 package co.edu.uniquindio.brujula.administration.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.administration.application.port.out.LoadAllowedEmailDomainsPort;
+import co.edu.uniquindio.brujula.administration.application.port.out.LoadCreditLimitPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.LoadStaffPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.SaveAllowedEmailDomainPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.SaveStaffPort;
 import co.edu.uniquindio.brujula.administration.application.service.CreateStaffService;
+import co.edu.uniquindio.brujula.administration.application.service.GetCreditLimitService;
 import co.edu.uniquindio.brujula.administration.application.service.ListStaffService;
 import co.edu.uniquindio.brujula.administration.application.service.ManageAllowedEmailDomainsService;
 import co.edu.uniquindio.brujula.administration.application.service.UpdateStaffService;
@@ -57,5 +59,10 @@ class AdministrationConfiguration {
   ManageAllowedEmailDomainsService manageAllowedEmailDomainsService(
       SaveAllowedEmailDomainPort saveAllowedEmailDomainPort, AuditRecorder auditRecorder) {
     return new ManageAllowedEmailDomainsService(saveAllowedEmailDomainPort, auditRecorder);
+  }
+
+  @Bean
+  GetCreditLimitService getCreditLimitService(LoadCreditLimitPort loadCreditLimitPort) {
+    return new GetCreditLimitService(loadCreditLimitPort);
   }
 }
