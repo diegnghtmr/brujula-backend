@@ -1,12 +1,17 @@
 package co.edu.uniquindio.brujula.simulation.infrastructure.adapter.in.rest;
 
 import co.edu.uniquindio.brujula.generated.model.OfferingStatus;
+import co.edu.uniquindio.brujula.generated.model.ProgramCreditSummary;
 import co.edu.uniquindio.brujula.generated.model.Simulation;
+import co.edu.uniquindio.brujula.generated.model.SimulationDetail;
 import co.edu.uniquindio.brujula.generated.model.SimulationPage;
 import co.edu.uniquindio.brujula.generated.model.SimulationSelection;
 import co.edu.uniquindio.brujula.generated.model.SimulationStatus;
+import co.edu.uniquindio.brujula.generated.model.SimulationValidation;
 import co.edu.uniquindio.brujula.generated.model.ValidationNotice;
 import co.edu.uniquindio.brujula.generated.model.Weekday;
+import co.edu.uniquindio.brujula.generated.model.WeeklyScheduleEntry;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
@@ -102,6 +107,99 @@ class SimulationRestMapper {
     result.setWarnings(warningModels);
 
     return result;
+  }
+
+  /**
+   * Map a {@link SimulationDetailView} to the generated {@link SimulationDetail} API model.
+   * Includes selections, creditSummary, weeklySchedule, validation, totalWeeklyHours.
+   */
+  SimulationDetail toDetailDto(SimulationDetailView view) {
+    OffsetDateTime createdAt = view.createdAt() != null
+        ? view.createdAt().atOffset(ZoneOffset.UTC)
+        : OffsetDateTime.now(ZoneOffset.UTC);
+    OffsetDateTime updatedAt = view.updatedAt() != null
+        ? view.updatedAt().atOffset(ZoneOffset.UTC)
+        : OffsetDateTime.now(ZoneOffset.UTC);
+
+    SimulationStatus status = parseStatus(view.statusName());
+
+    // Map selections
+    List<SimulationSelection> selections = view.selections() != null
+        ? view.selections().stream().map(this::toSelectionDto).toList()
+        : new ArrayList<>();
+
+    // Map credit summary — field names match generated ProgramCreditSummary EXACTLY
+    List<ProgramCreditSummary> creditSummary = view.creditSummary() != null
+        ? view.creditSummary().stream()
+            .map(cs -> new ProgramCreditSummary(
+                cs.programId(),
+                cs.programName(),
+                cs.selectedCredits(),
+                cs.creditLimit(),
+                cs.withinLimit()))
+            .toList()
+        : new ArrayList<>();
+
+    // Map weekly schedule — field names match generated WeeklyScheduleEntry EXACTLY
+    List<WeeklyScheduleEntry> weeklySchedule = view.weeklySchedule() != null
+        ? view.weeklySchedule().stream()
+            .map(we -> {
+              WeeklyScheduleEntry entry = new WeeklyScheduleEntry(
+                  parseWeekday(we.day()),
+                  we.startsAt(),
+                  we.endsAt(),
+                  we.courseName(),
+                  we.programId());
+              entry.setSelectionId(we.selectionId());
+              entry.setInClash(we.inClash());
+              return entry;
+            })
+            .toList()
+        : new ArrayList<>();
+
+    // Map validation
+    SimulationValidation validation;
+    if (view.validation() != null) {
+      List<ValidationNotice> blocking = view.validation().blocking() != null
+          ? view.validation().blocking().stream()
+              .map(n -> {
+                ValidationNotice vn = new ValidationNotice();
+                vn.setCode(n.code());
+                vn.setMessage(n.message());
+                return vn;
+              }).toList()
+          : new ArrayList<>();
+      List<ValidationNotice> warnings = view.validation().warnings() != null
+          ? view.validation().warnings().stream()
+              .map(n -> {
+                ValidationNotice vn = new ValidationNotice();
+                vn.setCode(n.code());
+                vn.setMessage(n.message());
+                return vn;
+              }).toList()
+          : new ArrayList<>();
+      validation = new SimulationValidation(blocking, warnings);
+    } else {
+      validation = new SimulationValidation(new ArrayList<>(), new ArrayList<>());
+    }
+
+    SimulationDetail detail = new SimulationDetail(
+        view.id(),
+        view.name(),
+        view.periodId(),
+        view.periodName(),
+        view.programIds(),
+        status,
+        createdAt,
+        updatedAt,
+        view.version(),
+        selections,
+        creditSummary,
+        weeklySchedule,
+        validation);
+
+    detail.setTotalWeeklyHours(view.totalWeeklyHours());
+    return detail;
   }
 
   private SimulationStatus parseStatus(String status) {

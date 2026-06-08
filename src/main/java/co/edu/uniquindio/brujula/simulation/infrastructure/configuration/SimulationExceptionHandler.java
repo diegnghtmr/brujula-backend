@@ -4,6 +4,7 @@ import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyK
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationNotFoundException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionNotFoundException;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationStillBlockedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationBlockedException;
 import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
 import java.net.URI;
@@ -64,6 +65,25 @@ class SimulationExceptionHandler {
     }
     if (ex.getBlocking().size() > 1) {
       // Surface all blocking codes when multiple rules fired simultaneously
+      problem.setProperty("allBlockingCodes",
+          ex.getBlocking().stream().map(ValidationNotice::code).toList());
+    }
+    return problem;
+  }
+
+  @ExceptionHandler(SimulationStillBlockedException.class)
+  ProblemDetail handleSimulationStillBlocked(SimulationStillBlockedException ex) {
+    // STALE-002: review failed due to persistent blockers → 409 problem+json
+    ValidationNotice primary = ex.primaryNotice();
+    ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+    problem.setType(URI.create("https://api.brujula.edu.co/errors/simulation-still-blocked"));
+    problem.setTitle("Simulation still blocked after review");
+    problem.setDetail(primary.message());
+    problem.setProperty("code", primary.code());
+    if (primary.metadata() != null && !primary.metadata().isEmpty()) {
+      problem.setProperty("metadata", primary.metadata());
+    }
+    if (ex.getBlocking().size() > 1) {
       problem.setProperty("allBlockingCodes",
           ex.getBlocking().stream().map(ValidationNotice::code).toList());
     }

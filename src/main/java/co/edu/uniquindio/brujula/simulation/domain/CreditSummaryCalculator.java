@@ -15,10 +15,10 @@ import java.util.UUID;
  *
  * <p>Also reused by WU5 for building {@code ProgramCreditSummaryView} — kept general.
  *
- * <p>Package-private — only used by {@link SimulationValidationService}.
+ * <p>Public — also used by {@code GetSimulationService} (WU5: build ProgramCreditSummaryView).
  * Pure Java, no Spring/JPA (ARQ-002, ADR-F4-004).
  */
-class CreditSummaryCalculator {
+public class CreditSummaryCalculator {
 
   /**
    * Returns a blocking notice if adding the candidate would exceed the credit limit for its program.
@@ -28,7 +28,7 @@ class CreditSummaryCalculator {
    * @param creditLimit        the program's credit limit policy
    * @return optional blocking notice with code {@code SIMULATION_CREDIT_LIMIT_EXCEEDED}
    */
-  Optional<ValidationNotice> evaluate(
+  public Optional<ValidationNotice> evaluate(
       CandidateSelection candidate,
       List<ExistingSelection> existingSelections,
       ProgramCreditLimit creditLimit) {
@@ -49,7 +49,7 @@ class CreditSummaryCalculator {
    * @param selections the selections to summarize
    * @return map of programId → total selected credits
    */
-  Map<UUID, Double> computeCreditsByProgram(List<ExistingSelection> selections) {
+  public Map<UUID, Double> computeCreditsByProgram(List<ExistingSelection> selections) {
     Map<UUID, Double> result = new HashMap<>();
     for (ExistingSelection sel : selections) {
       result.merge(sel.programId(), sel.credits(), Double::sum);
