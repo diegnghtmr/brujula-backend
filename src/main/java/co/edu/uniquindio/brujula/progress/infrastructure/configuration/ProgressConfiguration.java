@@ -5,6 +5,7 @@ import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMall
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.ListJourneysQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateCourseAttemptUseCase;
+import co.edu.uniquindio.brujula.progress.application.port.in.api.GetStudentCourseHistoryQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateSubscriptionUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteSubscriptionUseCase;
@@ -25,6 +26,7 @@ import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionCur
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionProgressService;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService;
 import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
+import co.edu.uniquindio.brujula.progress.application.service.GetStudentCourseHistoryService;
 import co.edu.uniquindio.brujula.progress.application.service.UpdateCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.UpdateSubscriptionService;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
@@ -168,6 +170,17 @@ class ProgressConfiguration {
   // -------------------------------------------------------------------------
   // WU4: Curriculum and progress summary beans
   // -------------------------------------------------------------------------
+
+  // -------------------------------------------------------------------------
+  // WU2: Cross-module read API
+  // -------------------------------------------------------------------------
+
+  @Bean
+  GetStudentCourseHistoryQuery getStudentCourseHistoryService(
+      LoadSubscriptionPort loadSubscriptionPort,
+      LoadCourseAttemptPort loadCourseAttemptPort) {
+    return new GetStudentCourseHistoryService(loadSubscriptionPort, loadCourseAttemptPort);
+  }
 
   @Bean
   GetSubscriptionCurriculumQuery getSubscriptionCurriculumService(
