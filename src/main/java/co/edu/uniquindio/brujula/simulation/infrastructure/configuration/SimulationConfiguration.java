@@ -100,12 +100,16 @@ class SimulationConfiguration {
       LoadSimulationPort loadSimulationPort,
       SaveSimulationPort saveSimulationPort,
       OfferingReadPort offeringReadPort,
+      LoadSimulationSelectionPort loadSimulationSelectionPort,
+      SaveSimulationSelectionPort saveSimulationSelectionPort,
       IdempotencyStorePort idempotencyStorePort,
       JsonCodecPort jsonCodecPort) {
     return new DuplicateSimulationService(
         loadSimulationPort,
         saveSimulationPort,
         offeringReadPort,
+        loadSimulationSelectionPort,
+        saveSimulationSelectionPort,
         idempotencyStorePort,
         jsonCodecPort);
   }

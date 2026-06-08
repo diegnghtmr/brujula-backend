@@ -20,6 +20,7 @@ import co.edu.uniquindio.brujula.simulation.domain.ExistingSelection;
 import co.edu.uniquindio.brujula.simulation.domain.PassedCourseSet;
 import co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement;
 import co.edu.uniquindio.brujula.simulation.domain.ProgramCreditLimit;
+import co.edu.uniquindio.brujula.simulation.domain.SequentialPredecessor;
 import co.edu.uniquindio.brujula.simulation.domain.SimScheduleSession;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
@@ -167,21 +168,33 @@ public class AddSimulationSelectionService implements AddSimulationSelectionUseC
     ProgramCreditLimit creditLimit =
         new ProgramCreditLimit(resolved.programId(), resolvedProgramName, limit);
 
-    // 9. Run validation engine
+    // 9. Resolve sequential-track predecessor info (WU4b — SIMULATION_SEQUENTIAL_ORDER)
+    SequentialPredecessor sequentialPredecessor =
+        curriculumReadPort.sequentialPredecessor(resolved.courseId(), null);
+
+    // 10. Compute accumulated passed credits for MINIMUM_CREDITS rule (VAL-009 / WU4b)
+    // Sum the real credits for each passed course via CurriculumReadPort.courseCredits().
+    // This feeds MinCreditsRule with the actual credit total, not a course-count proxy.
+    int accumulatedPassedCredits = allPassedIds.stream()
+        .mapToInt(id -> curriculumReadPort.courseCredits(id))
+        .sum();
+
+    // 11. Run validation engine (WU4a + WU4b rules)
     SimulationValidationResult validationResult = validationService.validate(
-        candidate, existingSelections, requirements, passedCourseSet, creditLimit);
+        candidate, existingSelections, requirements, passedCourseSet, creditLimit,
+        sequentialPredecessor, accumulatedPassedCredits);
 
     if (validationResult.hasBlockers()) {
       throw new SimulationValidationBlockedException(validationResult.blocking());
     }
 
-    // 10. Persist selection with snapshot
+    // 12. Persist selection with snapshot
     SimulationSelectionId selectionId = SimulationSelectionId.generate();
     SimulationSelection selection = SimulationSelection.create(
         selectionId, command.simulationId(), candidate);
     SimulationSelection saved = saveSimulationSelectionPort.save(selection);
 
-    // 11. Build view + store idempotency record
+    // 13. Build view + store idempotency record
     List<ValidationNotice> warnings = validationResult.warnings();
     SimulationSelectionView view = toView(saved, warnings);
     String responseJson = jsonCodecPort.toJson(view);

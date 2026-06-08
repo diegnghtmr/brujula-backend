@@ -7,13 +7,18 @@ import co.edu.uniquindio.brujula.simulation.application.dto.DuplicateSimulationC
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.DuplicateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
+import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationPort;
+import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationLifecycle;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationNotFoundException;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -34,6 +39,8 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
   private final LoadSimulationPort loadSimulationPort;
   private final SaveSimulationPort saveSimulationPort;
   private final OfferingReadPort offeringReadPort;
+  private final LoadSimulationSelectionPort loadSimulationSelectionPort;
+  private final SaveSimulationSelectionPort saveSimulationSelectionPort;
   private final IdempotencyStorePort idempotencyStorePort;
   private final JsonCodecPort jsonCodecPort;
 
@@ -41,11 +48,15 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
       LoadSimulationPort loadSimulationPort,
       SaveSimulationPort saveSimulationPort,
       OfferingReadPort offeringReadPort,
+      LoadSimulationSelectionPort loadSimulationSelectionPort,
+      SaveSimulationSelectionPort saveSimulationSelectionPort,
       IdempotencyStorePort idempotencyStorePort,
       JsonCodecPort jsonCodecPort) {
     this.loadSimulationPort = loadSimulationPort;
     this.saveSimulationPort = saveSimulationPort;
     this.offeringReadPort = offeringReadPort;
+    this.loadSimulationSelectionPort = loadSimulationSelectionPort;
+    this.saveSimulationSelectionPort = saveSimulationSelectionPort;
     this.idempotencyStorePort = idempotencyStorePort;
     this.jsonCodecPort = jsonCodecPort;
   }
@@ -78,7 +89,7 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
         ? command.name()
         : "Copy of " + source.getName();
 
-    // 5. Create duplicate (empty — selections copied in WU4)
+    // 5. Create duplicate with a new ID
     SimulationId newId = SimulationId.generate();
     Simulation duplicate = Simulation.create(
         newId,
@@ -87,6 +98,28 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
         source.getPeriodId(),
         source.getProgramIds());
     Simulation saved = saveSimulationPort.save(duplicate);
+
+    // 5b. Copy source simulation's selections into the duplicate (WU4b — SIM-006 / Finding F10)
+    List<SimulationSelection> sourceSelections =
+        loadSimulationSelectionPort.loadActiveBySimulationId(command.simulationId());
+    for (SimulationSelection sourceSelection : sourceSelections) {
+      SimulationSelection copiedSelection = SimulationSelection.reconstitute(
+          SimulationSelectionId.generate(),
+          saved.getId().value(),         // new simulationId
+          sourceSelection.getOfferingId(),
+          sourceSelection.getScheduleOptionId(),
+          sourceSelection.getCourseId(),
+          sourceSelection.getCourseName(),
+          sourceSelection.getProgramId(),
+          sourceSelection.getCredits(),
+          sourceSelection.getJourneyCode(),
+          sourceSelection.getOfferingStatus(),
+          sourceSelection.getSelectedOfferingVersion(),
+          sourceSelection.getSessions(),
+          "ACTIVE",
+          0L);
+      saveSimulationSelectionPort.save(copiedSelection);
+    }
 
     // 6. Resolve period name
     String periodName;

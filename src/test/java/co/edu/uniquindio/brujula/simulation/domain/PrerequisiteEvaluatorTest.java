@@ -188,6 +188,97 @@ class PrerequisiteEvaluatorTest {
   }
 
   // -------------------------------------------------------------------------
+  // collectSoftWarnings() — WU4b soft-prereq warning collection
+  // -------------------------------------------------------------------------
+
+  @Test
+  void collectSoftWarnings_inferredMediumUnmet_returnsWarning() {
+    // SOFT edge: inferred=true AND confidence=MEDIUM → warning when unmet
+    PrereqRequirement softReq = new PrereqRequirement(
+        courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
+    CandidateSelection candidate = buildCandidate(courseId);
+    PassedCourseSet passed = PassedCourseSet.empty(); // not passed
+
+    List<ValidationNotice> warnings =
+        evaluator.collectSoftWarnings(candidate, List.of(softReq), passed);
+
+    assertThat(warnings).hasSize(1);
+    assertThat(warnings.get(0).code()).isEqualTo("SIMULATION_SOFT_PREREQ_WARNING");
+    assertThat(warnings.get(0).metadata()).containsEntry("requiredCourseName", "Estadística");
+    assertThat(warnings.get(0).metadata()).containsEntry("confidence", "MEDIUM");
+  }
+
+  @Test
+  void collectSoftWarnings_inferredLowUnmet_returnsWarning() {
+    // SOFT edge: inferred=true AND confidence=LOW → warning
+    PrereqRequirement softReq = new PrereqRequirement(
+        courseId, prereqId, "COURSE_PASSED", "LOW", true, "Química");
+    CandidateSelection candidate = buildCandidate(courseId);
+
+    List<ValidationNotice> warnings =
+        evaluator.collectSoftWarnings(candidate, List.of(softReq), PassedCourseSet.empty());
+
+    assertThat(warnings).hasSize(1);
+    assertThat(warnings.get(0).code()).isEqualTo("SIMULATION_SOFT_PREREQ_WARNING");
+  }
+
+  @Test
+  void collectSoftWarnings_inferredNullConfidenceUnmet_returnsWarning() {
+    // SOFT edge: inferred=true AND confidence=null → treated as LOW → warning
+    PrereqRequirement softReq = new PrereqRequirement(
+        courseId, prereqId, "COURSE_PASSED", null, true, "Optional Course");
+    CandidateSelection candidate = buildCandidate(courseId);
+
+    List<ValidationNotice> warnings =
+        evaluator.collectSoftWarnings(candidate, List.of(softReq), PassedCourseSet.empty());
+
+    assertThat(warnings).hasSize(1);
+    assertThat(warnings.get(0).code()).isEqualTo("SIMULATION_SOFT_PREREQ_WARNING");
+    assertThat(warnings.get(0).metadata()).containsEntry("confidence", "UNKNOWN");
+  }
+
+  @Test
+  void collectSoftWarnings_highConfidenceInferred_noWarning() {
+    // inferred=true BUT confidence=HIGH → HARD edge → NOT collected as warning
+    PrereqRequirement hardReq = new PrereqRequirement(
+        courseId, prereqId, "COURSE_PASSED", "HIGH", true, "Cálculo I");
+    CandidateSelection candidate = buildCandidate(courseId);
+
+    List<ValidationNotice> warnings =
+        evaluator.collectSoftWarnings(candidate, List.of(hardReq), PassedCourseSet.empty());
+
+    assertThat(warnings).isEmpty();
+  }
+
+  @Test
+  void collectSoftWarnings_softPrereqMet_noWarning() {
+    // SOFT edge but student already passed it → no warning
+    PrereqRequirement softReq = new PrereqRequirement(
+        courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
+    CandidateSelection candidate = buildCandidate(courseId);
+    PassedCourseSet passed = new PassedCourseSet(Set.of(prereqId)); // passed!
+
+    List<ValidationNotice> warnings =
+        evaluator.collectSoftWarnings(candidate, List.of(softReq), passed);
+
+    assertThat(warnings).isEmpty();
+  }
+
+  @Test
+  void collectSoftWarnings_officialUnmet_noWarning() {
+    // Official (inferred=false) unmet → not a SOFT edge → NOT in soft warnings
+    // (it would be collected by evaluate() as BLOCKING, not here)
+    PrereqRequirement hardReq = new PrereqRequirement(
+        courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Álgebra Lineal");
+    CandidateSelection candidate = buildCandidate(courseId);
+
+    List<ValidationNotice> warnings =
+        evaluator.collectSoftWarnings(candidate, List.of(hardReq), PassedCourseSet.empty());
+
+    assertThat(warnings).isEmpty();
+  }
+
+  // -------------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------------
 

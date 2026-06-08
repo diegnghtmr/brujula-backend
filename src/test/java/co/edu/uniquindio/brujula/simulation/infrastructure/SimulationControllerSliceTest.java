@@ -547,6 +547,50 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
+  // FIX F4: HTTP 409 for WU4b code SIMULATION_DUPLICATE_SELECTION
+  // -------------------------------------------------------------------------
+
+  /**
+   * FIX F4: Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json
+   * with code SIMULATION_DUPLICATE_SELECTION when the use case throws
+   * SimulationValidationBlockedException carrying that code (WU4b duplicate rule).
+   *
+   * <p>Mirrors the add_selection_scheduleClash_returns_409_problem_json pattern (WU4a),
+   * confirming the exception handler maps WU4b codes correctly through the HTTP stack.
+   */
+  @Test
+  void add_selection_duplicateSelection_returns_409_problem_json() throws Exception {
+    UUID simId = UUID.randomUUID();
+    UUID scheduleOptionId = UUID.randomUUID();
+
+    ValidationNotice duplicateNotice = new ValidationNotice(
+        "SIMULATION_DUPLICATE_SELECTION",
+        "This course is already in the simulation",
+        Map.of("courseId", UUID.randomUUID().toString(), "courseName", "Data Structures"));
+
+    when(addSimulationSelectionUseCase.addSelection(any()))
+        .thenThrow(new SimulationValidationBlockedException(List.of(duplicateNotice)));
+
+    mockMvc
+        .perform(
+            post("/me/simulations/{id}/selections", simId)
+                .with(csrf())
+                .with(oidcLogin()
+                    .idToken(t -> t.subject(studentSub))
+                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"scheduleOptionId":"%s"}
+                    """.formatted(scheduleOptionId)))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("SIMULATION_DUPLICATE_SELECTION"))
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.metadata").exists());
+  }
+
+  // -------------------------------------------------------------------------
   // WU5 stub: reviewSimulation → 501
   // -------------------------------------------------------------------------
 
