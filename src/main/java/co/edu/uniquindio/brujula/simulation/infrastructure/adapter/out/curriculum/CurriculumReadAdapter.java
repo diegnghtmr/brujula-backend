@@ -2,10 +2,13 @@ package co.edu.uniquindio.brujula.simulation.infrastructure.adapter.out.curricul
 
 import co.edu.uniquindio.brujula.curriculum.application.dto.CourseRequirementView;
 import co.edu.uniquindio.brujula.curriculum.application.dto.CourseView;
+import co.edu.uniquindio.brujula.curriculum.application.dto.SequentialTrackView;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.GetCourseQuery;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.ListCourseRequirementsQuery;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.ListSequentialTracksQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadPort;
 import co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement;
+import co.edu.uniquindio.brujula.simulation.domain.SequentialPredecessor;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -14,20 +17,24 @@ import org.springframework.stereotype.Component;
  * Anti-corruption adapter: bridges simulation's {@link CurriculumReadPort} to
  * curriculum's published {@code curriculum::api} named interface (INV-001).
  *
- * <p>Maps {@code CourseRequirementView} to sim-local {@link PrereqRequirement} records
- * at this boundary (ARQ-002). The simulation domain never sees curriculum types.
+ * <p>Maps {@code CourseRequirementView} to sim-local {@link PrereqRequirement} records and
+ * resolves sequential-track predecessor info for VAL-008 (SIMULATION_SEQUENTIAL_ORDER).
+ * The simulation domain never sees curriculum types (ARQ-002).
  */
 @Component
 class CurriculumReadAdapter implements CurriculumReadPort {
 
   private final ListCourseRequirementsQuery listCourseRequirementsQuery;
   private final GetCourseQuery getCourseQuery;
+  private final ListSequentialTracksQuery listSequentialTracksQuery;
 
   CurriculumReadAdapter(
       ListCourseRequirementsQuery listCourseRequirementsQuery,
-      GetCourseQuery getCourseQuery) {
+      GetCourseQuery getCourseQuery,
+      ListSequentialTracksQuery listSequentialTracksQuery) {
     this.listCourseRequirementsQuery = listCourseRequirementsQuery;
     this.getCourseQuery = getCourseQuery;
+    this.listSequentialTracksQuery = listSequentialTracksQuery;
   }
 
   @Override
@@ -41,7 +48,8 @@ class CurriculumReadAdapter implements CurriculumReadPort {
             v.type(),
             v.confidence(),
             v.inferred(),
-            resolveCourseName(v.requiredCourseId())))
+            resolveCourseName(v.requiredCourseId()),
+            v.requiredCredits()))
         .toList();
   }
 
@@ -49,6 +57,59 @@ class CurriculumReadAdapter implements CurriculumReadPort {
   public int courseCredits(UUID courseId) {
     CourseView course = getCourseQuery.getCourse(courseId);
     return course.credits();
+  }
+
+  @Override
+  public SequentialPredecessor sequentialPredecessor(UUID courseId, UUID planId) {
+    // Resolve course type; use planId from CourseView if not supplied
+    String courseType;
+    UUID resolvedPlanId = planId;
+    try {
+      CourseView course = getCourseQuery.getCourse(courseId);
+      courseType = course != null ? course.type() : "REQUIRED";
+      if (resolvedPlanId == null && course != null) {
+        resolvedPlanId = course.planId();
+      }
+    } catch (Exception e) {
+      // Unknown course — treat as REQUIRED (safe default, no sequential gate)
+      courseType = "REQUIRED";
+    }
+
+    // Only DEEPENING and PERSONAL_ELECTIVE courses are subject to sequential ordering
+    boolean isSequentialKind = "DEEPENING".equalsIgnoreCase(courseType)
+        || "PERSONAL_ELECTIVE".equalsIgnoreCase(courseType);
+    if (!isSequentialKind) {
+      return new SequentialPredecessor(courseId, courseType, null, null);
+    }
+
+    if (resolvedPlanId == null) {
+      // Cannot determine plan → no sequential gate can be enforced
+      return new SequentialPredecessor(courseId, courseType, null, null);
+    }
+
+    // Find the sequential track for this planId that contains this courseId
+    try {
+      List<SequentialTrackView> tracks =
+          listSequentialTracksQuery.listSequentialTracks(resolvedPlanId, null);
+      for (SequentialTrackView track : tracks) {
+        boolean containsCourse = track.levels().stream()
+            .flatMap(level -> level.optionCourseIds().stream())
+            .anyMatch(id -> id.equals(courseId));
+
+        if (containsCourse && track.gatekeeperCourseId() != null) {
+          // Track found and has a gatekeeper
+          String gatekeeperName = resolveCourseName(track.gatekeeperCourseId());
+          return new SequentialPredecessor(
+              courseId, courseType, track.gatekeeperCourseId(), gatekeeperName);
+        }
+      }
+    } catch (Exception e) {
+      // Sequential track query failed → treat as no gate (fail-open for availability)
+      return new SequentialPredecessor(courseId, courseType, null, null);
+    }
+
+    // Course is DEEPENING/PERSONAL_ELECTIVE but no gatekeeper defined for its track
+    return new SequentialPredecessor(courseId, courseType, null, null);
   }
 
   private String resolveCourseName(UUID courseId) {

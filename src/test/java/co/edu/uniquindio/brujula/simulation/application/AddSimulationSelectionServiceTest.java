@@ -25,6 +25,7 @@ import co.edu.uniquindio.brujula.simulation.application.port.out.ProgramNameRead
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.service.AddSimulationSelectionService;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
+import co.edu.uniquindio.brujula.simulation.domain.SequentialPredecessor;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationLifecycle;
@@ -330,6 +331,264 @@ class AddSimulationSelectionServiceTest {
     SimulationSelectionView view = sut.addSelection(command);
     assertThat(view).isNotNull();
     verify(saveSimulationSelectionPort).save(any(SimulationSelection.class));
+  }
+
+  // -------------------------------------------------------------------------
+  // WU4b: Duplicate selection blocking (SIMULATION_DUPLICATE_SELECTION)
+  // -------------------------------------------------------------------------
+
+  /**
+   * WU4b: When the same courseId is already in the simulation, addSelection must throw
+   * SimulationValidationBlockedException with SIMULATION_DUPLICATE_SELECTION.
+   */
+  @Test
+  void addSelection_duplicateCourse_throwsBlockedException() {
+    UUID idempotencyKey = UUID.randomUUID();
+    AddSelectionCommand command = new AddSelectionCommand(
+        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "dup-hash");
+
+    // Existing selection with the SAME courseId that the candidate resolves to
+    SimulationSelection existingSel = buildPersistedSelection(courseId, programId, 3.0);
+
+    Simulation simulation = buildSimulation();
+    when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
+    when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
+        .thenReturn(buildResolutionView()); // resolves to courseId
+    when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
+        .thenReturn(List.of(existingSel)); // same courseId already present
+    when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(Set.of());
+    when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of());
+    when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
+    when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
+
+    assertThatThrownBy(() -> sut.addSelection(command))
+        .isInstanceOf(SimulationValidationBlockedException.class)
+        .satisfies(ex -> {
+          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
+          assertThat(blocked.primaryNotice().code()).isEqualTo("SIMULATION_DUPLICATE_SELECTION");
+        });
+
+    verify(saveSimulationSelectionPort, never()).save(any());
+  }
+
+  // -------------------------------------------------------------------------
+  // WU4b: Soft-prereq warning (SIMULATION_SOFT_PREREQ_WARNING)
+  // -------------------------------------------------------------------------
+
+  /**
+   * WU4b: When a soft (inferred MEDIUM) prerequisite is unmet, addSelection returns 201
+   * (no blocking exception) and the view contains the SIMULATION_SOFT_PREREQ_WARNING notice.
+   */
+  @Test
+  void addSelection_softPrereqUnmet_returnsViewWithWarning() {
+    UUID idempotencyKey = UUID.randomUUID();
+    UUID softPrereqId = UUID.randomUUID();
+    AddSelectionCommand command = new AddSelectionCommand(
+        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "soft-hash");
+
+    // Soft (inferred=true, MEDIUM) prerequisite — unmet
+    co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement softReq =
+        new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
+            courseId, softPrereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
+
+    Simulation simulation = buildSimulation();
+    when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
+    when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
+        .thenReturn(buildResolutionView());
+    when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
+        .thenReturn(List.of());
+    // Student has NOT passed the soft prereq
+    when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(Set.of());
+    when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of(softReq));
+    when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
+    when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
+    // Null sequential predecessor (REQUIRED course type)
+    when(curriculumReadPort.sequentialPredecessor(courseId, null))
+        .thenReturn(new SequentialPredecessor(courseId, "REQUIRED", null, null));
+    when(saveSimulationSelectionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(jsonCodecPort.toJson(any())).thenReturn("{}");
+
+    // Must NOT throw — soft prereq is a warning, not a blocker
+    SimulationSelectionView view = sut.addSelection(command);
+
+    assertThat(view).isNotNull();
+    // The view must include the soft warning
+    assertThat(view.warnings()).isNotEmpty();
+    assertThat(view.warnings()).anyMatch(
+        n -> "SIMULATION_SOFT_PREREQ_WARNING".equals(n.code()));
+    verify(saveSimulationSelectionPort).save(any(SimulationSelection.class));
+  }
+
+  // -------------------------------------------------------------------------
+  // FIX F1 RED→GREEN: MinCreditsRule fed with real credit SUM (not size())
+  // -------------------------------------------------------------------------
+
+  /**
+   * RED→GREEN proof for FIX F1 (fix-batch WU4b).
+   *
+   * <p>Scenario: student has passed 10 courses of 5 credits each = 50 actual credits.
+   * The candidate course has a MINIMUM_CREDITS requirement of 60.
+   * With the old size()-proxy: accumulatedCredits = 10 (count) → rule compares 10 < 60 → BLOCKS.
+   * With the new sum: accumulatedCredits = 50 (sum) → rule compares 50 < 60 → BLOCKS.
+   * Both produce the same blocking result here — the GREEN case below proves the sum is used.
+   *
+   * <p>Green case: 12 courses × 5 credits = 60 = exactly the minimum → ALLOWED (no throw).
+   * With size(): 12 < 60 → would BLOCK (wrong). With sum(): 60 ≥ 60 → ALLOWED (correct).
+   * This test WOULD HAVE FAILED (red) with the old size() proxy; now it's GREEN with the fix.
+   */
+  @Test
+  void addSelection_minCreditsNotMet_insufficientCreditSum_throwsBlockedException() {
+    UUID idempotencyKey = UUID.randomUUID();
+    AddSelectionCommand command = new AddSelectionCommand(
+        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "min-cred-hash");
+
+    // 10 passed courses, each worth 5 credits → real sum = 50; count = 10
+    UUID passedCourse1 = UUID.randomUUID();
+    UUID passedCourse2 = UUID.randomUUID();
+    UUID passedCourse3 = UUID.randomUUID();
+    UUID passedCourse4 = UUID.randomUUID();
+    UUID passedCourse5 = UUID.randomUUID();
+    UUID passedCourse6 = UUID.randomUUID();
+    UUID passedCourse7 = UUID.randomUUID();
+    UUID passedCourse8 = UUID.randomUUID();
+    UUID passedCourse9 = UUID.randomUUID();
+    UUID passedCourse10 = UUID.randomUUID();
+    Set<UUID> passedIds = Set.of(passedCourse1, passedCourse2, passedCourse3,
+        passedCourse4, passedCourse5, passedCourse6, passedCourse7,
+        passedCourse8, passedCourse9, passedCourse10);
+
+    // MINIMUM_CREDITS requirement: student needs 60 accumulated credits to take this course
+    co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement minCredReq =
+        new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
+            courseId, null, "MINIMUM_CREDITS", null, false, null, 60);
+
+    Simulation simulation = buildSimulation();
+    when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
+    when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
+        .thenReturn(buildResolutionView());
+    when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
+        .thenReturn(List.of());
+    when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(passedIds);
+    // Each passed course is worth 5 credits → sum = 50, but count = 10
+    for (UUID pid : passedIds) {
+      when(curriculumReadPort.courseCredits(pid)).thenReturn(5);
+    }
+    when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of(minCredReq));
+    when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
+    when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
+
+    // Real sum = 50 < 60 → must block
+    assertThatThrownBy(() -> sut.addSelection(command))
+        .isInstanceOf(SimulationValidationBlockedException.class)
+        .satisfies(ex -> {
+          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
+          assertThat(blocked.primaryNotice().code()).isEqualTo("SIMULATION_MIN_CREDITS_NOT_MET");
+        });
+
+    verify(saveSimulationSelectionPort, never()).save(any());
+  }
+
+  /**
+   * GREEN case: 12 passed courses × 5 credits = 60 = exactly the minimum → ALLOWED.
+   *
+   * <p>With old size() proxy: accumulatedCredits = 12 < 60 → rule fires BLOCK (WRONG behavior).
+   * With new credit-sum: accumulatedCredits = 60 ≥ 60 → rule passes, selection saved (CORRECT).
+   * This test was RED with size() and is GREEN with the credit-sum fix.
+   */
+  @Test
+  void addSelection_minCreditsMet_exactCreditSum_allowed() {
+    UUID idempotencyKey = UUID.randomUUID();
+    AddSelectionCommand command = new AddSelectionCommand(
+        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "min-cred-ok-hash");
+
+    // 12 passed courses × 5 credits each = 60 (exactly meets minimum)
+    Set<UUID> passedIds = new java.util.HashSet<>();
+    for (int i = 0; i < 12; i++) {
+      passedIds.add(UUID.randomUUID());
+    }
+
+    // MINIMUM_CREDITS requirement: 60 credits required
+    co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement minCredReq =
+        new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
+            courseId, null, "MINIMUM_CREDITS", null, false, null, 60);
+
+    Simulation simulation = buildSimulation();
+    when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
+    when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
+        .thenReturn(buildResolutionView());
+    when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
+        .thenReturn(List.of());
+    when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(passedIds);
+    // Each passed course is worth 5 credits → sum = 60 = exactly the minimum
+    for (UUID pid : passedIds) {
+      when(curriculumReadPort.courseCredits(pid)).thenReturn(5);
+    }
+    when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of(minCredReq));
+    when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
+    when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
+    when(saveSimulationSelectionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(jsonCodecPort.toJson(any())).thenReturn("{}");
+
+    // Real sum = 60 ≥ 60 → ALLOWED (no exception); would have failed with size()=12 < 60
+    SimulationSelectionView view = sut.addSelection(command);
+    assertThat(view).isNotNull();
+    verify(saveSimulationSelectionPort).save(any(SimulationSelection.class));
+  }
+
+  // -------------------------------------------------------------------------
+  // FIX F3: acknowledgeWarnings=true + blocking notice → still 409
+  // -------------------------------------------------------------------------
+
+  /**
+   * FIX F3: Asserts that a BLOCKING validation notice is never bypassed by acknowledgeWarnings=true.
+   *
+   * <p>Per spec VAL-009: warnings are never blocking — they always ride in warnings[].
+   * The acknowledgeWarnings flag is RESERVED / no-op. A BLOCKING notice (e.g. already-passed)
+   * always produces SimulationValidationBlockedException regardless of the flag value.
+   */
+  @Test
+  void addSelection_blockingPresent_acknowledgeWarningsTrue_stillThrows() {
+    UUID idempotencyKey = UUID.randomUUID();
+    // acknowledgeWarnings = true — must NOT bypass blocking
+    AddSelectionCommand command = new AddSelectionCommand(
+        idempotencyKey, simulationId, ownerId, scheduleOptionId, true, "ack-block-hash");
+
+    Simulation simulation = buildSimulation();
+    when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
+    when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
+        .thenReturn(buildResolutionView());
+    when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
+        .thenReturn(List.of());
+    // Student has already passed the course → BLOCKING notice
+    when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(Set.of(courseId));
+    when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of());
+    when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
+    when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
+
+    // Even with acknowledgeWarnings=true, BLOCKING must still throw 409
+    assertThatThrownBy(() -> sut.addSelection(command))
+        .isInstanceOf(SimulationValidationBlockedException.class)
+        .satisfies(ex -> {
+          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
+          assertThat(blocked.primaryNotice().code()).isEqualTo("SIMULATION_COURSE_ALREADY_PASSED");
+        });
+
+    verify(saveSimulationSelectionPort, never()).save(any());
   }
 
   /**
