@@ -22,16 +22,23 @@ import co.edu.uniquindio.brujula.identity.domain.AppUser;
 import co.edu.uniquindio.brujula.identity.domain.Role;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
+import co.edu.uniquindio.brujula.simulation.application.port.in.AddSimulationSelectionUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.CreateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.DeleteSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.DuplicateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.GetSimulationQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListMySimulationsQuery;
+import co.edu.uniquindio.brujula.simulation.application.port.in.ListSimulationSelectionsQuery;
+import co.edu.uniquindio.brujula.simulation.application.port.in.RemoveSimulationSelectionUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.UpdateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationNotFoundException;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationBlockedException;
+import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,6 +86,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   @MockitoBean private UpdateSimulationUseCase updateSimulationUseCase;
   @MockitoBean private DeleteSimulationUseCase deleteSimulationUseCase;
   @MockitoBean private DuplicateSimulationUseCase duplicateSimulationUseCase;
+  // WU4a
+  @MockitoBean private AddSimulationSelectionUseCase addSimulationSelectionUseCase;
+  @MockitoBean private RemoveSimulationSelectionUseCase removeSimulationSelectionUseCase;
+  @MockitoBean private ListSimulationSelectionsQuery listSimulationSelectionsQuery;
 
   private MockMvc mockMvc;
   private String studentSub;
@@ -377,13 +388,22 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4 stub: addSimulationSelection → 501
+  // WU4a: addSimulationSelection → 201 (implemented in WU4a)
   // -------------------------------------------------------------------------
 
   @Test
-  void add_selection_returns_501() throws Exception {
+  void add_selection_returns_201() throws Exception {
     UUID simId = UUID.randomUUID();
-    UUID offeringId = UUID.randomUUID();
+    UUID scheduleOptionId = UUID.randomUUID();
+    UUID selectionId = UUID.randomUUID();
+    UUID courseId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+
+    SimulationSelectionView view = new SimulationSelectionView(
+        selectionId, UUID.randomUUID(), scheduleOptionId, courseId,
+        "Algorithms", programId, 3.0, "A", "PUBLISHED", 1L, List.of(), List.of());
+
+    when(addSimulationSelectionUseCase.addSelection(any())).thenReturn(view);
 
     mockMvc
         .perform(
@@ -397,18 +417,22 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {"scheduleOptionId":"%s"}
-                    """.formatted(offeringId)))
-        .andExpect(status().isNotImplemented());
+                    """.formatted(scheduleOptionId)))
+        .andExpect(status().isCreated())
+        .andExpect(header().string("Location", "/me/simulations/" + simId + "/selections/" + selectionId))
+        .andExpect(jsonPath("$.id").value(selectionId.toString()));
   }
 
   // -------------------------------------------------------------------------
-  // WU4 stub: removeSimulationSelection → 501
+  // WU4a: removeSimulationSelection → 204 (implemented in WU4a)
   // -------------------------------------------------------------------------
 
   @Test
-  void remove_selection_returns_501() throws Exception {
+  void remove_selection_returns_204() throws Exception {
     UUID simId = UUID.randomUUID();
     UUID selectionId = UUID.randomUUID();
+
+    doNothing().when(removeSimulationSelectionUseCase).removeSelection(eq(simId), eq(selectionId), any());
 
     mockMvc
         .perform(
@@ -418,16 +442,18 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
                     .idToken(t -> t.subject(studentSub))
                     .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token"))
-        .andExpect(status().isNotImplemented());
+        .andExpect(status().isNoContent());
   }
 
   // -------------------------------------------------------------------------
-  // WU4 stub: listSimulationSelections → 501
+  // WU4a: listSimulationSelections → 200 (implemented in WU4a)
   // -------------------------------------------------------------------------
 
   @Test
-  void list_selections_returns_501() throws Exception {
+  void list_selections_returns_200() throws Exception {
     UUID simId = UUID.randomUUID();
+
+    when(listSimulationSelectionsQuery.listSelections(eq(simId), any())).thenReturn(List.of());
 
     mockMvc
         .perform(
@@ -435,7 +461,89 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
                 .with(oidcLogin()
                     .idToken(t -> t.subject(studentSub))
                     .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
-        .andExpect(status().isNotImplemented());
+        .andExpect(status().isOk());
+  }
+
+  // -------------------------------------------------------------------------
+  // WARNING-1 fix: Real HTTP 409 problem+json for SIMULATION_SCHEDULE_CLASH
+  // -------------------------------------------------------------------------
+
+  /**
+   * Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json
+   * with the expected code, title, status, detail, and metadata.conflictingCourseName fields
+   * when the selection service throws SimulationValidationBlockedException.
+   *
+   * <p>This test exercises the REAL exception handler (SimulationExceptionHandler) end-to-end
+   * through the HTTP stack, closing the gap that the masked unit-level tests left (WARNING-1).
+   */
+  @Test
+  void add_selection_scheduleClash_returns_409_problem_json() throws Exception {
+    UUID simId = UUID.randomUUID();
+    UUID scheduleOptionId = UUID.randomUUID();
+
+    ValidationNotice clashNotice = new ValidationNotice(
+        "SIMULATION_SCHEDULE_CLASH",
+        "Schedule clash detected with: Algorithms",
+        Map.of("conflictingCourseName", "Algorithms", "day", "MONDAY",
+               "startsAt", "08:00", "endsAt", "10:00"));
+
+    when(addSimulationSelectionUseCase.addSelection(any()))
+        .thenThrow(new SimulationValidationBlockedException(List.of(clashNotice)));
+
+    mockMvc
+        .perform(
+            post("/me/simulations/{id}/selections", simId)
+                .with(csrf())
+                .with(oidcLogin()
+                    .idToken(t -> t.subject(studentSub))
+                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"scheduleOptionId":"%s"}
+                    """.formatted(scheduleOptionId)))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("SIMULATION_SCHEDULE_CLASH"))
+        .andExpect(jsonPath("$.metadata.conflictingCourseName").value("Algorithms"))
+        .andExpect(jsonPath("$.status").value(409));
+  }
+
+  /**
+   * Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json
+   * with code SIMULATION_CREDIT_LIMIT_EXCEEDED and metadata.programName present.
+   */
+  @Test
+  void add_selection_creditLimitExceeded_returns_409_problem_json() throws Exception {
+    UUID simId = UUID.randomUUID();
+    UUID scheduleOptionId = UUID.randomUUID();
+
+    ValidationNotice creditNotice = new ValidationNotice(
+        "SIMULATION_CREDIT_LIMIT_EXCEEDED",
+        "Adding this course would exceed the credit limit for program: Systems Engineering",
+        Map.of("programName", "Systems Engineering", "attemptedCredits", 24.0,
+               "creditLimit", 23));
+
+    when(addSimulationSelectionUseCase.addSelection(any()))
+        .thenThrow(new SimulationValidationBlockedException(List.of(creditNotice)));
+
+    mockMvc
+        .perform(
+            post("/me/simulations/{id}/selections", simId)
+                .with(csrf())
+                .with(oidcLogin()
+                    .idToken(t -> t.subject(studentSub))
+                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"scheduleOptionId":"%s"}
+                    """.formatted(scheduleOptionId)))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("SIMULATION_CREDIT_LIMIT_EXCEEDED"))
+        .andExpect(jsonPath("$.metadata.programName").value("Systems Engineering"))
+        .andExpect(jsonPath("$.status").value(409));
   }
 
   // -------------------------------------------------------------------------
