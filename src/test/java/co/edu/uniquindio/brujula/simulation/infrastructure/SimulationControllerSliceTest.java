@@ -20,9 +20,13 @@ import co.edu.uniquindio.brujula.AbstractPostgresIntegrationTest;
 import co.edu.uniquindio.brujula.identity.application.port.out.SaveAppUserPort;
 import co.edu.uniquindio.brujula.identity.domain.AppUser;
 import co.edu.uniquindio.brujula.identity.domain.Role;
+import co.edu.uniquindio.brujula.simulation.application.dto.ProgramCreditSummaryView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
-import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationValidationView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
+import co.edu.uniquindio.brujula.simulation.application.dto.ValidationNoticeView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.AddSimulationSelectionUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.CreateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.DeleteSimulationUseCase;
@@ -31,9 +35,11 @@ import co.edu.uniquindio.brujula.simulation.application.port.in.GetSimulationQue
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListMySimulationsQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListSimulationSelectionsQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.RemoveSimulationSelectionUseCase;
+import co.edu.uniquindio.brujula.simulation.application.port.in.ReviewSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.UpdateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationNotFoundException;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationStillBlockedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationBlockedException;
 import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
 import java.time.Instant;
@@ -90,6 +96,8 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   @MockitoBean private AddSimulationSelectionUseCase addSimulationSelectionUseCase;
   @MockitoBean private RemoveSimulationSelectionUseCase removeSimulationSelectionUseCase;
   @MockitoBean private ListSimulationSelectionsQuery listSimulationSelectionsQuery;
+  // WU5
+  @MockitoBean private ReviewSimulationUseCase reviewSimulationUseCase;
 
   private MockMvc mockMvc;
   private String studentSub;
@@ -210,20 +218,29 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SIM-003: GET /me/simulations/{id} → 200 skeleton detail
+  // SIM-003: GET /me/simulations/{id} → 200 full detail (WU5)
   // -------------------------------------------------------------------------
 
   @Test
-  void get_simulation_returns_200_skeleton_detail() throws Exception {
+  void get_simulation_returns_200_full_detail() throws Exception {
     UUID simId = UUID.randomUUID();
     UUID periodId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    SimulationView view = new SimulationView(
-        simId, "Sim Detail", periodId, "2026-2",
-        List.of(programId), "CURRENT", Instant.now(), Instant.now(), 0L);
+    // Full detail view with all WU5 sub-objects populated
+    ProgramCreditSummaryView cs = new ProgramCreditSummaryView(
+        programId, "Systems Engineering", 12.0, 23, true);
 
-    when(getSimulationQuery.getSimulation(eq(simId), any())).thenReturn(view);
+    SimulationDetailView detailView = new SimulationDetailView(
+        simId, "Sim Detail", periodId, "2026-2",
+        List.of(programId), "CURRENT", Instant.now(), Instant.now(), 0L,
+        List.of(),              // selections empty
+        List.of(cs),            // creditSummary with real data
+        List.of(),              // weeklySchedule empty
+        0.0,                    // totalWeeklyHours
+        new SimulationValidationView(List.of(), List.of())); // validation clean
+
+    when(getSimulationQuery.getSimulation(eq(simId), any())).thenReturn(detailView);
 
     mockMvc
         .perform(
@@ -234,7 +251,16 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(simId.toString()))
         .andExpect(jsonPath("$.name").value("Sim Detail"))
-        .andExpect(jsonPath("$.status").value("CURRENT"));
+        .andExpect(jsonPath("$.status").value("CURRENT"))
+        .andExpect(jsonPath("$.creditSummary").isArray())
+        .andExpect(jsonPath("$.creditSummary[0].programId").value(programId.toString()))
+        .andExpect(jsonPath("$.creditSummary[0].programName").value("Systems Engineering"))
+        .andExpect(jsonPath("$.creditSummary[0].selectedCredits").value(12.0))
+        .andExpect(jsonPath("$.creditSummary[0].creditLimit").value(23))
+        .andExpect(jsonPath("$.creditSummary[0].withinLimit").value(true))
+        .andExpect(jsonPath("$.weeklySchedule").isArray())
+        .andExpect(jsonPath("$.validation.blocking").isArray())
+        .andExpect(jsonPath("$.validation.warnings").isArray());
   }
 
   // -------------------------------------------------------------------------
@@ -591,12 +617,22 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU5 stub: reviewSimulation → 501
+  // WU5: reviewSimulation → 200 CURRENT (clean, no blockers)
   // -------------------------------------------------------------------------
 
   @Test
-  void review_simulation_returns_501() throws Exception {
+  void review_simulation_clean_returns_200_current() throws Exception {
     UUID simId = UUID.randomUUID();
+    UUID periodId = UUID.randomUUID();
+    UUID programId = UUID.randomUUID();
+
+    SimulationDetailView detailView = new SimulationDetailView(
+        simId, "Reviewed Sim", periodId, "2026-2",
+        List.of(programId), "CURRENT", Instant.now(), Instant.now(), 0L,
+        List.of(), List.of(), List.of(), 0.0,
+        new SimulationValidationView(List.of(), List.of()));
+
+    when(reviewSimulationUseCase.reviewSimulation(eq(simId), any())).thenReturn(detailView);
 
     mockMvc
         .perform(
@@ -606,6 +642,60 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
                     .idToken(t -> t.subject(studentSub))
                     .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token"))
-        .andExpect(status().isNotImplemented());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(simId.toString()))
+        .andExpect(jsonPath("$.status").value("CURRENT"))
+        .andExpect(jsonPath("$.validation.blocking").isArray());
+  }
+
+  // -------------------------------------------------------------------------
+  // WU5: reviewSimulation → 409 when blockers persist (STALE-002)
+  // -------------------------------------------------------------------------
+
+  @Test
+  void review_simulation_with_persistent_blocker_returns_409() throws Exception {
+    UUID simId = UUID.randomUUID();
+
+    ValidationNotice clashNotice = new ValidationNotice(
+        "SIMULATION_SCHEDULE_CLASH",
+        "Clash still exists after review",
+        Map.of("day", "WEDNESDAY", "conflictingCourseName", "Databases"));
+
+    when(reviewSimulationUseCase.reviewSimulation(eq(simId), any()))
+        .thenThrow(new SimulationStillBlockedException(List.of(clashNotice)));
+
+    mockMvc
+        .perform(
+            post("/me/simulations/{id}/review", simId)
+                .with(csrf())
+                .with(oidcLogin()
+                    .idToken(t -> t.subject(studentSub))
+                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("X-XSRF-TOKEN", "csrf-token"))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("SIMULATION_SCHEDULE_CLASH"))
+        .andExpect(jsonPath("$.status").value(409));
+  }
+
+  // -------------------------------------------------------------------------
+  // WU5: reviewSimulation non-owner → 403 (X-003)
+  // -------------------------------------------------------------------------
+
+  @Test
+  void review_simulation_non_owner_returns_403() throws Exception {
+    UUID simId = UUID.randomUUID();
+
+    when(reviewSimulationUseCase.reviewSimulation(eq(simId), any()))
+        .thenThrow(new SimulationAccessDeniedException(simId));
+
+    mockMvc
+        .perform(
+            post("/me/simulations/{id}/review", simId)
+                .with(csrf())
+                .with(oidcLogin()
+                    .idToken(t -> t.subject(studentSub))
+                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("X-XSRF-TOKEN", "csrf-token"))
+        .andExpect(status().isForbidden());
   }
 }

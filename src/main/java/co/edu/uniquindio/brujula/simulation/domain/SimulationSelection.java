@@ -127,6 +127,26 @@ public class SimulationSelection {
     this.status = "DELETED";
   }
 
+  /**
+   * Return a new selection with a refreshed offering snapshot (used by reviewSimulation, STALE-002).
+   * Bumps {@code selectedOfferingVersion} to the current version and updates the sessions snapshot.
+   *
+   * @param currentOfferingVersion the live offering version
+   * @param currentSessions        fresh session snapshot from the offering module
+   * @param currentOfferingStatus  current offering status string
+   * @return new selection with refreshed snapshot; same id, simulationId, course data
+   */
+  public SimulationSelection withRefreshedSnapshot(
+      long currentOfferingVersion,
+      List<SimScheduleSession> currentSessions,
+      String currentOfferingStatus) {
+    return new SimulationSelection(
+        this.id, this.simulationId, this.offeringId, this.scheduleOptionId,
+        this.courseId, this.courseName, this.programId, this.credits, this.journeyCode,
+        currentOfferingStatus, currentOfferingVersion, currentSessions,
+        this.status, this.version);
+  }
+
   // -------------------------------------------------------------------------
   // Accessors
   // -------------------------------------------------------------------------

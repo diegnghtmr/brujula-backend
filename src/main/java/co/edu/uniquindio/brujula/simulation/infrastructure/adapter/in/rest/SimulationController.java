@@ -10,13 +10,13 @@ import co.edu.uniquindio.brujula.generated.model.SimulationSelection;
 import co.edu.uniquindio.brujula.generated.model.SimulationSelectionCreateRequest;
 import co.edu.uniquindio.brujula.generated.model.SimulationStatus;
 import co.edu.uniquindio.brujula.generated.model.SimulationUpdateRequest;
-import co.edu.uniquindio.brujula.generated.model.SimulationValidation;
 import co.edu.uniquindio.brujula.identity.application.dto.UserProfile;
 import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
 import co.edu.uniquindio.brujula.simulation.application.dto.AddSelectionCommand;
 import co.edu.uniquindio.brujula.simulation.application.dto.CreateSimulationCommand;
 import co.edu.uniquindio.brujula.simulation.application.dto.DuplicateSimulationCommand;
 import co.edu.uniquindio.brujula.simulation.application.dto.ListSimulationsCriteria;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
@@ -29,16 +29,14 @@ import co.edu.uniquindio.brujula.simulation.application.port.in.GetSimulationQue
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListMySimulationsQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListSimulationSelectionsQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.RemoveSimulationSelectionUseCase;
+import co.edu.uniquindio.brujula.simulation.application.port.in.ReviewSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.UpdateSimulationUseCase;
 import java.net.URI;
 import java.security.MessageDigest;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -74,6 +72,7 @@ class SimulationController implements SimulationsApi {
   private final AddSimulationSelectionUseCase addSimulationSelectionUseCase;
   private final RemoveSimulationSelectionUseCase removeSimulationSelectionUseCase;
   private final ListSimulationSelectionsQuery listSimulationSelectionsQuery;
+  private final ReviewSimulationUseCase reviewSimulationUseCase;
   private final SimulationRestMapper mapper;
   private final GetCurrentUserQuery getCurrentUserQuery;
 
@@ -87,6 +86,7 @@ class SimulationController implements SimulationsApi {
       AddSimulationSelectionUseCase addSimulationSelectionUseCase,
       RemoveSimulationSelectionUseCase removeSimulationSelectionUseCase,
       ListSimulationSelectionsQuery listSimulationSelectionsQuery,
+      ReviewSimulationUseCase reviewSimulationUseCase,
       SimulationRestMapper mapper,
       GetCurrentUserQuery getCurrentUserQuery) {
     this.createSimulationUseCase = createSimulationUseCase;
@@ -98,6 +98,7 @@ class SimulationController implements SimulationsApi {
     this.addSimulationSelectionUseCase = addSimulationSelectionUseCase;
     this.removeSimulationSelectionUseCase = removeSimulationSelectionUseCase;
     this.listSimulationSelectionsQuery = listSimulationSelectionsQuery;
+    this.reviewSimulationUseCase = reviewSimulationUseCase;
     this.mapper = mapper;
     this.getCurrentUserQuery = getCurrentUserQuery;
   }
@@ -156,15 +157,15 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // GET /me/simulations/{simulationId} — get (SIM-003 SKELETON, X-003)
+  // GET /me/simulations/{simulationId} — get full detail (SIM-003, DET-001..003, STALE-001, X-003)
   // -------------------------------------------------------------------------
 
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<SimulationDetail> getSimulation(UUID simulationId) {
     UUID callerId = resolveCallerId();
-    SimulationView view = getSimulationQuery.getSimulation(simulationId, callerId);
-    SimulationDetail detail = toSkeletonDetail(view);
+    SimulationDetailView detailView = getSimulationQuery.getSimulation(simulationId, callerId);
+    SimulationDetail detail = mapper.toDetailDto(detailView);
     return ResponseEntity.ok(detail);
   }
 
@@ -290,13 +291,16 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST .../review — WU5 STUB (501)
+  // POST .../review — reviewSimulation (STALE-002, WU5)
   // -------------------------------------------------------------------------
 
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<SimulationDetail> reviewSimulation(String xXsrfToken, UUID simulationId) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    UUID callerId = resolveCallerId();
+    SimulationDetailView detailView = reviewSimulationUseCase.reviewSimulation(simulationId, callerId);
+    SimulationDetail detail = mapper.toDetailDto(detailView);
+    return ResponseEntity.ok(detail);
   }
 
   // -------------------------------------------------------------------------
@@ -318,38 +322,6 @@ class SimulationController implements SimulationsApi {
       return auth.getName();
     }
     throw new IllegalStateException("No authenticated principal found in SecurityContext");
-  }
-
-  // -------------------------------------------------------------------------
-  // Helper: build a skeleton SimulationDetail for WU3 GET endpoint
-  // Full detail assembly is WU5.
-  // -------------------------------------------------------------------------
-
-  private SimulationDetail toSkeletonDetail(SimulationView view) {
-    OffsetDateTime createdAt = view.createdAt() != null
-        ? view.createdAt().atOffset(ZoneOffset.UTC)
-        : OffsetDateTime.now(ZoneOffset.UTC);
-    OffsetDateTime updatedAt = view.updatedAt() != null
-        ? view.updatedAt().atOffset(ZoneOffset.UTC)
-        : OffsetDateTime.now(ZoneOffset.UTC);
-    SimulationStatus status = "OUTDATED".equals(view.status())
-        ? SimulationStatus.OUTDATED : SimulationStatus.CURRENT;
-    SimulationValidation validation =
-        new SimulationValidation(new ArrayList<>(), new ArrayList<>());
-    return new SimulationDetail(
-        view.id(),
-        view.name(),
-        view.periodId(),
-        view.periodName(),
-        view.programIds(),
-        status,
-        createdAt,
-        updatedAt,
-        view.version(),
-        new ArrayList<>(),  // selections — WU4 (this skeleton used by getSimulation — full in WU5)
-        new ArrayList<>(),  // creditSummary — WU5
-        new ArrayList<>(),  // weeklySchedule — WU5
-        validation);        // validation — WU5
   }
 
   // -------------------------------------------------------------------------

@@ -10,6 +10,7 @@ import co.edu.uniquindio.brujula.simulation.application.port.in.GetSimulationQue
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListMySimulationsQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListSimulationSelectionsQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.RemoveSimulationSelectionUseCase;
+import co.edu.uniquindio.brujula.simulation.application.port.in.ReviewSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.UpdateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.out.CreditLimitPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadPort;
@@ -28,6 +29,7 @@ import co.edu.uniquindio.brujula.simulation.application.service.GetSimulationSer
 import co.edu.uniquindio.brujula.simulation.application.service.ListMySimulationsService;
 import co.edu.uniquindio.brujula.simulation.application.service.ListSimulationSelectionsService;
 import co.edu.uniquindio.brujula.simulation.application.service.RemoveSimulationSelectionService;
+import co.edu.uniquindio.brujula.simulation.application.service.ReviewSimulationService;
 import co.edu.uniquindio.brujula.simulation.application.service.UpdateSimulationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -76,8 +78,20 @@ class SimulationConfiguration {
   @Bean
   GetSimulationQuery getSimulationService(
       LoadSimulationPort loadSimulationPort,
-      OfferingReadPort offeringReadPort) {
-    return new GetSimulationService(loadSimulationPort, offeringReadPort);
+      LoadSimulationSelectionPort loadSimulationSelectionPort,
+      OfferingReadPort offeringReadPort,
+      CreditLimitPort creditLimitPort,
+      ProgressReadPort progressReadPort,
+      CurriculumReadPort curriculumReadPort,
+      ProgramNameReadPort programNameReadPort) {
+    return new GetSimulationService(
+        loadSimulationPort,
+        loadSimulationSelectionPort,
+        offeringReadPort,
+        creditLimitPort,
+        progressReadPort,
+        curriculumReadPort,
+        programNameReadPort);
   }
 
   @Bean
@@ -159,5 +173,32 @@ class SimulationConfiguration {
       LoadSimulationPort loadSimulationPort,
       LoadSimulationSelectionPort loadSimulationSelectionPort) {
     return new ListSimulationSelectionsService(loadSimulationPort, loadSimulationSelectionPort);
+  }
+
+  // -------------------------------------------------------------------------
+  // WU5 services
+  // -------------------------------------------------------------------------
+
+  @Bean
+  ReviewSimulationUseCase reviewSimulationService(
+      LoadSimulationPort loadSimulationPort,
+      LoadSimulationSelectionPort loadSimulationSelectionPort,
+      SaveSimulationSelectionPort saveSimulationSelectionPort,
+      OfferingReadPort offeringReadPort,
+      CreditLimitPort creditLimitPort,
+      ProgressReadPort progressReadPort,
+      CurriculumReadPort curriculumReadPort,
+      ProgramNameReadPort programNameReadPort,
+      GetSimulationQuery getSimulationQuery) {
+    return new ReviewSimulationService(
+        loadSimulationPort,
+        loadSimulationSelectionPort,
+        saveSimulationSelectionPort,
+        offeringReadPort,
+        creditLimitPort,
+        progressReadPort,
+        curriculumReadPort,
+        programNameReadPort,
+        getSimulationQuery);
   }
 }
