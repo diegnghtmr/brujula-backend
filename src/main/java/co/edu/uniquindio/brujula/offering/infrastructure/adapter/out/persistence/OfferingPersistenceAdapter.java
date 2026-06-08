@@ -6,6 +6,7 @@ import co.edu.uniquindio.brujula.offering.application.dto.OfferingSummaryView;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadOfferingPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadPeriodPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadScheduleOptionPort;
+import co.edu.uniquindio.brujula.offering.application.port.out.SaveOfferingPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.SavePeriodPort;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriod;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriodId;
@@ -26,7 +27,7 @@ import java.util.Optional;
  * Driven adapter: JPA-backed persistence for the offering module — both read-side and write-side.
  *
  * <p>Implements {@link LoadPeriodPort}, {@link LoadOfferingPort}, {@link LoadScheduleOptionPort},
- * and {@link SavePeriodPort}. Package-private per ARQ-006b.
+ * {@link SavePeriodPort}, and {@link SaveOfferingPort}. Package-private per ARQ-006b.
  *
  * <p>Transaction strategy: class-level {@code @Transactional} (read-write) so write methods
  * inherit a writable transaction; each read method explicitly overrides with
@@ -35,7 +36,8 @@ import java.util.Optional;
 @Component
 @Transactional
 class OfferingPersistenceAdapter
-    implements LoadPeriodPort, LoadOfferingPort, LoadScheduleOptionPort, SavePeriodPort {
+    implements LoadPeriodPort, LoadOfferingPort, LoadScheduleOptionPort,
+               SavePeriodPort, SaveOfferingPort {
 
   private final AcademicPeriodJpaRepository periodRepository;
   private final CourseOfferingJpaRepository offeringRepository;
@@ -88,7 +90,55 @@ class OfferingPersistenceAdapter
         .map(periodMapper::toDomain);
   }
 
+  // ---- SaveOfferingPort ----
+
+  @Override
+  public CourseOffering save(CourseOffering offering) {
+    CourseOfferingJpaEntity entity = offeringMapper.toJpaEntity(offering);
+    CourseOfferingJpaEntity managed = offeringRepository.save(entity);
+    offeringRepository.flush();
+    return offeringMapper.toDomain(managed);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<CourseOffering> findCurrentById(CourseOfferingId id) {
+    return offeringRepository.findByIdWithOptions(id.value())
+        .map(offeringMapper::toDomain);
+  }
+
   // ---- LoadOfferingPort ----
+
+  @Override
+  @Transactional(readOnly = true)
+  public OfferingPageView findForStaff(ListOfferingsCriteria criteria) {
+    PageRequest pageRequest = PageRequest.of(criteria.page(), criteria.size());
+    // Pass status filter if present (e.g. DRAFT); null means all non-ARCHIVED
+    String statusFilter = criteria.status();
+    Page<CourseOfferingJpaEntity> page = offeringRepository.findForStaff(
+        criteria.periodId(),
+        criteria.programId(),
+        statusFilter,
+        pageRequest);
+
+    List<OfferingSummaryView> content = page.getContent().stream()
+        .map(e -> new OfferingSummaryView(
+            e.getId(),
+            e.getCourseId(),
+            e.getCourseName(),
+            e.getProgramId(),
+            e.getPeriodId(),
+            e.getStatus(),
+            e.getNotes(),
+            e.getVersion()))
+        .toList();
+
+    return new OfferingPageView(
+        content,
+        page.getNumber(),
+        page.getSize(),
+        page.getTotalElements());
+  }
 
   @Override
   @Transactional(readOnly = true)

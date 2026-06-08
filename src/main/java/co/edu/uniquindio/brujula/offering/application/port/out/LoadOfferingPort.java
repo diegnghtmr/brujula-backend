@@ -12,9 +12,18 @@ public interface LoadOfferingPort {
 
   /**
    * Returns a page of published offerings matching the criteria.
-   * Only PRELIMINARY and FINAL statuses are included.
+   * Only PRELIMINARY and FINAL statuses are included (student-visible).
    */
   OfferingPageView findPublished(ListOfferingsCriteria criteria);
+
+  /**
+   * Returns a page of offerings for privileged callers (STAFF/ADMIN).
+   * Includes DRAFT, PRELIMINARY, and FINAL statuses (excludes ARCHIVED by default).
+   * The status filter in criteria is applied if present.
+   *
+   * <p>Satisfies: OFFW-007.
+   */
+  OfferingPageView findForStaff(ListOfferingsCriteria criteria);
 
   /** Returns the offering with the given ID, or empty if not found. */
   Optional<CourseOffering> findById(CourseOfferingId id);
