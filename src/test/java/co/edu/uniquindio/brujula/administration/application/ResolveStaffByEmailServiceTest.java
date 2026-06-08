@@ -68,4 +68,53 @@ class ResolveStaffByEmailServiceTest {
     Optional<UUID> result = service.resolveStaffId(email);
     assertThat(result).isPresent().contains(staffId);
   }
+
+  /**
+   * WARNING-1 closure: resolveActiveStaffId returns the UUID for an ACTIVE account.
+   */
+  @Test
+  void resolve_active_staff_id_returns_uuid_for_active_account() {
+    String email = "active@uniquindio.edu.co";
+    UUID staffId = UUID.randomUUID();
+    StaffAccount account =
+        StaffAccount.reconstitute(staffId, email, "Active Staff", StaffAccountStatus.ACTIVE, 0L);
+
+    when(loadStaffPort.findByEmail(email)).thenReturn(Optional.of(account));
+
+    Optional<UUID> result = service.resolveActiveStaffId(email);
+    assertThat(result).isPresent().contains(staffId);
+  }
+
+  /**
+   * WARNING-1 closure (load-bearing): resolveActiveStaffId returns empty for an INACTIVE account.
+   * An INACTIVE staff member must NOT resolve to a UUID — even if they have an ACTIVE assignment.
+   * Removing the status filter in resolveActiveStaffId would cause this test to FAIL.
+   */
+  @Test
+  void resolve_active_staff_id_returns_empty_for_inactive_account() {
+    String email = "inactive@uniquindio.edu.co";
+    UUID staffId = UUID.randomUUID();
+    StaffAccount account =
+        StaffAccount.reconstitute(staffId, email, "Inactive Staff", StaffAccountStatus.INACTIVE, 1L);
+
+    when(loadStaffPort.findByEmail(email)).thenReturn(Optional.of(account));
+
+    Optional<UUID> result = service.resolveActiveStaffId(email);
+    assertThat(result).isEmpty();
+  }
+
+  /** WARNING-2: email normalization — mixed-case email is normalized to lowercase before lookup. */
+  @Test
+  void email_is_normalized_to_lowercase_before_lookup() {
+    String rawEmail = "Staff@UNIQUINDIO.Edu.Co";
+    String normalizedEmail = "staff@uniquindio.edu.co";
+    UUID staffId = UUID.randomUUID();
+    StaffAccount account =
+        StaffAccount.reconstitute(staffId, normalizedEmail, "Staff", StaffAccountStatus.ACTIVE, 0L);
+
+    when(loadStaffPort.findByEmail(normalizedEmail)).thenReturn(Optional.of(account));
+
+    Optional<UUID> result = service.resolveStaffId(rawEmail);
+    assertThat(result).isPresent().contains(staffId);
+  }
 }

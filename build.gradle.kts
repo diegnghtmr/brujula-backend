@@ -54,6 +54,9 @@ dependencies {
     implementation(libs.flyway.core)
     runtimeOnly(libs.flyway.database.postgresql)
 
+    // Apache POI — XLSX parsing (not in Boot BOM; first explicit non-BOM dep; ADR-F6-004)
+    implementation(libs.poi.ooxml)
+
     // Database
     runtimeOnly(libs.postgresql)
 
