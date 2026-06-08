@@ -8,6 +8,7 @@ import co.edu.uniquindio.brujula.generated.model.OfferingPage;
 import co.edu.uniquindio.brujula.generated.model.OfferingStatus;
 import co.edu.uniquindio.brujula.generated.model.OfferingUpdateRequest;
 import co.edu.uniquindio.brujula.generated.model.PeriodStatus;
+import co.edu.uniquindio.brujula.generated.model.PublishOfferingRequest;
 import co.edu.uniquindio.brujula.generated.model.ScheduleOption;
 import co.edu.uniquindio.brujula.generated.model.ScheduleOptionCreateRequest;
 import co.edu.uniquindio.brujula.generated.model.ScheduleSession;
@@ -17,6 +18,7 @@ import co.edu.uniquindio.brujula.offering.application.dto.CreateOfferingCommand;
 import co.edu.uniquindio.brujula.offering.application.dto.OfferingDetailView;
 import co.edu.uniquindio.brujula.offering.application.dto.OfferingPageView;
 import co.edu.uniquindio.brujula.offering.application.dto.OfferingSummaryView;
+import co.edu.uniquindio.brujula.offering.application.dto.PublishOfferingCommand;
 import co.edu.uniquindio.brujula.offering.application.dto.ScheduleOptionView;
 import co.edu.uniquindio.brujula.offering.application.dto.ScheduleSessionView;
 import co.edu.uniquindio.brujula.offering.application.dto.UpdateOfferingCommand;
@@ -73,6 +75,9 @@ class OfferingRestMapper {
         view.version() != null ? view.version() : 0L,
         options);
     detail.setNotes(view.notes());
+    if (view.intensityWarning() != null) {
+      detail.setIntensityWarning(view.intensityWarning());
+    }
     return detail;
   }
 
@@ -165,5 +170,33 @@ class OfferingRestMapper {
       UUID offeringId, OfferingUpdateRequest request, UUID actorId) {
     long expectedVersion = request.getVersion() != null ? request.getVersion() : 0L;
     return new UpdateOfferingCommand(offeringId, actorId, request.getNotes(), expectedVersion);
+  }
+
+  /**
+   * Map a REST publish-offering request to the application command.
+   *
+   * <p>ARQ-001: only generated model + application DTOs referenced here.
+   */
+  PublishOfferingCommand fromPublishRequest(
+      UUID idempotencyKey,
+      UUID offeringId,
+      PublishOfferingRequest request,
+      String requestHash,
+      UUID actorId) {
+    long expectedVersion = request.getVersion() != null ? request.getVersion() : 0L;
+    boolean acknowledgeIntensityWarning =
+        request.getAcknowledgeIntensityWarning() != null
+            && request.getAcknowledgeIntensityWarning();
+    String targetStatus = request.getTargetStatus() != null
+        ? request.getTargetStatus().getValue()
+        : null;
+    return new PublishOfferingCommand(
+        idempotencyKey,
+        offeringId,
+        actorId,
+        targetStatus,
+        expectedVersion,
+        acknowledgeIntensityWarning,
+        requestHash);
   }
 }

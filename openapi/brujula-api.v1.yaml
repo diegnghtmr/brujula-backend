@@ -3495,6 +3495,13 @@ components:
             scheduleOptions:
               type: array
               items: { $ref: "#/components/schemas/ScheduleOption" }
+            intensityWarning:
+              type: boolean
+              nullable: true
+              description: >
+                Advisory flag. Present and true when any schedule option's computed weekly hours
+                do not match the curricular weekly hours for the course. Never blocks publication
+                (OFFW-005). Null when not computed (read-only queries).
     OfferingCreateRequest:
       type: object
       additionalProperties: false
