@@ -13,17 +13,22 @@ import co.edu.uniquindio.brujula.generated.model.SimulationUpdateRequest;
 import co.edu.uniquindio.brujula.generated.model.SimulationValidation;
 import co.edu.uniquindio.brujula.identity.application.dto.UserProfile;
 import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
+import co.edu.uniquindio.brujula.simulation.application.dto.AddSelectionCommand;
 import co.edu.uniquindio.brujula.simulation.application.dto.CreateSimulationCommand;
 import co.edu.uniquindio.brujula.simulation.application.dto.DuplicateSimulationCommand;
 import co.edu.uniquindio.brujula.simulation.application.dto.ListSimulationsCriteria;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.dto.UpdateSimulationCommand;
+import co.edu.uniquindio.brujula.simulation.application.port.in.AddSimulationSelectionUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.CreateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.DeleteSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.DuplicateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.GetSimulationQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListMySimulationsQuery;
+import co.edu.uniquindio.brujula.simulation.application.port.in.ListSimulationSelectionsQuery;
+import co.edu.uniquindio.brujula.simulation.application.port.in.RemoveSimulationSelectionUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.UpdateSimulationUseCase;
 import java.net.URI;
 import java.security.MessageDigest;
@@ -49,15 +54,13 @@ import org.springframework.web.bind.annotation.RestController;
  * Package-private per ARQ-006b. STUDENT-only.
  *
  * <p>WU3 SCOPE: create, list, get (skeleton), update, delete, duplicate are implemented.
- * The following endpoints return HTTP 501 NOT_IMPLEMENTED until WU4/WU5:
+ * WU4a SCOPE: addSelection, removeSelection, listSelections are implemented.
+ * The following endpoint returns HTTP 501 until WU5:
  * <ul>
- *   <li>{@code POST .../selections} (addSimulationSelection) — WU4
- *   <li>{@code DELETE .../selections/{selectionId}} (removeSimulationSelection) — WU4
- *   <li>{@code GET .../selections} (listSimulationSelections) — WU4
  *   <li>{@code POST .../review} (reviewSimulation) — WU5
  * </ul>
  *
- * <p>Satisfies: SIM-001, SIM-002, SIM-004, SIM-005, SIM-006, X-001..004, INV-001..002..004.
+ * <p>Satisfies: SIM-001..006, VAL-001, VAL-010, VAL-011, X-001..004, INV-001..002..004.
  */
 @RestController
 class SimulationController implements SimulationsApi {
@@ -68,6 +71,9 @@ class SimulationController implements SimulationsApi {
   private final UpdateSimulationUseCase updateSimulationUseCase;
   private final DeleteSimulationUseCase deleteSimulationUseCase;
   private final DuplicateSimulationUseCase duplicateSimulationUseCase;
+  private final AddSimulationSelectionUseCase addSimulationSelectionUseCase;
+  private final RemoveSimulationSelectionUseCase removeSimulationSelectionUseCase;
+  private final ListSimulationSelectionsQuery listSimulationSelectionsQuery;
   private final SimulationRestMapper mapper;
   private final GetCurrentUserQuery getCurrentUserQuery;
 
@@ -78,6 +84,9 @@ class SimulationController implements SimulationsApi {
       UpdateSimulationUseCase updateSimulationUseCase,
       DeleteSimulationUseCase deleteSimulationUseCase,
       DuplicateSimulationUseCase duplicateSimulationUseCase,
+      AddSimulationSelectionUseCase addSimulationSelectionUseCase,
+      RemoveSimulationSelectionUseCase removeSimulationSelectionUseCase,
+      ListSimulationSelectionsQuery listSimulationSelectionsQuery,
       SimulationRestMapper mapper,
       GetCurrentUserQuery getCurrentUserQuery) {
     this.createSimulationUseCase = createSimulationUseCase;
@@ -86,6 +95,9 @@ class SimulationController implements SimulationsApi {
     this.updateSimulationUseCase = updateSimulationUseCase;
     this.deleteSimulationUseCase = deleteSimulationUseCase;
     this.duplicateSimulationUseCase = duplicateSimulationUseCase;
+    this.addSimulationSelectionUseCase = addSimulationSelectionUseCase;
+    this.removeSimulationSelectionUseCase = removeSimulationSelectionUseCase;
+    this.listSimulationSelectionsQuery = listSimulationSelectionsQuery;
     this.mapper = mapper;
     this.getCurrentUserQuery = getCurrentUserQuery;
   }
@@ -215,7 +227,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST .../selections — WU4 STUB (501)
+  // POST .../selections — addSelection (VAL-001, WU4a)
   // -------------------------------------------------------------------------
 
   @Override
@@ -225,28 +237,56 @@ class SimulationController implements SimulationsApi {
       String xXsrfToken,
       UUID simulationId,
       SimulationSelectionCreateRequest simulationSelectionCreateRequest) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+
+    UUID callerId = resolveCallerId();
+    boolean acknowledgeWarnings = Boolean.TRUE.equals(
+        simulationSelectionCreateRequest.getAcknowledgeWarnings());
+    String requestHash = computeSelectionHash(simulationId,
+        simulationSelectionCreateRequest.getScheduleOptionId());
+
+    AddSelectionCommand command = new AddSelectionCommand(
+        idempotencyKey,
+        simulationId,
+        callerId,
+        simulationSelectionCreateRequest.getScheduleOptionId(),
+        acknowledgeWarnings,
+        requestHash);
+
+    SimulationSelectionView view = addSimulationSelectionUseCase.addSelection(command);
+    SimulationSelection response = mapper.toSelectionDto(view);
+
+    return ResponseEntity
+        .created(URI.create("/me/simulations/" + simulationId + "/selections/" + view.id()))
+        .body(response);
   }
 
   // -------------------------------------------------------------------------
-  // DELETE .../selections/{selectionId} — WU4 STUB (501)
+  // DELETE .../selections/{selectionId} — removeSelection (VAL-010, WU4a)
   // -------------------------------------------------------------------------
 
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<Void> removeSimulationSelection(
       String xXsrfToken, UUID simulationId, UUID selectionId) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    UUID callerId = resolveCallerId();
+    removeSimulationSelectionUseCase.removeSelection(simulationId, selectionId, callerId);
+    return ResponseEntity.noContent().build();
   }
 
   // -------------------------------------------------------------------------
-  // GET .../selections — WU4 STUB (501)
+  // GET .../selections — listSimulationSelections (VAL-011, WU4a)
   // -------------------------------------------------------------------------
 
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<List<SimulationSelection>> listSimulationSelections(UUID simulationId) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    UUID callerId = resolveCallerId();
+    List<SimulationSelectionView> views =
+        listSimulationSelectionsQuery.listSelections(simulationId, callerId);
+    List<SimulationSelection> response = views.stream()
+        .map(mapper::toSelectionDto)
+        .toList();
+    return ResponseEntity.ok(response);
   }
 
   // -------------------------------------------------------------------------
@@ -281,7 +321,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // Helper: build a skeleton SimulationDetail for WU3 (GET endpoint)
+  // Helper: build a skeleton SimulationDetail for WU3 GET endpoint
   // Full detail assembly is WU5.
   // -------------------------------------------------------------------------
 
@@ -306,7 +346,7 @@ class SimulationController implements SimulationsApi {
         createdAt,
         updatedAt,
         view.version(),
-        new ArrayList<>(),  // selections — WU4
+        new ArrayList<>(),  // selections — WU4 (this skeleton used by getSimulation — full in WU5)
         new ArrayList<>(),  // creditSummary — WU5
         new ArrayList<>(),  // weeklySchedule — WU5
         validation);        // validation — WU5
@@ -337,6 +377,17 @@ class SimulationController implements SimulationsApi {
       return HexFormat.of().formatHex(hash);
     } catch (Exception e) {
       throw new IllegalStateException("Failed to compute duplicate hash", e);
+    }
+  }
+
+  private String computeSelectionHash(UUID simulationId, UUID scheduleOptionId) {
+    try {
+      String input = simulationId + "|" + scheduleOptionId;
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hash = digest.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+      return HexFormat.of().formatHex(hash);
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to compute selection hash", e);
     }
   }
 }
