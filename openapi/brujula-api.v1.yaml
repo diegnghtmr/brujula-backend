@@ -1509,6 +1509,11 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: Oferta duplicada o reuso inválido de `Idempotency-Key`.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/ProblemDetail" }
         "422": { $ref: "#/components/responses/UnprocessableEntity" }
 
   /staff/offerings/{offeringId}:

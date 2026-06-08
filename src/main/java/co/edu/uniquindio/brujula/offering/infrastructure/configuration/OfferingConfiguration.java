@@ -1,22 +1,28 @@
 package co.edu.uniquindio.brujula.offering.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.GetCourseQuery;
+import co.edu.uniquindio.brujula.offering.application.port.in.CreateOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.CreatePeriodUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.GetOfferingQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ResolvePeriodQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ResolveScheduleOptionQuery;
+import co.edu.uniquindio.brujula.offering.application.port.in.UpdateOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.UpdatePeriodUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadOfferingPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadPeriodPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadScheduleOptionPort;
+import co.edu.uniquindio.brujula.offering.application.port.out.SaveOfferingPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.SavePeriodPort;
+import co.edu.uniquindio.brujula.offering.application.service.CreateOfferingService;
 import co.edu.uniquindio.brujula.offering.application.service.CreatePeriodService;
 import co.edu.uniquindio.brujula.offering.application.service.GetOfferingService;
 import co.edu.uniquindio.brujula.offering.application.service.ListPeriodsService;
 import co.edu.uniquindio.brujula.offering.application.service.ResolvePeriodService;
 import co.edu.uniquindio.brujula.offering.application.service.ResolveScheduleOptionService;
+import co.edu.uniquindio.brujula.offering.application.service.UpdateOfferingService;
 import co.edu.uniquindio.brujula.offering.application.service.UpdatePeriodService;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
@@ -39,6 +45,8 @@ import org.springframework.context.annotation.Configuration;
  *   <li>{@link ResolveScheduleOptionService} — implements {@link ResolveScheduleOptionQuery} (OFF-004)
  *   <li>{@link CreatePeriodService} — implements {@link CreatePeriodUseCase} (OFFW-001)
  *   <li>{@link UpdatePeriodService} — implements {@link UpdatePeriodUseCase} (OFFW-002)
+ *   <li>{@link CreateOfferingService} — implements {@link CreateOfferingUseCase} (OFFW-003)
+ *   <li>{@link UpdateOfferingService} — implements {@link UpdateOfferingUseCase} (OFFW-004)
  * </ul>
  */
 @Configuration
@@ -85,5 +93,22 @@ class OfferingConfiguration {
   @Bean
   UpdatePeriodUseCase updatePeriodService(SavePeriodPort savePeriodPort, AuditRecorder auditRecorder) {
     return new UpdatePeriodService(savePeriodPort, auditRecorder);
+  }
+
+  @Bean
+  CreateOfferingUseCase createOfferingService(
+      SaveOfferingPort saveOfferingPort,
+      IdempotencyStorePort idempotencyStorePort,
+      JsonCodecPort jsonCodecPort,
+      AuditRecorder auditRecorder,
+      GetCourseQuery getCourseQuery) {
+    return new CreateOfferingService(
+        saveOfferingPort, idempotencyStorePort, jsonCodecPort, auditRecorder, getCourseQuery);
+  }
+
+  @Bean
+  UpdateOfferingUseCase updateOfferingService(
+      SaveOfferingPort saveOfferingPort, AuditRecorder auditRecorder) {
+    return new UpdateOfferingService(saveOfferingPort, auditRecorder);
   }
 }

@@ -32,6 +32,13 @@ public class GetOfferingService implements ListOfferingsQuery, GetOfferingQuery 
 
   @Override
   public OfferingPageView listOfferings(ListOfferingsCriteria criteria) {
+    // OFFW-007: privileged callers (STAFF/ADMIN) can see DRAFT offerings;
+    // STUDENT callers only see published (PRELIMINARY/FINAL) offerings.
+    if (criteria.isPrivilegedCaller()) {
+      return loadOfferingPort.findForStaff(criteria);
+    }
+    // For STUDENT requesting DRAFT: findPublished will return only PRELIMINARY/FINAL,
+    // which is an empty result — correct per spec (not a 403).
     return loadOfferingPort.findPublished(criteria);
   }
 

@@ -43,4 +43,24 @@ interface CourseOfferingJpaRepository extends JpaRepository<CourseOfferingJpaEnt
       WHERE o.id = :id
       """)
   Optional<CourseOfferingJpaEntity> findByIdWithOptions(@Param("id") UUID id);
+
+  /**
+   * Returns a page of offerings for privileged callers (STAFF/ADMIN).
+   * Includes DRAFT, PRELIMINARY, and FINAL statuses. When {@code statusFilter} is provided,
+   * only that status is returned. ARCHIVED is always excluded from staff listing.
+   *
+   * <p>Satisfies: OFFW-007.
+   */
+  @Query("""
+      SELECT o FROM CourseOfferingJpaEntity o
+      WHERE o.periodId = :periodId
+        AND o.status != 'ARCHIVED'
+        AND (:programId IS NULL OR o.programId = :programId)
+        AND (:statusFilter IS NULL OR o.status = :statusFilter)
+      """)
+  Page<CourseOfferingJpaEntity> findForStaff(
+      @Param("periodId") UUID periodId,
+      @Param("programId") UUID programId,
+      @Param("statusFilter") String statusFilter,
+      Pageable pageable);
 }
