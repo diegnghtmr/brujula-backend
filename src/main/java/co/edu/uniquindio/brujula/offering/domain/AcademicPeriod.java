@@ -34,6 +34,39 @@ public class AcademicPeriod {
   }
 
   /**
+   * Write factory: creates a brand-new {@link AcademicPeriod} with version 0.
+   *
+   * <p>Null {@code status} defaults to {@link PeriodStatus#UPCOMING}.
+   * No PeriodStatus transition guard is enforced in Slice 1 — status is set directly.
+   *
+   * @param id     must not be null
+   * @param name   must not be null
+   * @param status defaults to UPCOMING when null
+   */
+  public static AcademicPeriod create(
+      AcademicPeriodId id,
+      String name,
+      LocalDate startDate,
+      LocalDate endDate,
+      PeriodStatus status) {
+    Objects.requireNonNull(id, "id must not be null");
+    Objects.requireNonNull(name, "name must not be null");
+    PeriodStatus effectiveStatus = status != null ? status : PeriodStatus.UPCOMING;
+    return new AcademicPeriod(id, name, startDate, endDate, effectiveStatus, 0L);
+  }
+
+  /**
+   * Returns a new {@link AcademicPeriod} applying the non-null fields from the parameters.
+   * Null parameters keep the existing value. Version carries over (bumped at JPA flush).
+   */
+  public AcademicPeriod update(LocalDate startDate, LocalDate endDate, PeriodStatus status) {
+    LocalDate effectiveStart = startDate != null ? startDate : this.startDate;
+    LocalDate effectiveEnd = endDate != null ? endDate : this.endDate;
+    PeriodStatus effectiveStatus = status != null ? status : this.status;
+    return new AcademicPeriod(this.id, this.name, effectiveStart, effectiveEnd, effectiveStatus, this.version);
+  }
+
+  /**
    * Public factory for mapper reconstitution — mirrors progress Subscription.reconstitute().
    */
   public static AcademicPeriod reconstitute(

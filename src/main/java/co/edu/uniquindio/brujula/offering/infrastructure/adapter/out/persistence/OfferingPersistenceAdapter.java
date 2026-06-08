@@ -6,6 +6,7 @@ import co.edu.uniquindio.brujula.offering.application.dto.OfferingSummaryView;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadOfferingPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadPeriodPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadScheduleOptionPort;
+import co.edu.uniquindio.brujula.offering.application.port.out.SavePeriodPort;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriod;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriodId;
 import co.edu.uniquindio.brujula.offering.domain.CourseOffering;
@@ -22,15 +23,19 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Driven adapter: JPA-backed persistence for the offering module read-side.
+ * Driven adapter: JPA-backed persistence for the offering module — both read-side and write-side.
  *
- * <p>Implements {@link LoadPeriodPort}, {@link LoadOfferingPort}, and
- * {@link LoadScheduleOptionPort}. Package-private per ARQ-006b.
+ * <p>Implements {@link LoadPeriodPort}, {@link LoadOfferingPort}, {@link LoadScheduleOptionPort},
+ * and {@link SavePeriodPort}. Package-private per ARQ-006b.
+ *
+ * <p>Transaction strategy: class-level {@code @Transactional} (read-write) so write methods
+ * inherit a writable transaction; each read method explicitly overrides with
+ * {@code @Transactional(readOnly=true)} for performance (avoids dirty-checking overhead).
  */
 @Component
-@Transactional(readOnly = true)
+@Transactional
 class OfferingPersistenceAdapter
-    implements LoadPeriodPort, LoadOfferingPort, LoadScheduleOptionPort {
+    implements LoadPeriodPort, LoadOfferingPort, LoadScheduleOptionPort, SavePeriodPort {
 
   private final AcademicPeriodJpaRepository periodRepository;
   private final CourseOfferingJpaRepository offeringRepository;
@@ -52,6 +57,7 @@ class OfferingPersistenceAdapter
   // ---- LoadPeriodPort ----
 
   @Override
+  @Transactional(readOnly = true)
   public List<AcademicPeriod> findAllNonArchived() {
     return periodRepository.findByStatusNotOrderByStartDateDesc("ARCHIVED").stream()
         .map(periodMapper::toDomain)
@@ -59,7 +65,25 @@ class OfferingPersistenceAdapter
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<AcademicPeriod> findById(AcademicPeriodId id) {
+    return periodRepository.findById(id.value())
+        .map(periodMapper::toDomain);
+  }
+
+  // ---- SavePeriodPort ----
+
+  @Override
+  public AcademicPeriod save(AcademicPeriod period) {
+    AcademicPeriodJpaEntity entity = periodMapper.toJpaEntity(period);
+    AcademicPeriodJpaEntity managed = periodRepository.save(entity);
+    periodRepository.flush();
+    return periodMapper.toDomain(managed);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<AcademicPeriod> findCurrentById(AcademicPeriodId id) {
     return periodRepository.findById(id.value())
         .map(periodMapper::toDomain);
   }
@@ -67,6 +91,7 @@ class OfferingPersistenceAdapter
   // ---- LoadOfferingPort ----
 
   @Override
+  @Transactional(readOnly = true)
   public OfferingPageView findPublished(ListOfferingsCriteria criteria) {
     PageRequest pageRequest = PageRequest.of(criteria.page(), criteria.size());
     Page<CourseOfferingJpaEntity> page = offeringRepository.findPublished(
@@ -94,6 +119,7 @@ class OfferingPersistenceAdapter
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<CourseOffering> findById(CourseOfferingId id) {
     return offeringRepository.findByIdWithOptions(id.value())
         .map(offeringMapper::toDomain);
@@ -102,6 +128,7 @@ class OfferingPersistenceAdapter
   // ---- LoadScheduleOptionPort ----
 
   @Override
+  @Transactional(readOnly = true)
   public Optional<ScheduleOption> findById(ScheduleOptionId id) {
     return scheduleOptionRepository.findByIdWithSessionsAndOffering(id.value())
         .map(entity -> {
