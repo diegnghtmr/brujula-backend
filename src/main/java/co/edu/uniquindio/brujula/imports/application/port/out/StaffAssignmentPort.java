@@ -32,10 +32,25 @@ public interface StaffAssignmentPort {
    * Resolve the staff UUID from the actor's institutional email address.
    *
    * <p>Used to translate the OIDC principal email claim into a staffId before calling
-   * {@link #isAssigned(UUID, UUID)}.
+   * {@link #isAssigned(UUID, UUID)}. Resolves BOTH active and inactive staff accounts; callers
+   * decide whether inactive = 403.
    *
    * @param email institutional email address
    * @return the staff UUID if found; empty if no matching StaffAccount exists
    */
   Optional<UUID> resolveStaffId(String email);
+
+  /**
+   * Resolve the staff UUID for an ACTIVE staff account only.
+   *
+   * <p>WARNING-1 closure: returns empty if the matching StaffAccount is INACTIVE, preventing
+   * a deactivated staff member with an un-revoked active assignment from passing the 403 guard.
+   *
+   * <p>This is the method {@link co.edu.uniquindio.brujula.imports.application.service.UploadImportService}
+   * MUST use for the STAFF role authorization check.
+   *
+   * @param email institutional email address
+   * @return the staff UUID if an ACTIVE StaffAccount with this email exists; empty otherwise
+   */
+  Optional<UUID> resolveActiveStaffId(String email);
 }

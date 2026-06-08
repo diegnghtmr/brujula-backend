@@ -16,6 +16,11 @@ import org.springframework.stereotype.Component;
  * <p>ADMIN bypass is enforced by the calling service layer (UploadImportService /
  * ConfirmImportService), NOT by this adapter. This adapter is role-agnostic and purely translates
  * the imports-local port contract to the administration SPI.
+ *
+ * <p>WARNING-1 closure: {@link #resolveActiveStaffId(String)} delegates to
+ * {@link ResolveStaffByEmailQuery#resolveActiveStaffId(String)} which filters INACTIVE accounts at
+ * the service layer. {@link co.edu.uniquindio.brujula.imports.application.service.UploadImportService}
+ * MUST call this method (not {@link #resolveStaffId(String)}) for STAFF role checks.
  */
 @Component
 class StaffAssignmentAdapter implements StaffAssignmentPort {
@@ -38,5 +43,14 @@ class StaffAssignmentAdapter implements StaffAssignmentPort {
   @Override
   public Optional<UUID> resolveStaffId(String email) {
     return resolveByEmailQuery.resolveStaffId(email);
+  }
+
+  /**
+   * WARNING-1 closure: delegates to {@link ResolveStaffByEmailQuery#resolveActiveStaffId(String)}
+   * which returns empty for INACTIVE staff accounts.
+   */
+  @Override
+  public Optional<UUID> resolveActiveStaffId(String email) {
+    return resolveByEmailQuery.resolveActiveStaffId(email);
   }
 }

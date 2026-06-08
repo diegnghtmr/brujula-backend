@@ -105,4 +105,35 @@ class StaffAssignmentAdapterTest {
     verify(isAssignedQuery, never()).isAssigned(staffId, programId);
     verify(resolveQuery, never()).resolveStaffId(staffId.toString());
   }
+
+  /**
+   * WARNING-1 closure: resolveActiveStaffId delegates to resolveByEmailQuery.resolveActiveStaffId.
+   * Active account → returns UUID.
+   */
+  @Test
+  void resolve_active_staff_id_delegates_to_query_for_active_account() {
+    String email = "active@uniquindio.edu.co";
+    UUID staffId = UUID.randomUUID();
+
+    when(resolveQuery.resolveActiveStaffId(email)).thenReturn(Optional.of(staffId));
+
+    Optional<UUID> result = adapter.resolveActiveStaffId(email);
+    assertThat(result).isPresent().contains(staffId);
+    verify(resolveQuery).resolveActiveStaffId(email);
+  }
+
+  /**
+   * WARNING-1 closure: resolveActiveStaffId returns empty for INACTIVE accounts.
+   * The underlying query handles the filtering; adapter passes through.
+   */
+  @Test
+  void resolve_active_staff_id_returns_empty_for_inactive_account() {
+    String email = "inactive@uniquindio.edu.co";
+
+    when(resolveQuery.resolveActiveStaffId(email)).thenReturn(Optional.empty());
+
+    Optional<UUID> result = adapter.resolveActiveStaffId(email);
+    assertThat(result).isEmpty();
+    verify(resolveQuery).resolveActiveStaffId(email);
+  }
 }
