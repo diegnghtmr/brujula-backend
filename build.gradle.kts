@@ -211,6 +211,12 @@ tasks.test {
     // (HikariPool interruption on context cache miss). maxParallelForks=1 is the
     // standard Testcontainers fix for single-machine developer builds.
     maxParallelForks = 1
+    // Reduce HikariCP pool size in tests to avoid "too many clients already" when multiple
+    // Spring ApplicationContext instances (each with distinct @MockitoBean combinations) share
+    // a single Testcontainers PostgreSQL container. Default pool=10 × N contexts can exceed
+    // the Postgres max_connections limit. Pool=2 keeps peak connections well below the limit.
+    systemProperty("spring.datasource.hikari.maximum-pool-size", "2")
+    systemProperty("spring.datasource.hikari.minimum-idle", "1")
     // Pass Docker environment to forked JVM for Testcontainers
     // docker-java 3.x hardcodes API path /v1.32/ — must use DOCKER_HOST env var so that
     // the EnvironmentAndSystemPropertyClientProviderStrategy picks up the socket override.
