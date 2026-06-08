@@ -1,17 +1,25 @@
 package co.edu.uniquindio.brujula.offering.infrastructure.configuration;
 
+import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.offering.application.port.in.CreatePeriodUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.GetOfferingQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ResolvePeriodQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ResolveScheduleOptionQuery;
+import co.edu.uniquindio.brujula.offering.application.port.in.UpdatePeriodUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadOfferingPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadPeriodPort;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadScheduleOptionPort;
+import co.edu.uniquindio.brujula.offering.application.port.out.SavePeriodPort;
+import co.edu.uniquindio.brujula.offering.application.service.CreatePeriodService;
 import co.edu.uniquindio.brujula.offering.application.service.GetOfferingService;
 import co.edu.uniquindio.brujula.offering.application.service.ListPeriodsService;
 import co.edu.uniquindio.brujula.offering.application.service.ResolvePeriodService;
 import co.edu.uniquindio.brujula.offering.application.service.ResolveScheduleOptionService;
+import co.edu.uniquindio.brujula.offering.application.service.UpdatePeriodService;
+import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
+import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +37,8 @@ import org.springframework.context.annotation.Configuration;
  *   <li>{@link GetOfferingService} — implements {@link ListOfferingsQuery} + {@link GetOfferingQuery} (OFF-002, OFF-003)
  *   <li>{@link ResolvePeriodService} — implements {@link ResolvePeriodQuery} (OFF-004)
  *   <li>{@link ResolveScheduleOptionService} — implements {@link ResolveScheduleOptionQuery} (OFF-004)
+ *   <li>{@link CreatePeriodService} — implements {@link CreatePeriodUseCase} (OFFW-001)
+ *   <li>{@link UpdatePeriodService} — implements {@link UpdatePeriodUseCase} (OFFW-002)
  * </ul>
  */
 @Configuration
@@ -61,5 +71,19 @@ class OfferingConfiguration {
       LoadScheduleOptionPort loadScheduleOptionPort,
       LoadOfferingPort loadOfferingPort) {
     return new ResolveScheduleOptionService(loadScheduleOptionPort, loadOfferingPort);
+  }
+
+  @Bean
+  CreatePeriodUseCase createPeriodService(
+      SavePeriodPort savePeriodPort,
+      IdempotencyStorePort idempotencyStorePort,
+      JsonCodecPort jsonCodecPort,
+      AuditRecorder auditRecorder) {
+    return new CreatePeriodService(savePeriodPort, idempotencyStorePort, jsonCodecPort, auditRecorder);
+  }
+
+  @Bean
+  UpdatePeriodUseCase updatePeriodService(SavePeriodPort savePeriodPort, AuditRecorder auditRecorder) {
+    return new UpdatePeriodService(savePeriodPort, auditRecorder);
   }
 }

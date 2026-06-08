@@ -19,6 +19,7 @@ import co.edu.uniquindio.brujula.generated.model.CreditLimit;
 import co.edu.uniquindio.brujula.generated.model.CreditLimitUpsertRequest;
 import co.edu.uniquindio.brujula.generated.model.Journey;
 import co.edu.uniquindio.brujula.generated.model.JourneyCreateRequest;
+import co.edu.uniquindio.brujula.generated.model.PeriodStatus;
 import co.edu.uniquindio.brujula.generated.model.Program;
 import co.edu.uniquindio.brujula.generated.model.ProgramCreateRequest;
 import co.edu.uniquindio.brujula.generated.model.ProgramUpdateRequest;
@@ -27,6 +28,12 @@ import co.edu.uniquindio.brujula.generated.model.StaffAssignment;
 import co.edu.uniquindio.brujula.generated.model.StaffCreateRequest;
 import co.edu.uniquindio.brujula.generated.model.StaffUpdateRequest;
 import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
+import co.edu.uniquindio.brujula.offering.application.dto.AcademicPeriodView;
+import co.edu.uniquindio.brujula.offering.application.dto.CreatePeriodCommand;
+import co.edu.uniquindio.brujula.offering.application.dto.UpdatePeriodCommand;
+import co.edu.uniquindio.brujula.offering.application.port.in.CreatePeriodUseCase;
+import co.edu.uniquindio.brujula.offering.application.port.in.UpdatePeriodUseCase;
+import java.net.URI;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.List;
@@ -61,6 +68,8 @@ class AdministrationController implements AdministrationApi {
   private final ManageAllowedEmailDomainsUseCase manageAllowedEmailDomainsUseCase;
   private final GetCurrentUserQuery getCurrentUserQuery;
   private final ObjectMapper objectMapper;
+  private final CreatePeriodUseCase createPeriodUseCase;
+  private final UpdatePeriodUseCase updatePeriodUseCase;
 
   AdministrationController(
       CreateStaffUseCase createStaffUseCase,
@@ -68,13 +77,17 @@ class AdministrationController implements AdministrationApi {
       UpdateStaffUseCase updateStaffUseCase,
       ManageAllowedEmailDomainsUseCase manageAllowedEmailDomainsUseCase,
       GetCurrentUserQuery getCurrentUserQuery,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      CreatePeriodUseCase createPeriodUseCase,
+      UpdatePeriodUseCase updatePeriodUseCase) {
     this.createStaffUseCase = createStaffUseCase;
     this.listStaffQuery = listStaffQuery;
     this.updateStaffUseCase = updateStaffUseCase;
     this.manageAllowedEmailDomainsUseCase = manageAllowedEmailDomainsUseCase;
     this.getCurrentUserQuery = getCurrentUserQuery;
     this.objectMapper = objectMapper;
+    this.createPeriodUseCase = createPeriodUseCase;
+    this.updatePeriodUseCase = updatePeriodUseCase;
   }
 
   // -------------------------------------------------------------------------
@@ -208,14 +221,42 @@ class AdministrationController implements AdministrationApi {
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<AcademicPeriod> createPeriod(
       UUID idempotencyKey, String xXsrfToken, AcademicPeriodCreateRequest request) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    UUID actorId = resolveActorId();
+    String requestHash = hashRequest(request);
+    String statusStr = request.getStatus() != null ? request.getStatus().getValue() : null;
+
+    CreatePeriodCommand command = new CreatePeriodCommand(
+        idempotencyKey,
+        actorId,
+        request.getName(),
+        request.getStartDate(),
+        request.getEndDate(),
+        statusStr,
+        requestHash);
+
+    AcademicPeriodView view = createPeriodUseCase.createPeriod(command);
+    URI location = URI.create("/admin/periods/" + view.id());
+    return ResponseEntity.status(HttpStatus.CREATED).location(location).body(toPeriodDto(view));
   }
 
   @Override
   @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<AcademicPeriod> updatePeriod(
       String xXsrfToken, UUID periodId, AcademicPeriodUpdateRequest request) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    UUID actorId = resolveActorId();
+    String statusStr = request.getStatus() != null ? request.getStatus().getValue() : null;
+    long expectedVersion = request.getVersion() != null ? request.getVersion() : 0L;
+
+    UpdatePeriodCommand command = new UpdatePeriodCommand(
+        periodId,
+        actorId,
+        request.getStartDate(),
+        request.getEndDate(),
+        statusStr,
+        expectedVersion);
+
+    AcademicPeriodView view = updatePeriodUseCase.updatePeriod(command);
+    return ResponseEntity.ok(toPeriodDto(view));
   }
 
   @Override
@@ -273,5 +314,17 @@ class AdministrationController implements AdministrationApi {
         view.email(),
         AccountStatus.fromValue(view.status()),
         view.version());
+  }
+
+  /** Maps offering {@link AcademicPeriodView} → generated {@link AcademicPeriod} model (ARQ-001). */
+  private AcademicPeriod toPeriodDto(AcademicPeriodView view) {
+    AcademicPeriod dto = new AcademicPeriod(
+        view.id(),
+        view.name(),
+        PeriodStatus.fromValue(view.status()));
+    dto.setStartDate(view.startDate());
+    dto.setEndDate(view.endDate());
+    dto.setVersion(view.version());
+    return dto;
   }
 }
