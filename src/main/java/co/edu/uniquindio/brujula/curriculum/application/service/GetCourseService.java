@@ -46,7 +46,8 @@ public class GetCourseService implements GetCourseQuery {
         course.credits(),
         course.curricularWeeklyHours(),
         semesterViews,
-        course.status().name());
+        course.status().name(),
+        course.version());
   }
 
   private CourseView.RecommendedSemesterView toSemesterView(RecommendedSemester rs) {
