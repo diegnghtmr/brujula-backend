@@ -21,6 +21,8 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportRow;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportStatus;
 import co.edu.uniquindio.brujula.imports.domain.model.Severity;
+import co.edu.uniquindio.brujula.offering.application.dto.CreateOfferingCommand;
+import co.edu.uniquindio.brujula.offering.application.port.in.CreateOfferingUseCase;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
@@ -28,6 +30,8 @@ import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,6 +59,8 @@ public class ConfirmImportService implements ConfirmImportUseCase {
      */
     public static final String OPERATION = "CONFIRM_IMPORT";
 
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+
     private final LoadImportBatchPort loadImportBatchPort;
     private final SaveImportBatchPort saveImportBatchPort;
     private final StaffAssignmentPort staffAssignmentPort;
@@ -63,6 +69,7 @@ public class ConfirmImportService implements ConfirmImportUseCase {
     private final AuditRecorder auditRecorder;
     private final CreateCourseUseCase createCourseUseCase;
     private final CreateCourseRequirementUseCase createCourseRequirementUseCase;
+    private final CreateOfferingUseCase createOfferingUseCase;
 
     public ConfirmImportService(
             LoadImportBatchPort loadImportBatchPort,
@@ -72,7 +79,8 @@ public class ConfirmImportService implements ConfirmImportUseCase {
             JsonCodecPort jsonCodecPort,
             AuditRecorder auditRecorder,
             CreateCourseUseCase createCourseUseCase,
-            CreateCourseRequirementUseCase createCourseRequirementUseCase) {
+            CreateCourseRequirementUseCase createCourseRequirementUseCase,
+            CreateOfferingUseCase createOfferingUseCase) {
         this.loadImportBatchPort = loadImportBatchPort;
         this.saveImportBatchPort = saveImportBatchPort;
         this.staffAssignmentPort = staffAssignmentPort;
@@ -81,6 +89,7 @@ public class ConfirmImportService implements ConfirmImportUseCase {
         this.auditRecorder = auditRecorder;
         this.createCourseUseCase = createCourseUseCase;
         this.createCourseRequirementUseCase = createCourseRequirementUseCase;
+        this.createOfferingUseCase = createOfferingUseCase;
     }
 
     /**
@@ -190,7 +199,8 @@ public class ConfirmImportService implements ConfirmImportUseCase {
      * <p>COURSES → {@link CreateCourseUseCase} with initialStatus=INACTIVE (NFR-003).
      * REQUIREMENTS → {@link CreateCourseRequirementUseCase} (cross-batch cycle re-check runs
      * inside the real service against the live graph — carry-forward from WU3 verify).
-     * OFFERINGS → deferred to WU7 (throws {@link UnsupportedOperationException}).
+     * OFFERINGS → {@link CreateOfferingUseCase} — each row maps to one offering with one
+     * schedule option and one session (WU7, IMP-008, ADR-014).
      *
      * <p>Any exception from a use-case propagates directly — no catch-and-continue (all-or-nothing
      * per frozen Decision #2). The caller's {@code @Transactional} boundary catches the exception
@@ -200,17 +210,13 @@ public class ConfirmImportService implements ConfirmImportUseCase {
      * @param command the confirm command (carries actorId and planId via batch)
      */
     private void replayRows(ImportBatch batch, ConfirmImportCommand command) {
-        if (batch.getKind() == ImportKind.OFFERINGS) {
-            throw new UnsupportedOperationException(
-                    "OFFERINGS confirmation is deferred to WU7. Batch kind OFFERINGS cannot be confirmed yet.");
-        }
-
         for (ImportRow row : batch.getValidatedRows()) {
             switch (batch.getKind()) {
                 case COURSES -> replayCourseRow(row, batch, command);
                 case REQUIREMENTS -> replayRequirementRow(row, batch, command);
+                case OFFERINGS -> replayOfferingRow(row, batch, command);
                 default -> throw new UnsupportedOperationException(
-                        "Unsupported import kind for confirm: " + batch.getKind() + " — deferred to WU7.");
+                        "Unsupported import kind for confirm: " + batch.getKind());
             }
         }
     }
@@ -306,6 +312,69 @@ public class ConfirmImportService implements ConfirmImportUseCase {
         createCourseRequirementUseCase.createCourseRequirement(reqCommand);
     }
 
+    /**
+     * Map an OFFERINGS row to a {@link CreateOfferingCommand} and call {@link CreateOfferingUseCase}.
+     *
+     * <p>Row model (ADR-014): each row represents a unique (period, course, option_label) tuple
+     * that maps to one offering with one schedule option containing one session. The validator
+     * already enforces that duplicate (course, option_label) pairs within a batch produce
+     * {@code DUPLICATE_OPTION_IN_BATCH} errors, so by confirm time every row is structurally
+     * unique.
+     *
+     * <p>NFR-003 load-bearing: {@link CreateOfferingUseCase#createOffering} calls
+     * {@code CourseOffering.create()} which always starts in DRAFT status — no auto-publish
+     * (RN-122). The {@link CreateOfferingCommand} has no "initial status" parameter; DRAFT is
+     * enforced at the domain model level inside {@code CourseOffering.create()}.
+     *
+     * <p>The period UUID is taken from {@code batch.getPeriodId()} (set at upload time, required
+     * for OFFERINGS kind). The course UUID is read from the {@code course} cell (validated row
+     * carries the UUID string directly after upload-time resolution).
+     *
+     * <p>Idempotency key and hash are derived deterministically from batchId + rowIndex (same as
+     * COURSES/REQUIREMENTS paths) so a retried confirm replays through the offering idempotency
+     * store rather than double-creating.
+     *
+     * <p>Propagation: {@link CreateOfferingUseCase} implementation ({@code CreateOfferingService})
+     * is framework-free and wired via {@code OfferingConfiguration}. It does NOT declare
+     * {@code @Transactional} itself — it relies on the caller's transaction (REQUIRED propagation),
+     * which is the {@code @Transactional} on {@link #confirm}. Any exception propagates and rolls
+     * back the whole confirm TX, including any earlier offering rows (INV-03).
+     */
+    private void replayOfferingRow(ImportRow row, ImportBatch batch, ConfirmImportCommand command) {
+        UUID rowIdempotencyKey = deterministicRowKey(batch.getId().value(), "OFFERING", row.index());
+        String rowHash = deterministicRowHash(batch.getId().value(), "OFFERING", row.index());
+
+        UUID courseId = parseUuidOrNull(row.cells().getOrDefault("course", ""));
+        String optionLabel = row.cells().getOrDefault("option_label", "G1");
+        String journeyCode = row.cells().getOrDefault("journey", "");
+        String dayStr = expandDay(row.cells().getOrDefault("day", "MON").toUpperCase());
+        String startTimeStr = row.cells().getOrDefault("start_time", "");
+        String endTimeStr = row.cells().getOrDefault("end_time", "");
+
+        LocalTime startsAt = parseTimeOrNull(startTimeStr);
+        LocalTime endsAt = parseTimeOrNull(endTimeStr);
+
+        // Build a single-session draft for this row's option
+        CreateOfferingCommand.SessionDraft session = new CreateOfferingCommand.SessionDraft(
+                dayStr, startsAt, endsAt);
+
+        // One option with one session per row (ADR-014 model)
+        CreateOfferingCommand.ScheduleOptionDraft option = new CreateOfferingCommand.ScheduleOptionDraft(
+                optionLabel, journeyCode.isBlank() ? null : journeyCode, List.of(session));
+
+        CreateOfferingCommand offeringCommand = new CreateOfferingCommand(
+                rowIdempotencyKey,
+                command.actorId(),
+                batch.getProgramId(),
+                courseId,
+                batch.getPeriodId(),
+                null, // no notes for import-originated offerings
+                List.of(option),
+                rowHash);
+
+        createOfferingUseCase.createOffering(offeringCommand);
+    }
+
     // =========================================================================
     // Private — guards
     // =========================================================================
@@ -399,5 +468,34 @@ public class ConfirmImportService implements ConfirmImportUseCase {
         } catch (IllegalArgumentException e) {
             return null;
         }
+    }
+
+    private LocalTime parseTimeOrNull(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return LocalTime.parse(value.trim(), TIME_FORMATTER);
+        } catch (java.time.format.DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Translates abbreviated day values accepted by {@link OfferingsValidator} (e.g. "MON")
+     * into the full names required by {@link co.edu.uniquindio.brujula.offering.domain.Weekday}
+     * (e.g. "MONDAY"). An unrecognised abbreviation is returned as-is (already uppercased), so
+     * {@code Weekday.valueOf()} will throw a clear {@link IllegalArgumentException} with the
+     * unrecognised value — making the error visible rather than silently swallowed.
+     */
+    private String expandDay(String abbr) {
+        return switch (abbr) {
+            case "MON" -> "MONDAY";
+            case "TUE" -> "TUESDAY";
+            case "WED" -> "WEDNESDAY";
+            case "THU" -> "THURSDAY";
+            case "FRI" -> "FRIDAY";
+            case "SAT" -> "SATURDAY";
+            case "SUN" -> "SUNDAY";
+            default -> abbr;
+        };
     }
 }

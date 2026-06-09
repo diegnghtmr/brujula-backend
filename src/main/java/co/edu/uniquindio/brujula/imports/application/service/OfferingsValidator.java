@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Per-kind validator for OFFERINGS import rows (IMP-008, IMP-002).
@@ -62,11 +63,22 @@ public class OfferingsValidator {
               rowNumber, "period", "PERIOD_NOT_FOUND", "period is required."));
     }
 
-    // course: required
+    // course: required and must be a valid UUID
     String course = cells.getOrDefault("course", "").trim();
     if (course.isEmpty()) {
       issues.add(
           ImportIssue.error(rowNumber, "course", "COURSE_NOT_FOUND", "course is required."));
+    } else {
+      try {
+        UUID.fromString(course);
+      } catch (IllegalArgumentException e) {
+        issues.add(
+            ImportIssue.error(
+                rowNumber,
+                "course",
+                "INVALID_COURSE_REFERENCE",
+                "course '%s' is not a valid UUID.".formatted(course)));
+      }
     }
 
     // option_label: required

@@ -524,12 +524,11 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   @Test
-  void confirm_offerings_kind_returns_501() throws Exception {
-    // IMP-012, W2 — OFFERINGS confirm is deferred to WU7; must return 501, not 500
+  void confirm_offerings_kind_returns_200_confirmed() throws Exception {
+    // IMP-008, SC-008-A, T7.3 — WU7: OFFERINGS confirm is now fully implemented
     stubStaffProfile();
-    when(confirmImportUseCase.confirm(any()))
-        .thenThrow(new UnsupportedOperationException(
-            "OFFERINGS confirmation is deferred to WU7. Batch kind OFFERINGS cannot be confirmed yet."));
+    ImportSummary confirmed = confirmedOfferingsSummary();
+    when(confirmImportUseCase.confirm(any())).thenReturn(confirmed);
 
     mockMvc
         .perform(
@@ -541,8 +540,10 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
                 .header("X-XSRF-TOKEN", XSRF_TOKEN)
                 .with(csrf())
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
-        .andExpect(status().isNotImplemented())
-        .andExpect(jsonPath("$.code").value("NOT_IMPLEMENTED"));
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CONFIRMED"))
+        .andExpect(jsonPath("$.kind").value("OFFERINGS"))
+        .andExpect(jsonPath("$.id").value(IMPORT_ID.toString()));
   }
 
   // -------------------------------------------------------------------------
@@ -615,6 +616,22 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
         "CONFIRMED",
         5,
         5,
+        List.of(),
+        List.of(),
+        Instant.now(),
+        2L);
+  }
+
+  private ImportSummary confirmedOfferingsSummary() {
+    return new ImportSummary(
+        IMPORT_ID,
+        "OFFERINGS",
+        PROGRAM_ID,
+        null,
+        UUID.randomUUID(),
+        "CONFIRMED",
+        3,
+        3,
         List.of(),
         List.of(),
         Instant.now(),

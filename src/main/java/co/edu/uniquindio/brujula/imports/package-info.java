@@ -12,6 +12,8 @@
  *   <li>{@code curriculum::api-dto} — CreateCourseCommand, CreateCourseRequirementCommand, CourseView
  *       DTOs consumed by ConfirmImportService during row replay (WU6)
  *   <li>{@code offering::api} — offering write use-case for confirm OFFERINGS (WU7)
+ *   <li>{@code offering::api-dto} — CreateOfferingCommand DTO consumed by ConfirmImportService
+ *       during OFFERINGS row replay (WU7, mirrors curriculum::api-dto pattern)
  *   <li>{@code programcatalog::api} — program/plan resolution for validation (WU3)
  *   <li>{@code administration::spi} — staff assignment check + actor→StaffAccount resolution
  *       (WU2, {@code StaffAssignmentAdapter}). This edge is NOW backed by a real
@@ -34,6 +36,7 @@
         "curriculum::api",
         "curriculum::api-dto",
         "offering::api",
+        "offering::api-dto",
         "programcatalog::api",
         "administration::spi",
         "identity::api",

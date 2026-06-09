@@ -29,6 +29,9 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportIssue;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportRow;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportStatus;
+import co.edu.uniquindio.brujula.offering.application.dto.CreateOfferingCommand;
+import co.edu.uniquindio.brujula.offering.application.dto.OfferingDetailView;
+import co.edu.uniquindio.brujula.offering.application.port.in.CreateOfferingUseCase;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
@@ -61,6 +64,7 @@ class ConfirmImportServiceTest {
     private AuditRecorder auditRecorder;
     private CreateCourseUseCase createCourseUseCase;
     private CreateCourseRequirementUseCase createCourseRequirementUseCase;
+    private CreateOfferingUseCase createOfferingUseCase;
     private ConfirmImportService service;
 
     private static final UUID PROGRAM_ID = UUID.fromString("00000001-0000-0000-0000-000000000001");
@@ -79,6 +83,7 @@ class ConfirmImportServiceTest {
         auditRecorder = mock(AuditRecorder.class);
         createCourseUseCase = mock(CreateCourseUseCase.class);
         createCourseRequirementUseCase = mock(CreateCourseRequirementUseCase.class);
+        createOfferingUseCase = mock(CreateOfferingUseCase.class);
 
         service = new ConfirmImportService(
                 loadImportBatchPort,
@@ -88,7 +93,8 @@ class ConfirmImportServiceTest {
                 jsonCodecPort,
                 auditRecorder,
                 createCourseUseCase,
-                createCourseRequirementUseCase);
+                createCourseRequirementUseCase,
+                createOfferingUseCase);
     }
 
     // -------------------------------------------------------------------------
@@ -354,22 +360,102 @@ class ConfirmImportServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // T6.2-13 — OFFERINGS kind deferred to WU7
+    // T7.1-1 — Happy path OFFERINGS: batch confirmed, offering created in DRAFT, audit recorded
     // -------------------------------------------------------------------------
 
     @Test
-    void offerings_kind_deferred_throws_UnsupportedOperationException() {
+    void offerings_import_creates_offering_entities_and_batch_confirmed() {
+        // IMP-008, SC-008-A, T7.1
         UUID importId = UUID.randomUUID();
-        ImportBatch batch = validatedOfferingsBatch(importId);
+        UUID periodId = UUID.randomUUID();
+        ImportBatch batch = validatedOfferingsBatch(importId, periodId);
         when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
         when(loadImportBatchPort.findById(batch.getId())).thenReturn(Optional.of(batch));
+        when(createOfferingUseCase.createOffering(any())).thenReturn(minimalOfferingDetailView(periodId));
+        when(saveImportBatchPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(jsonCodecPort.toJson(any())).thenReturn("{}");
+
+        ConfirmImportCommand command = adminCommand(UUID.randomUUID(), "hash", 0L,
+                ImportBatchId.of(importId));
+
+        ImportSummary result = service.confirm(command);
+
+        assertThat(result.status()).isEqualTo("CONFIRMED");
+        verify(createOfferingUseCase, times(1)).createOffering(any());
+        verify(createCourseUseCase, never()).createCourse(any());
+        verify(createCourseRequirementUseCase, never()).createCourseRequirement(any());
+        verify(auditRecorder).record(any());
+        ArgumentCaptor<ImportBatch> batchCaptor = ArgumentCaptor.forClass(ImportBatch.class);
+        verify(saveImportBatchPort).save(batchCaptor.capture());
+        assertThat(batchCaptor.getValue().getStatus()).isEqualTo(ImportStatus.CONFIRMED);
+    }
+
+    // -------------------------------------------------------------------------
+    // T7.1-2 — NFR-003: CreateOfferingCommand uses DRAFT status (offerings land DRAFT)
+    // -------------------------------------------------------------------------
+
+    @Test
+    void offerings_row_maps_to_CreateOfferingCommand_with_correct_fields() {
+        // IMP-008, NFR-003, SC-008-A — verify the command shape sent to createOfferingUseCase
+        UUID importId = UUID.randomUUID();
+        UUID periodId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        ImportBatch batch = validatedOfferingsBatchWithCourse(importId, periodId, courseId);
+        when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
+        when(loadImportBatchPort.findById(batch.getId())).thenReturn(Optional.of(batch));
+        when(createOfferingUseCase.createOffering(any())).thenReturn(minimalOfferingDetailView(periodId));
+        when(saveImportBatchPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(jsonCodecPort.toJson(any())).thenReturn("{}");
+
+        ConfirmImportCommand command = adminCommand(UUID.randomUUID(), "hash", 0L,
+                ImportBatchId.of(importId));
+        service.confirm(command);
+
+        ArgumentCaptor<CreateOfferingCommand> captor =
+                ArgumentCaptor.forClass(CreateOfferingCommand.class);
+        verify(createOfferingUseCase).createOffering(captor.capture());
+        CreateOfferingCommand sent = captor.getValue();
+
+        // NFR-003 load-bearing assertion: CreateOffering already creates in DRAFT —
+        // no explicit status field on CreateOfferingCommand, but CreateOfferingService.createOffering
+        // calls CourseOffering.create() which always starts DRAFT. Assert the command carries the
+        // expected structural fields (not a status field, because CreateOfferingCommand has none).
+        assertThat(sent.periodId()).isEqualTo(periodId);
+        assertThat(sent.courseId()).isEqualTo(courseId);
+        assertThat(sent.programId()).isEqualTo(batch.getProgramId());
+        assertThat(sent.scheduleOptions()).hasSize(1);
+        CreateOfferingCommand.ScheduleOptionDraft option = sent.scheduleOptions().getFirst();
+        assertThat(option.label()).isEqualTo("G1");
+        assertThat(option.journeyCode()).isEqualTo("DIURNA");
+        assertThat(option.sessions()).hasSize(1);
+        CreateOfferingCommand.SessionDraft session = option.sessions().getFirst();
+        assertThat(session.day()).isEqualTo("MONDAY");
+        assertThat(session.startsAt()).isEqualTo(java.time.LocalTime.of(8, 0));
+        assertThat(session.endsAt()).isEqualTo(java.time.LocalTime.of(10, 0));
+    }
+
+    // -------------------------------------------------------------------------
+    // T7.1-3 — One offering row fails → exception propagates, batch NOT confirmed
+    // -------------------------------------------------------------------------
+
+    @Test
+    void offerings_one_row_failure_propagates_and_batch_not_confirmed() {
+        // INV-03, IMP-005 SC-005-D
+        UUID importId = UUID.randomUUID();
+        UUID periodId = UUID.randomUUID();
+        ImportBatch batch = validatedOfferingsBatch(importId, periodId);
+        when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
+        when(loadImportBatchPort.findById(batch.getId())).thenReturn(Optional.of(batch));
+        when(createOfferingUseCase.createOffering(any()))
+                .thenThrow(new IllegalStateException("offering constraint violation"));
 
         ConfirmImportCommand command = adminCommand(UUID.randomUUID(), "hash", 0L,
                 ImportBatchId.of(importId));
 
         assertThatThrownBy(() -> service.confirm(command))
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("WU7");
+                .isInstanceOf(IllegalStateException.class);
+        verify(saveImportBatchPort, never()).save(any());
+        verify(auditRecorder, never()).record(any());
     }
 
     // =========================================================================
@@ -469,18 +555,24 @@ class ConfirmImportServiceTest {
                 Instant.now());
     }
 
-    private ImportBatch validatedOfferingsBatch(UUID importId) {
+    private ImportBatch validatedOfferingsBatch(UUID importId, UUID periodId) {
+        UUID courseId = UUID.randomUUID();
+        return validatedOfferingsBatchWithCourse(importId, periodId, courseId);
+    }
+
+    private ImportBatch validatedOfferingsBatchWithCourse(UUID importId, UUID periodId, UUID courseId) {
         List<ImportRow> rows = List.of(new ImportRow(0, Map.of(
-                "period", UUID.randomUUID().toString(),
-                "course", UUID.randomUUID().toString(),
+                "course", courseId.toString(),
                 "option_label", "G1",
+                "journey", "DIURNA",
                 "day", "MON",
                 "start_time", "08:00",
-                "end_time", "10:00")));
+                "end_time", "10:00",
+                "status", "ACTIVE")));
         return ImportBatch.reconstitute(
                 ImportBatchId.of(importId),
                 ImportKind.OFFERINGS, PROGRAM_ID, null,
-                UUID.randomUUID(),
+                periodId,
                 ImportStatus.VALIDATED,
                 1, 1,
                 List.of(),
@@ -488,6 +580,19 @@ class ConfirmImportServiceTest {
                 ImportBatch.CURRENT_SCHEMA_VERSION,
                 0L,
                 Instant.now());
+    }
+
+    private OfferingDetailView minimalOfferingDetailView(UUID periodId) {
+        return new OfferingDetailView(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                "Test Course",
+                PROGRAM_ID,
+                periodId,
+                "DRAFT",
+                null,
+                0L,
+                List.of());
     }
 
     private ImportBatch invalidBatch() {

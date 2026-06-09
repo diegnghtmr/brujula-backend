@@ -89,7 +89,47 @@ class OfferingsValidatorTest {
   void valid_offering_row_produces_no_issues() {
     ImportRow row = new ImportRow(0, Map.of(
         "period", "2026-1",
-        "course", "MAT101",
+        "course", "550e8400-e29b-41d4-a716-446655440000",
+        "option_label", "G1",
+        "journey", "J1",
+        "day", "MON",
+        "start_time", "08:00",
+        "end_time", "10:00",
+        "status", "ACTIVE"
+    ));
+
+    Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(List.of(row));
+
+    assertThat(issueMap).doesNotContainKey(0);
+  }
+
+  /** W1/S2: malformed course (non-UUID) produces INVALID_COURSE_REFERENCE error. */
+  @Test
+  void malformed_course_uuid_produces_invalid_course_reference_error() {
+    ImportRow row = new ImportRow(0, Map.of(
+        "period", "2026-1",
+        "course", "NOT-A-UUID",
+        "option_label", "G1",
+        "journey", "J1",
+        "day", "MON",
+        "start_time", "08:00",
+        "end_time", "10:00",
+        "status", "ACTIVE"
+    ));
+
+    Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(List.of(row));
+
+    assertThat(issueMap).containsKey(0);
+    assertThat(issueMap.get(0))
+        .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("INVALID_COURSE_REFERENCE"));
+  }
+
+  /** W1/S2: valid UUID course value produces no course-related issues. */
+  @Test
+  void valid_uuid_course_produces_no_course_issues() {
+    ImportRow row = new ImportRow(0, Map.of(
+        "period", "2026-1",
+        "course", "550e8400-e29b-41d4-a716-446655440000",
         "option_label", "G1",
         "journey", "J1",
         "day", "MON",
