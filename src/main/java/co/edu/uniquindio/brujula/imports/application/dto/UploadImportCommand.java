@@ -1,6 +1,5 @@
 package co.edu.uniquindio.brujula.imports.application.dto;
 
-import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -27,8 +26,8 @@ public record UploadImportCommand(
     String actorRole,
     /** Actor UUID (for audit recording). May be null if the controller cannot resolve it cheaply. */
     UUID actorId,
-    /** Import kind: COURSES, REQUIREMENTS, or OFFERINGS. */
-    ImportKind kind,
+    /** Import kind name: "COURSES", "REQUIREMENTS", or "OFFERINGS". Converted to domain enum by the service. */
+    String kind,
     /** Target program UUID. */
     UUID programId,
     /**

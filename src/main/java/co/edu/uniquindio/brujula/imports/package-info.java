@@ -15,6 +15,10 @@
  *       (WU2, {@code StaffAssignmentAdapter}). This edge is NOW backed by a real
  *       {@code @NamedInterface("spi")} in {@code administration.application.port.in.spi},
  *       so Spring Modulith genuinely validates this boundary.
+ *   <li>{@code identity::api} — GetCurrentUserQuery for actor resolution in REST controller (WU4)
+ *   <li>{@code identity::api-dto} — UserProfile DTO consumed by REST controller (WU4)
+ *   <li>{@code generated} — OpenAPI-generated ImportsApi interface and model DTOs in REST
+ *       adapters (ARQ-005, WU4). Mirrors the offering module pattern.
  * </ul>
  *
  * <p>Note: bare module names (e.g. {@code "audit"}) are migrated to NamedInterface paths
@@ -28,6 +32,9 @@
         "curriculum::api",
         "offering::api",
         "programcatalog::api",
-        "administration::spi"
+        "administration::spi",
+        "identity::api",
+        "identity::api-dto",
+        "generated"
     })
 package co.edu.uniquindio.brujula.imports;

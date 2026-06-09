@@ -21,7 +21,6 @@ import co.edu.uniquindio.brujula.imports.domain.exception.ImportAccessDeniedExce
 import co.edu.uniquindio.brujula.imports.domain.exception.MissingImportParameterException;
 import co.edu.uniquindio.brujula.imports.domain.exception.UnsupportedFileTypeException;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportBatch;
-import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportRow;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
@@ -112,7 +111,7 @@ class UploadImportServiceTest {
     when(jsonCodecPort.toJson(any())).thenReturn(summaryJson);
 
     UploadImportCommand cmd = buildCommand("staff@uniquindio.edu.co", "STAFF", programId, planId, null,
-        ImportKind.COURSES, new byte[100]);
+        "COURSES", new byte[100]);
 
     ImportSummary summary = service.upload(cmd);
 
@@ -133,7 +132,7 @@ class UploadImportServiceTest {
   void wrong_mime_raises_415_exception() {
     UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
         UUID.randomUUID(), UUID.randomUUID(), null,
-        ImportKind.COURSES, new byte[100],
+        "COURSES", new byte[100],
         "text/csv", "data.csv");
 
     // No parser supports text/csv
@@ -155,7 +154,7 @@ class UploadImportServiceTest {
     byte[] largeFile = new byte[(int) MAX_FILE_SIZE + 1];
     UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
         UUID.randomUUID(), UUID.randomUUID(), null,
-        ImportKind.COURSES, largeFile);
+        "COURSES", largeFile);
 
     assertThatThrownBy(() -> service.upload(cmd))
         .isInstanceOf(FileSizeExceededException.class);
@@ -177,7 +176,7 @@ class UploadImportServiceTest {
     when(staffAssignmentPort.isAssigned(staffId, programId)).thenReturn(false);
 
     UploadImportCommand cmd = buildCommand("staff@uniquindio.edu.co", "STAFF",
-        programId, UUID.randomUUID(), null, ImportKind.COURSES, new byte[100]);
+        programId, UUID.randomUUID(), null, "COURSES", new byte[100]);
 
     assertThatThrownBy(() -> service.upload(cmd))
         .isInstanceOf(ImportAccessDeniedException.class);
@@ -211,7 +210,7 @@ class UploadImportServiceTest {
         .thenReturn(Optional.of(UUID.randomUUID())); // would return UUID if inactive
 
     UploadImportCommand cmd = buildCommand("inactive@uniquindio.edu.co", "STAFF",
-        programId, UUID.randomUUID(), null, ImportKind.COURSES, new byte[100]);
+        programId, UUID.randomUUID(), null, "COURSES", new byte[100]);
 
     assertThatThrownBy(() -> service.upload(cmd))
         .isInstanceOf(ImportAccessDeniedException.class);
@@ -240,7 +239,7 @@ class UploadImportServiceTest {
 
     UploadImportCommand cmd = new UploadImportCommand(
         idempotencyKey, requestHash, "staff@uniquindio.edu.co", "STAFF", null,
-        ImportKind.COURSES, UUID.randomUUID(), UUID.randomUUID(), null,
+        "COURSES", UUID.randomUUID(), UUID.randomUUID(), null,
         new byte[100], "data.xlsx", XLSX_CONTENT_TYPE);
 
     ImportSummary result = service.upload(cmd);
@@ -266,7 +265,7 @@ class UploadImportServiceTest {
 
     UploadImportCommand cmd = new UploadImportCommand(
         idempotencyKey, newHash, "staff@uniquindio.edu.co", "STAFF", null,
-        ImportKind.COURSES, UUID.randomUUID(), UUID.randomUUID(), null,
+        "COURSES", UUID.randomUUID(), UUID.randomUUID(), null,
         new byte[100], "data.xlsx", XLSX_CONTENT_TYPE);
 
     assertThatThrownBy(() -> service.upload(cmd))
@@ -280,7 +279,7 @@ class UploadImportServiceTest {
   void missing_plan_id_for_courses_raises_400() {
     UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
         UUID.randomUUID(), null, null, // no planId
-        ImportKind.COURSES, new byte[100]);
+        "COURSES", new byte[100]);
 
     assertThatThrownBy(() -> service.upload(cmd))
         .isInstanceOf(MissingImportParameterException.class)
@@ -294,7 +293,7 @@ class UploadImportServiceTest {
   void missing_period_id_for_offerings_raises_400() {
     UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
         UUID.randomUUID(), null, null, // no periodId
-        ImportKind.OFFERINGS, new byte[100]);
+        "OFFERINGS", new byte[100]);
 
     assertThatThrownBy(() -> service.upload(cmd))
         .isInstanceOf(MissingImportParameterException.class)
@@ -317,7 +316,7 @@ class UploadImportServiceTest {
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
 
     UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
-        programId, planId, null, ImportKind.COURSES, new byte[100]);
+        programId, planId, null, "COURSES", new byte[100]);
 
     service.upload(cmd);
 
@@ -348,7 +347,7 @@ class UploadImportServiceTest {
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
 
     UploadImportCommand cmd = buildCommand("staff@uniquindio.edu.co", "STAFF",
-        programId, planId, null, ImportKind.COURSES, new byte[100]);
+        programId, planId, null, "COURSES", new byte[100]);
 
     service.upload(cmd);
 
@@ -371,7 +370,7 @@ class UploadImportServiceTest {
     when(staffAssignmentPort.isAssigned(staffId, programId)).thenReturn(false);
 
     UploadImportCommand cmd = buildCommand("staff@uniquindio.edu.co", "STAFF",
-        programId, UUID.randomUUID(), null, ImportKind.COURSES, new byte[100]);
+        programId, UUID.randomUUID(), null, "COURSES", new byte[100]);
 
     assertThatThrownBy(() -> service.upload(cmd)).isInstanceOf(ImportAccessDeniedException.class);
 
@@ -386,7 +385,7 @@ class UploadImportServiceTest {
       UUID programId,
       UUID planId,
       UUID periodId,
-      ImportKind kind,
+      String kind,
       byte[] fileBytes) {
     return buildCommand(actorEmail, actorRole, programId, planId, periodId, kind, fileBytes,
         XLSX_CONTENT_TYPE, "data.xlsx");
@@ -398,7 +397,7 @@ class UploadImportServiceTest {
       UUID programId,
       UUID planId,
       UUID periodId,
-      ImportKind kind,
+      String kind,
       byte[] fileBytes,
       String contentType,
       String filename) {

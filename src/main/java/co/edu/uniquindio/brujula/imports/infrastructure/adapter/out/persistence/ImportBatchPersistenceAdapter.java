@@ -70,4 +70,15 @@ class ImportBatchPersistenceAdapter implements SaveImportBatchPort, LoadImportBa
                 .map(mapper::toDomain)
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ImportBatch> findAll(ImportKind kind, ImportStatus status) {
+        String kindStr = kind != null ? kind.name() : null;
+        String statusStr = status != null ? status.name() : null;
+        return repository.findAllByFilters(kindStr, statusStr)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
 }

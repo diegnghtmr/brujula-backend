@@ -43,4 +43,15 @@ public interface LoadImportBatchPort {
      * @return list of matching batches (unordered; ordering applied at service layer)
      */
     List<ImportBatch> findByProgram(UUID programId, ImportKind kind, ImportStatus status);
+
+    /**
+     * List ALL ImportBatches, optionally filtered by kind/status.
+     *
+     * <p>Used by the list endpoint (IMP-003) for ADMIN actors who see all programs.
+     *
+     * @param kind   optional kind filter; null means all kinds
+     * @param status optional status filter; null means all statuses
+     * @return list of all matching batches
+     */
+    List<ImportBatch> findAll(ImportKind kind, ImportStatus status);
 }

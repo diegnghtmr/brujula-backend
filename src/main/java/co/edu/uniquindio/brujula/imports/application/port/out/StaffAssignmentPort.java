@@ -1,5 +1,6 @@
 package co.edu.uniquindio.brujula.imports.application.port.out;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,4 +54,14 @@ public interface StaffAssignmentPort {
    * @return the staff UUID if an ACTIVE StaffAccount with this email exists; empty otherwise
    */
   Optional<UUID> resolveActiveStaffId(String email);
+
+  /**
+   * Return all program UUIDs for which the given staff member has active assignments.
+   *
+   * <p>Used by ListImportsService (IMP-003) to scope the list query to assigned programs.
+   *
+   * @param staffId the staff account UUID
+   * @return list of program UUIDs; empty if none
+   */
+  List<UUID> getAssignedPrograms(UUID staffId);
 }
