@@ -4,6 +4,7 @@ import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.CreateCourseRequirementUseCase;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.CreateCourseUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.ConfirmImportUseCase;
+import co.edu.uniquindio.brujula.offering.application.port.in.CreateOfferingUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.GetImportUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.ListImportsUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.UploadImportUseCase;
@@ -106,7 +107,8 @@ class ImportsConfiguration {
       JsonCodecPort jsonCodecPort,
       AuditRecorder auditRecorder,
       CreateCourseUseCase createCourseUseCase,
-      CreateCourseRequirementUseCase createCourseRequirementUseCase) {
+      CreateCourseRequirementUseCase createCourseRequirementUseCase,
+      CreateOfferingUseCase createOfferingUseCase) {
     return new ConfirmImportService(
         loadImportBatchPort,
         saveImportBatchPort,
@@ -115,6 +117,7 @@ class ImportsConfiguration {
         jsonCodecPort,
         auditRecorder,
         createCourseUseCase,
-        createCourseRequirementUseCase);
+        createCourseRequirementUseCase,
+        createOfferingUseCase);
   }
 }

@@ -171,15 +171,16 @@ class ImportsExceptionHandler {
   }
 
   // -------------------------------------------------------------------------
-  // 501 Not Implemented — OFFERINGS confirm deferred to WU7 (IMP-012)
+  // 501 Not Implemented — defensive guard (IMP-012)
   // -------------------------------------------------------------------------
 
   /**
    * Maps {@link UnsupportedOperationException} to HTTP 501 Not Implemented.
    *
-   * <p>Currently thrown by {@code ConfirmImportService.replayRows()} when the batch kind is
-   * OFFERINGS. The OFFERINGS confirm path is deferred to WU7. Returning 501 with a structured
-   * RFC 9457 body prevents leaking a raw 500 stack trace at the API boundary (IMP-012).
+   * <p>Kept as a defensive handler. As of WU7, no supported import kind (COURSES, REQUIREMENTS,
+   * OFFERINGS) throws this exception from {@code ConfirmImportService.replayRows()}. If a future
+   * kind is added and not yet implemented, this handler prevents leaking a raw 500 stack trace at
+   * the API boundary (IMP-012).
    */
   @ExceptionHandler(UnsupportedOperationException.class)
   ProblemDetail handleNotImplemented(UnsupportedOperationException ex) {
