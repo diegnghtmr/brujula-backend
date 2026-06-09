@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Application-layer DTO for the progress summary returned by
- * {@link co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionProgressQuery}.
+ * Application-layer DTO for the progress summary returned by {@link
+ * co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionProgressQuery}.
  *
  * <p>ARQ-001: this DTO is in the application package so REST adapters can use it without importing
- * domain types. The application service maps from
- * {@link co.edu.uniquindio.brujula.progress.domain.ProgressSummaryData} to this view.
+ * domain types. The application service maps from {@link
+ * co.edu.uniquindio.brujula.progress.domain.ProgressSummaryData} to this view.
  *
  * <p>FIX-W2: {@code programName} is now resolved from the programcatalog published port in the
  * application service rather than constructed as a UUID placeholder in the REST adapter.
@@ -38,5 +38,4 @@ public record ProgressSummaryView(
     int pendingFailedCourses,
     BigDecimal estimatedHistoricalAverage,
     List<PeriodAverageView> averagesByPeriod,
-    String disclaimer) {
-}
+    String disclaimer) {}

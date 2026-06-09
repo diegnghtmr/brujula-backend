@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Test;
  * <p>Scenarios:
  *
  * <ul>
- *   <li>AVL-2-HP: credits math (approved, pending, percentage), passedCourses, pendingFailedCourses.
+ *   <li>AVL-2-HP: credits math (approved, pending, percentage), passedCourses,
+ *       pendingFailedCourses.
  *   <li>AVL-2-NO-ATTEMPTS: zero attempts → 0 approved, 0%, null average.
  *   <li>CROSS-6-DISCLAIMER: disclaimer is non-empty string.
  *   <li>averagesByPeriod grouping.
@@ -36,20 +37,23 @@ class ProgressSummaryCalculatorTest {
     UUID c3 = UUID.randomUUID();
 
     // Plan: 3 courses, 10+10+10 = 30 credits
-    List<PlanCourse> planCourses = List.of(
-        new PlanCourse(c1, "C1", 10, "REQUIRED", 1),
-        new PlanCourse(c2, "C2", 10, "REQUIRED", 2),
-        new PlanCourse(c3, "C3", 10, "REQUIRED", 3));
+    List<PlanCourse> planCourses =
+        List.of(
+            new PlanCourse(c1, "C1", 10, "REQUIRED", 1),
+            new PlanCourse(c2, "C2", 10, "REQUIRED", 2),
+            new PlanCourse(c3, "C3", 10, "REQUIRED", 3));
 
     // c1 PASSED (4.0), c2 FAILED (2.0), c3 no attempts
-    Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of(
-        c1, CourseProgressStatus.PASSED,
-        c2, CourseProgressStatus.FAILED);
+    Map<UUID, CourseProgressStatus> effectiveByCourse =
+        Map.of(
+            c1, CourseProgressStatus.PASSED,
+            c2, CourseProgressStatus.FAILED);
 
     UUID periodA = UUID.randomUUID();
-    List<AttemptSummary> attempts = List.of(
-        new AttemptSummary(c1, AttemptStatus.PASSED, new BigDecimal("4.0"), periodA),
-        new AttemptSummary(c2, AttemptStatus.FAILED, new BigDecimal("2.0"), periodA));
+    List<AttemptSummary> attempts =
+        List.of(
+            new AttemptSummary(c1, AttemptStatus.PASSED, new BigDecimal("4.0"), periodA),
+            new AttemptSummary(c2, AttemptStatus.FAILED, new BigDecimal("2.0"), periodA));
 
     ProgressSummaryData result = sut.compute(planCourses, effectiveByCourse, attempts);
 
@@ -113,18 +117,20 @@ class ProgressSummaryCalculatorTest {
     UUID c1 = UUID.randomUUID();
     UUID c2 = UUID.randomUUID();
 
-    List<PlanCourse> planCourses = List.of(
-        new PlanCourse(c1, "C1", 3, "REQUIRED", 1),
-        new PlanCourse(c2, "C2", 3, "REQUIRED", 2));
+    List<PlanCourse> planCourses =
+        List.of(
+            new PlanCourse(c1, "C1", 3, "REQUIRED", 1), new PlanCourse(c2, "C2", 3, "REQUIRED", 2));
 
-    Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of(
-        c1, CourseProgressStatus.PASSED,
-        c2, CourseProgressStatus.FAILED);
+    Map<UUID, CourseProgressStatus> effectiveByCourse =
+        Map.of(
+            c1, CourseProgressStatus.PASSED,
+            c2, CourseProgressStatus.FAILED);
 
     UUID period = UUID.randomUUID();
-    List<AttemptSummary> attempts = List.of(
-        new AttemptSummary(c1, AttemptStatus.PASSED, new BigDecimal("4.0"), period),
-        new AttemptSummary(c2, AttemptStatus.FAILED, new BigDecimal("2.0"), period));
+    List<AttemptSummary> attempts =
+        List.of(
+            new AttemptSummary(c1, AttemptStatus.PASSED, new BigDecimal("4.0"), period),
+            new AttemptSummary(c2, AttemptStatus.FAILED, new BigDecimal("2.0"), period));
 
     ProgressSummaryData result = sut.compute(planCourses, effectiveByCourse, attempts);
 
@@ -140,8 +146,8 @@ class ProgressSummaryCalculatorTest {
     List<PlanCourse> planCourses = List.of(new PlanCourse(c1, "C1", 3, "REQUIRED", 1));
     Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of(c1, CourseProgressStatus.CANCELLED);
     // CANCELLED attempts have no grade → should not count
-    List<AttemptSummary> attempts = List.of(
-        new AttemptSummary(c1, AttemptStatus.CANCELLED, null, UUID.randomUUID()));
+    List<AttemptSummary> attempts =
+        List.of(new AttemptSummary(c1, AttemptStatus.CANCELLED, null, UUID.randomUUID()));
 
     ProgressSummaryData result = sut.compute(planCourses, effectiveByCourse, attempts);
 
@@ -159,26 +165,32 @@ class ProgressSummaryCalculatorTest {
     UUID periodA = UUID.randomUUID();
     UUID periodB = UUID.randomUUID();
 
-    List<PlanCourse> planCourses = List.of(
-        new PlanCourse(c1, "C1", 3, "REQUIRED", 1),
-        new PlanCourse(c2, "C2", 3, "REQUIRED", 2));
+    List<PlanCourse> planCourses =
+        List.of(
+            new PlanCourse(c1, "C1", 3, "REQUIRED", 1), new PlanCourse(c2, "C2", 3, "REQUIRED", 2));
 
-    Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of(
-        c1, CourseProgressStatus.PASSED,
-        c2, CourseProgressStatus.FAILED);
+    Map<UUID, CourseProgressStatus> effectiveByCourse =
+        Map.of(
+            c1, CourseProgressStatus.PASSED,
+            c2, CourseProgressStatus.FAILED);
 
-    List<AttemptSummary> attempts = List.of(
-        new AttemptSummary(c1, AttemptStatus.PASSED, new BigDecimal("4.0"), periodA),
-        new AttemptSummary(c2, AttemptStatus.FAILED, new BigDecimal("2.0"), periodB));
+    List<AttemptSummary> attempts =
+        List.of(
+            new AttemptSummary(c1, AttemptStatus.PASSED, new BigDecimal("4.0"), periodA),
+            new AttemptSummary(c2, AttemptStatus.FAILED, new BigDecimal("2.0"), periodB));
 
     ProgressSummaryData result = sut.compute(planCourses, effectiveByCourse, attempts);
 
     assertThat(result.averagesByPeriod()).hasSize(2);
     assertThat(result.averagesByPeriod())
-        .anyMatch(pa -> pa.periodId().equals(periodA) &&
-            pa.estimatedAverage().compareTo(new BigDecimal("4.0")) == 0)
-        .anyMatch(pa -> pa.periodId().equals(periodB) &&
-            pa.estimatedAverage().compareTo(new BigDecimal("2.0")) == 0);
+        .anyMatch(
+            pa ->
+                pa.periodId().equals(periodA)
+                    && pa.estimatedAverage().compareTo(new BigDecimal("4.0")) == 0)
+        .anyMatch(
+            pa ->
+                pa.periodId().equals(periodB)
+                    && pa.estimatedAverage().compareTo(new BigDecimal("2.0")) == 0);
   }
 
   @Test
@@ -190,8 +202,8 @@ class ProgressSummaryCalculatorTest {
     Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of(c1, CourseProgressStatus.CANCELLED);
 
     // CANCELLED has no grade → no period average
-    List<AttemptSummary> attempts = List.of(
-        new AttemptSummary(c1, AttemptStatus.CANCELLED, null, period));
+    List<AttemptSummary> attempts =
+        List.of(new AttemptSummary(c1, AttemptStatus.CANCELLED, null, period));
 
     ProgressSummaryData result = sut.compute(planCourses, effectiveByCourse, attempts);
 

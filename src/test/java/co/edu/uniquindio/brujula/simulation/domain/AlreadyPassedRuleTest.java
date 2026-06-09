@@ -9,9 +9,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for {@link AlreadyPassedRule} (spec VAL-005).
- */
+/** Unit tests for {@link AlreadyPassedRule} (spec VAL-005). */
 class AlreadyPassedRuleTest {
 
   private AlreadyPassedRule rule;
@@ -57,7 +55,16 @@ class AlreadyPassedRuleTest {
   // -------------------------------------------------------------------------
 
   private CandidateSelection buildCandidate(UUID courseId, String courseName) {
-    return new CandidateSelection(UUID.randomUUID(), UUID.randomUUID(), courseId,
-        courseName, UUID.randomUUID(), 3.0, "DIURNA", "FINAL", 1L, List.of());
+    return new CandidateSelection(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        courseId,
+        courseName,
+        UUID.randomUUID(),
+        3.0,
+        "DIURNA",
+        "FINAL",
+        1L,
+        List.of());
   }
 }

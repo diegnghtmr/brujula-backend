@@ -34,7 +34,6 @@ class StudyPlanPersistenceAdapter implements LoadStudyPlanPort {
   @Override
   @Transactional(readOnly = true)
   public Optional<StudyPlan> loadById(PlanId planId) {
-    return repository.findById(planId.value())
-        .map(CatalogPersistenceMapper::toDomain);
+    return repository.findById(planId.value()).map(CatalogPersistenceMapper::toDomain);
   }
 }

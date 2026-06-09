@@ -6,7 +6,6 @@ import co.edu.uniquindio.brujula.offering.domain.OfferingNotPublishableException
 import co.edu.uniquindio.brujula.offering.domain.PeriodNotFoundException;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOptionNotFoundException;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <p>Lives in {@code infrastructure.configuration} to reference both application and domain layers.
  *
  * <p>Exception → HTTP mapping (OFFW-008):
+ *
  * <ul>
  *   <li>{@link PeriodNotFoundException} → 404 Not Found
  *   <li>{@link OfferingNotFoundException} → 404 Not Found
@@ -65,8 +65,9 @@ class OfferingExceptionHandler {
 
   @ExceptionHandler(OptimisticLockingFailureException.class)
   ProblemDetail handleOptimisticLock(OptimisticLockingFailureException ex) {
-    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, "Version conflict: the resource was modified by another request.");
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT, "Version conflict: the resource was modified by another request.");
     problem.setProperty("code", "OPTIMISTIC_LOCK_CONFLICT");
     return problem;
   }
@@ -80,8 +81,9 @@ class OfferingExceptionHandler {
 
   @ExceptionHandler(DataIntegrityViolationException.class)
   ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, "Data integrity constraint violated.");
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT, "Data integrity constraint violated.");
     problem.setProperty("code", "DATA_INTEGRITY_VIOLATION");
     return problem;
   }

@@ -1,8 +1,6 @@
 package co.edu.uniquindio.brujula.offering.domain;
 
-/**
- * Thrown when a requested {@link AcademicPeriod} does not exist.
- */
+/** Thrown when a requested {@link AcademicPeriod} does not exist. */
 public class PeriodNotFoundException extends RuntimeException {
 
   public PeriodNotFoundException(AcademicPeriodId id) {

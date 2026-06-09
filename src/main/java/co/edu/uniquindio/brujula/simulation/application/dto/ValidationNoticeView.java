@@ -7,11 +7,8 @@ import java.util.Map;
  *
  * <p>Used in {@link SimulationValidationView} to report blocking and warning notices.
  *
- * @param code     SIMULATION_* error code
- * @param message  human-readable message
+ * @param code SIMULATION_* error code
+ * @param message human-readable message
  * @param metadata optional context map (may be null)
  */
-public record ValidationNoticeView(
-    String code,
-    String message,
-    Map<String, Object> metadata) {}
+public record ValidationNoticeView(String code, String message, Map<String, Object> metadata) {}

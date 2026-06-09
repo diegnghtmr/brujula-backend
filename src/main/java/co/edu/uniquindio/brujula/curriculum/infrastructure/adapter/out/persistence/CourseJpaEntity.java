@@ -15,8 +15,8 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code curriculum.course} (created by Flyway V011).
  *
- * <p>Package-private per ARQ-006. Schema-qualified table annotation following the
- * Fase-1 identity pattern (Boot 4.0.3 / Hibernate 6.x confirmed working).
+ * <p>Package-private per ARQ-006. Schema-qualified table annotation following the Fase-1 identity
+ * pattern (Boot 4.0.3 / Hibernate 6.x confirmed working).
  *
  * <p>Optimistic locking via {@code @Version} on the {@code version} column (DB-006/DT-014).
  */
@@ -56,35 +56,101 @@ class CourseJpaEntity {
   @Column(name = "version", nullable = false)
   private long version;
 
-  @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToMany(
+      mappedBy = "course",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.EAGER)
   private List<CourseRecommendedSemesterJpaEntity> recommendedSemesters = new ArrayList<>();
 
   // JPA requires a no-arg constructor
   protected CourseJpaEntity() {}
 
-  UUID getId() { return id; }
-  UUID getPlanId() { return planId; }
-  UUID getProgramId() { return programId; }
-  String getOfficialCode() { return officialCode; }
-  String getName() { return name; }
-  String getType() { return type; }
-  int getCredits() { return credits; }
-  int getCurricularWeeklyHours() { return curricularWeeklyHours; }
-  String getStatus() { return status; }
-  long getVersion() { return version; }
-  List<CourseRecommendedSemesterJpaEntity> getRecommendedSemesters() { return recommendedSemesters; }
+  UUID getId() {
+    return id;
+  }
+
+  UUID getPlanId() {
+    return planId;
+  }
+
+  UUID getProgramId() {
+    return programId;
+  }
+
+  String getOfficialCode() {
+    return officialCode;
+  }
+
+  String getName() {
+    return name;
+  }
+
+  String getType() {
+    return type;
+  }
+
+  int getCredits() {
+    return credits;
+  }
+
+  int getCurricularWeeklyHours() {
+    return curricularWeeklyHours;
+  }
+
+  String getStatus() {
+    return status;
+  }
+
+  long getVersion() {
+    return version;
+  }
+
+  List<CourseRecommendedSemesterJpaEntity> getRecommendedSemesters() {
+    return recommendedSemesters;
+  }
 
   // Setters for the write path (CUR-001 / WU5)
-  void setId(UUID id) { this.id = id; }
-  void setPlanId(UUID planId) { this.planId = planId; }
-  void setProgramId(UUID programId) { this.programId = programId; }
-  void setOfficialCode(String officialCode) { this.officialCode = officialCode; }
-  void setName(String name) { this.name = name; }
-  void setType(String type) { this.type = type; }
-  void setCredits(int credits) { this.credits = credits; }
-  void setCurricularWeeklyHours(int curricularWeeklyHours) { this.curricularWeeklyHours = curricularWeeklyHours; }
-  void setStatus(String status) { this.status = status; }
-  void setVersion(long version) { this.version = version; }
+  void setId(UUID id) {
+    this.id = id;
+  }
+
+  void setPlanId(UUID planId) {
+    this.planId = planId;
+  }
+
+  void setProgramId(UUID programId) {
+    this.programId = programId;
+  }
+
+  void setOfficialCode(String officialCode) {
+    this.officialCode = officialCode;
+  }
+
+  void setName(String name) {
+    this.name = name;
+  }
+
+  void setType(String type) {
+    this.type = type;
+  }
+
+  void setCredits(int credits) {
+    this.credits = credits;
+  }
+
+  void setCurricularWeeklyHours(int curricularWeeklyHours) {
+    this.curricularWeeklyHours = curricularWeeklyHours;
+  }
+
+  void setStatus(String status) {
+    this.status = status;
+  }
+
+  void setVersion(long version) {
+    this.version = version;
+  }
+
   void setRecommendedSemesters(List<CourseRecommendedSemesterJpaEntity> recommendedSemesters) {
     this.recommendedSemesters.clear();
     if (recommendedSemesters != null) {

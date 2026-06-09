@@ -9,11 +9,7 @@ import java.util.UUID;
  * <p>Idempotent via {@code Idempotency-Key} header (X-001).
  */
 public record DuplicateSimulationCommand(
-    UUID idempotencyKey,
-    UUID simulationId,
-    UUID ownerId,
-    String name,
-    String requestHash) {
+    UUID idempotencyKey, UUID simulationId, UUID ownerId, String name, String requestHash) {
 
   public DuplicateSimulationCommand {
     Objects.requireNonNull(idempotencyKey, "idempotencyKey required");

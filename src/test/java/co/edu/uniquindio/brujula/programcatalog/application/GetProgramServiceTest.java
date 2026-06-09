@@ -35,8 +35,9 @@ class GetProgramServiceTest {
   @Test
   void returnsProgramViewWhenFound() {
     ProgramId id = ProgramId.generate();
-    AcademicProgram program = AcademicProgram.reconstitute(
-        id, "Ingeniería de Sistemas", "FIET", ProgramStatus.ACTIVE, 1L);
+    AcademicProgram program =
+        AcademicProgram.reconstitute(
+            id, "Ingeniería de Sistemas", "FIET", ProgramStatus.ACTIVE, 1L);
 
     when(loadProgramPort.loadById(id)).thenReturn(Optional.of(program));
 

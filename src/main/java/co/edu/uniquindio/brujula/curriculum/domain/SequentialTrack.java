@@ -6,15 +6,15 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * SequentialTrack — aggregate representing an ordered electiva or profundización track
- * within a study plan.
+ * SequentialTrack — aggregate representing an ordered electiva or profundización track within a
+ * study plan.
  *
- * <p>Contains an ordered list of {@link SequentialTrackLevel} objects, each of which holds
- * the course options selectable at that level (e.g. Electiva I, Electiva II).
+ * <p>Contains an ordered list of {@link SequentialTrackLevel} objects, each of which holds the
+ * course options selectable at that level (e.g. Electiva I, Electiva II).
  *
- * <p>The optional {@code gatekeeperCourseId} (added by V014) is the course a student must
- * have passed before enrolling in level 1 of this track (DEEPENING tracks only; nullable
- * for PERSONAL_ELECTIVE tracks and DEEPENING tracks without a defined prereq).
+ * <p>The optional {@code gatekeeperCourseId} (added by V014) is the course a student must have
+ * passed before enrolling in level 1 of this track (DEEPENING tracks only; nullable for
+ * PERSONAL_ELECTIVE tracks and DEEPENING tracks without a defined prereq).
  *
  * <p>Status is a read-only aggregate — no write use cases for this aggregate in Fase 2.
  * {@code @Version} is persisted for future optimistic-lock support.
@@ -51,9 +51,7 @@ public final class SequentialTrack {
     this.version = version;
   }
 
-  /**
-   * Reconstitute a SequentialTrack from persistence (all fields explicit; no default logic).
-   */
+  /** Reconstitute a SequentialTrack from persistence (all fields explicit; no default logic). */
   public static SequentialTrack reconstitute(
       SequentialTrackId id,
       UUID planId,
@@ -71,25 +69,52 @@ public final class SequentialTrack {
     }
     Objects.requireNonNull(levels, "levels must not be null");
     return new SequentialTrack(
-        id, planId, kind, label, consecutiveSimultaneityAllowed,
-        gatekeeperCourseId, List.copyOf(levels), version);
+        id,
+        planId,
+        kind,
+        label,
+        consecutiveSimultaneityAllowed,
+        gatekeeperCourseId,
+        List.copyOf(levels),
+        version);
   }
 
   // ---------------------------------------------------------------------------
   // Accessors
   // ---------------------------------------------------------------------------
 
-  public SequentialTrackId id() { return id; }
-  public UUID planId() { return planId; }
-  public TrackKind kind() { return kind; }
-  public String label() { return label; }
-  public boolean consecutiveSimultaneityAllowed() { return consecutiveSimultaneityAllowed; }
+  public SequentialTrackId id() {
+    return id;
+  }
+
+  public UUID planId() {
+    return planId;
+  }
+
+  public TrackKind kind() {
+    return kind;
+  }
+
+  public String label() {
+    return label;
+  }
+
+  public boolean consecutiveSimultaneityAllowed() {
+    return consecutiveSimultaneityAllowed;
+  }
 
   /** Nullable: the gatekeeper course UUID, or {@code null} if no gatekeeper is defined. */
-  public UUID gatekeeperCourseId() { return gatekeeperCourseId; }
+  public UUID gatekeeperCourseId() {
+    return gatekeeperCourseId;
+  }
 
-  public List<SequentialTrackLevel> levels() { return levels; }
-  public long version() { return version; }
+  public List<SequentialTrackLevel> levels() {
+    return levels;
+  }
+
+  public long version() {
+    return version;
+  }
 
   // ---------------------------------------------------------------------------
   // Equality (identity-based)

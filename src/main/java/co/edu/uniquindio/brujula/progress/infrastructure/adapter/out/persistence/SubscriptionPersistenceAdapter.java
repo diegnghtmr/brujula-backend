@@ -13,9 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
  * Driven adapter: JPA-backed persistence for subscriptions.
  *
  * <p>Implements {@link LoadSubscriptionPort} and {@link SaveSubscriptionPort}. Package-private per
- * ARQ-006b. Optimistic locking is handled by JPA {@code @Version}; Spring translates
- * {@code OptimisticLockException} into {@code OptimisticLockingFailureException} which the REST
- * exception handler maps to 409.
+ * ARQ-006b. Optimistic locking is handled by JPA {@code @Version}; Spring translates {@code
+ * OptimisticLockException} into {@code OptimisticLockingFailureException} which the REST exception
+ * handler maps to 409.
  */
 @Component
 @Transactional

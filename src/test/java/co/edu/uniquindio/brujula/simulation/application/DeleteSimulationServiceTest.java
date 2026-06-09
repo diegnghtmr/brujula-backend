@@ -48,8 +48,9 @@ class DeleteSimulationServiceTest {
   @Test
   void soft_delete_marks_simulation_as_deleted() {
     UUID simulationId = UUID.randomUUID();
-    Simulation sim = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "To Delete", periodId, List.of(programId));
+    Simulation sim =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "To Delete", periodId, List.of(programId));
 
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(sim));
     when(saveSimulationPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -64,8 +65,9 @@ class DeleteSimulationServiceTest {
   @Test
   void non_owner_throws_access_denied() {
     UUID simulationId = UUID.randomUUID();
-    Simulation sim = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "Name", periodId, List.of(programId));
+    Simulation sim =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "Name", periodId, List.of(programId));
 
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(sim));
 

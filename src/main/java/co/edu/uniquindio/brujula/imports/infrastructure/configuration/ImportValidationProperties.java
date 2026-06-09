@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * Configuration properties for import file validation limits (NFR-002).
  *
  * <p>Externalized via {@code imports.*} in {@code application.yaml}. Defaults are:
+ *
  * <ul>
  *   <li>{@code maxFileSizeBytes = 5_242_880} (5 MB)
  *   <li>{@code maxRows = 5000}

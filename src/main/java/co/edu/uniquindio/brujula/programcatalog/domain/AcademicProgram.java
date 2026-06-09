@@ -13,8 +13,8 @@ import java.util.Objects;
  *   <li>{@code faculty} must not be null or blank.
  * </ul>
  *
- * <p>Status defaults to {@link ProgramStatus#ACTIVE}. Version initializes to {@code 0}.
- * Carries {@code @Version} in the JPA entity (DT-014 / DB-006).
+ * <p>Status defaults to {@link ProgramStatus#ACTIVE}. Version initializes to {@code 0}. Carries
+ * {@code @Version} in the JPA entity (DT-014 / DB-006).
  *
  * <p>No Spring/JPA imports (ARQ-002).
  */
@@ -26,7 +26,8 @@ public final class AcademicProgram {
   private final ProgramStatus status;
   private final long version;
 
-  private AcademicProgram(ProgramId id, String name, String faculty, ProgramStatus status, long version) {
+  private AcademicProgram(
+      ProgramId id, String name, String faculty, ProgramStatus status, long version) {
     this.id = id;
     this.name = name;
     this.faculty = faculty;
@@ -38,17 +39,13 @@ public final class AcademicProgram {
   // Factory: new program creation
   // ---------------------------------------------------------------------------
 
-  /**
-   * Create a new AcademicProgram. Status defaults to ACTIVE. Version initializes to 0.
-   */
+  /** Create a new AcademicProgram. Status defaults to ACTIVE. Version initializes to 0. */
   public static AcademicProgram create(ProgramId id, String name, String faculty) {
     validate(id, name, faculty);
     return new AcademicProgram(id, name, faculty, ProgramStatus.ACTIVE, 0L);
   }
 
-  /**
-   * Reconstitute an AcademicProgram from persistence (all fields explicit; no default logic).
-   */
+  /** Reconstitute an AcademicProgram from persistence (all fields explicit; no default logic). */
   public static AcademicProgram reconstitute(
       ProgramId id, String name, String faculty, ProgramStatus status, long version) {
     validate(id, name, faculty);

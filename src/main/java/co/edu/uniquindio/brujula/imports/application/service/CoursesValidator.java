@@ -11,10 +11,11 @@ import java.util.Set;
 /**
  * Per-kind validator for COURSES import rows (IMP-006, IMP-002).
  *
- * <p>Validates each row against the COURSES column mapping (ADR-014). Produces
- * {@link ImportIssue} entries with error codes from the spec vocabulary. Framework-free.
+ * <p>Validates each row against the COURSES column mapping (ADR-014). Produces {@link ImportIssue}
+ * entries with error codes from the spec vocabulary. Framework-free.
  *
- * <p>Wired as a plain bean in {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
+ * <p>Wired as a plain bean in {@link
+ * co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
  */
 public class CoursesValidator {
 
@@ -40,8 +41,8 @@ public class CoursesValidator {
    * Validate a single COURSES row.
    *
    * @param row the import row (0-based index)
-   * @param seenOfficialCodes mutable set of official_code values seen earlier in this batch
-   *     (for duplicate detection)
+   * @param seenOfficialCodes mutable set of official_code values seen earlier in this batch (for
+   *     duplicate detection)
    * @return list of issues for this row (empty = valid)
    */
   public List<ImportIssue> validate(ImportRow row, Map<String, Integer> seenOfficialCodes) {
@@ -53,7 +54,11 @@ public class CoursesValidator {
     String courseName = cells.getOrDefault("course_name", "").trim();
     if (courseName.isEmpty()) {
       issues.add(
-          ImportIssue.error(rowNumber, "course_name", "COURSE_NAME_MISSING", "course_name is required and must not be blank."));
+          ImportIssue.error(
+              rowNumber,
+              "course_name",
+              "COURSE_NAME_MISSING",
+              "course_name is required and must not be blank."));
     }
 
     // credits: required, positive integer in range
@@ -67,12 +72,16 @@ public class CoursesValidator {
                   rowNumber,
                   "credits",
                   "INVALID_CREDITS",
-                  "credits must be between %d and %d, got: %d".formatted(MIN_CREDITS, MAX_CREDITS, credits)));
+                  "credits must be between %d and %d, got: %d"
+                      .formatted(MIN_CREDITS, MAX_CREDITS, credits)));
         }
       } catch (NumberFormatException e) {
         issues.add(
             ImportIssue.error(
-                rowNumber, "credits", "INVALID_CREDITS", "credits must be a positive integer, got: " + creditsStr));
+                rowNumber,
+                "credits",
+                "INVALID_CREDITS",
+                "credits must be a positive integer, got: " + creditsStr));
       }
     } else {
       issues.add(
@@ -141,8 +150,7 @@ public class CoursesValidator {
     // type: required, must be in allowed set
     String type = cells.getOrDefault("type", "").trim().toUpperCase();
     if (type.isEmpty()) {
-      issues.add(
-          ImportIssue.error(rowNumber, "type", "INVALID_COURSE_TYPE", "type is required."));
+      issues.add(ImportIssue.error(rowNumber, "type", "INVALID_COURSE_TYPE", "type is required."));
     } else if (!VALID_COURSE_TYPES.contains(type)) {
       issues.add(
           ImportIssue.error(
@@ -173,8 +181,7 @@ public class CoursesValidator {
     String journey = cells.getOrDefault("journey", "").trim();
     if (journey.isEmpty()) {
       issues.add(
-          ImportIssue.error(
-              rowNumber, "journey", "UNRECOGNIZED_JOURNEY", "journey is required."));
+          ImportIssue.error(rowNumber, "journey", "UNRECOGNIZED_JOURNEY", "journey is required."));
     }
 
     return issues;

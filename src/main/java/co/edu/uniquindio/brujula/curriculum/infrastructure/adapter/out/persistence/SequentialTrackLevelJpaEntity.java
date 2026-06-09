@@ -16,8 +16,8 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code curriculum.sequential_track_level} (created by Flyway V011).
  *
- * <p>Package-private per ARQ-006. Contains ordered level options via
- * {@link SequentialTrackLevelOptionJpaEntity}.
+ * <p>Package-private per ARQ-006. Contains ordered level options via {@link
+ * SequentialTrackLevelOptionJpaEntity}.
  */
 @Entity
 @Table(name = "sequential_track_level", schema = "curriculum")
@@ -34,13 +34,25 @@ class SequentialTrackLevelJpaEntity {
   @Column(name = "level", nullable = false)
   private int level;
 
-  @OneToMany(mappedBy = "level", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToMany(
+      mappedBy = "level",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.EAGER)
   private List<SequentialTrackLevelOptionJpaEntity> options = new ArrayList<>();
 
   // JPA requires a no-arg constructor
   protected SequentialTrackLevelJpaEntity() {}
 
-  UUID getId() { return id; }
-  int getLevel() { return level; }
-  List<SequentialTrackLevelOptionJpaEntity> getOptions() { return options; }
+  UUID getId() {
+    return id;
+  }
+
+  int getLevel() {
+    return level;
+  }
+
+  List<SequentialTrackLevelOptionJpaEntity> getOptions() {
+    return options;
+  }
 }

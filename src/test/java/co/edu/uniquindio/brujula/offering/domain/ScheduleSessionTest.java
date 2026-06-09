@@ -8,8 +8,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-TDD RED: ScheduleSession compact constructor invariant (endsAt > startsAt)
- * and overlaps() boundary tests.
+ * WU1-TDD RED: ScheduleSession compact constructor invariant (endsAt > startsAt) and overlaps()
+ * boundary tests.
  */
 class ScheduleSessionTest {
 
@@ -22,10 +22,7 @@ class ScheduleSessionTest {
     assertThatThrownBy(
             () ->
                 new ScheduleSession(
-                    UUID.randomUUID(),
-                    Weekday.WEDNESDAY,
-                    LocalTime.of(18, 0),
-                    LocalTime.of(18, 0)))
+                    UUID.randomUUID(), Weekday.WEDNESDAY, LocalTime.of(18, 0), LocalTime.of(18, 0)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("endsAt");
   }
@@ -35,10 +32,7 @@ class ScheduleSessionTest {
     assertThatThrownBy(
             () ->
                 new ScheduleSession(
-                    UUID.randomUUID(),
-                    Weekday.WEDNESDAY,
-                    LocalTime.of(20, 0),
-                    LocalTime.of(18, 0)))
+                    UUID.randomUUID(), Weekday.WEDNESDAY, LocalTime.of(20, 0), LocalTime.of(18, 0)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("endsAt");
   }

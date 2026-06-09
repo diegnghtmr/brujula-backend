@@ -20,10 +20,11 @@ import co.edu.uniquindio.brujula.curriculum.domain.TrackKind;
 import java.util.List;
 
 /**
- * Pure-translation mapper between persistence entities and domain objects for the curriculum module.
+ * Pure-translation mapper between persistence entities and domain objects for the curriculum
+ * module.
  *
- * <p>Package-private (ARQ-006). Stateless — all methods are static.
- * No business logic here — pure field mapping only.
+ * <p>Package-private (ARQ-006). Stateless — all methods are static. No business logic here — pure
+ * field mapping only.
  */
 final class CurriculumPersistenceMapper {
 
@@ -34,9 +35,10 @@ final class CurriculumPersistenceMapper {
   // ---------------------------------------------------------------------------
 
   static Course toDomain(CourseJpaEntity entity) {
-    List<RecommendedSemester> semesters = entity.getRecommendedSemesters().stream()
-        .map(s -> new RecommendedSemester(s.getJourneyCode(), s.getSemester()))
-        .toList();
+    List<RecommendedSemester> semesters =
+        entity.getRecommendedSemesters().stream()
+            .map(s -> new RecommendedSemester(s.getJourneyCode(), s.getSemester()))
+            .toList();
     return Course.reconstitute(
         new CourseId(entity.getId()),
         entity.getPlanId(),
@@ -67,14 +69,17 @@ final class CurriculumPersistenceMapper {
     // Build recommended semester children (cascade ALL — Hibernate manages them)
     List<CourseRecommendedSemesterJpaEntity> semesterEntities =
         domain.recommendedSemesters().stream()
-            .map(rs -> {
-              CourseRecommendedSemesterJpaEntity rsEntity = new CourseRecommendedSemesterJpaEntity();
-              rsEntity.setId(CourseRecommendedSemesterJpaEntity.CourseRecommendedSemesterId.of(
-                  domain.id().value(), rs.journeyCode()));
-              rsEntity.setCourse(entity);
-              rsEntity.setSemester(rs.semester());
-              return rsEntity;
-            })
+            .map(
+                rs -> {
+                  CourseRecommendedSemesterJpaEntity rsEntity =
+                      new CourseRecommendedSemesterJpaEntity();
+                  rsEntity.setId(
+                      CourseRecommendedSemesterJpaEntity.CourseRecommendedSemesterId.of(
+                          domain.id().value(), rs.journeyCode()));
+                  rsEntity.setCourse(entity);
+                  rsEntity.setSemester(rs.semester());
+                  return rsEntity;
+                })
             .toList();
     entity.setRecommendedSemesters(semesterEntities);
     return entity;
@@ -118,9 +123,8 @@ final class CurriculumPersistenceMapper {
   // ---------------------------------------------------------------------------
 
   static SequentialTrack toDomain(SequentialTrackJpaEntity entity) {
-    List<SequentialTrackLevel> levels = entity.getLevels().stream()
-        .map(CurriculumPersistenceMapper::toLevelDomain)
-        .toList();
+    List<SequentialTrackLevel> levels =
+        entity.getLevels().stream().map(CurriculumPersistenceMapper::toLevelDomain).toList();
     return SequentialTrack.reconstitute(
         new SequentialTrackId(entity.getId()),
         entity.getPlanId(),
@@ -133,9 +137,8 @@ final class CurriculumPersistenceMapper {
   }
 
   private static SequentialTrackLevel toLevelDomain(SequentialTrackLevelJpaEntity entity) {
-    List<java.util.UUID> optionIds = entity.getOptions().stream()
-        .map(SequentialTrackLevelOptionJpaEntity::getCourseId)
-        .toList();
+    List<java.util.UUID> optionIds =
+        entity.getOptions().stream().map(SequentialTrackLevelOptionJpaEntity::getCourseId).toList();
     return new SequentialTrackLevel(entity.getId(), entity.getLevel(), optionIds);
   }
 

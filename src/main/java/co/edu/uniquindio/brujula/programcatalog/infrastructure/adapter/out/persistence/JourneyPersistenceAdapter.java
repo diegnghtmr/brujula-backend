@@ -23,8 +23,6 @@ class JourneyPersistenceAdapter implements LoadJourneyPort {
   @Override
   @Transactional(readOnly = true)
   public List<Journey> loadAllActive() {
-    return repository.findByActiveTrue().stream()
-        .map(CatalogPersistenceMapper::toDomain)
-        .toList();
+    return repository.findByActiveTrue().stream().map(CatalogPersistenceMapper::toDomain).toList();
   }
 }

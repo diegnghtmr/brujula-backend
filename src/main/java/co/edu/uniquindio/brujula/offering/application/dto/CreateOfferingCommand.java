@@ -7,11 +7,11 @@ import java.util.UUID;
 /**
  * Command DTO for the idempotent create-offering use case.
  *
- * <p>Carries inline schedule options (draft form) to be persisted atomically
- * in the same transaction as the parent offering.
+ * <p>Carries inline schedule options (draft form) to be persisted atomically in the same
+ * transaction as the parent offering.
  *
- * <p>{@code courseName} is NOT in the command — it is denormalized at service time
- * via {@code curriculum::api GetCourseQuery}.
+ * <p>{@code courseName} is NOT in the command — it is denormalized at service time via {@code
+ * curriculum::api GetCourseQuery}.
  *
  * <p>Satisfies: OFFW-003.
  */
@@ -28,24 +28,19 @@ public record CreateOfferingCommand(
   /**
    * Draft representation of a schedule option before it is assigned a persistent identity.
    *
-   * @param label       display label (e.g. "Grupo A")
+   * @param label display label (e.g. "Grupo A")
    * @param journeyCode journey identifier (e.g. "DIURNA", "NOCTURNA")
-   * @param sessions    ordered list of time-slot drafts
+   * @param sessions ordered list of time-slot drafts
    */
   public record ScheduleOptionDraft(
-      String label,
-      String journeyCode,
-      List<SessionDraft> sessions) {}
+      String label, String journeyCode, List<SessionDraft> sessions) {}
 
   /**
    * Draft representation of a single time-slot within a schedule option.
    *
-   * @param day      weekday name (e.g. "MONDAY")
+   * @param day weekday name (e.g. "MONDAY")
    * @param startsAt start time (inclusive)
-   * @param endsAt   end time (exclusive)
+   * @param endsAt end time (exclusive)
    */
-  public record SessionDraft(
-      String day,
-      LocalTime startsAt,
-      LocalTime endsAt) {}
+  public record SessionDraft(String day, LocalTime startsAt, LocalTime endsAt) {}
 }

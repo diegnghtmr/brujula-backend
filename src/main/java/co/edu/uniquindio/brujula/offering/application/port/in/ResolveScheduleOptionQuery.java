@@ -1,7 +1,6 @@
 package co.edu.uniquindio.brujula.offering.application.port.in;
 
 import co.edu.uniquindio.brujula.offering.application.dto.ScheduleOptionResolutionView;
-
 import java.util.UUID;
 
 /** Primary port: resolve a schedule option by ID (used by simulator). */

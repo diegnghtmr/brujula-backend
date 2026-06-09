@@ -27,13 +27,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   <li>{@link EmailAlreadyRegisteredException} → 409 Conflict (S2-B-3)
  * </ul>
  *
- * <p>QAL-ADV-001 (WU1): scoped to the identity REST adapter package so that domain exceptions
- * are always resolved by this handler and cannot be intercepted by foreign module advices.
- * Controllers are package-private; {@code basePackages} string is used instead of
- * {@code assignableTypes}. Template from {@code ImportsExceptionHandler}.
+ * <p>QAL-ADV-001 (WU1): scoped to the identity REST adapter package so that domain exceptions are
+ * always resolved by this handler and cannot be intercepted by foreign module advices. Controllers
+ * are package-private; {@code basePackages} string is used instead of {@code assignableTypes}.
+ * Template from {@code ImportsExceptionHandler}.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.identity.infrastructure.adapter.in.rest")
+@RestControllerAdvice(
+    basePackages = "co.edu.uniquindio.brujula.identity.infrastructure.adapter.in.rest")
 class IdentityExceptionHandler {
 
   @ExceptionHandler(UserNotFoundException.class)

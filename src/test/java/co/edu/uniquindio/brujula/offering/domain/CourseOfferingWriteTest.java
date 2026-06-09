@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 
 /**
@@ -23,28 +22,30 @@ class CourseOfferingWriteTest {
 
   @Test
   void create_starts_with_draft_status() {
-    CourseOffering offering = CourseOffering.create(
-        CourseOfferingId.generate(),
-        COURSE_ID,
-        "Programación I",
-        PROGRAM_ID,
-        PERIOD_ID,
-        "Initial notes",
-        Collections.emptyList());
+    CourseOffering offering =
+        CourseOffering.create(
+            CourseOfferingId.generate(),
+            COURSE_ID,
+            "Programación I",
+            PROGRAM_ID,
+            PERIOD_ID,
+            "Initial notes",
+            Collections.emptyList());
 
     assertThat(offering.getStatus()).isEqualTo(OfferingStatus.DRAFT);
   }
 
   @Test
   void create_starts_with_version_zero() {
-    CourseOffering offering = CourseOffering.create(
-        CourseOfferingId.generate(),
-        COURSE_ID,
-        "Programación I",
-        PROGRAM_ID,
-        PERIOD_ID,
-        null,
-        Collections.emptyList());
+    CourseOffering offering =
+        CourseOffering.create(
+            CourseOfferingId.generate(),
+            COURSE_ID,
+            "Programación I",
+            PROGRAM_ID,
+            PERIOD_ID,
+            null,
+            Collections.emptyList());
 
     assertThat(offering.getVersion()).isZero();
   }
@@ -55,8 +56,9 @@ class CourseOfferingWriteTest {
     String courseName = "Cálculo Diferencial";
     String notes = "Notes here";
 
-    CourseOffering offering = CourseOffering.create(
-        id, COURSE_ID, courseName, PROGRAM_ID, PERIOD_ID, notes, Collections.emptyList());
+    CourseOffering offering =
+        CourseOffering.create(
+            id, COURSE_ID, courseName, PROGRAM_ID, PERIOD_ID, notes, Collections.emptyList());
 
     assertThat(offering.getId()).isEqualTo(id);
     assertThat(offering.getCourseId()).isEqualTo(COURSE_ID);
@@ -69,21 +71,45 @@ class CourseOfferingWriteTest {
 
   @Test
   void create_with_null_id_throws_npe() {
-    assertThatNullPointerException().isThrownBy(() ->
-        CourseOffering.create(null, COURSE_ID, "Course", PROGRAM_ID, PERIOD_ID, null, Collections.emptyList()));
+    assertThatNullPointerException()
+        .isThrownBy(
+            () ->
+                CourseOffering.create(
+                    null,
+                    COURSE_ID,
+                    "Course",
+                    PROGRAM_ID,
+                    PERIOD_ID,
+                    null,
+                    Collections.emptyList()));
   }
 
   @Test
   void create_with_null_courseId_throws_npe() {
-    assertThatNullPointerException().isThrownBy(() ->
-        CourseOffering.create(CourseOfferingId.generate(), null, "Course", PROGRAM_ID, PERIOD_ID, null, Collections.emptyList()));
+    assertThatNullPointerException()
+        .isThrownBy(
+            () ->
+                CourseOffering.create(
+                    CourseOfferingId.generate(),
+                    null,
+                    "Course",
+                    PROGRAM_ID,
+                    PERIOD_ID,
+                    null,
+                    Collections.emptyList()));
   }
 
   @Test
   void updateNotes_returns_new_instance() {
-    CourseOffering original = CourseOffering.create(
-        CourseOfferingId.generate(),
-        COURSE_ID, "Course", PROGRAM_ID, PERIOD_ID, "Old notes", Collections.emptyList());
+    CourseOffering original =
+        CourseOffering.create(
+            CourseOfferingId.generate(),
+            COURSE_ID,
+            "Course",
+            PROGRAM_ID,
+            PERIOD_ID,
+            "Old notes",
+            Collections.emptyList());
 
     CourseOffering updated = original.updateNotes("New notes");
 
@@ -92,9 +118,15 @@ class CourseOfferingWriteTest {
 
   @Test
   void updateNotes_replaces_notes_field() {
-    CourseOffering original = CourseOffering.create(
-        CourseOfferingId.generate(),
-        COURSE_ID, "Course", PROGRAM_ID, PERIOD_ID, "Old notes", Collections.emptyList());
+    CourseOffering original =
+        CourseOffering.create(
+            CourseOfferingId.generate(),
+            COURSE_ID,
+            "Course",
+            PROGRAM_ID,
+            PERIOD_ID,
+            "Old notes",
+            Collections.emptyList());
 
     CourseOffering updated = original.updateNotes("New notes");
 
@@ -105,8 +137,9 @@ class CourseOfferingWriteTest {
   @Test
   void updateNotes_preserves_all_other_fields() {
     CourseOfferingId id = CourseOfferingId.generate();
-    CourseOffering original = CourseOffering.create(
-        id, COURSE_ID, "Course", PROGRAM_ID, PERIOD_ID, "Old notes", Collections.emptyList());
+    CourseOffering original =
+        CourseOffering.create(
+            id, COURSE_ID, "Course", PROGRAM_ID, PERIOD_ID, "Old notes", Collections.emptyList());
 
     CourseOffering updated = original.updateNotes("New notes");
 
@@ -123,11 +156,13 @@ class CourseOfferingWriteTest {
   void create_with_schedule_options_preserves_them() {
     ScheduleOptionId optionId = ScheduleOptionId.generate();
     CourseOfferingId offeringId = CourseOfferingId.generate();
-    ScheduleOption option = ScheduleOption.reconstitute(
-        optionId, offeringId.value(), "Group A", "DIURNA", Collections.emptyList(), 0L);
+    ScheduleOption option =
+        ScheduleOption.reconstitute(
+            optionId, offeringId.value(), "Group A", "DIURNA", Collections.emptyList(), 0L);
 
-    CourseOffering offering = CourseOffering.create(
-        offeringId, COURSE_ID, "Course", PROGRAM_ID, PERIOD_ID, null, List.of(option));
+    CourseOffering offering =
+        CourseOffering.create(
+            offeringId, COURSE_ID, "Course", PROGRAM_ID, PERIOD_ID, null, List.of(option));
 
     assertThat(offering.getScheduleOptions()).hasSize(1);
     assertThat(offering.getScheduleOptions().get(0).getId()).isEqualTo(optionId);

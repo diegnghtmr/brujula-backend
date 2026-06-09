@@ -17,9 +17,9 @@ import java.util.Optional;
 /**
  * Use case: create a simulation (SIM-001).
  *
- * <p>Idempotent via sharedkernel {@link IdempotencyStorePort} (X-001). Operation name:
- * {@value #OPERATION}. Resolves {@code periodName} via {@link OfferingReadPort} (ADR-F4-005).
- * Status is always "CURRENT" at creation time — never persisted (INV-004).
+ * <p>Idempotent via sharedkernel {@link IdempotencyStorePort} (X-001). Operation name: {@value
+ * #OPERATION}. Resolves {@code periodName} via {@link OfferingReadPort} (ADR-F4-005). Status is
+ * always "CURRENT" at creation time — never persisted (INV-004).
  *
  * <p>Framework-free — wired by {@code SimulationConfiguration}.
  */
@@ -64,12 +64,13 @@ public class CreateSimulationService implements CreateSimulationUseCase {
 
     // 3. Create and persist simulation
     SimulationId id = SimulationId.generate();
-    Simulation simulation = Simulation.create(
-        id,
-        command.ownerId(),
-        command.name(),
-        command.periodId(),
-        new ArrayList<>(command.programIds()));
+    Simulation simulation =
+        Simulation.create(
+            id,
+            command.ownerId(),
+            command.name(),
+            command.periodId(),
+            new ArrayList<>(command.programIds()));
     Simulation saved = saveSimulationPort.save(simulation);
 
     // 4. Build view; status is always CURRENT at creation (INV-004)

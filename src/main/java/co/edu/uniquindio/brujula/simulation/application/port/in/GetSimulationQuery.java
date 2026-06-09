@@ -7,9 +7,9 @@ import java.util.UUID;
 public interface GetSimulationQuery {
 
   /**
-   * Returns a fully assembled {@link SimulationDetailView} for the simulation owned by
-   * {@code callerId}. Includes selections, credit summary, weekly schedule, validation snapshot,
-   * and staleness status — all computed at read time (INV-004).
+   * Returns a fully assembled {@link SimulationDetailView} for the simulation owned by {@code
+   * callerId}. Includes selections, credit summary, weekly schedule, validation snapshot, and
+   * staleness status — all computed at read time (INV-004).
    *
    * @throws co.edu.uniquindio.brujula.simulation.domain.SimulationNotFoundException if not found
    * @throws co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException if caller

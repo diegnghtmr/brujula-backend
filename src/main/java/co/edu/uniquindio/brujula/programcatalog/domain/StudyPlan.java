@@ -65,9 +65,7 @@ public final class StudyPlan {
     return new StudyPlan(id, programId, name, PlanStatus.DRAFT, totalCredits, referenceYear, 0L);
   }
 
-  /**
-   * Reconstitute a StudyPlan from persistence (all fields explicit; no default logic).
-   */
+  /** Reconstitute a StudyPlan from persistence (all fields explicit; no default logic). */
   public static StudyPlan reconstitute(
       PlanId id,
       UUID programId,

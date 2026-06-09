@@ -20,17 +20,14 @@ import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.PublishOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.UpdateOfferingUseCase;
-import co.edu.uniquindio.brujula.offering.domain.IllegalOfferingTransitionException;
 import co.edu.uniquindio.brujula.offering.domain.CourseOfferingId;
+import co.edu.uniquindio.brujula.offering.domain.IllegalOfferingTransitionException;
 import co.edu.uniquindio.brujula.offering.domain.OfferingNotFoundException;
 import co.edu.uniquindio.brujula.offering.domain.OfferingNotPublishableException;
 import co.edu.uniquindio.brujula.offering.domain.OfferingStatus;
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
  * WU3-TDD: Controller slice security and exception-mapping tests for publishOffering.
  *
  * <p>Tests:
+ *
  * <ul>
  *   <li>STUDENT → 403 (role guard)
  *   <li>Illegal transition → 409 with {@code $.code=ILLEGAL_OFFERING_TRANSITION}
@@ -107,11 +105,14 @@ class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest
   @Test
   void illegal_transition_returns_409_with_code() throws Exception {
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     CourseOfferingId offeringId = CourseOfferingId.of(OFFERING_ID);
     when(publishOfferingUseCase.publishOffering(any()))
-        .thenThrow(new IllegalOfferingTransitionException(
-            offeringId, OfferingStatus.ARCHIVED, OfferingStatus.PRELIMINARY));
+        .thenThrow(
+            new IllegalOfferingTransitionException(
+                offeringId, OfferingStatus.ARCHIVED, OfferingStatus.PRELIMINARY));
 
     mockMvc
         .perform(
@@ -131,7 +132,9 @@ class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest
   @Test
   void no_schedule_options_returns_422() throws Exception {
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     CourseOfferingId offeringId = CourseOfferingId.of(OFFERING_ID);
     when(publishOfferingUseCase.publishOffering(any()))
         .thenThrow(new OfferingNotPublishableException(offeringId));
@@ -153,7 +156,9 @@ class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest
   @Test
   void stale_version_returns_409_with_lock_conflict_code() throws Exception {
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     when(publishOfferingUseCase.publishOffering(any()))
         .thenThrow(new OptimisticLockingFailureException("stale"));
 
@@ -176,7 +181,9 @@ class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest
   void idempotency_replay_returns_200_with_stored_view() throws Exception {
     OfferingDetailView view = sampleView("PRELIMINARY", 2L, null);
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     when(publishOfferingUseCase.publishOffering(any())).thenReturn(view);
 
     mockMvc
@@ -199,7 +206,9 @@ class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest
   void intensity_mismatch_returns_200_with_intensity_warning_true() throws Exception {
     OfferingDetailView view = sampleView("PRELIMINARY", 1L, true);
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     when(publishOfferingUseCase.publishOffering(any())).thenReturn(view);
 
     mockMvc
@@ -221,7 +230,9 @@ class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest
   void archive_without_options_returns_200() throws Exception {
     OfferingDetailView view = sampleView("ARCHIVED", 1L, null);
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     when(publishOfferingUseCase.publishOffering(any())).thenReturn(view);
 
     mockMvc
@@ -242,7 +253,9 @@ class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest
   @Test
   void offering_not_found_returns_404() throws Exception {
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     CourseOfferingId offeringId = CourseOfferingId.of(OFFERING_ID);
     when(publishOfferingUseCase.publishOffering(any()))
         .thenThrow(new OfferingNotFoundException(offeringId));
@@ -267,13 +280,22 @@ class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest
           "targetStatus": "%s",
           "version": %d
         }
-        """.formatted(targetStatus, version);
+        """
+        .formatted(targetStatus, version);
   }
 
   private OfferingDetailView sampleView(String status, long version, Boolean intensityWarning) {
     List<ScheduleOptionView> options = Collections.emptyList();
     return new OfferingDetailView(
-        OFFERING_ID, COURSE_ID, "Course Name", PROGRAM_ID, PERIOD_ID,
-        status, null, version, options, intensityWarning);
+        OFFERING_ID,
+        COURSE_ID,
+        "Course Name",
+        PROGRAM_ID,
+        PERIOD_ID,
+        status,
+        null,
+        version,
+        options,
+        intensityWarning);
   }
 }

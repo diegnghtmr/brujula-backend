@@ -4,10 +4,12 @@ import co.edu.uniquindio.brujula.simulation.application.dto.ScheduleOptionResolu
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.GetSimulationQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.in.ReviewSimulationUseCase;
+import co.edu.uniquindio.brujula.simulation.application.port.out.CreditLimitPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort;
+import co.edu.uniquindio.brujula.simulation.application.port.out.ProgramNameReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.domain.CandidateSelection;
@@ -26,8 +28,6 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationStillBlockedExcepti
 import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationResult;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationService;
 import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
-import co.edu.uniquindio.brujula.simulation.application.port.out.CreditLimitPort;
-import co.edu.uniquindio.brujula.simulation.application.port.out.ProgramNameReadPort;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,15 +38,16 @@ import java.util.UUID;
  * Application service: re-validate and optionally refresh a simulation (spec STALE-002).
  *
  * <p>Flow:
+ *
  * <ol>
  *   <li>Load simulation + ownership check (403 if non-owner).
  *   <li>Load all active selections.
- *   <li>For each selection, re-resolve the current offering snapshot via
- *       {@link OfferingReadPort#resolveScheduleOption(UUID)}.
+ *   <li>For each selection, re-resolve the current offering snapshot via {@link
+ *       OfferingReadPort#resolveScheduleOption(UUID)}.
  *   <li>Re-run {@link SimulationValidationService} over the WHOLE simulation with refreshed data.
  *   <li>If blocking[] non-empty → throw {@link SimulationStillBlockedException} → HTTP 409.
- *   <li>Else: REFRESH each selection's {@code selectedOfferingVersion} snapshot to current +
- *       update sessions + persist. Bump {@code updatedAt} via the save operation.
+ *   <li>Else: REFRESH each selection's {@code selectedOfferingVersion} snapshot to current + update
+ *       sessions + persist. Bump {@code updatedAt} via the save operation.
  *   <li>Return refreshed {@link SimulationDetailView} with {@code statusName=CURRENT}.
  * </ol>
  *
@@ -90,9 +91,11 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
   @Override
   public SimulationDetailView reviewSimulation(UUID simulationId, UUID callerId) {
     // 1. Load simulation + ownership check
-    Simulation simulation = loadSimulationPort.loadById(simulationId)
-        .filter(s -> s.getLifecycleStatus() == SimulationLifecycle.ACTIVE)
-        .orElseThrow(() -> new SimulationNotFoundException(simulationId));
+    Simulation simulation =
+        loadSimulationPort
+            .loadById(simulationId)
+            .filter(s -> s.getLifecycleStatus() == SimulationLifecycle.ACTIVE)
+            .orElseThrow(() -> new SimulationNotFoundException(simulationId));
 
     if (!simulation.getOwnerId().equals(callerId)) {
       throw new SimulationAccessDeniedException(simulationId);
@@ -108,11 +111,12 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
     }
 
     // 3. Re-resolve each selection's current offering snapshot
-    record SelectionWithResolved(SimulationSelection selection,
-                                  ScheduleOptionResolutionView resolved) {}
+    record SelectionWithResolved(
+        SimulationSelection selection, ScheduleOptionResolutionView resolved) {}
     List<SelectionWithResolved> selWithResolved = new ArrayList<>();
     for (SimulationSelection sel : activeSelections) {
-      ScheduleOptionResolutionView resolved = offeringReadPort.resolveScheduleOption(sel.getScheduleOptionId());
+      ScheduleOptionResolutionView resolved =
+          offeringReadPort.resolveScheduleOption(sel.getScheduleOptionId());
       selWithResolved.add(new SelectionWithResolved(sel, resolved));
     }
 
@@ -136,33 +140,38 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
       ScheduleOptionResolutionView resolved = swr.resolved();
 
       // Build candidate from FRESH resolved data
-      List<SimScheduleSession> freshSessions = resolved.sessions().stream()
-          .map(s -> new SimScheduleSession(s.day(), s.startsAt(), s.endsAt()))
-          .toList();
+      List<SimScheduleSession> freshSessions =
+          resolved.sessions().stream()
+              .map(s -> new SimScheduleSession(s.day(), s.startsAt(), s.endsAt()))
+              .toList();
 
-      CandidateSelection candidate = new CandidateSelection(
-          resolved.scheduleOptionId(),
-          resolved.offeringId(),
-          resolved.courseId(),
-          resolved.courseName(),
-          resolved.programId(),
-          curriculumReadPort.courseCredits(resolved.courseId()),
-          resolved.journeyCode(),
-          resolved.offeringStatus(),
-          resolved.offeringVersion(),
-          freshSessions);
+      CandidateSelection candidate =
+          new CandidateSelection(
+              resolved.scheduleOptionId(),
+              resolved.offeringId(),
+              resolved.courseId(),
+              resolved.courseName(),
+              resolved.programId(),
+              curriculumReadPort.courseCredits(resolved.courseId()),
+              resolved.journeyCode(),
+              resolved.offeringStatus(),
+              resolved.offeringVersion(),
+              freshSessions);
 
       // Other selections (as ExistingSelection from their CURRENT snapshots)
-      List<ExistingSelection> others = selWithResolved.stream()
-          .filter(o -> !o.selection().getId().value().equals(sel.getId().value()))
-          .map(o -> new ExistingSelection(
-              o.selection().getId().value(),
-              o.selection().getCourseId(),
-              o.selection().getCourseName(),
-              o.selection().getProgramId(),
-              o.selection().getCredits(),
-              o.selection().getSessions()))
-          .toList();
+      List<ExistingSelection> others =
+          selWithResolved.stream()
+              .filter(o -> !o.selection().getId().value().equals(sel.getId().value()))
+              .map(
+                  o ->
+                      new ExistingSelection(
+                          o.selection().getId().value(),
+                          o.selection().getCourseId(),
+                          o.selection().getCourseName(),
+                          o.selection().getProgramId(),
+                          o.selection().getCredits(),
+                          o.selection().getSessions()))
+              .toList();
 
       // Prerequisites
       List<PrereqRequirement> requirements;
@@ -193,22 +202,30 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
       // Accumulated passed credits
       int accumulatedPassedCredits = 0;
       try {
-        accumulatedPassedCredits = allPassedIds.stream()
-            .mapToInt(id -> {
-              try {
-                return curriculumReadPort.courseCredits(id);
-              } catch (Exception ex) {
-                return 0;
-              }
-            })
-            .sum();
+        accumulatedPassedCredits =
+            allPassedIds.stream()
+                .mapToInt(
+                    id -> {
+                      try {
+                        return curriculumReadPort.courseCredits(id);
+                      } catch (Exception ex) {
+                        return 0;
+                      }
+                    })
+                .sum();
       } catch (Exception ignored) {
         // use 0
       }
 
-      SimulationValidationResult result = validationService.validate(
-          candidate, others, requirements, passedCourseSet, creditLimit,
-          seqPredecessor, accumulatedPassedCredits);
+      SimulationValidationResult result =
+          validationService.validate(
+              candidate,
+              others,
+              requirements,
+              passedCourseSet,
+              creditLimit,
+              seqPredecessor,
+              accumulatedPassedCredits);
 
       allBlocking.addAll(result.blocking());
       allWarnings.addAll(result.warnings());
@@ -224,14 +241,14 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
       SimulationSelection sel = swr.selection();
       ScheduleOptionResolutionView resolved = swr.resolved();
 
-      List<SimScheduleSession> freshSessions = resolved.sessions().stream()
-          .map(s -> new SimScheduleSession(s.day(), s.startsAt(), s.endsAt()))
-          .toList();
+      List<SimScheduleSession> freshSessions =
+          resolved.sessions().stream()
+              .map(s -> new SimScheduleSession(s.day(), s.startsAt(), s.endsAt()))
+              .toList();
 
-      SimulationSelection refreshed = sel.withRefreshedSnapshot(
-          resolved.offeringVersion(),
-          freshSessions,
-          resolved.offeringStatus());
+      SimulationSelection refreshed =
+          sel.withRefreshedSnapshot(
+              resolved.offeringVersion(), freshSessions, resolved.offeringStatus());
 
       saveSimulationSelectionPort.save(refreshed);
     }

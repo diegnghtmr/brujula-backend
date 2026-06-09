@@ -6,8 +6,8 @@ import java.util.Objects;
 /**
  * Pure domain service that computes the weekly hours for a schedule option.
  *
- * <p>Weekly hours = sum of all session durations (in minutes) / 60.0.
- * This is the "Suma semanal calculada" in the contract.
+ * <p>Weekly hours = sum of all session durations (in minutes) / 60.0. This is the "Suma semanal
+ * calculada" in the contract.
  */
 public final class WeeklyHoursCalculator {
 
@@ -23,9 +23,7 @@ public final class WeeklyHoursCalculator {
    */
   public static double calculate(List<ScheduleSession> sessions) {
     Objects.requireNonNull(sessions, "sessions must not be null");
-    long totalMinutes = sessions.stream()
-        .mapToLong(ScheduleSession::durationMinutes)
-        .sum();
+    long totalMinutes = sessions.stream().mapToLong(ScheduleSession::durationMinutes).sum();
     return totalMinutes / 60.0;
   }
 }

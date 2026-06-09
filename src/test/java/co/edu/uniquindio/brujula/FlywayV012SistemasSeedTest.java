@@ -160,9 +160,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             Integer.class,
             PROGRAM_NAME);
 
-    assertThat(maxSem)
-        .as("Sistemas DIURNA journey must have max semester 10")
-        .isEqualTo(10);
+    assertThat(maxSem).as("Sistemas DIURNA journey must have max semester 10").isEqualTo(10);
   }
 
   @Test
@@ -205,7 +203,8 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(count)
-        .as("Sistemas must have exactly 3 degree work modalities: aplicación, investigación, pasantía")
+        .as(
+            "Sistemas must have exactly 3 degree work modalities: aplicación, investigación, pasantía")
         .isEqualTo(3);
   }
 
@@ -328,7 +327,8 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
     PrerequisiteGraph graph = buildGraph(reqRows);
 
     assertThatCode(() -> acyclicityService.validate(graph, requirements, courses))
-        .as("Sistemas DIURNA journey must have no forward-semester prerequisite dependencies (CUR-004)")
+        .as(
+            "Sistemas DIURNA journey must have no forward-semester prerequisite dependencies (CUR-004)")
         .doesNotThrowAnyException();
   }
 
@@ -342,7 +342,8 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
     PrerequisiteGraph graph = buildGraph(reqRows);
 
     assertThatCode(() -> acyclicityService.validate(graph, requirements, courses))
-        .as("Sistemas NOCTURNA journey must have no forward-semester prerequisite dependencies (CUR-004)")
+        .as(
+            "Sistemas NOCTURNA journey must have no forward-semester prerequisite dependencies (CUR-004)")
         .doesNotThrowAnyException();
   }
 
@@ -368,7 +369,8 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(nullCount)
-        .as("All Sistemas COURSE_PASSED requirements must have confidence and inferred populated (CUR-002)")
+        .as(
+            "All Sistemas COURSE_PASSED requirements must have confidence and inferred populated (CUR-002)")
         .isEqualTo(0);
   }
 
@@ -412,7 +414,8 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(count)
-        .as("Sistemas must have at least 3 DEEPENING sequential tracks (one per profundización line)")
+        .as(
+            "Sistemas must have at least 3 DEEPENING sequential tracks (one per profundización line)")
         .isGreaterThanOrEqualTo(3);
   }
 
@@ -425,8 +428,12 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
   private record CourseRecommendedSemRow(UUID courseId, String journeyCode, int semester) {}
 
   private record RequirementRow(
-      UUID id, UUID targetCourseId, String type, UUID requiredCourseId,
-      String confidence, Boolean inferred) {}
+      UUID id,
+      UUID targetCourseId,
+      String type,
+      UUID requiredCourseId,
+      String confidence,
+      Boolean inferred) {}
 
   private List<CourseRow> loadCourseRows(String programName) {
     return jdbc.query(
@@ -437,16 +444,18 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
         JOIN catalog.academic_program ap ON sp.program_id = ap.id
         WHERE ap.name = ?
         """,
-        (rs, n) -> new CourseRow(
-            UUID.fromString(rs.getString("id")),
-            rs.getString("name"),
-            rs.getString("type"),
-            rs.getInt("credits"),
-            rs.getInt("curricular_weekly_hours")),
+        (rs, n) ->
+            new CourseRow(
+                UUID.fromString(rs.getString("id")),
+                rs.getString("name"),
+                rs.getString("type"),
+                rs.getInt("credits"),
+                rs.getInt("curricular_weekly_hours")),
         programName);
   }
 
-  private List<CourseRecommendedSemRow> loadRecommendedSemRows(String programName, String journeyCode) {
+  private List<CourseRecommendedSemRow> loadRecommendedSemRows(
+      String programName, String journeyCode) {
     return jdbc.query(
         """
         SELECT crs.course_id, crs.journey_code, crs.semester
@@ -457,11 +466,13 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
         WHERE ap.name = ?
           AND crs.journey_code = ?
         """,
-        (rs, n) -> new CourseRecommendedSemRow(
-            UUID.fromString(rs.getString("course_id")),
-            rs.getString("journey_code"),
-            rs.getInt("semester")),
-        programName, journeyCode);
+        (rs, n) ->
+            new CourseRecommendedSemRow(
+                UUID.fromString(rs.getString("course_id")),
+                rs.getString("journey_code"),
+                rs.getInt("semester")),
+        programName,
+        journeyCode);
   }
 
   private List<RequirementRow> loadRequirementRows(String programName) {
@@ -496,8 +507,9 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
     // Load semester data for the given journey
     Map<UUID, Integer> semesterByCoureId =
         loadRecommendedSemRows(PROGRAM_NAME, journeyCode).stream()
-            .collect(Collectors.toMap(CourseRecommendedSemRow::courseId,
-                CourseRecommendedSemRow::semester));
+            .collect(
+                Collectors.toMap(
+                    CourseRecommendedSemRow::courseId, CourseRecommendedSemRow::semester));
 
     UUID dummyPlanId = UUID.randomUUID();
     UUID dummyProgramId = UUID.randomUUID();
@@ -508,18 +520,19 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
       if (semesterByCoureId.containsKey(row.id())) {
         semesters.add(new RecommendedSemester(journeyCode, semesterByCoureId.get(row.id())));
       }
-      courses.add(Course.reconstitute(
-          new CourseId(row.id()),
-          dummyPlanId,
-          dummyProgramId,
-          null,
-          row.name(),
-          CourseType.valueOf(row.type()),
-          row.credits(),
-          row.hours(),
-          semesters,
-          CourseStatus.ACTIVE,
-          0L));
+      courses.add(
+          Course.reconstitute(
+              new CourseId(row.id()),
+              dummyPlanId,
+              dummyProgramId,
+              null,
+              row.name(),
+              CourseType.valueOf(row.type()),
+              row.credits(),
+              row.hours(),
+              semesters,
+              CourseStatus.ACTIVE,
+              0L));
     }
     return courses;
   }
@@ -528,17 +541,18 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
     List<CourseRequirement> reqs = new ArrayList<>();
     for (RequirementRow row : rows) {
       Confidence conf = row.confidence() != null ? Confidence.valueOf(row.confidence()) : null;
-      reqs.add(CourseRequirement.reconstitute(
-          new CourseRequirementId(row.id()),
-          row.targetCourseId(),
-          RequirementType.valueOf(row.type()),
-          row.requiredCourseId(),
-          null,
-          null,
-          conf,
-          row.inferred(),
-          CourseRequirementStatus.ACTIVE,
-          0L));
+      reqs.add(
+          CourseRequirement.reconstitute(
+              new CourseRequirementId(row.id()),
+              row.targetCourseId(),
+              RequirementType.valueOf(row.type()),
+              row.requiredCourseId(),
+              null,
+              null,
+              conf,
+              row.inferred(),
+              CourseRequirementStatus.ACTIVE,
+              0L));
     }
     return reqs;
   }

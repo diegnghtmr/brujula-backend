@@ -17,8 +17,8 @@ import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadP
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort;
-import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.ProgramNameReadPort;
+import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.service.AddSimulationSelectionService;
@@ -70,8 +70,7 @@ class SimulationConfiguration {
 
   @Bean
   ListMySimulationsQuery listMySimulationsService(
-      LoadSimulationPort loadSimulationPort,
-      OfferingReadPort offeringReadPort) {
+      LoadSimulationPort loadSimulationPort, OfferingReadPort offeringReadPort) {
     return new ListMySimulationsService(loadSimulationPort, offeringReadPort);
   }
 
@@ -104,8 +103,7 @@ class SimulationConfiguration {
 
   @Bean
   DeleteSimulationUseCase deleteSimulationService(
-      LoadSimulationPort loadSimulationPort,
-      SaveSimulationPort saveSimulationPort) {
+      LoadSimulationPort loadSimulationPort, SaveSimulationPort saveSimulationPort) {
     return new DeleteSimulationService(loadSimulationPort, saveSimulationPort);
   }
 
@@ -163,9 +161,7 @@ class SimulationConfiguration {
       LoadSimulationSelectionPort loadSimulationSelectionPort,
       SaveSimulationSelectionPort saveSimulationSelectionPort) {
     return new RemoveSimulationSelectionService(
-        loadSimulationPort,
-        loadSimulationSelectionPort,
-        saveSimulationSelectionPort);
+        loadSimulationPort, loadSimulationSelectionPort, saveSimulationSelectionPort);
   }
 
   @Bean

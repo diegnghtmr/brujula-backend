@@ -34,17 +34,13 @@ public final class Journey {
   // Factory
   // ---------------------------------------------------------------------------
 
-  /**
-   * Create a new Journey. Defaults active to {@code true}.
-   */
+  /** Create a new Journey. Defaults active to {@code true}. */
   public static Journey create(JourneyId id, String code, String name) {
     validate(id, code, name);
     return new Journey(id, code, name, true);
   }
 
-  /**
-   * Reconstitute a Journey from persistence.
-   */
+  /** Reconstitute a Journey from persistence. */
   public static Journey reconstitute(JourneyId id, String code, String name, boolean active) {
     validate(id, code, name);
     return new Journey(id, code, name, active);

@@ -15,7 +15,6 @@ import co.edu.uniquindio.brujula.curriculum.domain.RequirementType;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -23,19 +22,19 @@ import java.util.Optional;
  * Use case: create a new CourseRequirement (idempotent via Idempotency-Key, STAFF/ADMIN).
  *
  * <p>Idempotency rules (mirrors CreateOfferingService):
+ *
  * <ul>
  *   <li>Same key + same hash → return stored result (replay)
  *   <li>Same key + different hash → throw {@link IdempotencyKeyConflictException} (409)
  *   <li>New key → execute cycle detection, persist, record audit event
  * </ul>
  *
- * <p>Cycle detection: loads all existing COURSE_PASSED/SEQUENCE requirements for the plan,
- * builds the prerequisite graph, adds the proposed edge, and validates acyclicity via
- * {@link PrerequisiteAcyclicityService}. A cycle throws
- * {@link co.edu.uniquindio.brujula.curriculum.domain.PrerequisiteCycleException} (→ 422).
+ * <p>Cycle detection: loads all existing COURSE_PASSED/SEQUENCE requirements for the plan, builds
+ * the prerequisite graph, adds the proposed edge, and validates acyclicity via {@link
+ * PrerequisiteAcyclicityService}. A cycle throws {@link
+ * co.edu.uniquindio.brujula.curriculum.domain.PrerequisiteCycleException} (→ 422).
  *
- * <p>Framework-free — wired by {@code CurriculumConfiguration}.
- * Satisfies: CUR-003, IMP-007.
+ * <p>Framework-free — wired by {@code CurriculumConfiguration}. Satisfies: CUR-003, IMP-007.
  */
 public class CreateCourseRequirementService implements CreateCourseRequirementUseCase {
 
@@ -54,7 +53,12 @@ public class CreateCourseRequirementService implements CreateCourseRequirementUs
       IdempotencyStorePort idempotencyStorePort,
       JsonCodecPort jsonCodecPort,
       AuditRecorder auditRecorder) {
-    this(saveRequirementPort, loadCoursePort, idempotencyStorePort, jsonCodecPort, auditRecorder,
+    this(
+        saveRequirementPort,
+        loadCoursePort,
+        idempotencyStorePort,
+        jsonCodecPort,
+        auditRecorder,
         new PrerequisiteAcyclicityService());
   }
 
@@ -102,26 +106,31 @@ public class CreateCourseRequirementService implements CreateCourseRequirementUs
     }
 
     // 3. Create domain aggregate via typed factory method
-    CourseRequirement requirement = switch (type) {
-      case COURSE_PASSED -> CourseRequirement.coursePassed(
-          CourseRequirementId.generate(),
-          command.targetCourseId(),
-          command.requiredCourseId(),
-          Boolean.TRUE.equals(command.simultaneityAllowed()),
-          null, null);
-      case SEQUENCE -> CourseRequirement.sequence(
-          CourseRequirementId.generate(),
-          command.targetCourseId(),
-          command.requiredCourseId(),
-          Boolean.TRUE.equals(command.simultaneityAllowed()));
-      case MINIMUM_CREDITS -> CourseRequirement.minimumCredits(
-          CourseRequirementId.generate(),
-          command.targetCourseId(),
-          command.requiredCredits());
-      case CONFIGURABLE -> CourseRequirement.configurable(
-          CourseRequirementId.generate(),
-          command.targetCourseId());
-    };
+    CourseRequirement requirement =
+        switch (type) {
+          case COURSE_PASSED ->
+              CourseRequirement.coursePassed(
+                  CourseRequirementId.generate(),
+                  command.targetCourseId(),
+                  command.requiredCourseId(),
+                  Boolean.TRUE.equals(command.simultaneityAllowed()),
+                  null,
+                  null);
+          case SEQUENCE ->
+              CourseRequirement.sequence(
+                  CourseRequirementId.generate(),
+                  command.targetCourseId(),
+                  command.requiredCourseId(),
+                  Boolean.TRUE.equals(command.simultaneityAllowed()));
+          case MINIMUM_CREDITS ->
+              CourseRequirement.minimumCredits(
+                  CourseRequirementId.generate(),
+                  command.targetCourseId(),
+                  command.requiredCredits());
+          case CONFIGURABLE ->
+              CourseRequirement.configurable(
+                  CourseRequirementId.generate(), command.targetCourseId());
+        };
 
     // 4. Persist
     CourseRequirement saved = saveRequirementPort.save(requirement);
@@ -135,15 +144,16 @@ public class CreateCourseRequirementService implements CreateCourseRequirementUs
         command.idempotencyKey(), OPERATION, command.requestHash(), 201, responseBodyJson);
 
     // 7. Record audit event
-    auditRecorder.record(new RecordAuditEventCommand(
-        command.actorId(),
-        "STAFF",
-        "COURSE_REQUIREMENT_CREATED",
-        "course_requirement",
-        saved.id().value(),
-        null,
-        null,
-        null));
+    auditRecorder.record(
+        new RecordAuditEventCommand(
+            command.actorId(),
+            "STAFF",
+            "COURSE_REQUIREMENT_CREATED",
+            "course_requirement",
+            saved.id().value(),
+            null,
+            null,
+            null));
 
     return view;
   }

@@ -28,13 +28,10 @@ import co.edu.uniquindio.brujula.imports.domain.exception.ImportBatchNotConfirma
 import co.edu.uniquindio.brujula.imports.domain.exception.ImportBatchNotFoundException;
 import co.edu.uniquindio.brujula.imports.domain.exception.UnsupportedFileTypeException;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportBatchId;
-import co.edu.uniquindio.brujula.imports.domain.model.ImportStatus;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,9 +49,11 @@ import org.springframework.web.context.WebApplicationContext;
  * WU4-TDD: Controller slice security and exception-mapping tests for imports endpoints.
  *
  * <p>Tests (IMP-001, IMP-003, IMP-004, IMP-012, NFR-004):
+ *
  * <ul>
- *   <li>POST /staff/imports — STUDENT → 403; STAFF assigned → 201 + Location; STAFF unassigned → 403;
- *       idempotency conflict → 409; wrong file type → 415; file too large → 413; missing file → 400
+ *   <li>POST /staff/imports — STUDENT → 403; STAFF assigned → 201 + Location; STAFF unassigned →
+ *       403; idempotency conflict → 409; wrong file type → 415; file too large → 413; missing file
+ *       → 400
  *   <li>GET /staff/imports — STAFF → 200 with page; unauthenticated → 401 (handled by Spring)
  *   <li>GET /staff/imports/{id} — happy path → 200; not found → 404; access denied → 403
  * </ul>
@@ -231,7 +230,8 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             multipart("/staff/imports")
-                .file(new MockMultipartFile("file", "data.csv", "text/csv", "col1\nval1".getBytes()))
+                .file(
+                    new MockMultipartFile("file", "data.csv", "text/csv", "col1\nval1".getBytes()))
                 .param("kind", "COURSES")
                 .param("programId", PROGRAM_ID.toString())
                 .param("planId", PLAN_ID.toString())
@@ -314,8 +314,8 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
   void list_imports_returns_200_with_page() throws Exception {
     // IMP-003, T4.1
     stubStaffProfile();
-    ImportPageView pageView = new ImportPageView(
-        List.of(validatedSummary("COURSES")), 0, 20, 1L, 1);
+    ImportPageView pageView =
+        new ImportPageView(List.of(validatedSummary("COURSES")), 0, 20, 1L, 1);
     when(listImportsUseCase.list(any())).thenReturn(pageView);
 
     mockMvc
@@ -349,8 +349,9 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
   void list_imports_admin_sees_all() throws Exception {
     // IMP-003: ADMIN sees all batches
     stubAdminProfile();
-    ImportPageView pageView = new ImportPageView(
-        List.of(validatedSummary("COURSES"), validatedSummary("OFFERINGS")), 0, 20, 2L, 1);
+    ImportPageView pageView =
+        new ImportPageView(
+            List.of(validatedSummary("COURSES"), validatedSummary("OFFERINGS")), 0, 20, 2L, 1);
     when(listImportsUseCase.list(any())).thenReturn(pageView);
 
     mockMvc
@@ -424,8 +425,8 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
     mockMvc
         .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/staff/imports/{importId}/confirmation", IMPORT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"version\": 1}")
                 .header("Idempotency-Key", UUID.randomUUID())
@@ -446,8 +447,8 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
     mockMvc
         .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/staff/imports/{importId}/confirmation", IMPORT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"version\": 1}")
                 .header("Idempotency-Key", UUID.randomUUID())
@@ -463,14 +464,15 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
     // SC-005-C, T6.4
     stubStaffProfile();
     when(confirmImportUseCase.confirm(any()))
-        .thenThrow(new ImportBatchNotConfirmableException(
+        .thenThrow(
+            new ImportBatchNotConfirmableException(
                 ImportBatchId.of(IMPORT_ID),
                 co.edu.uniquindio.brujula.imports.domain.model.ImportStatus.INVALID));
 
     mockMvc
         .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/staff/imports/{importId}/confirmation", IMPORT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"version\": 0}")
                 .header("Idempotency-Key", UUID.randomUUID())
@@ -490,8 +492,8 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
     mockMvc
         .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/staff/imports/{importId}/confirmation", IMPORT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"version\": 1}")
                 .header("Idempotency-Key", UUID.randomUUID())
@@ -511,8 +513,8 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
     mockMvc
         .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/staff/imports/{importId}/confirmation", IMPORT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"version\": 1}")
                 .header("Idempotency-Key", UUID.randomUUID())
@@ -532,8 +534,8 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
     mockMvc
         .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
+                    "/staff/imports/{importId}/confirmation", IMPORT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"version\": 0}")
                 .header("Idempotency-Key", UUID.randomUUID())
@@ -552,16 +554,16 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   private void stubStaffProfile() {
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(
-            ACTOR_ID, "staff-sub", "staff@test.com", "Staff User",
-            "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff User", "STAFF", "ACTIVE", true));
   }
 
   private void stubAdminProfile() {
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(
-            ACTOR_ID, "admin-sub", "admin@test.com", "Admin User",
-            "ADMIN", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "admin-sub", "admin@test.com", "Admin User", "ADMIN", "ACTIVE", true));
   }
 
   private MockMultipartFile minimalXlsxFile() {

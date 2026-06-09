@@ -225,14 +225,15 @@ class AdministrationController implements AdministrationApi {
     String requestHash = hashRequest(request);
     String statusStr = request.getStatus() != null ? request.getStatus().getValue() : null;
 
-    CreatePeriodCommand command = new CreatePeriodCommand(
-        idempotencyKey,
-        actorId,
-        request.getName(),
-        request.getStartDate(),
-        request.getEndDate(),
-        statusStr,
-        requestHash);
+    CreatePeriodCommand command =
+        new CreatePeriodCommand(
+            idempotencyKey,
+            actorId,
+            request.getName(),
+            request.getStartDate(),
+            request.getEndDate(),
+            statusStr,
+            requestHash);
 
     AcademicPeriodView view = createPeriodUseCase.createPeriod(command);
     URI location = URI.create("/admin/periods/" + view.id());
@@ -247,13 +248,14 @@ class AdministrationController implements AdministrationApi {
     String statusStr = request.getStatus() != null ? request.getStatus().getValue() : null;
     long expectedVersion = request.getVersion() != null ? request.getVersion() : 0L;
 
-    UpdatePeriodCommand command = new UpdatePeriodCommand(
-        periodId,
-        actorId,
-        request.getStartDate(),
-        request.getEndDate(),
-        statusStr,
-        expectedVersion);
+    UpdatePeriodCommand command =
+        new UpdatePeriodCommand(
+            periodId,
+            actorId,
+            request.getStartDate(),
+            request.getEndDate(),
+            statusStr,
+            expectedVersion);
 
     AcademicPeriodView view = updatePeriodUseCase.updatePeriod(command);
     return ResponseEntity.ok(toPeriodDto(view));
@@ -316,12 +318,12 @@ class AdministrationController implements AdministrationApi {
         view.version());
   }
 
-  /** Maps offering {@link AcademicPeriodView} → generated {@link AcademicPeriod} model (ARQ-001). */
+  /**
+   * Maps offering {@link AcademicPeriodView} → generated {@link AcademicPeriod} model (ARQ-001).
+   */
   private AcademicPeriod toPeriodDto(AcademicPeriodView view) {
-    AcademicPeriod dto = new AcademicPeriod(
-        view.id(),
-        view.name(),
-        PeriodStatus.fromValue(view.status()));
+    AcademicPeriod dto =
+        new AcademicPeriod(view.id(), view.name(), PeriodStatus.fromValue(view.status()));
     dto.setStartDate(view.startDate());
     dto.setEndDate(view.endDate());
     dto.setVersion(view.version());

@@ -1,10 +1,11 @@
 /**
  * Simulation module — academic planning simulations and validation engine.
  *
- * <p>Leaf consumer: no published named interface. All cross-module access goes through
- * the named interfaces of the target modules (INV-001).
+ * <p>Leaf consumer: no published named interface. All cross-module access goes through the named
+ * interfaces of the target modules (INV-001).
  *
  * <p>Allowed outbound dependencies:
+ *
  * <ul>
  *   <li>{@code sharedkernel} — shared kernel (idempotency, codec, exceptions)
  *   <li>{@code audit} — audit recorder SPI

@@ -20,9 +20,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
  *   <li>The PERSONAL_ELECTIVE track (Electivas de Formación Personal) has NULL gatekeeper
  * </ul>
  *
- * <p>Fails until V014__add_deepening_track_gatekeeper.sql exists. Satisfies: ADR-F2-003,
- * CUR-005 gatekeeper correctness (Ing. Software+HCI → IS I; Infra TI → Admin Infra TI; Gestión
- * Información → BD I).
+ * <p>Fails until V014__add_deepening_track_gatekeeper.sql exists. Satisfies: ADR-F2-003, CUR-005
+ * gatekeeper correctness (Ing. Software+HCI → IS I; Infra TI → Admin Infra TI; Gestión Información
+ * → BD I).
  */
 @SpringBootTest
 class FlywayV014DeepeningGatekeeperTest extends AbstractPostgresIntegrationTest {
@@ -71,11 +71,11 @@ class FlywayV014DeepeningGatekeeperTest extends AbstractPostgresIntegrationTest 
               AND st.kind = 'DEEPENING'
               AND st.label LIKE '%Ingeniería del Software y HCI%'
             """,
-            String.class,
-            PROGRAM_NAME);
+            String.class, PROGRAM_NAME);
 
     assertThat(gatekeeperName)
-        .as("Línea Ingeniería del Software y HCI gatekeeper must be 'Ingeniería de Software I' (PDF oficial)")
+        .as(
+            "Línea Ingeniería del Software y HCI gatekeeper must be 'Ingeniería de Software I' (PDF oficial)")
         .isEqualTo("Ingeniería de Software I");
   }
 
@@ -97,11 +97,11 @@ class FlywayV014DeepeningGatekeeperTest extends AbstractPostgresIntegrationTest 
               AND st.kind = 'DEEPENING'
               AND st.label LIKE '%Infraestructura de T.I.%'
             """,
-            String.class,
-            PROGRAM_NAME);
+            String.class, PROGRAM_NAME);
 
     assertThat(gatekeeperName)
-        .as("Línea Infraestructura de T.I. gatekeeper must be 'Administración de Infraestructura de TI' (PDF oficial)")
+        .as(
+            "Línea Infraestructura de T.I. gatekeeper must be 'Administración de Infraestructura de TI' (PDF oficial)")
         .isEqualTo("Administración de Infraestructura de TI");
   }
 
@@ -123,8 +123,7 @@ class FlywayV014DeepeningGatekeeperTest extends AbstractPostgresIntegrationTest 
               AND st.kind = 'DEEPENING'
               AND st.label LIKE '%Gestión de la Información%'
             """,
-            String.class,
-            PROGRAM_NAME);
+            String.class, PROGRAM_NAME);
 
     assertThat(gatekeeperName)
         .as("Línea Gestión de la Información gatekeeper must be 'Bases de Datos I' (PDF oficial)")
@@ -152,7 +151,8 @@ class FlywayV014DeepeningGatekeeperTest extends AbstractPostgresIntegrationTest 
             PROGRAM_NAME);
 
     assertThat(rows)
-        .as("All 3 ISC DEEPENING tracks must have a non-null gatekeeper (gatekeeper_course_id IS NOT NULL)")
+        .as(
+            "All 3 ISC DEEPENING tracks must have a non-null gatekeeper (gatekeeper_course_id IS NOT NULL)")
         .hasSize(3);
 
     List<Object> gatekeeperNames = rows.stream().map(r -> r.get("gatekeeper_name")).toList();

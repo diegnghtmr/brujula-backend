@@ -51,26 +51,84 @@ class CourseRequirementJpaEntity {
   // JPA requires a no-arg constructor
   protected CourseRequirementJpaEntity() {}
 
-  UUID getId() { return id; }
-  UUID getTargetCourseId() { return targetCourseId; }
-  String getType() { return type; }
-  UUID getRequiredCourseId() { return requiredCourseId; }
-  Integer getRequiredCredits() { return requiredCredits; }
-  Boolean getSimultaneityAllowed() { return simultaneityAllowed; }
-  String getConfidence() { return confidence; }
-  Boolean getInferred() { return inferred; }
-  String getStatus() { return status; }
-  long getVersion() { return version; }
+  UUID getId() {
+    return id;
+  }
+
+  UUID getTargetCourseId() {
+    return targetCourseId;
+  }
+
+  String getType() {
+    return type;
+  }
+
+  UUID getRequiredCourseId() {
+    return requiredCourseId;
+  }
+
+  Integer getRequiredCredits() {
+    return requiredCredits;
+  }
+
+  Boolean getSimultaneityAllowed() {
+    return simultaneityAllowed;
+  }
+
+  String getConfidence() {
+    return confidence;
+  }
+
+  Boolean getInferred() {
+    return inferred;
+  }
+
+  String getStatus() {
+    return status;
+  }
+
+  long getVersion() {
+    return version;
+  }
 
   // Setters for the write path (CUR-003 / WU5)
-  void setId(UUID id) { this.id = id; }
-  void setTargetCourseId(UUID targetCourseId) { this.targetCourseId = targetCourseId; }
-  void setType(String type) { this.type = type; }
-  void setRequiredCourseId(UUID requiredCourseId) { this.requiredCourseId = requiredCourseId; }
-  void setRequiredCredits(Integer requiredCredits) { this.requiredCredits = requiredCredits; }
-  void setSimultaneityAllowed(Boolean simultaneityAllowed) { this.simultaneityAllowed = simultaneityAllowed; }
-  void setConfidence(String confidence) { this.confidence = confidence; }
-  void setInferred(Boolean inferred) { this.inferred = inferred; }
-  void setStatus(String status) { this.status = status; }
-  void setVersion(long version) { this.version = version; }
+  void setId(UUID id) {
+    this.id = id;
+  }
+
+  void setTargetCourseId(UUID targetCourseId) {
+    this.targetCourseId = targetCourseId;
+  }
+
+  void setType(String type) {
+    this.type = type;
+  }
+
+  void setRequiredCourseId(UUID requiredCourseId) {
+    this.requiredCourseId = requiredCourseId;
+  }
+
+  void setRequiredCredits(Integer requiredCredits) {
+    this.requiredCredits = requiredCredits;
+  }
+
+  void setSimultaneityAllowed(Boolean simultaneityAllowed) {
+    this.simultaneityAllowed = simultaneityAllowed;
+  }
+
+  void setConfidence(String confidence) {
+    this.confidence = confidence;
+  }
+
+  void setInferred(Boolean inferred) {
+    this.inferred = inferred;
+  }
+
+  void setStatus(String status) {
+    this.status = status;
+  }
+
+  void setVersion(long version) {
+    this.version = version;
+  }
 }

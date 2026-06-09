@@ -10,7 +10,6 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportBatch;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportBatchId;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportIssue;
 import co.edu.uniquindio.brujula.imports.domain.model.Severity;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +21,8 @@ import java.util.UUID;
  * <p>STAFF actors are restricted to batches belonging to programs they are actively assigned to.
  * ADMIN actors bypass the assignment check.
  *
- * <p>Framework-free — wired by {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
+ * <p>Framework-free — wired by {@link
+ * co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
  */
 public class GetImportService implements GetImportUseCase {
 
@@ -30,8 +30,7 @@ public class GetImportService implements GetImportUseCase {
   private final StaffAssignmentPort staffAssignmentPort;
 
   public GetImportService(
-      LoadImportBatchPort loadImportBatchPort,
-      StaffAssignmentPort staffAssignmentPort) {
+      LoadImportBatchPort loadImportBatchPort, StaffAssignmentPort staffAssignmentPort) {
     this.loadImportBatchPort = loadImportBatchPort;
     this.staffAssignmentPort = staffAssignmentPort;
   }
@@ -70,11 +69,7 @@ public class GetImportService implements GetImportUseCase {
     for (ImportIssue issue : batch.getIssues()) {
       ImportSummary.ImportIssueDto dto =
           new ImportSummary.ImportIssueDto(
-              issue.row(),
-              issue.column(),
-              issue.code(),
-              issue.message(),
-              issue.severity().name());
+              issue.row(), issue.column(), issue.code(), issue.message(), issue.severity().name());
       if (issue.severity() == Severity.ERROR) {
         errors.add(dto);
       } else {

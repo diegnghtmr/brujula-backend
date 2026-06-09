@@ -12,7 +12,7 @@ interface SimulationSelectionJpaRepository
    * Load all selections for a simulation with a given lifecycle status.
    *
    * @param simulationId the simulation UUID
-   * @param status       the lifecycle status (e.g. "ACTIVE")
+   * @param status the lifecycle status (e.g. "ACTIVE")
    * @return list of matching entities
    */
   List<SimulationSelectionJpaEntity> findBySimulationIdAndStatus(UUID simulationId, String status);

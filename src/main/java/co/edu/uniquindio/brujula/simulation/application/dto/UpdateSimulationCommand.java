@@ -8,11 +8,7 @@ import java.util.UUID;
  *
  * <p>Carries {@code version} for optimistic locking (X-002).
  */
-public record UpdateSimulationCommand(
-    UUID simulationId,
-    UUID ownerId,
-    String name,
-    long version) {
+public record UpdateSimulationCommand(UUID simulationId, UUID ownerId, String name, long version) {
 
   public UpdateSimulationCommand {
     Objects.requireNonNull(simulationId, "simulationId required");

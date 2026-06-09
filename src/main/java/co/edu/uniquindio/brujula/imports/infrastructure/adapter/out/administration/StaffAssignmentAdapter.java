@@ -19,9 +19,9 @@ import org.springframework.stereotype.Component;
  * ConfirmImportService), NOT by this adapter. This adapter is role-agnostic and purely translates
  * the imports-local port contract to the administration SPI.
  *
- * <p>WARNING-1 closure: {@link #resolveActiveStaffId(String)} delegates to
- * {@link ResolveStaffByEmailQuery#resolveActiveStaffId(String)} which filters INACTIVE accounts at
- * the service layer. {@link co.edu.uniquindio.brujula.imports.application.service.UploadImportService}
+ * <p>WARNING-1 closure: {@link #resolveActiveStaffId(String)} delegates to {@link
+ * ResolveStaffByEmailQuery#resolveActiveStaffId(String)} which filters INACTIVE accounts at the
+ * service layer. {@link co.edu.uniquindio.brujula.imports.application.service.UploadImportService}
  * MUST call this method (not {@link #resolveStaffId(String)}) for STAFF role checks.
  */
 @Component
@@ -31,8 +31,7 @@ class StaffAssignmentAdapter implements StaffAssignmentPort {
   private final ResolveStaffByEmailQuery resolveByEmailQuery;
 
   StaffAssignmentAdapter(
-      IsStaffAssignedToProgramQuery isAssignedQuery,
-      ResolveStaffByEmailQuery resolveByEmailQuery) {
+      IsStaffAssignedToProgramQuery isAssignedQuery, ResolveStaffByEmailQuery resolveByEmailQuery) {
     this.isAssignedQuery = isAssignedQuery;
     this.resolveByEmailQuery = resolveByEmailQuery;
   }

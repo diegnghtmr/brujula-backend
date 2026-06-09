@@ -17,11 +17,7 @@ import java.util.UUID;
  * @param recommendedSemester recommended semester (1-based)
  */
 public record PlanCourse(
-    UUID courseId,
-    String name,
-    double credits,
-    String type,
-    int recommendedSemester) {
+    UUID courseId, String name, double credits, String type, int recommendedSemester) {
 
   public PlanCourse {
     Objects.requireNonNull(courseId, "courseId must not be null");

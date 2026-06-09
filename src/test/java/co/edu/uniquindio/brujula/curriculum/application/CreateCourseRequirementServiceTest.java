@@ -24,7 +24,6 @@ import co.edu.uniquindio.brujula.curriculum.domain.RequirementType;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +34,9 @@ import org.junit.jupiter.api.Test;
 /**
  * TDD RED → GREEN: unit tests for {@link CreateCourseRequirementService}.
  *
- * <p>Covers: happy path saves and records audit; cycle detection rejects with
- * {@link PrerequisiteCycleException}; idempotency replay; idempotency conflict.
- * WU5 – T5.2 (CUR-003, IMP-007).
+ * <p>Covers: happy path saves and records audit; cycle detection rejects with {@link
+ * PrerequisiteCycleException}; idempotency replay; idempotency conflict. WU5 – T5.2 (CUR-003,
+ * IMP-007).
  */
 class CreateCourseRequirementServiceTest {
 
@@ -62,8 +61,13 @@ class CreateCourseRequirementServiceTest {
     idempotencyStorePort = mock(IdempotencyStorePort.class);
     jsonCodecPort = mock(JsonCodecPort.class);
     auditRecorder = mock(AuditRecorder.class);
-    service = new CreateCourseRequirementService(
-        saveRequirementPort, loadCoursePort, idempotencyStorePort, jsonCodecPort, auditRecorder);
+    service =
+        new CreateCourseRequirementService(
+            saveRequirementPort,
+            loadCoursePort,
+            idempotencyStorePort,
+            jsonCodecPort,
+            auditRecorder);
   }
 
   @Test
@@ -75,29 +79,45 @@ class CreateCourseRequirementServiceTest {
     // No courses needed for semester-ordering when no existing reqs
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(Collections.emptyList());
 
-    CourseRequirement saved = CourseRequirement.reconstitute(
-        CourseRequirementId.generate(), targetCourseId,
-        RequirementType.COURSE_PASSED, requiredCourseId,
-        null, false, null, null, CourseRequirementStatus.ACTIVE, 0L);
+    CourseRequirement saved =
+        CourseRequirement.reconstitute(
+            CourseRequirementId.generate(),
+            targetCourseId,
+            RequirementType.COURSE_PASSED,
+            requiredCourseId,
+            null,
+            false,
+            null,
+            null,
+            CourseRequirementStatus.ACTIVE,
+            0L);
     when(saveRequirementPort.save(any(CourseRequirement.class))).thenReturn(saved);
     when(jsonCodecPort.toJson(any())).thenReturn("{\"id\":\"x\"}");
 
-    CreateCourseRequirementCommand command = new CreateCourseRequirementCommand(
-        idempotencyKey, requestHash, actorId,
-        targetCourseId, planId, "COURSE_PASSED", requiredCourseId, null, false);
+    CreateCourseRequirementCommand command =
+        new CreateCourseRequirementCommand(
+            idempotencyKey,
+            requestHash,
+            actorId,
+            targetCourseId,
+            planId,
+            "COURSE_PASSED",
+            requiredCourseId,
+            null,
+            false);
 
     CourseRequirementView result = service.createCourseRequirement(command);
 
     assertThat(result.type()).isEqualTo("COURSE_PASSED");
     verify(saveRequirementPort).save(any(CourseRequirement.class));
-    verify(auditRecorder).record(argThat(cmd ->
-        "COURSE_REQUIREMENT_CREATED".equals(cmd.action())));
-    verify(idempotencyStorePort).save(
-        eq(idempotencyKey),
-        eq(CreateCourseRequirementService.OPERATION),
-        eq(requestHash),
-        eq(201),
-        any());
+    verify(auditRecorder).record(argThat(cmd -> "COURSE_REQUIREMENT_CREATED".equals(cmd.action())));
+    verify(idempotencyStorePort)
+        .save(
+            eq(idempotencyKey),
+            eq(CreateCourseRequirementService.OPERATION),
+            eq(requestHash),
+            eq(201),
+            any());
   }
 
   @Test
@@ -111,17 +131,33 @@ class CreateCourseRequirementServiceTest {
         .thenReturn(Optional.empty());
 
     // Existing requirement: A is required for B
-    CourseRequirement existingReq = CourseRequirement.reconstitute(
-        CourseRequirementId.generate(), courseB,
-        RequirementType.COURSE_PASSED, courseA,
-        null, false, null, null, CourseRequirementStatus.ACTIVE, 0L);
+    CourseRequirement existingReq =
+        CourseRequirement.reconstitute(
+            CourseRequirementId.generate(),
+            courseB,
+            RequirementType.COURSE_PASSED,
+            courseA,
+            null,
+            false,
+            null,
+            null,
+            CourseRequirementStatus.ACTIVE,
+            0L);
     when(saveRequirementPort.findAllByPlanId(planId)).thenReturn(List.of(existingReq));
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(Collections.emptyList());
 
     // New requirement: B is required for A — creates cycle A→B→A
-    CreateCourseRequirementCommand command = new CreateCourseRequirementCommand(
-        idempotencyKey, requestHash, actorId,
-        courseA, planId, "COURSE_PASSED", courseB, null, false);
+    CreateCourseRequirementCommand command =
+        new CreateCourseRequirementCommand(
+            idempotencyKey,
+            requestHash,
+            actorId,
+            courseA,
+            planId,
+            "COURSE_PASSED",
+            courseB,
+            null,
+            false);
 
     assertThatThrownBy(() -> service.createCourseRequirement(command))
         .isInstanceOf(PrerequisiteCycleException.class);
@@ -132,18 +168,36 @@ class CreateCourseRequirementServiceTest {
 
   @Test
   void idempotency_replay_returns_stored_view() {
-    CourseRequirementView storedView = new CourseRequirementView(
-        UUID.randomUUID(), targetCourseId, "COURSE_PASSED",
-        requiredCourseId, null, false, null, null, "ACTIVE", 0L);
+    CourseRequirementView storedView =
+        new CourseRequirementView(
+            UUID.randomUUID(),
+            targetCourseId,
+            "COURSE_PASSED",
+            requiredCourseId,
+            null,
+            false,
+            null,
+            null,
+            "ACTIVE",
+            0L);
     String storedJson = "{\"id\":\"x\"}";
 
     when(idempotencyStorePort.find(idempotencyKey, CreateCourseRequirementService.OPERATION))
-        .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord(requestHash, 201, storedJson)));
+        .thenReturn(
+            Optional.of(new IdempotencyStorePort.StoredRecord(requestHash, 201, storedJson)));
     when(jsonCodecPort.fromJson(storedJson, CourseRequirementView.class)).thenReturn(storedView);
 
-    CreateCourseRequirementCommand command = new CreateCourseRequirementCommand(
-        idempotencyKey, requestHash, actorId,
-        targetCourseId, planId, "COURSE_PASSED", requiredCourseId, null, false);
+    CreateCourseRequirementCommand command =
+        new CreateCourseRequirementCommand(
+            idempotencyKey,
+            requestHash,
+            actorId,
+            targetCourseId,
+            planId,
+            "COURSE_PASSED",
+            requiredCourseId,
+            null,
+            false);
 
     CourseRequirementView result = service.createCourseRequirement(command);
 
@@ -157,9 +211,17 @@ class CreateCourseRequirementServiceTest {
     when(idempotencyStorePort.find(idempotencyKey, CreateCourseRequirementService.OPERATION))
         .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord("other-hash", 201, "{}")));
 
-    CreateCourseRequirementCommand command = new CreateCourseRequirementCommand(
-        idempotencyKey, requestHash, actorId,
-        targetCourseId, planId, "COURSE_PASSED", requiredCourseId, null, false);
+    CreateCourseRequirementCommand command =
+        new CreateCourseRequirementCommand(
+            idempotencyKey,
+            requestHash,
+            actorId,
+            targetCourseId,
+            planId,
+            "COURSE_PASSED",
+            requiredCourseId,
+            null,
+            false);
 
     assertThatThrownBy(() -> service.createCourseRequirement(command))
         .isInstanceOf(IdempotencyKeyConflictException.class);

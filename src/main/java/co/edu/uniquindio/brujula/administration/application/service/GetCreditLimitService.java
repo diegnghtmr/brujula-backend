@@ -14,8 +14,9 @@ import java.util.UUID;
  * is thrown immediately — a misconfigured value must never silently propagate to WU4's validation
  * engine.
  *
- * <p>Framework-free: no Spring or JPA dependencies in this class (ARQ-002). Wired via
- * {@code @Bean} in {@link co.edu.uniquindio.brujula.administration.infrastructure.configuration.AdministrationConfiguration}.
+ * <p>Framework-free: no Spring or JPA dependencies in this class (ARQ-002). Wired via {@code @Bean}
+ * in {@link
+ * co.edu.uniquindio.brujula.administration.infrastructure.configuration.AdministrationConfiguration}.
  */
 public class GetCreditLimitService implements GetCreditLimitQuery {
 

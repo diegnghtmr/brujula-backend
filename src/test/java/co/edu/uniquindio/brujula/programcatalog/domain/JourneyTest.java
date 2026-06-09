@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 /**
  * FIX-3 (W-2) RED: Journey aggregate domain invariant tests (CAT-003).
  *
- * <p>Asserts: blank/null code rejected; blank/null name rejected; null id rejected;
- * {@code create()} defaults {@code active} to {@code true}.
+ * <p>Asserts: blank/null code rejected; blank/null name rejected; null id rejected; {@code
+ * create()} defaults {@code active} to {@code true}.
  */
 class JourneyTest {
 

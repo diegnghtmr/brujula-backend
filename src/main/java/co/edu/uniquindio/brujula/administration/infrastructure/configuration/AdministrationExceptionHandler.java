@@ -22,24 +22,24 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   <li>{@link StaffNotFoundException} → 404 Not Found
  *   <li>{@link IdempotencyKeyConflictException} → 409 Conflict
  *   <li>{@link OptimisticLockingFailureException} → 409 Conflict (OFFW-002 period update)
- *   <li>{@link DataIntegrityViolationException} → 409 Conflict (period name duplicate,
- *       unique constraint {@code academic_period_name_uq})
+ *   <li>{@link DataIntegrityViolationException} → 409 Conflict (period name duplicate, unique
+ *       constraint {@code academic_period_name_uq})
  * </ul>
  *
  * <p>Exception visibility note (ADR-0 task 6.3): {@code PeriodNotFoundException} (offering domain)
  * is handled by {@code OfferingExceptionHandler} (global {@code @RestControllerAdvice}) which
- * already maps it to 404 — no duplication needed here. Spring/DAL exceptions
- * ({@link OptimisticLockingFailureException}, {@link DataIntegrityViolationException}) are
- * framework types already visible in the infrastructure layer of any module.
+ * already maps it to 404 — no duplication needed here. Spring/DAL exceptions ({@link
+ * OptimisticLockingFailureException}, {@link DataIntegrityViolationException}) are framework types
+ * already visible in the infrastructure layer of any module.
  *
- * <p>QAL-ADV-001 (WU1): scoped to the administration REST adapter package so that shared
- * exceptions (e.g. {@link IdempotencyKeyConflictException}) are always resolved by this handler
- * and never intercepted by a foreign module advice. Controllers are package-private; {@code
- * basePackages} string is used instead of {@code assignableTypes}. Template from
- * {@code ImportsExceptionHandler}.
+ * <p>QAL-ADV-001 (WU1): scoped to the administration REST adapter package so that shared exceptions
+ * (e.g. {@link IdempotencyKeyConflictException}) are always resolved by this handler and never
+ * intercepted by a foreign module advice. Controllers are package-private; {@code basePackages}
+ * string is used instead of {@code assignableTypes}. Template from {@code ImportsExceptionHandler}.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.administration.infrastructure.adapter.in.rest")
+@RestControllerAdvice(
+    basePackages = "co.edu.uniquindio.brujula.administration.infrastructure.adapter.in.rest")
 class AdministrationExceptionHandler {
 
   @ExceptionHandler(StaffNotFoundException.class)
@@ -64,8 +64,9 @@ class AdministrationExceptionHandler {
 
   @ExceptionHandler(DataIntegrityViolationException.class)
   ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
-        "A resource with the same unique identifier already exists");
+    ProblemDetail pd =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT, "A resource with the same unique identifier already exists");
     pd.setTitle("Conflict");
     return pd;
   }

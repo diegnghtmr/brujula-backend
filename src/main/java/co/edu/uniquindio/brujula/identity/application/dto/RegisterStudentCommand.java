@@ -12,10 +12,7 @@ package co.edu.uniquindio.brujula.identity.application.dto;
  * layer but not in port.in (port.in is interfaces only, ARQ-003).
  */
 public record RegisterStudentCommand(
-    String email,
-    String fullName,
-    String termsVersion,
-    String privacyVersion) {
+    String email, String fullName, String termsVersion, String privacyVersion) {
 
   public RegisterStudentCommand {
     if (email == null || email.isBlank()) {

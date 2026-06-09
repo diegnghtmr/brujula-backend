@@ -23,8 +23,7 @@ import java.util.UUID;
 @Table(name = "course_recommended_semester", schema = "curriculum")
 class CourseRecommendedSemesterJpaEntity {
 
-  @EmbeddedId
-  private CourseRecommendedSemesterId id;
+  @EmbeddedId private CourseRecommendedSemesterId id;
 
   @MapsId("courseId")
   @ManyToOne(fetch = FetchType.LAZY)
@@ -37,14 +36,30 @@ class CourseRecommendedSemesterJpaEntity {
   // JPA requires a no-arg constructor
   protected CourseRecommendedSemesterJpaEntity() {}
 
-  CourseRecommendedSemesterId getId() { return id; }
-  String getJourneyCode() { return id != null ? id.journeyCode() : null; }
-  int getSemester() { return semester; }
+  CourseRecommendedSemesterId getId() {
+    return id;
+  }
+
+  String getJourneyCode() {
+    return id != null ? id.journeyCode() : null;
+  }
+
+  int getSemester() {
+    return semester;
+  }
 
   // Setters for the write path (CUR-001 / WU5)
-  void setId(CourseRecommendedSemesterId id) { this.id = id; }
-  void setCourse(CourseJpaEntity course) { this.course = course; }
-  void setSemester(int semester) { this.semester = semester; }
+  void setId(CourseRecommendedSemesterId id) {
+    this.id = id;
+  }
+
+  void setCourse(CourseJpaEntity course) {
+    this.course = course;
+  }
+
+  void setSemester(int semester) {
+    this.semester = semester;
+  }
 
   // ---------------------------------------------------------------------------
   // Composite PK
@@ -69,8 +84,13 @@ class CourseRecommendedSemesterJpaEntity {
       return pk;
     }
 
-    UUID courseId() { return courseId; }
-    String journeyCode() { return journeyCode; }
+    UUID courseId() {
+      return courseId;
+    }
+
+    String journeyCode() {
+      return journeyCode;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link PrerequisiteEvaluator}.
  *
- * <p>Tests the Fase-3 hard-edge policy:
- * HARD = official (inferred=null/false) OR confidence=HIGH → blocks.
- * SOFT = inferred=true AND confidence in {MEDIUM, LOW, null} → NO notice in WU4a (TODO WU4b).
+ * <p>Tests the Fase-3 hard-edge policy: HARD = official (inferred=null/false) OR confidence=HIGH →
+ * blocks. SOFT = inferred=true AND confidence in {MEDIUM, LOW, null} → NO notice in WU4a (TODO
+ * WU4b).
  */
 class PrerequisiteEvaluatorTest {
 
@@ -30,8 +30,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void officialUnmetPrereqBlocks() {
     // inferred=false (official), HIGH confidence — unmet → BLOCKING
-    PrereqRequirement req = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
+    PrereqRequirement req =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -45,8 +45,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void highConfidenceInferredUnmetBlocks() {
     // inferred=true BUT confidence=HIGH → still HARD → BLOCKING
-    PrereqRequirement req = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "HIGH", true, "Álgebra Lineal");
+    PrereqRequirement req =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "HIGH", true, "Álgebra Lineal");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -59,8 +59,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void officialNullConfidenceUnmetBlocks() {
     // inferred=null (official) — should be treated as official (HARD) and block
-    PrereqRequirement req = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", null, null, "Física I");
+    PrereqRequirement req =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", null, null, "Física I");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -72,8 +72,8 @@ class PrerequisiteEvaluatorTest {
 
   @Test
   void studentPassedPrereqAllows() {
-    PrereqRequirement req = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
+    PrereqRequirement req =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = new PassedCourseSet(Set.of(prereqId)); // student passed it
 
@@ -85,8 +85,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void softInferredMediumConfidenceUnmetProducesNoNoticeInWU4a() {
     // inferred=true AND confidence=MEDIUM → SOFT edge → NO notice in WU4a (TODO WU4b)
-    PrereqRequirement req = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
+    PrereqRequirement req =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = PassedCourseSet.empty(); // not passed
 
@@ -99,8 +99,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void softInferredLowConfidenceUnmetProducesNoNoticeInWU4a() {
     // inferred=true AND confidence=LOW → SOFT → no notice in WU4a
-    PrereqRequirement req = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "LOW", true, "Química");
+    PrereqRequirement req =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "LOW", true, "Química");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -120,8 +120,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void nonCoursePassedTypeSkipped() {
     // MINIMUM_CREDITS requirement — not evaluated in WU4a
-    PrereqRequirement req = new PrereqRequirement(
-        courseId, prereqId, "MINIMUM_CREDITS", "HIGH", false, "Something");
+    PrereqRequirement req =
+        new PrereqRequirement(courseId, prereqId, "MINIMUM_CREDITS", "HIGH", false, "Something");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -137,16 +137,15 @@ class PrerequisiteEvaluatorTest {
   @Test
   void evaluateAll_oneUnmetHardPrereq_returnsOneNotice() {
     UUID prereq2 = UUID.randomUUID();
-    PrereqRequirement req1 = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
-    PrereqRequirement req2 = new PrereqRequirement(
-        courseId, prereq2, "COURSE_PASSED", null, null, "Álgebra");
+    PrereqRequirement req1 =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
+    PrereqRequirement req2 =
+        new PrereqRequirement(courseId, prereq2, "COURSE_PASSED", null, null, "Álgebra");
     CandidateSelection candidate = buildCandidate(courseId);
     // Student passed prereq2 but NOT prereqId
     PassedCourseSet passed = new PassedCourseSet(Set.of(prereq2));
 
-    List<ValidationNotice> notices =
-        evaluator.evaluateAll(candidate, List.of(req1, req2), passed);
+    List<ValidationNotice> notices = evaluator.evaluateAll(candidate, List.of(req1, req2), passed);
 
     assertThat(notices).hasSize(1);
     assertThat(notices.get(0).code()).isEqualTo("SIMULATION_PREREQUISITE_NOT_MET");
@@ -156,33 +155,31 @@ class PrerequisiteEvaluatorTest {
   @Test
   void evaluateAll_multipleUnmetHardPrereqs_returnsAllNotices() {
     UUID prereq2 = UUID.randomUUID();
-    PrereqRequirement req1 = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
-    PrereqRequirement req2 = new PrereqRequirement(
-        courseId, prereq2, "COURSE_PASSED", null, null, "Álgebra");
+    PrereqRequirement req1 =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
+    PrereqRequirement req2 =
+        new PrereqRequirement(courseId, prereq2, "COURSE_PASSED", null, null, "Álgebra");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = PassedCourseSet.empty(); // neither passed
 
-    List<ValidationNotice> notices =
-        evaluator.evaluateAll(candidate, List.of(req1, req2), passed);
+    List<ValidationNotice> notices = evaluator.evaluateAll(candidate, List.of(req1, req2), passed);
 
     assertThat(notices).hasSize(2);
-    assertThat(notices).allSatisfy(n ->
-        assertThat(n.code()).isEqualTo("SIMULATION_PREREQUISITE_NOT_MET"));
+    assertThat(notices)
+        .allSatisfy(n -> assertThat(n.code()).isEqualTo("SIMULATION_PREREQUISITE_NOT_MET"));
   }
 
   @Test
   void evaluateAll_allPrereqsMet_returnsEmptyList() {
     UUID prereq2 = UUID.randomUUID();
-    PrereqRequirement req1 = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
-    PrereqRequirement req2 = new PrereqRequirement(
-        courseId, prereq2, "COURSE_PASSED", null, null, "Álgebra");
+    PrereqRequirement req1 =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Cálculo I");
+    PrereqRequirement req2 =
+        new PrereqRequirement(courseId, prereq2, "COURSE_PASSED", null, null, "Álgebra");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = new PassedCourseSet(Set.of(prereqId, prereq2));
 
-    List<ValidationNotice> notices =
-        evaluator.evaluateAll(candidate, List.of(req1, req2), passed);
+    List<ValidationNotice> notices = evaluator.evaluateAll(candidate, List.of(req1, req2), passed);
 
     assertThat(notices).isEmpty();
   }
@@ -194,8 +191,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void collectSoftWarnings_inferredMediumUnmet_returnsWarning() {
     // SOFT edge: inferred=true AND confidence=MEDIUM → warning when unmet
-    PrereqRequirement softReq = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
+    PrereqRequirement softReq =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = PassedCourseSet.empty(); // not passed
 
@@ -211,8 +208,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void collectSoftWarnings_inferredLowUnmet_returnsWarning() {
     // SOFT edge: inferred=true AND confidence=LOW → warning
-    PrereqRequirement softReq = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "LOW", true, "Química");
+    PrereqRequirement softReq =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "LOW", true, "Química");
     CandidateSelection candidate = buildCandidate(courseId);
 
     List<ValidationNotice> warnings =
@@ -225,8 +222,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void collectSoftWarnings_inferredNullConfidenceUnmet_returnsWarning() {
     // SOFT edge: inferred=true AND confidence=null → treated as LOW → warning
-    PrereqRequirement softReq = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", null, true, "Optional Course");
+    PrereqRequirement softReq =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", null, true, "Optional Course");
     CandidateSelection candidate = buildCandidate(courseId);
 
     List<ValidationNotice> warnings =
@@ -240,8 +237,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void collectSoftWarnings_highConfidenceInferred_noWarning() {
     // inferred=true BUT confidence=HIGH → HARD edge → NOT collected as warning
-    PrereqRequirement hardReq = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "HIGH", true, "Cálculo I");
+    PrereqRequirement hardReq =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "HIGH", true, "Cálculo I");
     CandidateSelection candidate = buildCandidate(courseId);
 
     List<ValidationNotice> warnings =
@@ -253,8 +250,8 @@ class PrerequisiteEvaluatorTest {
   @Test
   void collectSoftWarnings_softPrereqMet_noWarning() {
     // SOFT edge but student already passed it → no warning
-    PrereqRequirement softReq = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
+    PrereqRequirement softReq =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
     CandidateSelection candidate = buildCandidate(courseId);
     PassedCourseSet passed = new PassedCourseSet(Set.of(prereqId)); // passed!
 
@@ -268,8 +265,8 @@ class PrerequisiteEvaluatorTest {
   void collectSoftWarnings_officialUnmet_noWarning() {
     // Official (inferred=false) unmet → not a SOFT edge → NOT in soft warnings
     // (it would be collected by evaluate() as BLOCKING, not here)
-    PrereqRequirement hardReq = new PrereqRequirement(
-        courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Álgebra Lineal");
+    PrereqRequirement hardReq =
+        new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "HIGH", false, "Álgebra Lineal");
     CandidateSelection candidate = buildCandidate(courseId);
 
     List<ValidationNotice> warnings =
@@ -283,7 +280,16 @@ class PrerequisiteEvaluatorTest {
   // -------------------------------------------------------------------------
 
   private CandidateSelection buildCandidate(UUID courseId) {
-    return new CandidateSelection(UUID.randomUUID(), UUID.randomUUID(), courseId,
-        "Test Course", UUID.randomUUID(), 3.0, "DIURNA", "FINAL", 1L, List.of());
+    return new CandidateSelection(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        courseId,
+        "Test Course",
+        UUID.randomUUID(),
+        3.0,
+        "DIURNA",
+        "FINAL",
+        1L,
+        List.of());
   }
 }

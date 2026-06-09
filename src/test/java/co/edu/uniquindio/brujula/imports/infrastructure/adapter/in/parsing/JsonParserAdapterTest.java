@@ -5,17 +5,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import co.edu.uniquindio.brujula.imports.application.port.out.FileParserPort;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportRow;
-import tools.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Unit tests for {@link JsonParserAdapter} (T3.1).
  *
- * <p>Covers:
- * - valid JSON input returns rows
- * - malformed JSON raises parse error
+ * <p>Covers: - valid JSON input returns rows - malformed JSON raises parse error
  */
 class JsonParserAdapterTest {
 

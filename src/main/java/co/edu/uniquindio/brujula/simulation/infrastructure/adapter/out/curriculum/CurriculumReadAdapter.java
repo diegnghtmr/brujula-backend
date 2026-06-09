@@ -17,12 +17,12 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Anti-corruption adapter: bridges simulation's {@link CurriculumReadPort} to
- * curriculum's published {@code curriculum::api} named interface (INV-001).
+ * Anti-corruption adapter: bridges simulation's {@link CurriculumReadPort} to curriculum's
+ * published {@code curriculum::api} named interface (INV-001).
  *
- * <p>Maps {@code CourseRequirementView} to sim-local {@link PrereqRequirement} records and
- * resolves sequential-track predecessor info for VAL-008 (SIMULATION_SEQUENTIAL_ORDER).
- * The simulation domain never sees curriculum types (ARQ-002).
+ * <p>Maps {@code CourseRequirementView} to sim-local {@link PrereqRequirement} records and resolves
+ * sequential-track predecessor info for VAL-008 (SIMULATION_SEQUENTIAL_ORDER). The simulation
+ * domain never sees curriculum types (ARQ-002).
  */
 @Component
 class CurriculumReadAdapter implements CurriculumReadPort {
@@ -42,17 +42,20 @@ class CurriculumReadAdapter implements CurriculumReadPort {
 
   @Override
   public List<PrereqRequirement> requirementsForCourse(UUID courseId) {
-    List<CourseRequirementView> views = listCourseRequirementsQuery.listCourseRequirements(courseId);
+    List<CourseRequirementView> views =
+        listCourseRequirementsQuery.listCourseRequirements(courseId);
     return views.stream()
         .filter(v -> "ACTIVE".equals(v.status()))
-        .map(v -> new PrereqRequirement(
-            v.targetCourseId(),
-            v.requiredCourseId(),
-            v.type(),
-            v.confidence(),
-            v.inferred(),
-            resolveCourseName(v.requiredCourseId()),
-            v.requiredCredits()))
+        .map(
+            v ->
+                new PrereqRequirement(
+                    v.targetCourseId(),
+                    v.requiredCourseId(),
+                    v.type(),
+                    v.confidence(),
+                    v.inferred(),
+                    resolveCourseName(v.requiredCourseId()),
+                    v.requiredCredits()))
         .toList();
   }
 
@@ -65,8 +68,8 @@ class CurriculumReadAdapter implements CurriculumReadPort {
   /**
    * Batch credits lookup via curriculum::api.GetCourseQuery.getCourses (QAL-PERF-002).
    *
-   * <p>Issues a single batch read to curriculum instead of one call per course ID.
-   * Course IDs not found in curriculum are absent from the returned map.
+   * <p>Issues a single batch read to curriculum instead of one call per course ID. Course IDs not
+   * found in curriculum are absent from the returned map.
    */
   @Override
   public Map<UUID, Integer> coursesCredits(Set<UUID> courseIds) {
@@ -98,8 +101,9 @@ class CurriculumReadAdapter implements CurriculumReadPort {
     }
 
     // Only DEEPENING and PERSONAL_ELECTIVE courses are subject to sequential ordering
-    boolean isSequentialKind = "DEEPENING".equalsIgnoreCase(courseType)
-        || "PERSONAL_ELECTIVE".equalsIgnoreCase(courseType);
+    boolean isSequentialKind =
+        "DEEPENING".equalsIgnoreCase(courseType)
+            || "PERSONAL_ELECTIVE".equalsIgnoreCase(courseType);
     if (!isSequentialKind) {
       return new SequentialPredecessor(courseId, courseType, null, null);
     }
@@ -114,9 +118,10 @@ class CurriculumReadAdapter implements CurriculumReadPort {
       List<SequentialTrackView> tracks =
           listSequentialTracksQuery.listSequentialTracks(resolvedPlanId, null);
       for (SequentialTrackView track : tracks) {
-        boolean containsCourse = track.levels().stream()
-            .flatMap(level -> level.optionCourseIds().stream())
-            .anyMatch(id -> id.equals(courseId));
+        boolean containsCourse =
+            track.levels().stream()
+                .flatMap(level -> level.optionCourseIds().stream())
+                .anyMatch(id -> id.equals(courseId));
 
         if (containsCourse && track.gatekeeperCourseId() != null) {
           // Track found and has a gatekeeper

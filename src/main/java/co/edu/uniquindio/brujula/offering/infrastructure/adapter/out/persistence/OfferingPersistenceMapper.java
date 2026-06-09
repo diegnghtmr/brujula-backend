@@ -7,7 +7,6 @@ import co.edu.uniquindio.brujula.offering.domain.ScheduleOption;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOptionId;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleSession;
 import co.edu.uniquindio.brujula.offering.domain.Weekday;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,8 +14,8 @@ import java.util.Set;
 /**
  * Mapper: {@link CourseOfferingJpaEntity} ↔ {@link CourseOffering} domain entity.
  *
- * <p>Package-private per ARQ-006b. Pure translation — no business logic.
- * Supports both read (toDomain) and write (toJpaEntity) directions.
+ * <p>Package-private per ARQ-006b. Pure translation — no business logic. Supports both read
+ * (toDomain) and write (toJpaEntity) directions.
  */
 class OfferingPersistenceMapper {
 
@@ -24,10 +23,10 @@ class OfferingPersistenceMapper {
    * Map a domain {@link CourseOffering} to a JPA entity for persistence.
    *
    * <p>Builds child {@link ScheduleOptionJpaEntity} list from domain options, each with their
-   * {@link ScheduleSessionJpaEntity} children; wires back-references
-   * ({@code option.setOffering(parent)}, {@code session.setOption(option)}).
-   * Sets {@code version} from the domain object so Hibernate's {@code @Version}
-   * optimistic-lock detection fires correctly on update.
+   * {@link ScheduleSessionJpaEntity} children; wires back-references ({@code
+   * option.setOffering(parent)}, {@code session.setOption(option)}). Sets {@code version} from the
+   * domain object so Hibernate's {@code @Version} optimistic-lock detection fires correctly on
+   * update.
    *
    * <p>Satisfies: OFFW-003, OFFW-004.
    */
@@ -81,9 +80,8 @@ class OfferingPersistenceMapper {
   }
 
   CourseOffering toDomain(CourseOfferingJpaEntity entity) {
-    List<ScheduleOption> options = entity.getScheduleOptions().stream()
-        .map(this::toOptionDomain)
-        .toList();
+    List<ScheduleOption> options =
+        entity.getScheduleOptions().stream().map(this::toOptionDomain).toList();
     return CourseOffering.reconstitute(
         CourseOfferingId.of(entity.getId()),
         entity.getCourseId(),
@@ -97,9 +95,8 @@ class OfferingPersistenceMapper {
   }
 
   private ScheduleOption toOptionDomain(ScheduleOptionJpaEntity entity) {
-    List<ScheduleSession> sessions = entity.getSessions().stream()
-        .map(this::toSessionDomain)
-        .toList();
+    List<ScheduleSession> sessions =
+        entity.getSessions().stream().map(this::toSessionDomain).toList();
     return ScheduleOption.reconstitute(
         ScheduleOptionId.of(entity.getId()),
         entity.getOffering().getId(),
@@ -111,9 +108,6 @@ class OfferingPersistenceMapper {
 
   private ScheduleSession toSessionDomain(ScheduleSessionJpaEntity entity) {
     return new ScheduleSession(
-        entity.getId(),
-        Weekday.valueOf(entity.getDay()),
-        entity.getStartsAt(),
-        entity.getEndsAt());
+        entity.getId(), Weekday.valueOf(entity.getDay()), entity.getStartsAt(), entity.getEndsAt());
   }
 }

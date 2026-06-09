@@ -16,9 +16,9 @@ import co.edu.uniquindio.brujula.administration.application.port.out.LoadAllowed
 import co.edu.uniquindio.brujula.administration.application.port.out.LoadStaffPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.SaveStaffPort;
 import co.edu.uniquindio.brujula.administration.application.service.CreateStaffService;
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.administration.domain.StaffAccount;
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import java.util.Optional;
@@ -31,9 +31,9 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link CreateStaffService} (TDD, zero Spring).
  *
  * <p>Tests cover: happy path creation, idempotency replay, idempotency conflict, domain validation.
- * Wired against the generalized {@link IdempotencyStorePort} from {@code sharedkernel}
- * (ADR-F3-001) and {@link JsonCodecPort} (FIX-1: resolves WARNING-001, moves JSON I/O out of the
- * application layer). Scenario: CROSS-8-RELO.
+ * Wired against the generalized {@link IdempotencyStorePort} from {@code sharedkernel} (ADR-F3-001)
+ * and {@link JsonCodecPort} (FIX-1: resolves WARNING-001, moves JSON I/O out of the application
+ * layer). Scenario: CROSS-8-RELO.
  */
 class CreateStaffServiceTest {
 
@@ -75,7 +75,8 @@ class CreateStaffServiceTest {
 
     StaffAccount saved = StaffAccount.create(email, "Alice Smith");
     when(saveStaffPort.save(any())).thenReturn(saved);
-    when(jsonCodecPort.toJson(any())).thenReturn("{\"id\":\"...\",\"email\":\"alice@uniquindio.edu.co\"}");
+    when(jsonCodecPort.toJson(any()))
+        .thenReturn("{\"id\":\"...\",\"email\":\"alice@uniquindio.edu.co\"}");
 
     var command =
         new CreateStaffCommand(
@@ -89,8 +90,8 @@ class CreateStaffServiceTest {
     // Verify the codec is called for serialization
     verify(jsonCodecPort).toJson(any(StaffAccountView.class));
     // Verify the 5-arg idempotency save: key, operation, hash, status=201, JSON body
-    verify(idempotencyStorePort).save(eq(idempotencyKey), eq("CREATE_STAFF"), eq(requestHash),
-        eq(201), any(String.class));
+    verify(idempotencyStorePort)
+        .save(eq(idempotencyKey), eq("CREATE_STAFF"), eq(requestHash), eq(201), any(String.class));
   }
 
   @Test

@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Configuration;
  * explicit wiring (ARQ-002).
  *
  * <p>Wired services (read-only curriculum query use cases — Phase 2/4/5 WU4):
+ *
  * <ul>
  *   <li>{@link GetCourseService} — CUR-001 get single course by ID
  *   <li>{@link ListPlanCoursesService} — CUR-001 list courses for a plan
@@ -41,11 +42,13 @@ import org.springframework.context.annotation.Configuration;
  * </ul>
  *
  * <p>Wired services (write curriculum command use cases — Phase 6 WU5):
+ *
  * <ul>
  *   <li>{@link CreateCourseService} — CUR-001 create course (idempotent)
  *   <li>{@link UpdateCourseService} — CUR-002 update course (optimistic lock)
  *   <li>{@link ArchiveCourseService} — CUR-002 archive course (optimistic lock)
- *   <li>{@link CreateCourseRequirementService} — CUR-003 create requirement (idempotent, cycle check)
+ *   <li>{@link CreateCourseRequirementService} — CUR-003 create requirement (idempotent, cycle
+ *       check)
  *   <li>{@link UpdateCourseRequirementService} — CUR-003 update requirement (optimistic lock)
  * </ul>
  */
@@ -82,8 +85,7 @@ class CurriculumConfiguration {
 
   @Bean
   PlanMallaAssemblyService planMallaAssemblyService(
-      LoadCoursePort loadCoursePort,
-      LoadCourseRequirementPort loadCourseRequirementPort) {
+      LoadCoursePort loadCoursePort, LoadCourseRequirementPort loadCourseRequirementPort) {
     return new PlanMallaAssemblyService(loadCoursePort, loadCourseRequirementPort);
   }
 
@@ -95,20 +97,19 @@ class CurriculumConfiguration {
       IdempotencyStorePort idempotencyStorePort,
       JsonCodecPort jsonCodecPort,
       AuditRecorder auditRecorder) {
-    return new CreateCourseService(saveCoursePort, idempotencyStorePort, jsonCodecPort, auditRecorder);
+    return new CreateCourseService(
+        saveCoursePort, idempotencyStorePort, jsonCodecPort, auditRecorder);
   }
 
   @Bean
   UpdateCourseService updateCourseService(
-      SaveCoursePort saveCoursePort,
-      AuditRecorder auditRecorder) {
+      SaveCoursePort saveCoursePort, AuditRecorder auditRecorder) {
     return new UpdateCourseService(saveCoursePort, auditRecorder);
   }
 
   @Bean
   ArchiveCourseService archiveCourseService(
-      SaveCoursePort saveCoursePort,
-      AuditRecorder auditRecorder) {
+      SaveCoursePort saveCoursePort, AuditRecorder auditRecorder) {
     return new ArchiveCourseService(saveCoursePort, auditRecorder);
   }
 

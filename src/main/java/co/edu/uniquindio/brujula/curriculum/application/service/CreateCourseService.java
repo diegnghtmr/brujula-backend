@@ -14,7 +14,6 @@ import co.edu.uniquindio.brujula.curriculum.domain.RecommendedSemester;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -23,14 +22,15 @@ import java.util.Optional;
  * Use case: create a new Course (idempotent via Idempotency-Key, STAFF/ADMIN).
  *
  * <p>Idempotency rules (mirrors CreateOfferingService):
+ *
  * <ul>
  *   <li>Same key + same hash → return stored result (replay)
  *   <li>Same key + different hash → throw {@link IdempotencyKeyConflictException} (409)
  *   <li>New key → execute, persist idempotency record, record audit event
  * </ul>
  *
- * <p>Framework-free — wired by {@code CurriculumConfiguration}.
- * Satisfies: CUR-001, IMP-009, SC-009-A.
+ * <p>Framework-free — wired by {@code CurriculumConfiguration}. Satisfies: CUR-001, IMP-009,
+ * SC-009-A.
  */
 public class CreateCourseService implements CreateCourseUseCase {
 
@@ -66,11 +66,12 @@ public class CreateCourseService implements CreateCourseUseCase {
     }
 
     // 2. Map recommended semesters from command (empty list if null)
-    List<RecommendedSemester> semesters = command.recommendedSemesters() != null
-        ? command.recommendedSemesters().stream()
-            .map(rs -> new RecommendedSemester(rs.journeyCode(), rs.semester()))
-            .toList()
-        : Collections.emptyList();
+    List<RecommendedSemester> semesters =
+        command.recommendedSemesters() != null
+            ? command.recommendedSemesters().stream()
+                .map(rs -> new RecommendedSemester(rs.journeyCode(), rs.semester()))
+                .toList()
+            : Collections.emptyList();
 
     // 3. Resolve the desired initial status (null or "ACTIVE" → ACTIVE; "INACTIVE" → INACTIVE).
     //    Import confirm passes "INACTIVE" so imported courses land INACTIVE (NFR-003).
@@ -82,8 +83,10 @@ public class CreateCourseService implements CreateCourseUseCase {
         desiredStatus = CourseStatus.valueOf(command.initialStatus());
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException(
-            "Unknown course status: " + command.initialStatus()
-                + "; expected one of " + java.util.Arrays.toString(CourseStatus.values()),
+            "Unknown course status: "
+                + command.initialStatus()
+                + "; expected one of "
+                + java.util.Arrays.toString(CourseStatus.values()),
             e);
       }
     }
@@ -91,29 +94,31 @@ public class CreateCourseService implements CreateCourseUseCase {
     // 4. Create domain aggregate via factory then reconstitute with desired status if not ACTIVE.
     Course course;
     if (desiredStatus == CourseStatus.ACTIVE) {
-      course = Course.create(
-          CourseId.generate(),
-          command.planId(),
-          command.programId(),
-          command.name(),
-          CourseType.valueOf(command.type()),
-          command.credits(),
-          command.curricularWeeklyHours(),
-          semesters);
+      course =
+          Course.create(
+              CourseId.generate(),
+              command.planId(),
+              command.programId(),
+              command.name(),
+              CourseType.valueOf(command.type()),
+              command.credits(),
+              command.curricularWeeklyHours(),
+              semesters);
     } else {
       // For INACTIVE (import case): use reconstitute with explicit status.
-      course = Course.reconstitute(
-          CourseId.generate(),
-          command.planId(),
-          command.programId(),
-          null,
-          command.name(),
-          CourseType.valueOf(command.type()),
-          command.credits(),
-          command.curricularWeeklyHours(),
-          semesters,
-          desiredStatus,
-          0L);
+      course =
+          Course.reconstitute(
+              CourseId.generate(),
+              command.planId(),
+              command.programId(),
+              null,
+              command.name(),
+              CourseType.valueOf(command.type()),
+              command.credits(),
+              command.curricularWeeklyHours(),
+              semesters,
+              desiredStatus,
+              0L);
     }
 
     // 4. Persist
@@ -128,23 +133,25 @@ public class CreateCourseService implements CreateCourseUseCase {
         command.idempotencyKey(), OPERATION, command.requestHash(), 201, responseBodyJson);
 
     // 7. Record audit event
-    auditRecorder.record(new RecordAuditEventCommand(
-        command.actorId(),
-        "STAFF",
-        "COURSE_CREATED",
-        "course",
-        saved.id().value(),
-        null,
-        null,
-        null));
+    auditRecorder.record(
+        new RecordAuditEventCommand(
+            command.actorId(),
+            "STAFF",
+            "COURSE_CREATED",
+            "course",
+            saved.id().value(),
+            null,
+            null,
+            null));
 
     return view;
   }
 
   static CourseView toView(Course course) {
-    List<CourseView.RecommendedSemesterView> semesterViews = course.recommendedSemesters().stream()
-        .map(rs -> new CourseView.RecommendedSemesterView(rs.journeyCode(), rs.semester()))
-        .toList();
+    List<CourseView.RecommendedSemesterView> semesterViews =
+        course.recommendedSemesters().stream()
+            .map(rs -> new CourseView.RecommendedSemesterView(rs.journeyCode(), rs.semester()))
+            .toList();
     return new CourseView(
         course.id().value(),
         course.planId(),

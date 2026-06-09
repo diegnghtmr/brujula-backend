@@ -12,8 +12,8 @@ import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadP
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort;
-import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.ProgramNameReadPort;
+import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.domain.CandidateSelection;
 import co.edu.uniquindio.brujula.simulation.domain.ExistingSelection;
@@ -31,7 +31,6 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationBlockedEx
 import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationResult;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationService;
 import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +41,7 @@ import java.util.UUID;
  * Application service: add a schedule option to a simulation (spec VAL-001, WU4a).
  *
  * <p>Flow:
+ *
  * <ol>
  *   <li>Idempotency check — replay stored response if same key+hash.
  *   <li>Load simulation — verify ownership (403 if non-owner).
@@ -109,47 +109,55 @@ public class AddSimulationSelectionService implements AddSimulationSelectionUseC
     }
 
     // 2. Load simulation + ownership check
-    Simulation simulation = loadSimulationPort.loadById(command.simulationId())
-        .orElseThrow(() -> new SimulationNotFoundException(command.simulationId()));
+    Simulation simulation =
+        loadSimulationPort
+            .loadById(command.simulationId())
+            .orElseThrow(() -> new SimulationNotFoundException(command.simulationId()));
     if (!simulation.getOwnerId().equals(command.ownerId())) {
       throw new SimulationAccessDeniedException(command.simulationId());
     }
 
     // 3. Resolve schedule option (offering::api via adapter)
-    ScheduleOptionResolutionView resolved = offeringReadPort.resolveScheduleOption(command.scheduleOptionId());
+    ScheduleOptionResolutionView resolved =
+        offeringReadPort.resolveScheduleOption(command.scheduleOptionId());
 
     // 4. Resolve real credits from curriculum (VAL-004 — credit rule must fire with actual load)
     double credits = curriculumReadPort.courseCredits(resolved.courseId());
 
     // 5. Build candidate selection (map offering sessions → sim-local SimScheduleSession)
-    List<SimScheduleSession> candidateSessions = resolved.sessions().stream()
-        .map(s -> new SimScheduleSession(s.day(), s.startsAt(), s.endsAt()))
-        .toList();
+    List<SimScheduleSession> candidateSessions =
+        resolved.sessions().stream()
+            .map(s -> new SimScheduleSession(s.day(), s.startsAt(), s.endsAt()))
+            .toList();
 
-    CandidateSelection candidate = new CandidateSelection(
-        resolved.scheduleOptionId(),
-        resolved.offeringId(),
-        resolved.courseId(),
-        resolved.courseName(),
-        resolved.programId(),
-        credits,
-        resolved.journeyCode(),
-        resolved.offeringStatus(),
-        resolved.offeringVersion(),
-        candidateSessions);
+    CandidateSelection candidate =
+        new CandidateSelection(
+            resolved.scheduleOptionId(),
+            resolved.offeringId(),
+            resolved.courseId(),
+            resolved.courseName(),
+            resolved.programId(),
+            credits,
+            resolved.journeyCode(),
+            resolved.offeringStatus(),
+            resolved.offeringVersion(),
+            candidateSessions);
 
     // 5. Gather existing selections for this simulation
     List<SimulationSelection> existingDomain =
         loadSimulationSelectionPort.loadActiveBySimulationId(command.simulationId());
-    List<ExistingSelection> existingSelections = existingDomain.stream()
-        .map(s -> new ExistingSelection(
-            s.getId().value(),
-            s.getCourseId(),
-            s.getCourseName(),
-            s.getProgramId(),
-            s.getCredits(),
-            s.getSessions()))
-        .toList();
+    List<ExistingSelection> existingSelections =
+        existingDomain.stream()
+            .map(
+                s ->
+                    new ExistingSelection(
+                        s.getId().value(),
+                        s.getCourseId(),
+                        s.getCourseName(),
+                        s.getProgramId(),
+                        s.getCredits(),
+                        s.getSessions()))
+            .toList();
 
     // 6. Gather passed courses (union across all program subscriptions of the simulation)
     Set<UUID> allPassedIds = new HashSet<>();
@@ -175,14 +183,19 @@ public class AddSimulationSelectionService implements AddSimulationSelectionUseC
     // 10. Compute accumulated passed credits for MINIMUM_CREDITS rule (VAL-009 / WU4b)
     // Sum the real credits for each passed course via CurriculumReadPort.courseCredits().
     // This feeds MinCreditsRule with the actual credit total, not a course-count proxy.
-    int accumulatedPassedCredits = allPassedIds.stream()
-        .mapToInt(id -> curriculumReadPort.courseCredits(id))
-        .sum();
+    int accumulatedPassedCredits =
+        allPassedIds.stream().mapToInt(id -> curriculumReadPort.courseCredits(id)).sum();
 
     // 11. Run validation engine (WU4a + WU4b rules)
-    SimulationValidationResult validationResult = validationService.validate(
-        candidate, existingSelections, requirements, passedCourseSet, creditLimit,
-        sequentialPredecessor, accumulatedPassedCredits);
+    SimulationValidationResult validationResult =
+        validationService.validate(
+            candidate,
+            existingSelections,
+            requirements,
+            passedCourseSet,
+            creditLimit,
+            sequentialPredecessor,
+            accumulatedPassedCredits);
 
     if (validationResult.hasBlockers()) {
       throw new SimulationValidationBlockedException(validationResult.blocking());
@@ -190,8 +203,8 @@ public class AddSimulationSelectionService implements AddSimulationSelectionUseC
 
     // 12. Persist selection with snapshot
     SimulationSelectionId selectionId = SimulationSelectionId.generate();
-    SimulationSelection selection = SimulationSelection.create(
-        selectionId, command.simulationId(), candidate);
+    SimulationSelection selection =
+        SimulationSelection.create(selectionId, command.simulationId(), candidate);
     SimulationSelection saved = saveSimulationSelectionPort.save(selection);
 
     // 13. Build view + store idempotency record
@@ -208,16 +221,23 @@ public class AddSimulationSelectionService implements AddSimulationSelectionUseC
   // View mapping
   // -------------------------------------------------------------------------
 
-  private SimulationSelectionView toView(SimulationSelection selection,
-      List<ValidationNotice> warnings) {
-    List<SimulationSelectionView.SessionView> sessionViews = selection.getSessions().stream()
-        .map(s -> new SimulationSelectionView.SessionView(
-            s.day(), s.startsAt().toString(), s.endsAt().toString()))
-        .toList();
+  private SimulationSelectionView toView(
+      SimulationSelection selection, List<ValidationNotice> warnings) {
+    List<SimulationSelectionView.SessionView> sessionViews =
+        selection.getSessions().stream()
+            .map(
+                s ->
+                    new SimulationSelectionView.SessionView(
+                        s.day(), s.startsAt().toString(), s.endsAt().toString()))
+            .toList();
 
-    List<SimulationSelectionView.ValidationNoticeView> warningViews = warnings.stream()
-        .map(n -> new SimulationSelectionView.ValidationNoticeView(n.code(), n.message(), n.metadata()))
-        .toList();
+    List<SimulationSelectionView.ValidationNoticeView> warningViews =
+        warnings.stream()
+            .map(
+                n ->
+                    new SimulationSelectionView.ValidationNoticeView(
+                        n.code(), n.message(), n.metadata()))
+            .toList();
 
     return new SimulationSelectionView(
         selection.getId().value(),

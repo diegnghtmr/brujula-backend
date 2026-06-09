@@ -1,11 +1,11 @@
 package co.edu.uniquindio.brujula.administration.adapter.rest;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,8 +40,9 @@ import org.springframework.web.context.WebApplicationContext;
  * primary correctness guarantee. These tests catch contract regressions (missing {@code $.code},
  * wrong status), not {@code basePackages} removal while handlers remain behaviorally identical.
  *
- * <p>T-WU1.3 (administration): verifies administration controller → {@code AdministrationExceptionHandler}
- * maps {@link IdempotencyKeyConflictException} to HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
+ * <p>T-WU1.3 (administration): verifies administration controller → {@code
+ * AdministrationExceptionHandler} maps {@link IdempotencyKeyConflictException} to HTTP 409 with
+ * {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class AdministrationExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest {
@@ -67,14 +68,20 @@ class AdministrationExceptionHandlerScopeTest extends AbstractPostgresIntegratio
     UUID actorId = UUID.randomUUID();
     when(getCurrentUserQuery.getCurrentUserBySubject(any(String.class)))
         .thenReturn(
-            new UserProfile(actorId, "admin-scope-sub", "admin-scope@uniquindio.edu.co",
-                "Scope Admin", "ADMIN", "ACTIVE", true));
+            new UserProfile(
+                actorId,
+                "admin-scope-sub",
+                "admin-scope@uniquindio.edu.co",
+                "Scope Admin",
+                "ADMIN",
+                "ACTIVE",
+                true));
   }
 
   /**
-   * T-WU1.3 (administration) — QAL-ADV-001: administration controller throwing
-   * {@link IdempotencyKeyConflictException} MUST return HTTP 409 with
-   * {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"} from {@code AdministrationExceptionHandler}.
+   * T-WU1.3 (administration) — QAL-ADV-001: administration controller throwing {@link
+   * IdempotencyKeyConflictException} MUST return HTTP 409 with {@code $.code =
+   * "IDEMPOTENCY_KEY_CONFLICT"} from {@code AdministrationExceptionHandler}.
    *
    * <p>Asserting {@code $.code} makes this test load-bearing: it will fail if any handler in the
    * chain omits the {@code code} property, regardless of {@code basePackages} state.

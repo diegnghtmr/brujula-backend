@@ -12,8 +12,4 @@ import java.util.List;
  * @param totalPages total number of pages
  */
 public record CourseAttemptPageView(
-    List<CourseAttemptView> content,
-    int page,
-    int size,
-    long totalElements,
-    int totalPages) {}
+    List<CourseAttemptView> content, int page, int size, long totalElements, int totalPages) {}

@@ -3,8 +3,8 @@ package co.edu.uniquindio.brujula.administration.adapter.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import co.edu.uniquindio.brujula.AbstractPostgresIntegrationTest;
-import co.edu.uniquindio.brujula.administration.application.port.out.LoadStaffProgramAssignmentsPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.LoadStaffPort;
+import co.edu.uniquindio.brujula.administration.application.port.out.LoadStaffProgramAssignmentsPort;
 import co.edu.uniquindio.brujula.administration.application.port.out.SaveStaffPort;
 import co.edu.uniquindio.brujula.administration.domain.StaffAccount;
 import jakarta.persistence.EntityManager;
@@ -20,13 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Integration tests for staff-program assignment persistence.
  *
- * <p>Uses real Testcontainers PostgreSQL over the V003 table
- * {@code administration.staff_program_assignment}.
+ * <p>Uses real Testcontainers PostgreSQL over the V003 table {@code
+ * administration.staff_program_assignment}.
  *
- * <p>Covers T2.2 tasks:
- * - find_active_assignments_by_staff_id
- * - find_staff_by_email_returns_correct_account (covered by existing StaffPersistenceAdapterTest;
- *   reproduced here for completeness against the spi contract)
+ * <p>Covers T2.2 tasks: - find_active_assignments_by_staff_id -
+ * find_staff_by_email_returns_correct_account (covered by existing StaffPersistenceAdapterTest;
+ * reproduced here for completeness against the spi contract)
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional

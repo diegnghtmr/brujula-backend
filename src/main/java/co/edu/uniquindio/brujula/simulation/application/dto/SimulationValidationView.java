@@ -11,5 +11,4 @@ import java.util.List;
  * @param warnings list of non-blocking advisory notices (empty if none)
  */
 public record SimulationValidationView(
-    List<ValidationNoticeView> blocking,
-    List<ValidationNoticeView> warnings) {}
+    List<ValidationNoticeView> blocking, List<ValidationNoticeView> warnings) {}

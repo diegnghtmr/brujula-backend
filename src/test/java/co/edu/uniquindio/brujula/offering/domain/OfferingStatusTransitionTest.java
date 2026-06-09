@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test;
 /**
  * TDD unit tests for {@link OfferingStatus#canTransitionTo(OfferingStatus)}.
  *
- * <p>Exhaustive coverage of all legal and illegal transitions per the spec OFFW-005 table.
- * Zero Spring — pure domain.
+ * <p>Exhaustive coverage of all legal and illegal transitions per the spec OFFW-005 table. Zero
+ * Spring — pure domain.
  */
 class OfferingStatusTransitionTest {
 

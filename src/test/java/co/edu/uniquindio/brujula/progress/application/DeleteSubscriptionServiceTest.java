@@ -45,7 +45,9 @@ class DeleteSubscriptionServiceTest {
   @Test
   void delete_one_of_two_subscriptions_succeeds() {
     UUID subId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription sub =
+        Subscription.create(
+            SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
     when(loadSubscriptionPort.countActiveByUserId(userId)).thenReturn(2);
 
@@ -58,7 +60,9 @@ class DeleteSubscriptionServiceTest {
   @Test
   void delete_last_subscription_throws_last_active_exception() {
     UUID subId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription sub =
+        Subscription.create(
+            SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
     when(loadSubscriptionPort.countActiveByUserId(userId)).thenReturn(1);
 
@@ -70,7 +74,9 @@ class DeleteSubscriptionServiceTest {
   void delete_throws_not_found_for_bola() {
     UUID subId = UUID.randomUUID();
     UUID otherUserId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), otherUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription sub =
+        Subscription.create(
+            SubscriptionId.of(subId), otherUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
 
     assertThatThrownBy(() -> sut.deleteSubscription(subId, userId))

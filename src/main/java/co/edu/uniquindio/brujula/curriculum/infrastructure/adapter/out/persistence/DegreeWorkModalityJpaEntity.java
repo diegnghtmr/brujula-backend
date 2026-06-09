@@ -42,11 +42,31 @@ class DegreeWorkModalityJpaEntity {
   // JPA requires a no-arg constructor
   protected DegreeWorkModalityJpaEntity() {}
 
-  UUID getId() { return id; }
-  UUID getPlanId() { return planId; }
-  String getName() { return name; }
-  Integer getCredits() { return credits; }
-  Integer getCurricularWeeklyHours() { return curricularWeeklyHours; }
-  String getStatus() { return status; }
-  long getVersion() { return version; }
+  UUID getId() {
+    return id;
+  }
+
+  UUID getPlanId() {
+    return planId;
+  }
+
+  String getName() {
+    return name;
+  }
+
+  Integer getCredits() {
+    return credits;
+  }
+
+  Integer getCurricularWeeklyHours() {
+    return curricularWeeklyHours;
+  }
+
+  String getStatus() {
+    return status;
+  }
+
+  long getVersion() {
+    return version;
+  }
 }

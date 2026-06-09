@@ -29,14 +29,14 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * QAL-ADV-001 — Regression scope tests for {@code ProgramCatalogExceptionHandler}.
  *
- * <p>Asserts the per-module response contract for module-specific exceptions (status code).
- * {@code basePackages} scoping is defence-in-depth; {@code @Order(HIGHEST_PRECEDENCE)} is the
- * primary correctness guarantee. These tests catch contract regressions (wrong status or handler
- * not firing), not {@code basePackages} removal while handlers remain behaviorally identical.
+ * <p>Asserts the per-module response contract for module-specific exceptions (status code). {@code
+ * basePackages} scoping is defence-in-depth; {@code @Order(HIGHEST_PRECEDENCE)} is the primary
+ * correctness guarantee. These tests catch contract regressions (wrong status or handler not
+ * firing), not {@code basePackages} removal while handlers remain behaviorally identical.
  *
  * <p>Note: the programcatalog module does not handle any sharedkernel shared exceptions
- * (idempotency, optimistic-lock); its exception contract is 404-only for module-specific
- * not-found exceptions. Status assertion is the load-bearing check for this handler.
+ * (idempotency, optimistic-lock); its exception contract is 404-only for module-specific not-found
+ * exceptions. Status assertion is the load-bearing check for this handler.
  *
  * <p>T-WU1.3 (programcatalog): verifies catalog controller → {@code ProgramCatalogExceptionHandler}
  * maps {@link ProgramNotFoundException} to HTTP 404.
@@ -60,12 +60,12 @@ class ProgramCatalogExceptionHandlerScopeTest extends AbstractPostgresIntegratio
   }
 
   /**
-   * T-WU1.3 (programcatalog) — QAL-ADV-001: catalog controller throwing
-   * {@link ProgramNotFoundException} MUST return HTTP 404 from
-   * {@code ProgramCatalogExceptionHandler} (scoped to the programcatalog REST package).
+   * T-WU1.3 (programcatalog) — QAL-ADV-001: catalog controller throwing {@link
+   * ProgramNotFoundException} MUST return HTTP 404 from {@code ProgramCatalogExceptionHandler}
+   * (scoped to the programcatalog REST package).
    *
-   * <p>This is a status-level contract test (no {@code $.code} on 404 per design).
-   * If a handler regression drops the 404 mapping, this test catches it.
+   * <p>This is a status-level contract test (no {@code $.code} on 404 per design). If a handler
+   * regression drops the 404 mapping, this test catches it.
    */
   @Test
   void catalog_controller_program_not_found_returns_404_from_catalog_handler() throws Exception {

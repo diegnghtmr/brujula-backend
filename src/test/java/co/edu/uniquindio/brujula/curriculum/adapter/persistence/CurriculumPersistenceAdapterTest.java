@@ -29,10 +29,11 @@ import org.springframework.transaction.annotation.Transactional;
  * RED → GREEN persistence adapter tests: curriculum JPA round-trip.
  *
  * <p>Covers: course load-by-planId + load-by-id, course requirement load-by-targetCourseId,
- * sequential track load (with/without kind filter, gatekeeper_course_id), degree work modality load.
+ * sequential track load (with/without kind filter, gatekeeper_course_id), degree work modality
+ * load.
  *
- * <p>Uses Testcontainers PostgreSQL + Flyway for a real schema.
- * Satisfies: CUR-001/CUR-003/CUR-005/CUR-006, Design §Phase-2 WU4-2.x.
+ * <p>Uses Testcontainers PostgreSQL + Flyway for a real schema. Satisfies:
+ * CUR-001/CUR-003/CUR-005/CUR-006, Design §Phase-2 WU4-2.x.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
@@ -82,9 +83,7 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
 
     List<Course> courses = loadCoursePort.loadByPlanId(planId);
 
-    assertThat(courses)
-        .extracting(c -> c.id().value())
-        .containsExactlyInAnyOrder(c1, c2);
+    assertThat(courses).extracting(c -> c.id().value()).containsExactlyInAnyOrder(c1, c2);
   }
 
   @Test
@@ -136,9 +135,7 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
 
     List<CourseRequirement> reqs = loadCourseRequirementPort.loadByTargetCourseId(c1);
 
-    assertThat(reqs)
-        .extracting(r -> r.id().value())
-        .containsExactly(reqId);
+    assertThat(reqs).extracting(r -> r.id().value()).containsExactly(reqId);
     assertThat(reqs.get(0).requiredCourseId()).isEqualTo(c2);
   }
 
@@ -161,14 +158,14 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
   @Transactional
   void load_sequential_tracks_by_plan_id_returns_all_tracks() {
     UUID planId = insertStudyPlan("Plan Tracks", "ACTIVE", 155);
-    UUID t1 = insertSequentialTrack(planId, "PERSONAL_ELECTIVE", "Electiva Humanística", false, null);
-    UUID t2 = insertSequentialTrack(planId, "DEEPENING", "Profundización en Desarrollo", false, null);
+    UUID t1 =
+        insertSequentialTrack(planId, "PERSONAL_ELECTIVE", "Electiva Humanística", false, null);
+    UUID t2 =
+        insertSequentialTrack(planId, "DEEPENING", "Profundización en Desarrollo", false, null);
 
     List<SequentialTrack> tracks = loadSequentialTrackPort.loadByPlanId(planId, null);
 
-    assertThat(tracks)
-        .extracting(t -> t.id().value())
-        .containsExactlyInAnyOrder(t1, t2);
+    assertThat(tracks).extracting(t -> t.id().value()).containsExactlyInAnyOrder(t1, t2);
   }
 
   @Test
@@ -178,14 +175,11 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
     UUID t1 = insertSequentialTrack(planId, "PERSONAL_ELECTIVE", "Electiva", false, null);
     UUID t2 = insertSequentialTrack(planId, "DEEPENING", "Profundización", false, null);
 
-    List<SequentialTrack> deepening = loadSequentialTrackPort.loadByPlanId(planId, TrackKind.DEEPENING);
+    List<SequentialTrack> deepening =
+        loadSequentialTrackPort.loadByPlanId(planId, TrackKind.DEEPENING);
 
-    assertThat(deepening)
-        .extracting(t -> t.id().value())
-        .containsExactly(t2);
-    assertThat(deepening)
-        .extracting(t -> t.id().value())
-        .doesNotContain(t1);
+    assertThat(deepening).extracting(t -> t.id().value()).containsExactly(t2);
+    assertThat(deepening).extracting(t -> t.id().value()).doesNotContain(t1);
   }
 
   @Test
@@ -193,9 +187,12 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
   void sequential_track_with_gatekeeper_course_id_is_mapped_correctly() {
     UUID planId = insertStudyPlan("Plan Gatekeeper", "ACTIVE", 170);
     UUID gatekeeperCourse = insertCourse(planId, "Curso Requisito", "REQUIRED", 3, 3, "ACTIVE");
-    UUID trackId = insertSequentialTrack(planId, "DEEPENING", "Profundización Especial", true, gatekeeperCourse);
+    UUID trackId =
+        insertSequentialTrack(
+            planId, "DEEPENING", "Profundización Especial", true, gatekeeperCourse);
 
-    List<SequentialTrack> tracks = loadSequentialTrackPort.loadByPlanId(planId, TrackKind.DEEPENING);
+    List<SequentialTrack> tracks =
+        loadSequentialTrackPort.loadByPlanId(planId, TrackKind.DEEPENING);
 
     assertThat(tracks).hasSize(1);
     assertThat(tracks.get(0).gatekeeperCourseId()).isEqualTo(gatekeeperCourse);
@@ -220,7 +217,8 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
     UUID planId = insertStudyPlan("Plan Track Levels", "ACTIVE", 165);
     UUID courseA = insertCourse(planId, "Opción A", "PERSONAL_ELECTIVE", 3, 3, "ACTIVE");
     UUID courseB = insertCourse(planId, "Opción B", "PERSONAL_ELECTIVE", 3, 3, "ACTIVE");
-    UUID trackId = insertSequentialTrack(planId, "PERSONAL_ELECTIVE", "Electiva con Niveles", false, null);
+    UUID trackId =
+        insertSequentialTrack(planId, "PERSONAL_ELECTIVE", "Electiva con Niveles", false, null);
     UUID levelId = insertSequentialTrackLevel(trackId, 1);
     insertSequentialTrackLevelOption(levelId, courseA);
     insertSequentialTrackLevelOption(levelId, courseB);
@@ -246,9 +244,7 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
 
     List<DegreeWorkModality> modalities = loadDegreeWorkModalityPort.loadByPlanId(planId);
 
-    assertThat(modalities)
-        .extracting(m -> m.id().value())
-        .containsExactlyInAnyOrder(m1, m2);
+    assertThat(modalities).extracting(m -> m.id().value()).containsExactlyInAnyOrder(m1, m2);
   }
 
   @Test
@@ -259,10 +255,8 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
 
     List<DegreeWorkModality> modalities = loadDegreeWorkModalityPort.loadByPlanId(planId);
 
-    DegreeWorkModality modality = modalities.stream()
-        .filter(m -> m.id().value().equals(mId))
-        .findFirst()
-        .orElseThrow();
+    DegreeWorkModality modality =
+        modalities.stream().filter(m -> m.id().value().equals(mId)).findFirst().orElseThrow();
     assertThat(modality.credits()).isNull();
     assertThat(modality.curricularWeeklyHours()).isNull();
     assertThat(modality.name()).isEqualTo("Pasantía");
@@ -271,7 +265,8 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
   @Test
   @Transactional
   void load_degree_work_modalities_for_unknown_plan_returns_empty() {
-    List<DegreeWorkModality> modalities = loadDegreeWorkModalityPort.loadByPlanId(UUID.randomUUID());
+    List<DegreeWorkModality> modalities =
+        loadDegreeWorkModalityPort.loadByPlanId(UUID.randomUUID());
 
     assertThat(modalities).isEmpty();
   }
@@ -286,7 +281,11 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
     jdbcTemplate.update(
         "INSERT INTO catalog.study_plan (id, program_id, name, status, total_credits, version) "
             + "VALUES (?, ?, ?, ?, ?, 0)",
-        id, programId, name, status, credits);
+        id,
+        programId,
+        name,
+        status,
+        credits);
     entityManager.flush();
     return id;
   }
@@ -296,18 +295,30 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
     jdbcTemplate.update(
         "INSERT INTO catalog.academic_program (id, name, faculty, status, version) "
             + "VALUES (?, ?, ?, ?, 0)",
-        id, name, faculty, status);
+        id,
+        name,
+        faculty,
+        status);
     return id;
   }
 
-  private UUID insertCourse(UUID planId, String name, String type, int credits, int hours, String status) {
-    UUID programId = jdbcTemplate.queryForObject(
-        "SELECT program_id FROM catalog.study_plan WHERE id = ?", UUID.class, planId);
+  private UUID insertCourse(
+      UUID planId, String name, String type, int credits, int hours, String status) {
+    UUID programId =
+        jdbcTemplate.queryForObject(
+            "SELECT program_id FROM catalog.study_plan WHERE id = ?", UUID.class, planId);
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO curriculum.course (id, plan_id, program_id, name, type, credits, curricular_weekly_hours, status, version) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)",
-        id, planId, programId, name, type, credits, hours, status);
+        id,
+        planId,
+        programId,
+        name,
+        type,
+        credits,
+        hours,
+        status);
     entityManager.flush();
     return id;
   }
@@ -315,7 +326,9 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
   private void insertRecommendedSemester(UUID courseId, String journeyCode, int semester) {
     jdbcTemplate.update(
         "INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, semester) VALUES (?, ?, ?)",
-        courseId, journeyCode, semester);
+        courseId,
+        journeyCode,
+        semester);
     entityManager.flush();
   }
 
@@ -325,19 +338,30 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
         "INSERT INTO curriculum.course_requirement "
             + "(id, target_course_id, type, required_course_id, status, version) "
             + "VALUES (?, ?, 'COURSE_PASSED', ?, 'ACTIVE', 0)",
-        id, targetCourseId, requiredCourseId);
+        id,
+        targetCourseId,
+        requiredCourseId);
     entityManager.flush();
     return id;
   }
 
-  private UUID insertSequentialTrack(UUID planId, String kind, String label,
-      boolean consecutiveSimultaneityAllowed, UUID gatekeeperCourseId) {
+  private UUID insertSequentialTrack(
+      UUID planId,
+      String kind,
+      String label,
+      boolean consecutiveSimultaneityAllowed,
+      UUID gatekeeperCourseId) {
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO curriculum.sequential_track "
             + "(id, plan_id, kind, label, consecutive_simultaneity_allowed, gatekeeper_course_id, version) "
             + "VALUES (?, ?, ?, ?, ?, ?, 0)",
-        id, planId, kind, label, consecutiveSimultaneityAllowed, gatekeeperCourseId);
+        id,
+        planId,
+        kind,
+        label,
+        consecutiveSimultaneityAllowed,
+        gatekeeperCourseId);
     entityManager.flush();
     return id;
   }
@@ -346,7 +370,9 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO curriculum.sequential_track_level (id, track_id, level) VALUES (?, ?, ?)",
-        id, trackId, level);
+        id,
+        trackId,
+        level);
     entityManager.flush();
     return id;
   }
@@ -354,16 +380,23 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
   private void insertSequentialTrackLevelOption(UUID levelId, UUID courseId) {
     jdbcTemplate.update(
         "INSERT INTO curriculum.sequential_track_level_option (level_id, course_id) VALUES (?, ?)",
-        levelId, courseId);
+        levelId,
+        courseId);
     entityManager.flush();
   }
 
-  private UUID insertDegreeWorkModality(UUID planId, String name, Integer credits, Integer hours, String status) {
+  private UUID insertDegreeWorkModality(
+      UUID planId, String name, Integer credits, Integer hours, String status) {
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO curriculum.degree_work_modality (id, plan_id, name, credits, curricular_weekly_hours, status, version) "
             + "VALUES (?, ?, ?, ?, ?, ?, 0)",
-        id, planId, name, credits, hours, status);
+        id,
+        planId,
+        name,
+        credits,
+        hours,
+        status);
     entityManager.flush();
     return id;
   }
@@ -373,7 +406,10 @@ class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
     jdbcTemplate.update(
         "INSERT INTO curriculum.degree_work_modality (id, plan_id, name, status, version) "
             + "VALUES (?, ?, ?, ?, 0)",
-        id, planId, name, status);
+        id,
+        planId,
+        name,
+        status);
     entityManager.flush();
     return id;
   }

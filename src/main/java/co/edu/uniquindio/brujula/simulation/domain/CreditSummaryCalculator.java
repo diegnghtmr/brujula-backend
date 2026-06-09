@@ -9,23 +9,24 @@ import java.util.UUID;
 /**
  * Pure validation rule: enforces per-program credit limits (spec VAL-004).
  *
- * <p>Sums the credits of existing selections for the same {@code programId} as the candidate,
- * adds the candidate's credits, and compares against the configured limit from
- * {@code ProgramCreditLimit}. Exactly at the limit is allowed ({@code selectedCredits <= limit}).
+ * <p>Sums the credits of existing selections for the same {@code programId} as the candidate, adds
+ * the candidate's credits, and compares against the configured limit from {@code
+ * ProgramCreditLimit}. Exactly at the limit is allowed ({@code selectedCredits <= limit}).
  *
  * <p>Also reused by WU5 for building {@code ProgramCreditSummaryView} — kept general.
  *
- * <p>Public — also used by {@code GetSimulationService} (WU5: build ProgramCreditSummaryView).
- * Pure Java, no Spring/JPA (ARQ-002, ADR-F4-004).
+ * <p>Public — also used by {@code GetSimulationService} (WU5: build ProgramCreditSummaryView). Pure
+ * Java, no Spring/JPA (ARQ-002, ADR-F4-004).
  */
 public class CreditSummaryCalculator {
 
   /**
-   * Returns a blocking notice if adding the candidate would exceed the credit limit for its program.
+   * Returns a blocking notice if adding the candidate would exceed the credit limit for its
+   * program.
    *
-   * @param candidate          the selection being added
+   * @param candidate the selection being added
    * @param existingSelections existing active selections in the simulation
-   * @param creditLimit        the program's credit limit policy
+   * @param creditLimit the program's credit limit policy
    * @return optional blocking notice with code {@code SIMULATION_CREDIT_LIMIT_EXCEEDED}
    */
   public Optional<ValidationNotice> evaluate(
@@ -43,8 +44,8 @@ public class CreditSummaryCalculator {
   }
 
   /**
-   * Compute the total credits per program across all existing selections.
-   * Useful for building the credit summary (WU5).
+   * Compute the total credits per program across all existing selections. Useful for building the
+   * credit summary (WU5).
    *
    * @param selections the selections to summarize
    * @return map of programId → total selected credits

@@ -7,7 +7,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -39,18 +38,43 @@ class ScheduleSessionJpaEntity {
 
   protected ScheduleSessionJpaEntity() {}
 
-  UUID getId() { return id; }
-  void setId(UUID id) { this.id = id; }
+  UUID getId() {
+    return id;
+  }
 
-  ScheduleOptionJpaEntity getOption() { return option; }
-  void setOption(ScheduleOptionJpaEntity option) { this.option = option; }
+  void setId(UUID id) {
+    this.id = id;
+  }
 
-  String getDay() { return day; }
-  void setDay(String day) { this.day = day; }
+  ScheduleOptionJpaEntity getOption() {
+    return option;
+  }
 
-  LocalTime getStartsAt() { return startsAt; }
-  void setStartsAt(LocalTime startsAt) { this.startsAt = startsAt; }
+  void setOption(ScheduleOptionJpaEntity option) {
+    this.option = option;
+  }
 
-  LocalTime getEndsAt() { return endsAt; }
-  void setEndsAt(LocalTime endsAt) { this.endsAt = endsAt; }
+  String getDay() {
+    return day;
+  }
+
+  void setDay(String day) {
+    this.day = day;
+  }
+
+  LocalTime getStartsAt() {
+    return startsAt;
+  }
+
+  void setStartsAt(LocalTime startsAt) {
+    this.startsAt = startsAt;
+  }
+
+  LocalTime getEndsAt() {
+    return endsAt;
+  }
+
+  void setEndsAt(LocalTime endsAt) {
+    this.endsAt = endsAt;
+  }
 }

@@ -33,8 +33,8 @@ public interface LoadCoursePort {
   /**
    * Load multiple courses by their UUIDs in a single batch query (QAL-PERF-002).
    *
-   * <p>Course IDs not found in persistence are absent from the returned list.
-   * Order is not guaranteed.
+   * <p>Course IDs not found in persistence are absent from the returned list. Order is not
+   * guaranteed.
    *
    * @param courseIds the set of course UUIDs to load; must not be null
    * @return list of found courses (may be smaller than {@code courseIds.size()})

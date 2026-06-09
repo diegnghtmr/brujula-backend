@@ -6,8 +6,8 @@ import co.edu.uniquindio.brujula.offering.application.dto.CreatePeriodCommand;
 /**
  * Input port: create an academic period (idempotent, ADMIN-only).
  *
- * <p>Part of {@code offering::api} named interface (package-info annotates the package).
- * Satisfies: OFFW-001.
+ * <p>Part of {@code offering::api} named interface (package-info annotates the package). Satisfies:
+ * OFFW-001.
  */
 public interface CreatePeriodUseCase {
 

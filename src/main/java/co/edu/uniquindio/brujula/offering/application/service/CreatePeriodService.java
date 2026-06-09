@@ -12,21 +12,20 @@ import co.edu.uniquindio.brujula.offering.domain.PeriodStatus;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import java.util.Optional;
 
 /**
  * Use case: create an academic period (idempotent via Idempotency-Key, ADMIN-only).
  *
  * <p>Idempotency rules (mirrors CreateStaffService verbatim):
+ *
  * <ul>
  *   <li>Same key + same hash → return the stored result (replay, no new insert)
  *   <li>Same key + different hash → throw {@link IdempotencyKeyConflictException} (409)
  *   <li>New key → execute, persist idempotency record, record audit event
  * </ul>
  *
- * <p>Framework-free — wired by {@code OfferingConfiguration}.
- * Satisfies: OFFW-001.
+ * <p>Framework-free — wired by {@code OfferingConfiguration}. Satisfies: OFFW-001.
  */
 public class CreatePeriodService implements CreatePeriodUseCase {
 
@@ -62,17 +61,17 @@ public class CreatePeriodService implements CreatePeriodUseCase {
     }
 
     // 2. Resolve status (null → UPCOMING)
-    PeriodStatus status = command.status() != null
-        ? PeriodStatus.valueOf(command.status())
-        : PeriodStatus.UPCOMING;
+    PeriodStatus status =
+        command.status() != null ? PeriodStatus.valueOf(command.status()) : PeriodStatus.UPCOMING;
 
     // 3. Create domain object and persist
-    AcademicPeriod period = AcademicPeriod.create(
-        AcademicPeriodId.generate(),
-        command.name(),
-        command.startDate(),
-        command.endDate(),
-        status);
+    AcademicPeriod period =
+        AcademicPeriod.create(
+            AcademicPeriodId.generate(),
+            command.name(),
+            command.startDate(),
+            command.endDate(),
+            status);
     AcademicPeriod saved = savePeriodPort.save(period);
 
     // 4. Build view and serialize for idempotency storage
@@ -84,15 +83,16 @@ public class CreatePeriodService implements CreatePeriodUseCase {
         command.idempotencyKey(), OPERATION, command.requestHash(), 201, responseBodyJson);
 
     // 6. Record audit event (RNF-SEG-007 synchronous, same transaction)
-    auditRecorder.record(new RecordAuditEventCommand(
-        command.actorId(),
-        "ADMIN",
-        "PERIOD_CREATED",
-        "academic_period",
-        saved.getId().value(),
-        null,
-        null,
-        null));
+    auditRecorder.record(
+        new RecordAuditEventCommand(
+            command.actorId(),
+            "ADMIN",
+            "PERIOD_CREATED",
+            "academic_period",
+            saved.getId().value(),
+            null,
+            null,
+            null));
 
     return view;
   }

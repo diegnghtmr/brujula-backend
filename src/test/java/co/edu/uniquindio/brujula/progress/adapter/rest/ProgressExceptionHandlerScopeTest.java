@@ -1,5 +1,6 @@
 package co.edu.uniquindio.brujula.progress.adapter.rest;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -8,7 +9,6 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.is;
 
 import co.edu.uniquindio.brujula.AbstractPostgresIntegrationTest;
 import co.edu.uniquindio.brujula.identity.application.port.out.SaveAppUserPort;
@@ -40,8 +40,8 @@ import org.springframework.web.context.WebApplicationContext;
  * primary correctness guarantee. These tests catch contract regressions (missing {@code $.code},
  * wrong status), not {@code basePackages} removal while handlers remain behaviorally identical.
  *
- * <p>T-WU1.2: verifies progress controller → {@code ProgressExceptionHandler} maps
- * {@link IdempotencyKeyConflictException} to HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
+ * <p>T-WU1.2: verifies progress controller → {@code ProgressExceptionHandler} maps {@link
+ * IdempotencyKeyConflictException} to HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class ProgressExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest {
@@ -74,15 +74,14 @@ class ProgressExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest 
 
   /**
    * T-WU1.2 — QAL-ADV-001-S2: progress controller throwing {@link IdempotencyKeyConflictException}
-   * MUST return HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"} via
-   * {@code ProgressExceptionHandler}.
+   * MUST return HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"} via {@code
+   * ProgressExceptionHandler}.
    *
    * <p>Asserting {@code $.code} makes this test load-bearing: it will fail if any handler in the
    * chain omits the {@code code} property, regardless of {@code basePackages} state.
    */
   @Test
-  void progress_controller_idempotency_conflict_returns_409_with_code()
-      throws Exception {
+  void progress_controller_idempotency_conflict_returns_409_with_code() throws Exception {
     UUID idemKey = UUID.randomUUID();
     when(createSubscriptionUseCase.createSubscription(any()))
         .thenThrow(new IdempotencyKeyConflictException(idemKey, "CREATE_SUBSCRIPTION"));
@@ -101,7 +100,8 @@ class ProgressExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest 
                 .content(
                     """
                     {"programId":"%s","planId":"%s","referenceJourneyCode":"DIURNA"}
-                    """.formatted(UUID.randomUUID(), UUID.randomUUID())))
+                    """
+                        .formatted(UUID.randomUUID(), UUID.randomUUID())))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code", is("IDEMPOTENCY_KEY_CONFLICT")));
   }
@@ -133,7 +133,8 @@ class ProgressExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest 
                 .content(
                     """
                     {"programId":"%s","planId":"%s","referenceJourneyCode":"DIURNA"}
-                    """.formatted(UUID.randomUUID(), UUID.randomUUID())))
+                    """
+                        .formatted(UUID.randomUUID(), UUID.randomUUID())))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code", is("IDEMPOTENCY_KEY_CONFLICT")));
   }

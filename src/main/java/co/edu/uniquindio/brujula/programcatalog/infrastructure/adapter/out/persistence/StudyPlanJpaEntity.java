@@ -42,8 +42,13 @@ class StudyPlanJpaEntity {
   // JPA requires a no-arg constructor
   protected StudyPlanJpaEntity() {}
 
-  StudyPlanJpaEntity(UUID id, UUID programId, String name, String status,
-      int totalCredits, Integer referenceYear) {
+  StudyPlanJpaEntity(
+      UUID id,
+      UUID programId,
+      String name,
+      String status,
+      int totalCredits,
+      Integer referenceYear) {
     this.id = id;
     this.programId = programId;
     this.name = name;
@@ -52,11 +57,31 @@ class StudyPlanJpaEntity {
     this.referenceYear = referenceYear;
   }
 
-  UUID getId() { return id; }
-  UUID getProgramId() { return programId; }
-  String getName() { return name; }
-  String getStatus() { return status; }
-  int getTotalCredits() { return totalCredits; }
-  Integer getReferenceYear() { return referenceYear; }
-  long getVersion() { return version; }
+  UUID getId() {
+    return id;
+  }
+
+  UUID getProgramId() {
+    return programId;
+  }
+
+  String getName() {
+    return name;
+  }
+
+  String getStatus() {
+    return status;
+  }
+
+  int getTotalCredits() {
+    return totalCredits;
+  }
+
+  Integer getReferenceYear() {
+    return referenceYear;
+  }
+
+  long getVersion() {
+    return version;
+  }
 }

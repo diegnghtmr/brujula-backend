@@ -2,12 +2,14 @@
  * Offering module — academic periods, course offerings, schedule options, and sessions.
  *
  * <p>Publishes:
+ *
  * <ul>
  *   <li>{@code offering::api} — read-only ports for students and simulation module
  *   <li>{@code offering::api-dto} — view records consumed by simulation and REST controllers
  * </ul>
  *
  * <p>Allowed outbound dependencies:
+ *
  * <ul>
  *   <li>{@code sharedkernel} — shared kernel interfaces
  *   <li>{@code audit::spi} — AuditRecorder SPI interface

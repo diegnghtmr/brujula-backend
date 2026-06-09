@@ -26,16 +26,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *
  * <p>STRICT TDD: tests written RED before the service exists.
  *
- * <p>Key security constraint: NO USER ENUMERATION.
- * The endpoint MUST return 202 regardless of whether the email is registered or not.
- * These tests prove it at the service layer.
+ * <p>Key security constraint: NO USER ENUMERATION. The endpoint MUST return 202 regardless of
+ * whether the email is registered or not. These tests prove it at the service layer.
  *
  * <p>Scenarios:
+ *
  * <ul>
- *   <li>Known email → port triggered (Keycloak sends password reset email)</li>
- *   <li>Unknown email → port NOT triggered, service returns normally (no exception)</li>
- *   <li>Keycloak failure → swallowed with WARN log, service returns normally</li>
- *   <li>No-enumeration proof: known and unknown both complete without exception</li>
+ *   <li>Known email → port triggered (Keycloak sends password reset email)
+ *   <li>Unknown email → port NOT triggered, service returns normally (no exception)
+ *   <li>Keycloak failure → swallowed with WARN log, service returns normally
+ *   <li>No-enumeration proof: known and unknown both complete without exception
  * </ul>
  *
  * <p>Satisfies: S2-D, Spec §password recovery, RNF-SEG-006 no user enumeration, OPTION A
@@ -72,8 +72,7 @@ class InitiatePasswordRecoveryServiceTest {
 
     // Assert — Keycloak was called with the email and redirect URI
     verify(keycloakPort)
-        .triggerPasswordReset(
-            eq("student@uniquindio.edu.co"), eq(RECOVERY_REDIRECT_URI));
+        .triggerPasswordReset(eq("student@uniquindio.edu.co"), eq(RECOVERY_REDIRECT_URI));
   }
 
   // -------------------------------------------------------------------------
@@ -103,7 +102,8 @@ class InitiatePasswordRecoveryServiceTest {
     when(loadAppUserPort.findByEmail("student@uniquindio.edu.co"))
         .thenReturn(Optional.of(existingUser));
     doThrow(new KeycloakProvisioningException("Keycloak unavailable", "KEYCLOAK_503"))
-        .when(keycloakPort).triggerPasswordReset(anyString(), anyString());
+        .when(keycloakPort)
+        .triggerPasswordReset(anyString(), anyString());
 
     // Act — must NOT propagate the Keycloak exception to the controller
     // The caller gets 202 even when Keycloak fails (resilience decision)
@@ -111,8 +111,7 @@ class InitiatePasswordRecoveryServiceTest {
 
     // Assert — the call was attempted (service did try Keycloak)
     verify(keycloakPort)
-        .triggerPasswordReset(
-            eq("student@uniquindio.edu.co"), eq(RECOVERY_REDIRECT_URI));
+        .triggerPasswordReset(eq("student@uniquindio.edu.co"), eq(RECOVERY_REDIRECT_URI));
   }
 
   // -------------------------------------------------------------------------
@@ -125,11 +124,10 @@ class InitiatePasswordRecoveryServiceTest {
     AppUser existingUser = AppUser.register("known@uniquindio.edu.co", "Known User");
     when(loadAppUserPort.findByEmail("known@uniquindio.edu.co"))
         .thenReturn(Optional.of(existingUser));
-    when(loadAppUserPort.findByEmail("unknown@uniquindio.edu.co"))
-        .thenReturn(Optional.empty());
+    when(loadAppUserPort.findByEmail("unknown@uniquindio.edu.co")).thenReturn(Optional.empty());
 
     // Act + Assert — IDENTICAL observable outcome for caller
-    sut.initiateRecovery("known@uniquindio.edu.co");   // known: Keycloak called, no exception
+    sut.initiateRecovery("known@uniquindio.edu.co"); // known: Keycloak called, no exception
     sut.initiateRecovery("unknown@uniquindio.edu.co"); // unknown: no Keycloak, no exception
 
     // The HTTP response (202 void) is IDENTICAL for both — no user enumeration.

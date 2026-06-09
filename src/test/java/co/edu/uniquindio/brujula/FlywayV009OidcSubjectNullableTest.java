@@ -13,8 +13,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * RED → GREEN test for V009__make_oidc_subject_nullable_in_app_user.sql.
  *
  * <p>Self-registered students (AppUser.register()) have no OIDC subject until their first OIDC
- * login. V002 defined oidc_subject as NOT NULL; V009 drops the NOT NULL constraint to allow
- * null oidc_subject for PENDING_VERIFICATION users.
+ * login. V002 defined oidc_subject as NOT NULL; V009 drops the NOT NULL constraint to allow null
+ * oidc_subject for PENDING_VERIFICATION users.
  *
  * <p>The UNIQUE constraint on oidc_subject is preserved (two users cannot share the same subject
  * once assigned; null subjects do not violate the UNIQUE constraint in PostgreSQL).
@@ -40,7 +40,8 @@ class FlywayV009OidcSubjectNullableTest extends AbstractPostgresIntegrationTest 
             String.class);
 
     assertThat(isNullable)
-        .as("oidc_subject must be nullable after V009 (self-registered students have no OIDC subject)")
+        .as(
+            "oidc_subject must be nullable after V009 (self-registered students have no OIDC subject)")
         .isEqualTo("YES");
   }
 
@@ -71,7 +72,8 @@ class FlywayV009OidcSubjectNullableTest extends AbstractPostgresIntegrationTest 
                   VALUES (?::uuid, NULL, ?, 'Null Subject Test 1', 'STUDENT', 'ACTIVE', false,
                        'PENDING_VERIFICATION', 0)
                   """,
-                  id1.toString(), email1);
+                  id1.toString(),
+                  email1);
 
               jdbcTemplate.update(
                   """
@@ -81,10 +83,12 @@ class FlywayV009OidcSubjectNullableTest extends AbstractPostgresIntegrationTest 
                   VALUES (?::uuid, NULL, ?, 'Null Subject Test 2', 'STUDENT', 'ACTIVE', false,
                        'PENDING_VERIFICATION', 0)
                   """,
-                  id2.toString(), email2);
+                  id2.toString(),
+                  email2);
             })
-        .as("Two app_user rows with oidc_subject=NULL must not violate the UNIQUE constraint "
-            + "(PostgreSQL allows multiple NULLs in a UNIQUE column by default)")
+        .as(
+            "Two app_user rows with oidc_subject=NULL must not violate the UNIQUE constraint "
+                + "(PostgreSQL allows multiple NULLs in a UNIQUE column by default)")
         .doesNotThrowAnyException();
 
     // Verify both rows exist

@@ -15,7 +15,6 @@ import co.edu.uniquindio.brujula.AbstractPostgresIntegrationTest;
 import co.edu.uniquindio.brujula.identity.application.dto.UserProfile;
 import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
 import co.edu.uniquindio.brujula.offering.application.dto.OfferingDetailView;
-import co.edu.uniquindio.brujula.offering.application.dto.ScheduleOptionView;
 import co.edu.uniquindio.brujula.offering.application.port.in.CreateOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.GetOfferingQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery;
@@ -23,11 +22,8 @@ import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.UpdateOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.domain.OfferingNotFoundException;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
-
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +40,12 @@ import org.springframework.web.context.WebApplicationContext;
  * WU2-TDD: Controller slice security and exception-mapping tests for offering write endpoints.
  *
  * <p>Tests:
+ *
  * <ul>
  *   <li>POST /staff/programs/{id}/offerings — STUDENT → 403; STAFF → 201 + Location; idempotency
  *       conflict → 409
- *   <li>PATCH /staff/offerings/{id} — STUDENT → 403; stale version → 409 +
- *       {@code $.code=OPTIMISTIC_LOCK_CONFLICT}; success → 200
+ *   <li>PATCH /staff/offerings/{id} — STUDENT → 403; stale version → 409 + {@code
+ *       $.code=OPTIMISTIC_LOCK_CONFLICT}; success → 200
  * </ul>
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -95,12 +92,22 @@ class OfferingWriteControllerSliceTest extends AbstractPostgresIntegrationTest {
   @Test
   void staff_gets_201_on_create_offering() throws Exception {
     UUID idempotencyKey = UUID.randomUUID();
-    OfferingDetailView view = new OfferingDetailView(
-        OFFERING_ID, COURSE_ID, "Programación I", PROGRAM_ID, PERIOD_ID,
-        "DRAFT", null, 0L, Collections.emptyList());
+    OfferingDetailView view =
+        new OfferingDetailView(
+            OFFERING_ID,
+            COURSE_ID,
+            "Programación I",
+            PROGRAM_ID,
+            PERIOD_ID,
+            "DRAFT",
+            null,
+            0L,
+            Collections.emptyList());
 
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff User", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff User", "STAFF", "ACTIVE", true));
     when(createOfferingUseCase.createOffering(any())).thenReturn(view);
 
     mockMvc
@@ -123,7 +130,9 @@ class OfferingWriteControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID idempotencyKey = UUID.randomUUID();
 
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     when(createOfferingUseCase.createOffering(any()))
         .thenThrow(new IdempotencyKeyConflictException(idempotencyKey, "CREATE_OFFERING"));
 
@@ -156,7 +165,9 @@ class OfferingWriteControllerSliceTest extends AbstractPostgresIntegrationTest {
   @Test
   void stale_version_returns_409_with_lock_conflict_code_on_update_offering() throws Exception {
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     when(updateOfferingUseCase.updateOffering(any()))
         .thenThrow(new OptimisticLockingFailureException("stale version"));
 
@@ -175,7 +186,9 @@ class OfferingWriteControllerSliceTest extends AbstractPostgresIntegrationTest {
   @Test
   void missing_offering_returns_404_on_update() throws Exception {
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     when(updateOfferingUseCase.updateOffering(any()))
         .thenThrow(new OfferingNotFoundException(OFFERING_ID));
 
@@ -194,12 +207,22 @@ class OfferingWriteControllerSliceTest extends AbstractPostgresIntegrationTest {
   void staff_gets_200_with_incremented_version_on_update() throws Exception {
     long inputVersion = 3L;
     long bumpedVersion = 4L;
-    OfferingDetailView view = new OfferingDetailView(
-        OFFERING_ID, COURSE_ID, "Programación I", PROGRAM_ID, PERIOD_ID,
-        "DRAFT", "Updated notes", bumpedVersion, Collections.emptyList());
+    OfferingDetailView view =
+        new OfferingDetailView(
+            OFFERING_ID,
+            COURSE_ID,
+            "Programación I",
+            PROGRAM_ID,
+            PERIOD_ID,
+            "DRAFT",
+            "Updated notes",
+            bumpedVersion,
+            Collections.emptyList());
 
     when(getCurrentUserQuery.getCurrentUserBySubject(any()))
-        .thenReturn(new UserProfile(ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "staff-sub", "staff@test.com", "Staff", "STAFF", "ACTIVE", true));
     when(updateOfferingUseCase.updateOffering(any())).thenReturn(view);
 
     mockMvc
@@ -222,7 +245,8 @@ class OfferingWriteControllerSliceTest extends AbstractPostgresIntegrationTest {
           "courseId": "%s",
           "periodId": "%s"
         }
-        """.formatted(COURSE_ID, PERIOD_ID);
+        """
+        .formatted(COURSE_ID, PERIOD_ID);
   }
 
   private String updateOfferingBody(long version) {
@@ -231,6 +255,7 @@ class OfferingWriteControllerSliceTest extends AbstractPostgresIntegrationTest {
           "notes": "Updated notes",
           "version": %d
         }
-        """.formatted(version);
+        """
+        .formatted(version);
   }
 }

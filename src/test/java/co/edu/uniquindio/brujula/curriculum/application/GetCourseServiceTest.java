@@ -42,9 +42,19 @@ class GetCourseServiceTest {
   @Test
   void returnsCourseViewForExistingCourse() {
     CourseId courseId = CourseId.generate();
-    Course course = Course.reconstitute(
-        courseId, planId, programId, "ISC-S3-INGSOFTWARE", "Ingeniería de Software I",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
+    Course course =
+        Course.reconstitute(
+            courseId,
+            planId,
+            programId,
+            "ISC-S3-INGSOFTWARE",
+            "Ingeniería de Software I",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
 
     when(loadCoursePort.loadById(courseId)).thenReturn(Optional.of(course));
 
