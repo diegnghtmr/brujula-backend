@@ -309,7 +309,7 @@ class PublishOfferingServiceTest {
   private CourseView courseViewWithHours(int curricularWeeklyHours) {
     return new CourseView(
         courseId, UUID.randomUUID(), programId, "PROG-001", "Course",
-        "REQUIRED", 3, curricularWeeklyHours, Collections.emptyList(), "ACTIVE");
+        "REQUIRED", 3, curricularWeeklyHours, Collections.emptyList(), "ACTIVE", 0L);
   }
 
   private OfferingDetailView sampleView(String status, long version, Boolean intensityWarning) {

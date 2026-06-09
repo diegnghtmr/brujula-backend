@@ -74,7 +74,7 @@ class CreateOfferingServiceTest {
 
     CourseView courseView = new CourseView(
         courseId, UUID.randomUUID(), programId, "ISC-PROG1", courseName,
-        "REQUIRED", 3, 6, Collections.emptyList(), "ACTIVE");
+        "REQUIRED", 3, 6, Collections.emptyList(), "ACTIVE", 0L);
     when(getCourseQuery.getCourse(courseId)).thenReturn(courseView);
 
     CourseOffering saved = CourseOffering.reconstitute(
@@ -106,7 +106,7 @@ class CreateOfferingServiceTest {
 
     CourseView courseView = new CourseView(
         courseId, UUID.randomUUID(), programId, null, courseName,
-        "REQUIRED", 3, 6, Collections.emptyList(), "ACTIVE");
+        "REQUIRED", 3, 6, Collections.emptyList(), "ACTIVE", 0L);
     when(getCourseQuery.getCourse(courseId)).thenReturn(courseView);
 
     // Simulate saved offering with 1 schedule option

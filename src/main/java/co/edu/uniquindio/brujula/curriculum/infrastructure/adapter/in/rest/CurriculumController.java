@@ -1,16 +1,28 @@
 package co.edu.uniquindio.brujula.curriculum.infrastructure.adapter.in.rest;
 
+import co.edu.uniquindio.brujula.curriculum.application.dto.ArchiveCourseCommand;
 import co.edu.uniquindio.brujula.curriculum.application.dto.CourseRequirementView;
 import co.edu.uniquindio.brujula.curriculum.application.dto.CourseView;
+import co.edu.uniquindio.brujula.curriculum.application.dto.CreateCourseCommand;
+import co.edu.uniquindio.brujula.curriculum.application.dto.CreateCourseRequirementCommand;
 import co.edu.uniquindio.brujula.curriculum.application.dto.DegreeWorkModalityView;
 import co.edu.uniquindio.brujula.curriculum.application.dto.PlanMallaView;
 import co.edu.uniquindio.brujula.curriculum.application.dto.SequentialTrackView;
+import co.edu.uniquindio.brujula.curriculum.application.dto.UpdateCourseCommand;
+import co.edu.uniquindio.brujula.curriculum.application.dto.UpdateCourseRequirementCommand;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.ArchiveCourseUseCase;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMallaQuery;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.CreateCourseRequirementUseCase;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.CreateCourseUseCase;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.GetCourseQuery;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.ListCourseRequirementsQuery;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.ListDegreeWorkModalitiesQuery;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.ListPlanCoursesQuery;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.ListSequentialTracksQuery;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.UpdateCourseRequirementUseCase;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.UpdateCourseUseCase;
+import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetStudyPlanQuery;
 import co.edu.uniquindio.brujula.generated.api.CurriculumApi;
 import co.edu.uniquindio.brujula.generated.model.ChangeStudyPlanStatusRequest;
 import co.edu.uniquindio.brujula.generated.model.Course;
@@ -40,15 +52,20 @@ import co.edu.uniquindio.brujula.generated.model.StudyPlan;
 import co.edu.uniquindio.brujula.generated.model.StudyPlanCreateRequest;
 import co.edu.uniquindio.brujula.generated.model.StudyPlanUpdateRequest;
 import co.edu.uniquindio.brujula.generated.model.VersionedAction;
+import java.net.URI;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * REST adapter implementing the generated {@link CurriculumApi} interface (contract-first, ARQ-001).
@@ -80,6 +97,15 @@ class CurriculumController implements CurriculumApi {
   private final ListSequentialTracksQuery listSequentialTracksQuery;
   private final ListDegreeWorkModalitiesQuery listDegreeWorkModalitiesQuery;
   private final AssemblePlanMallaQuery assemblePlanMallaQuery;
+  // Write use cases (WU5)
+  private final CreateCourseUseCase createCourseUseCase;
+  private final UpdateCourseUseCase updateCourseUseCase;
+  private final ArchiveCourseUseCase archiveCourseUseCase;
+  private final CreateCourseRequirementUseCase createCourseRequirementUseCase;
+  private final UpdateCourseRequirementUseCase updateCourseRequirementUseCase;
+  private final GetCurrentUserQuery getCurrentUserQuery;
+  private final GetStudyPlanQuery getStudyPlanQuery;
+  private final ObjectMapper objectMapper;
 
   CurriculumController(
       GetCourseQuery getCourseQuery,
@@ -87,13 +113,29 @@ class CurriculumController implements CurriculumApi {
       ListCourseRequirementsQuery listCourseRequirementsQuery,
       ListSequentialTracksQuery listSequentialTracksQuery,
       ListDegreeWorkModalitiesQuery listDegreeWorkModalitiesQuery,
-      AssemblePlanMallaQuery assemblePlanMallaQuery) {
+      AssemblePlanMallaQuery assemblePlanMallaQuery,
+      CreateCourseUseCase createCourseUseCase,
+      UpdateCourseUseCase updateCourseUseCase,
+      ArchiveCourseUseCase archiveCourseUseCase,
+      CreateCourseRequirementUseCase createCourseRequirementUseCase,
+      UpdateCourseRequirementUseCase updateCourseRequirementUseCase,
+      GetCurrentUserQuery getCurrentUserQuery,
+      GetStudyPlanQuery getStudyPlanQuery,
+      ObjectMapper objectMapper) {
     this.getCourseQuery = getCourseQuery;
     this.listPlanCoursesQuery = listPlanCoursesQuery;
     this.listCourseRequirementsQuery = listCourseRequirementsQuery;
     this.listSequentialTracksQuery = listSequentialTracksQuery;
     this.listDegreeWorkModalitiesQuery = listDegreeWorkModalitiesQuery;
     this.assemblePlanMallaQuery = assemblePlanMallaQuery;
+    this.createCourseUseCase = createCourseUseCase;
+    this.updateCourseUseCase = updateCourseUseCase;
+    this.archiveCourseUseCase = archiveCourseUseCase;
+    this.createCourseRequirementUseCase = createCourseRequirementUseCase;
+    this.updateCourseRequirementUseCase = updateCourseRequirementUseCase;
+    this.getCurrentUserQuery = getCurrentUserQuery;
+    this.getStudyPlanQuery = getStudyPlanQuery;
+    this.objectMapper = objectMapper;
   }
 
   // ---------------------------------------------------------------------------
@@ -165,26 +207,153 @@ class CurriculumController implements CurriculumApi {
   }
 
   // ---------------------------------------------------------------------------
-  // Write endpoints — NOT IMPLEMENTED in Fase 2 WU4 (return 501)
+  // Write endpoints (WU5 — implemented)
+  // ---------------------------------------------------------------------------
+
+  /** CUR-001: create a new course (idempotent). STAFF/ADMIN only. */
+  @Override
+  @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+  public ResponseEntity<Course> createCourse(
+      UUID idempotencyKey,
+      String xXsrfToken,
+      UUID planId,
+      CourseCreateRequest courseCreateRequest) {
+    UUID actorId = resolveActorId();
+    String requestHash = hashRequest(courseCreateRequest);
+    List<CourseView.RecommendedSemesterView> semesters =
+        courseCreateRequest.getRecommendedSemesters() == null ? List.of()
+            : courseCreateRequest.getRecommendedSemesters().stream()
+                .map(rs -> new CourseView.RecommendedSemesterView(rs.getJourneyCode(), rs.getSemester()))
+                .toList();
+    // programId is not in CourseCreateRequest — resolve from plan (CAT-002 GetStudyPlanQuery).
+    UUID programId = getStudyPlanQuery.getStudyPlan(planId, resolveCallerRole()).programId();
+    CreateCourseCommand command = new CreateCourseCommand(
+        idempotencyKey,
+        requestHash,
+        actorId,
+        planId,
+        programId,
+        courseCreateRequest.getName(),
+        courseCreateRequest.getOfficialCode(),
+        courseCreateRequest.getType() != null ? courseCreateRequest.getType().getValue() : "REQUIRED",
+        courseCreateRequest.getCredits() != null ? courseCreateRequest.getCredits().intValue() : 0,
+        courseCreateRequest.getCurricularWeeklyHours() != null
+            ? courseCreateRequest.getCurricularWeeklyHours().intValue() : 0,
+        semesters);
+    CourseView view = createCourseUseCase.createCourse(command);
+    URI location = URI.create("/courses/" + view.id());
+    return ResponseEntity.status(HttpStatus.CREATED).location(location).body(toCourseDto(view));
+  }
+
+  /** CUR-002: update a course's mutable fields (optimistic lock). STAFF/ADMIN only. */
+  @Override
+  @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+  public ResponseEntity<Course> updateCourse(
+      String xXsrfToken,
+      UUID courseId,
+      CourseUpdateRequest courseUpdateRequest) {
+    UUID actorId = resolveActorId();
+    List<CourseView.RecommendedSemesterView> semesters =
+        courseUpdateRequest.getRecommendedSemesters() == null ? List.of()
+            : courseUpdateRequest.getRecommendedSemesters().stream()
+                .map(rs -> new CourseView.RecommendedSemesterView(rs.getJourneyCode(), rs.getSemester()))
+                .toList();
+    UpdateCourseCommand command = new UpdateCourseCommand(
+        actorId,
+        courseId,
+        courseUpdateRequest.getVersion() != null ? courseUpdateRequest.getVersion() : 0L,
+        courseUpdateRequest.getName(),
+        courseUpdateRequest.getOfficialCode(),
+        courseUpdateRequest.getType() != null ? courseUpdateRequest.getType().getValue() : null,
+        courseUpdateRequest.getCredits() != null ? courseUpdateRequest.getCredits().intValue() : 0,
+        courseUpdateRequest.getCurricularWeeklyHours() != null
+            ? courseUpdateRequest.getCurricularWeeklyHours().intValue() : 0,
+        semesters);
+    CourseView view = updateCourseUseCase.updateCourse(command);
+    return ResponseEntity.ok(toCourseDto(view));
+  }
+
+  /** CUR-002: archive (soft-delete) a course (optimistic lock). STAFF/ADMIN only. */
+  @Override
+  @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+  public ResponseEntity<Course> archiveCourse(
+      String xXsrfToken,
+      UUID courseId,
+      VersionedAction versionedAction) {
+    UUID actorId = resolveActorId();
+    ArchiveCourseCommand command = new ArchiveCourseCommand(
+        actorId,
+        courseId,
+        versionedAction.getVersion() != null ? versionedAction.getVersion() : 0L);
+    CourseView view = archiveCourseUseCase.archiveCourse(command);
+    return ResponseEntity.ok(toCourseDto(view));
+  }
+
+  /** CUR-003: create a course requirement (idempotent, cycle-detection). STAFF/ADMIN only. */
+  @Override
+  @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+  public ResponseEntity<CourseRequirement> createCourseRequirement(
+      UUID idempotencyKey,
+      String xXsrfToken,
+      UUID courseId,
+      CourseRequirementCreateRequest courseRequirementCreateRequest) {
+    UUID actorId = resolveActorId();
+    String requestHash = hashRequest(courseRequirementCreateRequest);
+    // planId needed for cycle detection — load via course's plan; for now pass courseId as sentinel
+    // (controller callers must include planId in the request body per ADR, but contract only has courseId path)
+    // The service needs planId to build the graph; since the contract only has courseId, we load the
+    // course to get planId — but that requires an additional query. For contract compliance, use
+    // a workaround: store planId in the command as null and let the service skip cycle detection
+    // when planId is null (unsafe). BETTER: use a planId from the request body if available.
+    // Per the generated API, courseId is the targetCourseId. planId must be resolved from course.
+    // We resolve it inline here from the GetCourseQuery (available in this controller).
+    CourseView courseView = getCourseQuery.getCourse(courseId);
+    UUID planId = courseView.planId();
+    CreateCourseRequirementCommand command = new CreateCourseRequirementCommand(
+        idempotencyKey,
+        requestHash,
+        actorId,
+        courseId,
+        planId,
+        courseRequirementCreateRequest.getType() != null
+            ? courseRequirementCreateRequest.getType().getValue() : "COURSE_PASSED",
+        courseRequirementCreateRequest.getRequiredCourseId(),
+        courseRequirementCreateRequest.getRequiredCredits(),
+        courseRequirementCreateRequest.getSimultaneityAllowed());
+    CourseRequirementView view = createCourseRequirementUseCase.createCourseRequirement(command);
+    URI location = URI.create("/courses/" + courseId + "/requirements/" + view.id());
+    return ResponseEntity.status(HttpStatus.CREATED).location(location)
+        .body(toCourseRequirementDto(view));
+  }
+
+  /** CUR-003: update a course requirement (optimistic lock). STAFF/ADMIN only. */
+  @Override
+  @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+  public ResponseEntity<CourseRequirement> updateCourseRequirement(
+      String xXsrfToken,
+      UUID requirementId,
+      CourseRequirementUpdateRequest courseRequirementUpdateRequest) {
+    UUID actorId = resolveActorId();
+    UpdateCourseRequirementCommand command = new UpdateCourseRequirementCommand(
+        actorId,
+        requirementId,
+        courseRequirementUpdateRequest.getVersion() != null
+            ? courseRequirementUpdateRequest.getVersion() : 0L,
+        courseRequirementUpdateRequest.getType() != null
+            ? courseRequirementUpdateRequest.getType().getValue() : null,
+        courseRequirementUpdateRequest.getRequiredCourseId(),
+        courseRequirementUpdateRequest.getRequiredCredits(),
+        courseRequirementUpdateRequest.getSimultaneityAllowed());
+    CourseRequirementView view = updateCourseRequirementUseCase.updateCourseRequirement(command);
+    return ResponseEntity.ok(toCourseRequirementDto(view));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Write endpoints — still NOT IMPLEMENTED (return 501)
   // ---------------------------------------------------------------------------
 
   @Override
-  public ResponseEntity<Course> archiveCourse(String xXsrfToken, UUID courseId, VersionedAction versionedAction) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-  }
-
-  @Override
   public ResponseEntity<StudyPlan> changeStudyPlanStatus(UUID idempotencyKey, String xXsrfToken, UUID planId, ChangeStudyPlanStatusRequest changeStudyPlanStatusRequest) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-  }
-
-  @Override
-  public ResponseEntity<Course> createCourse(UUID idempotencyKey, String xXsrfToken, UUID planId, CourseCreateRequest courseCreateRequest) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-  }
-
-  @Override
-  public ResponseEntity<CourseRequirement> createCourseRequirement(UUID idempotencyKey, String xXsrfToken, UUID courseId, CourseRequirementCreateRequest courseRequirementCreateRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
@@ -205,16 +374,6 @@ class CurriculumController implements CurriculumApi {
 
   @Override
   public ResponseEntity<Void> deleteCourseRequirement(String xXsrfToken, UUID requirementId) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-  }
-
-  @Override
-  public ResponseEntity<Course> updateCourse(String xXsrfToken, UUID courseId, CourseUpdateRequest courseUpdateRequest) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-  }
-
-  @Override
-  public ResponseEntity<CourseRequirement> updateCourseRequirement(String xXsrfToken, UUID requirementId, CourseRequirementUpdateRequest courseRequirementUpdateRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
@@ -248,6 +407,7 @@ class CurriculumController implements CurriculumApi {
     course.setCredits((double) view.credits());
     course.setCurricularWeeklyHours((double) view.curricularWeeklyHours());
     course.setStatus(CourseStatus.fromValue(view.status()));
+    course.setVersion(view.version());
     course.setRecommendedSemesters(
         view.recommendedSemesters().stream()
             .map(rs -> new RecommendedSemester().journeyCode(rs.journeyCode()).semester(rs.semester()))
@@ -271,7 +431,7 @@ class CurriculumController implements CurriculumApi {
         view.targetCourseId(),
         RequirementType.fromValue(view.type()),
         CourseStatus.fromValue(view.status()),
-        null); // version not in CourseRequirementView
+        view.version());
     req.setRequiredCourseId(view.requiredCourseId());
     req.setRequiredCredits(view.requiredCredits());
     req.setSimultaneityAllowed(view.simultaneityAllowed());
@@ -372,5 +532,26 @@ class CurriculumController implements CurriculumApi {
       if ("ROLE_STAFF".equals(a)) return "STAFF";
     }
     return "STUDENT";
+  }
+
+  /** Resolve actor UUID from session principal. BOLA safe: never from request body. */
+  private UUID resolveActorId() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null || auth.getName() == null) {
+      throw new IllegalStateException("No authenticated principal found in SecurityContext");
+    }
+    return getCurrentUserQuery.getCurrentUserBySubject(auth.getName()).id();
+  }
+
+  /** SHA-256 hex digest of the serialized request body for idempotency conflict detection. */
+  private String hashRequest(Object request) {
+    try {
+      byte[] json = objectMapper.writeValueAsBytes(request);
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hash = digest.digest(json);
+      return HexFormat.of().formatHex(hash);
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to hash request body", e);
+    }
   }
 }

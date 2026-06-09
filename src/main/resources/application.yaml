@@ -1,6 +1,13 @@
 spring:
   application:
     name: brujula-backend
+  # Multipart upload limits (IMP-001, NFR-002, NFR-004).
+  # max-file-size matches the imports.maxFileSizeBytes default (5 MB).
+  # max-request-size adds 1 MB headroom for multipart form-field overhead.
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   jpa:
     hibernate:
       ddl-auto: validate

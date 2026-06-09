@@ -49,28 +49,32 @@ class CatalogCurriculumArchitectureTest {
       "co.edu.uniquindio.brujula.programcatalog..infrastructure.adapter.out.persistence..";
 
   /**
-   * CROSS-002 / ARQ-008 — {@code curriculum} must not import {@code identity} module classes.
+   * CROSS-002 / ARQ-008 — only the curriculum REST adapter (infrastructure.adapter.in.rest) may
+   * import {@code identity} module classes; application and domain layers must not.
    *
-   * <p>The curriculum module's only permitted cross-module dependencies are {@code sharedkernel},
-   * {@code audit}, {@code programcatalog}, and {@code generated} (contract-first adapters). Any
-   * dependency on {@code identity} would be a boundary violation.
+   * <p>WU5 (Fase 6) adds write endpoints to {@code CurriculumController} that resolve the actor
+   * UUID via {@link co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery}.
+   * The controller lives in {@code infrastructure.adapter.in.rest} — the only layer permitted to
+   * cross this boundary (mirrors the offering module's pattern). Application services and domain
+   * objects must remain identity-free.
    *
    * <p>The authoritative positive constraint is {@code ModularityTest.verifyModularStructure()},
-   * backed by the {@code allowedDependencies} declaration in
-   * {@code co.edu.uniquindio.brujula.curriculum.package-info}. This denylist rule provides early,
-   * explicit failure feedback specifically for the {@code identity} boundary.
+   * backed by the updated {@code allowedDependencies} declaration in
+   * {@code co.edu.uniquindio.brujula.curriculum.package-info} ({@code identity::api}).
    */
   @ArchTest
   static final ArchRule curriculum_does_not_depend_on_identity =
       noClasses()
           .that()
           .resideInAPackage("co.edu.uniquindio.brujula.curriculum..")
+          .and()
+          .resideOutsideOfPackage("co.edu.uniquindio.brujula.curriculum.infrastructure.adapter.in.rest..")
           .should()
           .dependOnClassesThat()
           .resideInAPackage(IDENTITY_PKG)
           .because(
-              "CROSS-002: curriculum depends only on sharedkernel, audit, and programcatalog; "
-                  + "any identity dependency is a boundary violation");
+              "CROSS-002: only the curriculum REST adapter may depend on identity (for actor "
+                  + "resolution in write endpoints); application and domain layers must not");
 
   /**
    * CROSS-002 / ARQ-008 — {@code curriculum} must not import {@code administration} module classes.

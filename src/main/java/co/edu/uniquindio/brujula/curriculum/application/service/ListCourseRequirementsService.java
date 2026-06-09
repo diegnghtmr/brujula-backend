@@ -45,7 +45,8 @@ public class ListCourseRequirementsService implements ListCourseRequirementsQuer
         req.simultaneityAllowed(),
         confidenceString(req.confidence()),
         req.inferred(),
-        req.status().name());
+        req.status().name(),
+        req.version());
   }
 
   private String confidenceString(Confidence confidence) {

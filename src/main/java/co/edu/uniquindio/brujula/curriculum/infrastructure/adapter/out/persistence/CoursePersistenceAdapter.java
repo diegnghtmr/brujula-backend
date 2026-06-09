@@ -1,6 +1,7 @@
 package co.edu.uniquindio.brujula.curriculum.infrastructure.adapter.out.persistence;
 
 import co.edu.uniquindio.brujula.curriculum.application.port.out.LoadCoursePort;
+import co.edu.uniquindio.brujula.curriculum.application.port.out.SaveCoursePort;
 import co.edu.uniquindio.brujula.curriculum.domain.Course;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseId;
 import java.util.List;
@@ -10,18 +11,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * JPA-backed adapter implementing {@link LoadCoursePort}.
+ * JPA-backed adapter implementing {@link LoadCoursePort} and {@link SaveCoursePort}.
  *
- * <p>Package-private per ARQ-006. Satisfies: CUR-001, Phase 2 WU4 persistence adapters.
+ * <p>Package-private per ARQ-006. Satisfies: CUR-001, Phase 2 WU4 (read) and WU5 (write).
+ *
+ * <p>Transaction strategy: class-level {@code @Transactional} (read-write default) so write
+ * methods inherit a writable transaction; each read method explicitly overrides with
+ * {@code @Transactional(readOnly=true)} for performance (mirrors OfferingPersistenceAdapter).
  */
 @Component
-class CoursePersistenceAdapter implements LoadCoursePort {
+@Transactional
+class CoursePersistenceAdapter implements LoadCoursePort, SaveCoursePort {
 
   private final CourseJpaRepository repository;
 
   CoursePersistenceAdapter(CourseJpaRepository repository) {
     this.repository = repository;
   }
+
+  // ---- LoadCoursePort ----
 
   @Override
   @Transactional(readOnly = true)
@@ -34,6 +42,23 @@ class CoursePersistenceAdapter implements LoadCoursePort {
   @Override
   @Transactional(readOnly = true)
   public Optional<Course> loadById(CourseId courseId) {
+    return repository.findById(courseId.value())
+        .map(CurriculumPersistenceMapper::toDomain);
+  }
+
+  // ---- SaveCoursePort ----
+
+  @Override
+  public Course save(Course course) {
+    CourseJpaEntity entity = CurriculumPersistenceMapper.toJpaEntity(course);
+    CourseJpaEntity managed = repository.save(entity);
+    repository.flush();
+    return CurriculumPersistenceMapper.toDomain(managed);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<Course> findCurrentById(CourseId courseId) {
     return repository.findById(courseId.value())
         .map(CurriculumPersistenceMapper::toDomain);
   }
