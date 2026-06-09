@@ -33,7 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -198,27 +200,119 @@ public class ConfirmImportService implements ConfirmImportUseCase {
      *
      * <p>COURSES → {@link CreateCourseUseCase} with initialStatus=INACTIVE (NFR-003).
      * REQUIREMENTS → {@link CreateCourseRequirementUseCase} (cross-batch cycle re-check runs
-     * inside the real service against the live graph — carry-forward from WU3 verify).
-     * OFFERINGS → {@link CreateOfferingUseCase} — each row maps to one offering with one
-     * schedule option and one session (WU7, IMP-008, ADR-014).
+     * inside the real service against the live graph).
+     * OFFERINGS → {@link CreateOfferingUseCase} — rows are first GROUPED by
+     * {@code (course_id, period, option_label)} so that multiple rows representing different
+     * weekly sessions of the same schedule option are submitted as ONE
+     * {@link CreateOfferingCommand} with multiple {@link CreateOfferingCommand.SessionDraft}s
+     * (QAL-IMP-001 / DEBT-F6-002). Each group → exactly one {@code CreateOfferingUseCase} call.
      *
      * <p>Any exception from a use-case propagates directly — no catch-and-continue (all-or-nothing
-     * per frozen Decision #2). The caller's {@code @Transactional} boundary catches the exception
+     * per Decision #2). The caller's {@code @Transactional} boundary catches the exception
      * and rolls back.
      *
      * @param batch the VALIDATED ImportBatch whose rows to replay
      * @param command the confirm command (carries actorId and planId via batch)
      */
     private void replayRows(ImportBatch batch, ConfirmImportCommand command) {
+        if (batch.getKind() == ImportKind.OFFERINGS) {
+            replayOfferingsGrouped(batch, command);
+            return;
+        }
         for (ImportRow row : batch.getValidatedRows()) {
             switch (batch.getKind()) {
                 case COURSES -> replayCourseRow(row, batch, command);
                 case REQUIREMENTS -> replayRequirementRow(row, batch, command);
-                case OFFERINGS -> replayOfferingRow(row, batch, command);
                 default -> throw new UnsupportedOperationException(
                         "Unsupported import kind for confirm: " + batch.getKind());
             }
         }
+    }
+
+    /**
+     * Group OFFERINGS rows by {@code (course_id, period_id, option_label)} and replay each
+     * group as a single {@link CreateOfferingUseCase#createOffering} call with all its sessions.
+     *
+     * <p>Grouping key: {@code courseId + ":OFFERINGS:" + periodId + ":" + optionLabel}
+     * (same components used in the idempotency key derivation — deterministic and stable).
+     *
+     * <p>Idempotency key is derived from the GROUP key, not from a single row index, so that
+     * a retried confirm regenerates the same key regardless of CSV row ordering.
+     *
+     * <p>The existing {@code expandDay} helper is reused for each session's day abbreviation.
+     * Insertion order is preserved via {@link LinkedHashMap} so the sessions within a group
+     * appear in CSV row order (stable, testable).
+     */
+    private void replayOfferingsGrouped(ImportBatch batch, ConfirmImportCommand command) {
+        // Group rows by (courseId, optionLabel) — period comes from the batch, same for all rows.
+        // LinkedHashMap preserves insertion order → groups appear in first-encounter order.
+        Map<String, List<ImportRow>> groups = new LinkedHashMap<>();
+
+        for (ImportRow row : batch.getValidatedRows()) {
+            String courseId = row.cells().getOrDefault("course", "").trim();
+            String optionLabel = row.cells().getOrDefault("option_label", "G1").trim();
+            // Group key: courseId + period (from batch) + optionLabel — stable, deterministic
+            String groupKey = courseId + ":OFFERINGS:" + batch.getPeriodId() + ":" + optionLabel;
+            groups.computeIfAbsent(groupKey, k -> new ArrayList<>()).add(row);
+        }
+
+        for (Map.Entry<String, List<ImportRow>> entry : groups.entrySet()) {
+            replayOfferingGroup(entry.getKey(), entry.getValue(), batch, command);
+        }
+    }
+
+    /**
+     * Replay one group of OFFERINGS rows (same course + period + option_label) as a single
+     * {@link CreateOfferingUseCase#createOffering} call.
+     *
+     * @param groupKey  deterministic key {@code courseId:OFFERINGS:periodId:optionLabel}
+     * @param groupRows rows belonging to this group (all share the same course + option_label)
+     * @param batch     the parent ImportBatch
+     * @param command   the confirm command
+     */
+    private void replayOfferingGroup(String groupKey, List<ImportRow> groupRows,
+            ImportBatch batch, ConfirmImportCommand command) {
+        // Use the first row of the group for the offering-level fields (course, option_label,
+        // journey) — these are identical across all rows in the group by construction.
+        ImportRow firstRow = groupRows.getFirst();
+
+        UUID courseId = parseUuidOrNull(firstRow.cells().getOrDefault("course", ""));
+        String optionLabel = firstRow.cells().getOrDefault("option_label", "G1");
+        String journeyCode = firstRow.cells().getOrDefault("journey", "");
+
+        // Build one SessionDraft per row in the group — each row is a distinct weekly session.
+        List<CreateOfferingCommand.SessionDraft> sessions = new ArrayList<>();
+        for (ImportRow row : groupRows) {
+            String dayStr = expandDay(row.cells().getOrDefault("day", "MON").toUpperCase());
+            String startTimeStr = row.cells().getOrDefault("start_time", "");
+            String endTimeStr = row.cells().getOrDefault("end_time", "");
+            LocalTime startsAt = parseTimeOrNull(startTimeStr);
+            LocalTime endsAt = parseTimeOrNull(endTimeStr);
+            sessions.add(new CreateOfferingCommand.SessionDraft(dayStr, startsAt, endsAt));
+        }
+
+        // One ScheduleOptionDraft containing all sessions of this group.
+        CreateOfferingCommand.ScheduleOptionDraft option = new CreateOfferingCommand.ScheduleOptionDraft(
+                optionLabel, journeyCode.isBlank() ? null : journeyCode, sessions);
+
+        // Idempotency key derived from the GROUP key (not row index) — deterministic per group.
+        // A retried confirm regenerates the same key for the same group → hits idempotency replay
+        // in CreateOfferingService rather than double-creating (ADR-F6-001).
+        UUID groupIdempotencyKey = UUID.nameUUIDFromBytes(
+                groupKey.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String groupHash = "import-group:" + groupKey;
+
+        CreateOfferingCommand offeringCommand = new CreateOfferingCommand(
+                groupIdempotencyKey,
+                command.actorId(),
+                batch.getProgramId(),
+                courseId,
+                batch.getPeriodId(),
+                null, // no notes for import-originated offerings
+                List.of(option),
+                groupHash);
+
+        createOfferingUseCase.createOffering(offeringCommand);
     }
 
     /**
@@ -310,69 +404,6 @@ public class ConfirmImportService implements ConfirmImportUseCase {
                 simultaneousAllowed);
 
         createCourseRequirementUseCase.createCourseRequirement(reqCommand);
-    }
-
-    /**
-     * Map an OFFERINGS row to a {@link CreateOfferingCommand} and call {@link CreateOfferingUseCase}.
-     *
-     * <p>Row model (ADR-014): each row represents a unique (period, course, option_label) tuple
-     * that maps to one offering with one schedule option containing one session. The validator
-     * already enforces that duplicate (course, option_label) pairs within a batch produce
-     * {@code DUPLICATE_OPTION_IN_BATCH} errors, so by confirm time every row is structurally
-     * unique.
-     *
-     * <p>NFR-003 load-bearing: {@link CreateOfferingUseCase#createOffering} calls
-     * {@code CourseOffering.create()} which always starts in DRAFT status — no auto-publish
-     * (RN-122). The {@link CreateOfferingCommand} has no "initial status" parameter; DRAFT is
-     * enforced at the domain model level inside {@code CourseOffering.create()}.
-     *
-     * <p>The period UUID is taken from {@code batch.getPeriodId()} (set at upload time, required
-     * for OFFERINGS kind). The course UUID is read from the {@code course} cell (validated row
-     * carries the UUID string directly after upload-time resolution).
-     *
-     * <p>Idempotency key and hash are derived deterministically from batchId + rowIndex (same as
-     * COURSES/REQUIREMENTS paths) so a retried confirm replays through the offering idempotency
-     * store rather than double-creating.
-     *
-     * <p>Propagation: {@link CreateOfferingUseCase} implementation ({@code CreateOfferingService})
-     * is framework-free and wired via {@code OfferingConfiguration}. It does NOT declare
-     * {@code @Transactional} itself — it relies on the caller's transaction (REQUIRED propagation),
-     * which is the {@code @Transactional} on {@link #confirm}. Any exception propagates and rolls
-     * back the whole confirm TX, including any earlier offering rows (INV-03).
-     */
-    private void replayOfferingRow(ImportRow row, ImportBatch batch, ConfirmImportCommand command) {
-        UUID rowIdempotencyKey = deterministicRowKey(batch.getId().value(), "OFFERING", row.index());
-        String rowHash = deterministicRowHash(batch.getId().value(), "OFFERING", row.index());
-
-        UUID courseId = parseUuidOrNull(row.cells().getOrDefault("course", ""));
-        String optionLabel = row.cells().getOrDefault("option_label", "G1");
-        String journeyCode = row.cells().getOrDefault("journey", "");
-        String dayStr = expandDay(row.cells().getOrDefault("day", "MON").toUpperCase());
-        String startTimeStr = row.cells().getOrDefault("start_time", "");
-        String endTimeStr = row.cells().getOrDefault("end_time", "");
-
-        LocalTime startsAt = parseTimeOrNull(startTimeStr);
-        LocalTime endsAt = parseTimeOrNull(endTimeStr);
-
-        // Build a single-session draft for this row's option
-        CreateOfferingCommand.SessionDraft session = new CreateOfferingCommand.SessionDraft(
-                dayStr, startsAt, endsAt);
-
-        // One option with one session per row (ADR-014 model)
-        CreateOfferingCommand.ScheduleOptionDraft option = new CreateOfferingCommand.ScheduleOptionDraft(
-                optionLabel, journeyCode.isBlank() ? null : journeyCode, List.of(session));
-
-        CreateOfferingCommand offeringCommand = new CreateOfferingCommand(
-                rowIdempotencyKey,
-                command.actorId(),
-                batch.getProgramId(),
-                courseId,
-                batch.getPeriodId(),
-                null, // no notes for import-originated offerings
-                List.of(option),
-                rowHash);
-
-        createOfferingUseCase.createOffering(offeringCommand);
     }
 
     // =========================================================================

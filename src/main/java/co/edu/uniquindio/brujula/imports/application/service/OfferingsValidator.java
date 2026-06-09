@@ -33,16 +33,24 @@ public class OfferingsValidator {
   /**
    * Validate all rows in an OFFERINGS batch.
    *
+   * <p>Multiple rows sharing the same {@code (course, option_label)} are VALID when they carry
+   * different weekday/time combinations — they represent multiple weekly sessions of the same
+   * schedule option (QAL-IMP-001 / DEBT-F6-002). A conflict only exists when two rows within
+   * the same option share an identical {@code (course, option_label, day, start_time)} tuple,
+   * which would create overlapping/duplicate sessions.
+   *
    * @param rows list of import rows
    * @return map of row index → issues for that row
    */
   public Map<Integer, List<ImportIssue>> validateAll(List<ImportRow> rows) {
     Map<Integer, List<ImportIssue>> result = new HashMap<>();
-    // Track duplicate (course, option_label) pairs within the batch
-    Set<String> seenOptionPairs = new HashSet<>();
+    // Track duplicate (course, option_label, day, start_time) tuples — session-level conflict.
+    // A repeated (course, option_label) with a DIFFERENT (day, start_time) is a VALID additional
+    // session of the same option, NOT a duplicate.
+    Set<String> seenSessionKeys = new HashSet<>();
 
     for (ImportRow row : rows) {
-      List<ImportIssue> issues = validateSingleRow(row, seenOptionPairs);
+      List<ImportIssue> issues = validateSingleRow(row, seenSessionKeys);
       if (!issues.isEmpty()) {
         result.put(row.index(), issues);
       }
@@ -50,7 +58,7 @@ public class OfferingsValidator {
     return result;
   }
 
-  private List<ImportIssue> validateSingleRow(ImportRow row, Set<String> seenOptionPairs) {
+  private List<ImportIssue> validateSingleRow(ImportRow row, Set<String> seenSessionKeys) {
     List<ImportIssue> issues = new ArrayList<>();
     int rowNumber = row.index() + 1;
     Map<String, String> cells = row.cells();
@@ -166,19 +174,22 @@ public class OfferingsValidator {
               "status '%s' is not valid. Allowed: %s".formatted(status, VALID_STATUSES)));
     }
 
-    // duplicate option_label for same course within batch
-    if (!course.isEmpty() && !optionLabel.isEmpty()) {
-      String pair = course + "||" + optionLabel;
-      if (seenOptionPairs.contains(pair)) {
+    // Session-level duplicate detection: (course, option_label, day, start_time) must be unique.
+    // A repeated (course, option_label) on a DIFFERENT day/time is a valid additional weekly
+    // session of the same schedule option. Only an identical time-slot within the same option
+    // is a genuine conflict (would create overlapping sessions — QAL-IMP-001 / DEBT-F6-002).
+    if (!course.isEmpty() && !optionLabel.isEmpty() && !day.isEmpty() && !startTimeStr.isEmpty()) {
+      String sessionKey = course + "||" + optionLabel + "||" + day + "||" + startTimeStr;
+      if (seenSessionKeys.contains(sessionKey)) {
         issues.add(
             ImportIssue.error(
                 rowNumber,
                 "option_label",
-                "DUPLICATE_OPTION_IN_BATCH",
-                "option_label '%s' already appears for course '%s' in this file."
-                    .formatted(optionLabel, course)));
+                "DUPLICATE_SESSION_IN_OPTION",
+                "A session for option_label '%s', course '%s', day '%s' at %s already exists in this file."
+                    .formatted(optionLabel, course, day, startTimeStr)));
       } else {
-        seenOptionPairs.add(pair);
+        seenSessionKeys.add(sessionKey);
       }
     }
 
