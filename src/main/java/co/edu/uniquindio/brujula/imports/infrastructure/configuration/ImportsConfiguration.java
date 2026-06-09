@@ -1,6 +1,9 @@
 package co.edu.uniquindio.brujula.imports.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.CreateCourseRequirementUseCase;
+import co.edu.uniquindio.brujula.curriculum.application.port.in.CreateCourseUseCase;
+import co.edu.uniquindio.brujula.imports.application.port.in.ConfirmImportUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.GetImportUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.ListImportsUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.UploadImportUseCase;
@@ -9,6 +12,7 @@ import co.edu.uniquindio.brujula.imports.application.port.out.LoadImportBatchPor
 import co.edu.uniquindio.brujula.imports.application.port.out.SaveImportBatchPort;
 import co.edu.uniquindio.brujula.imports.application.port.out.StaffAssignmentPort;
 import co.edu.uniquindio.brujula.imports.application.service.CoursesValidator;
+import co.edu.uniquindio.brujula.imports.application.service.ConfirmImportService;
 import co.edu.uniquindio.brujula.imports.application.service.GetImportService;
 import co.edu.uniquindio.brujula.imports.application.service.ImportValidator;
 import co.edu.uniquindio.brujula.imports.application.service.ListImportsService;
@@ -91,5 +95,26 @@ class ImportsConfiguration {
       LoadImportBatchPort loadImportBatchPort,
       StaffAssignmentPort staffAssignmentPort) {
     return new GetImportService(loadImportBatchPort, staffAssignmentPort);
+  }
+
+  @Bean
+  ConfirmImportUseCase confirmImportUseCase(
+      LoadImportBatchPort loadImportBatchPort,
+      SaveImportBatchPort saveImportBatchPort,
+      StaffAssignmentPort staffAssignmentPort,
+      IdempotencyStorePort idempotencyStorePort,
+      JsonCodecPort jsonCodecPort,
+      AuditRecorder auditRecorder,
+      CreateCourseUseCase createCourseUseCase,
+      CreateCourseRequirementUseCase createCourseRequirementUseCase) {
+    return new ConfirmImportService(
+        loadImportBatchPort,
+        saveImportBatchPort,
+        staffAssignmentPort,
+        idempotencyStorePort,
+        jsonCodecPort,
+        auditRecorder,
+        createCourseUseCase,
+        createCourseRequirementUseCase);
   }
 }

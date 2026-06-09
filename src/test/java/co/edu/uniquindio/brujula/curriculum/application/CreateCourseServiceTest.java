@@ -130,6 +130,24 @@ class CreateCourseServiceTest {
     verify(saveCoursePort, never()).save(any());
   }
 
+  @Test
+  void unknown_initial_status_throws_with_clear_message() {
+    // S1 guard: invalid status string must produce a clear message, not a raw enum error
+    when(idempotencyStorePort.find(idempotencyKey, CreateCourseService.OPERATION))
+        .thenReturn(Optional.empty());
+
+    CreateCourseCommand command = new CreateCourseCommand(
+        idempotencyKey, requestHash, actorId,
+        planId, programId, "Cálculo I", null, "REQUIRED", 4, 4, List.of(), "DRAFT");
+
+    assertThatThrownBy(() -> service.createCourse(command))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Unknown course status: DRAFT")
+        .hasMessageContaining("expected one of");
+
+    verify(saveCoursePort, never()).save(any());
+  }
+
   private static CourseView toView(Course c) {
     return new CourseView(
         c.id().value(), c.planId(), c.programId(), c.officialCode(),

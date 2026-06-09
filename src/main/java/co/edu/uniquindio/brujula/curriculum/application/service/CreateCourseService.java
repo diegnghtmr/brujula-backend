@@ -8,6 +8,7 @@ import co.edu.uniquindio.brujula.curriculum.application.port.in.CreateCourseUseC
 import co.edu.uniquindio.brujula.curriculum.application.port.out.SaveCoursePort;
 import co.edu.uniquindio.brujula.curriculum.domain.Course;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseId;
+import co.edu.uniquindio.brujula.curriculum.domain.CourseStatus;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseType;
 import co.edu.uniquindio.brujula.curriculum.domain.RecommendedSemester;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
@@ -71,16 +72,49 @@ public class CreateCourseService implements CreateCourseUseCase {
             .toList()
         : Collections.emptyList();
 
-    // 3. Create domain aggregate (starts ACTIVE, version 0)
-    Course course = Course.create(
-        CourseId.generate(),
-        command.planId(),
-        command.programId(),
-        command.name(),
-        CourseType.valueOf(command.type()),
-        command.credits(),
-        command.curricularWeeklyHours(),
-        semesters);
+    // 3. Resolve the desired initial status (null or "ACTIVE" → ACTIVE; "INACTIVE" → INACTIVE).
+    //    Import confirm passes "INACTIVE" so imported courses land INACTIVE (NFR-003).
+    CourseStatus desiredStatus;
+    if (command.initialStatus() == null) {
+      desiredStatus = CourseStatus.ACTIVE;
+    } else {
+      try {
+        desiredStatus = CourseStatus.valueOf(command.initialStatus());
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException(
+            "Unknown course status: " + command.initialStatus()
+                + "; expected one of " + java.util.Arrays.toString(CourseStatus.values()),
+            e);
+      }
+    }
+
+    // 4. Create domain aggregate via factory then reconstitute with desired status if not ACTIVE.
+    Course course;
+    if (desiredStatus == CourseStatus.ACTIVE) {
+      course = Course.create(
+          CourseId.generate(),
+          command.planId(),
+          command.programId(),
+          command.name(),
+          CourseType.valueOf(command.type()),
+          command.credits(),
+          command.curricularWeeklyHours(),
+          semesters);
+    } else {
+      // For INACTIVE (import case): use reconstitute with explicit status.
+      course = Course.reconstitute(
+          CourseId.generate(),
+          command.planId(),
+          command.programId(),
+          null,
+          command.name(),
+          CourseType.valueOf(command.type()),
+          command.credits(),
+          command.curricularWeeklyHours(),
+          semesters,
+          desiredStatus,
+          0L);
+    }
 
     // 4. Persist
     Course saved = saveCoursePort.save(course);

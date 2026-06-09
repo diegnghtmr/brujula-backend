@@ -18,13 +18,17 @@ import co.edu.uniquindio.brujula.identity.application.dto.UserProfile;
 import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
 import co.edu.uniquindio.brujula.imports.application.dto.ImportPageView;
 import co.edu.uniquindio.brujula.imports.application.dto.ImportSummary;
+import co.edu.uniquindio.brujula.imports.application.port.in.ConfirmImportUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.GetImportUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.ListImportsUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.UploadImportUseCase;
 import co.edu.uniquindio.brujula.imports.domain.exception.FileSizeExceededException;
 import co.edu.uniquindio.brujula.imports.domain.exception.ImportAccessDeniedException;
+import co.edu.uniquindio.brujula.imports.domain.exception.ImportBatchNotConfirmableException;
 import co.edu.uniquindio.brujula.imports.domain.exception.ImportBatchNotFoundException;
 import co.edu.uniquindio.brujula.imports.domain.exception.UnsupportedFileTypeException;
+import co.edu.uniquindio.brujula.imports.domain.model.ImportBatchId;
+import co.edu.uniquindio.brujula.imports.domain.model.ImportStatus;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 
 import java.time.Instant;
@@ -37,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -62,6 +67,7 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
   @MockitoBean private UploadImportUseCase uploadImportUseCase;
   @MockitoBean private ListImportsUseCase listImportsUseCase;
   @MockitoBean private GetImportUseCase getImportUseCase;
+  @MockitoBean private ConfirmImportUseCase confirmImportUseCase;
   @MockitoBean private GetCurrentUserQuery getCurrentUserQuery;
 
   private MockMvc mockMvc;
@@ -406,6 +412,140 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
+  // POST /staff/imports/{importId}/confirmation — confirm (T6.4)
+  // -------------------------------------------------------------------------
+
+  @Test
+  void confirm_import_returns_200_on_success() throws Exception {
+    // SC-005-A, T6.4
+    stubStaffProfile();
+    ImportSummary confirmed = confirmedSummary();
+    when(confirmImportUseCase.confirm(any())).thenReturn(confirmed);
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"version\": 1}")
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", XSRF_TOKEN)
+                .with(csrf())
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CONFIRMED"))
+        .andExpect(jsonPath("$.id").value(IMPORT_ID.toString()));
+  }
+
+  @Test
+  void confirm_stale_version_returns_409() throws Exception {
+    // SC-005-B, IMP-012 SC-012-A, T6.4
+    stubStaffProfile();
+    when(confirmImportUseCase.confirm(any()))
+        .thenThrow(new ObjectOptimisticLockingFailureException(Object.class, IMPORT_ID));
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"version\": 1}")
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", XSRF_TOKEN)
+                .with(csrf())
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("OPTIMISTIC_LOCK_CONFLICT"));
+  }
+
+  @Test
+  void confirm_invalid_batch_returns_409() throws Exception {
+    // SC-005-C, T6.4
+    stubStaffProfile();
+    when(confirmImportUseCase.confirm(any()))
+        .thenThrow(new ImportBatchNotConfirmableException(
+                ImportBatchId.of(IMPORT_ID),
+                co.edu.uniquindio.brujula.imports.domain.model.ImportStatus.INVALID));
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"version\": 0}")
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", XSRF_TOKEN)
+                .with(csrf())
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("IMPORT_NOT_CONFIRMABLE"));
+  }
+
+  @Test
+  void confirm_unassigned_staff_returns_403() throws Exception {
+    // SC-005-F, T6.4
+    stubStaffProfile();
+    when(confirmImportUseCase.confirm(any()))
+        .thenThrow(ImportAccessDeniedException.notAssignedToProgram(PROGRAM_ID));
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"version\": 1}")
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", XSRF_TOKEN)
+                .with(csrf())
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("IMPORT_ACCESS_DENIED"));
+  }
+
+  @Test
+  void confirm_batch_not_found_returns_404() throws Exception {
+    // T6.4
+    stubStaffProfile();
+    when(confirmImportUseCase.confirm(any()))
+        .thenThrow(new ImportBatchNotFoundException(IMPORT_ID));
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"version\": 1}")
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", XSRF_TOKEN)
+                .with(csrf())
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("IMPORT_NOT_FOUND"));
+  }
+
+  @Test
+  void confirm_offerings_kind_returns_501() throws Exception {
+    // IMP-012, W2 — OFFERINGS confirm is deferred to WU7; must return 501, not 500
+    stubStaffProfile();
+    when(confirmImportUseCase.confirm(any()))
+        .thenThrow(new UnsupportedOperationException(
+            "OFFERINGS confirmation is deferred to WU7. Batch kind OFFERINGS cannot be confirmed yet."));
+
+    mockMvc
+        .perform(
+            org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                .post("/staff/imports/{importId}/confirmation", IMPORT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"version\": 0}")
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", XSRF_TOKEN)
+                .with(csrf())
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+        .andExpect(status().isNotImplemented())
+        .andExpect(jsonPath("$.code").value("NOT_IMPLEMENTED"));
+  }
+
+  // -------------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------------
 
@@ -463,5 +603,21 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
         List.of(),
         Instant.now(),
         1L);
+  }
+
+  private ImportSummary confirmedSummary() {
+    return new ImportSummary(
+        IMPORT_ID,
+        "COURSES",
+        PROGRAM_ID,
+        PLAN_ID,
+        null,
+        "CONFIRMED",
+        5,
+        5,
+        List.of(),
+        List.of(),
+        Instant.now(),
+        2L);
   }
 }
