@@ -9,6 +9,8 @@
  *   <li>{@code audit::spi} — AuditRecorder SPI (WU3+)
  *   <li>{@code audit::spi-dto} — audit event DTOs (WU3+)
  *   <li>{@code curriculum::api} — curriculum write use-cases for confirm (WU5+)
+ *   <li>{@code curriculum::api-dto} — CreateCourseCommand, CreateCourseRequirementCommand, CourseView
+ *       DTOs consumed by ConfirmImportService during row replay (WU6)
  *   <li>{@code offering::api} — offering write use-case for confirm OFFERINGS (WU7)
  *   <li>{@code programcatalog::api} — program/plan resolution for validation (WU3)
  *   <li>{@code administration::spi} — staff assignment check + actor→StaffAccount resolution
@@ -30,6 +32,7 @@
         "audit::spi",
         "audit::spi-dto",
         "curriculum::api",
+        "curriculum::api-dto",
         "offering::api",
         "programcatalog::api",
         "administration::spi",

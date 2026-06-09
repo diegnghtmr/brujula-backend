@@ -11,6 +11,8 @@ import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuer
 import co.edu.uniquindio.brujula.imports.application.dto.ImportPageView;
 import co.edu.uniquindio.brujula.imports.application.dto.ListImportsQuery;
 import co.edu.uniquindio.brujula.imports.application.dto.UploadImportCommand;
+import co.edu.uniquindio.brujula.imports.application.dto.ConfirmImportCommand;
+import co.edu.uniquindio.brujula.imports.application.port.in.ConfirmImportUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.GetImportUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.ListImportsUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.UploadImportUseCase;
@@ -57,6 +59,7 @@ class ImportsController implements ImportsApi {
   private final UploadImportUseCase uploadImportUseCase;
   private final ListImportsUseCase listImportsUseCase;
   private final GetImportUseCase getImportUseCase;
+  private final ConfirmImportUseCase confirmImportUseCase;
   private final GetCurrentUserQuery getCurrentUserQuery;
   private final ObjectMapper objectMapper;
 
@@ -64,11 +67,13 @@ class ImportsController implements ImportsApi {
       UploadImportUseCase uploadImportUseCase,
       ListImportsUseCase listImportsUseCase,
       GetImportUseCase getImportUseCase,
+      ConfirmImportUseCase confirmImportUseCase,
       GetCurrentUserQuery getCurrentUserQuery,
       ObjectMapper objectMapper) {
     this.uploadImportUseCase = uploadImportUseCase;
     this.listImportsUseCase = listImportsUseCase;
     this.getImportUseCase = getImportUseCase;
+    this.confirmImportUseCase = confirmImportUseCase;
     this.getCurrentUserQuery = getCurrentUserQuery;
     this.objectMapper = objectMapper;
   }
@@ -163,7 +168,7 @@ class ImportsController implements ImportsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST /staff/imports/{importId}/confirmation — confirm (WU6 stub)
+  // POST /staff/imports/{importId}/confirmation — confirm (WU6, IMP-005)
   // -------------------------------------------------------------------------
 
   @Override
@@ -173,7 +178,26 @@ class ImportsController implements ImportsApi {
       String X_XSRF_TOKEN,
       UUID importId,
       VersionedAction versionedAction) {
-    throw new UnsupportedOperationException("confirmImport not implemented in WU4 — see WU6");
+
+    var profile = resolveCurrentUserProfile();
+    long expectedVersion = versionedAction != null && versionedAction.getVersion() != null
+        ? versionedAction.getVersion()
+        : 0L;
+    String requestHash = hashConfirmRequest(importId, expectedVersion);
+
+    ConfirmImportCommand command = new ConfirmImportCommand(
+        importId,
+        profile.email(),
+        profile.role(),
+        profile.id(),
+        expectedVersion,
+        idempotencyKey,
+        requestHash);
+
+    co.edu.uniquindio.brujula.imports.application.dto.ImportSummary appSummary =
+        confirmImportUseCase.confirm(command);
+
+    return ResponseEntity.ok(toContractSummary(appSummary));
   }
 
   // -------------------------------------------------------------------------
@@ -187,6 +211,21 @@ class ImportsController implements ImportsApi {
       throw new IllegalStateException("No authenticated principal found in SecurityContext");
     }
     return getCurrentUserQuery.getCurrentUserBySubject(auth.getName());
+  }
+
+  /**
+   * Compute a deterministic hash for a confirm request (importId + expectedVersion).
+   * Used for idempotency conflict detection.
+   */
+  private String hashConfirmRequest(UUID importId, long expectedVersion) {
+    try {
+      String repr = "CONFIRM:" + importId + ":" + expectedVersion;
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hash = digest.digest(repr.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+      return HexFormat.of().formatHex(hash);
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to hash confirm request", e);
+    }
   }
 
   /**

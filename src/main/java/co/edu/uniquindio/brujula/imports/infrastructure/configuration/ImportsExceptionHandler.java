@@ -9,6 +9,8 @@ import co.edu.uniquindio.brujula.imports.domain.exception.SchemaVersionMismatchE
 import co.edu.uniquindio.brujula.imports.domain.exception.UnsupportedFileTypeException;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -109,6 +111,14 @@ class ImportsExceptionHandler {
     return problem;
   }
 
+  @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+  ProblemDetail handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    problem.setProperty("code", "OPTIMISTIC_LOCK_CONFLICT");
+    return problem;
+  }
+
   @ExceptionHandler(SchemaVersionMismatchException.class)
   ProblemDetail handleSchemaVersionMismatch(SchemaVersionMismatchException ex) {
     ProblemDetail problem =
@@ -157,6 +167,25 @@ class ImportsExceptionHandler {
     ProblemDetail problem =
         ProblemDetail.forStatusAndDetail(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex.getMessage());
     problem.setProperty("code", "UNSUPPORTED_FILE_TYPE");
+    return problem;
+  }
+
+  // -------------------------------------------------------------------------
+  // 501 Not Implemented — OFFERINGS confirm deferred to WU7 (IMP-012)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Maps {@link UnsupportedOperationException} to HTTP 501 Not Implemented.
+   *
+   * <p>Currently thrown by {@code ConfirmImportService.replayRows()} when the batch kind is
+   * OFFERINGS. The OFFERINGS confirm path is deferred to WU7. Returning 501 with a structured
+   * RFC 9457 body prevents leaking a raw 500 stack trace at the API boundary (IMP-012).
+   */
+  @ExceptionHandler(UnsupportedOperationException.class)
+  ProblemDetail handleNotImplemented(UnsupportedOperationException ex) {
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_IMPLEMENTED, ex.getMessage());
+    problem.setProperty("code", "NOT_IMPLEMENTED");
     return problem;
   }
 }
