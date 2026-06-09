@@ -54,8 +54,12 @@ class SimulationExceptionHandler {
 
   @ExceptionHandler(SimulationAccessDeniedException.class)
   ProblemDetail handleSimulationAccessDenied(SimulationAccessDeniedException ex) {
-    // X-003: non-owner gets 403 (spec wins over design's 404 suggestion)
-    return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    // X-003: non-owner gets 403 (spec wins over design's 404 suggestion).
+    // QAL-SEC-001: $.code required in the response body (BOLA HTTP-layer contract).
+    // Naming follows IMPORT_ACCESS_DENIED convention: module-prefixed access-denied code.
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    problem.setProperty("code", "SIMULATION_ACCESS_DENIED");
+    return problem;
   }
 
   @ExceptionHandler(SimulationValidationBlockedException.class)
