@@ -165,7 +165,12 @@ public class GetSimulationService implements GetSimulationQuery {
     for (UUID programId : simulation.getProgramIds()) {
       double selectedCredits = creditsByProgram.getOrDefault(programId, 0.0);
       int limit = creditLimitPort.creditLimit(programId, simulation.getPeriodId());
-      String programName = programNameReadPort.programName(programId);
+      String programName;
+      try {
+        programName = programNameReadPort.programName(programId);
+      } catch (Exception e) {
+        programName = programId.toString();
+      }
       creditSummary.add(new ProgramCreditSummaryView(
           programId,
           programName,
