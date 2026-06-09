@@ -44,4 +44,22 @@ interface ImportBatchJpaRepository extends JpaRepository<ImportBatchJpaEntity, U
     List<ImportBatchJpaEntity> findAllByFilters(
             @Param("kind") String kind,
             @Param("status") String status);
+
+    /**
+     * List batches for a set of programs in a single IN-clause query (QAL-PERF-001).
+     *
+     * <p>Replaces the O(N) per-program loop in {@code ListImportsService.loadBatchesForStaff}
+     * with one prepared statement regardless of the number of programs.
+     */
+    @Query("""
+            SELECT b FROM ImportBatchJpaEntity b
+            WHERE b.programId IN :programIds
+              AND (:kind IS NULL OR b.kind = :kind)
+              AND (:status IS NULL OR b.status = :status)
+            ORDER BY b.createdAt DESC
+            """)
+    List<ImportBatchJpaEntity> findByProgramIds(
+            @Param("programIds") List<UUID> programIds,
+            @Param("kind") String kind,
+            @Param("status") String status);
 }

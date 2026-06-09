@@ -45,6 +45,20 @@ public interface LoadImportBatchPort {
     List<ImportBatch> findByProgram(UUID programId, ImportKind kind, ImportStatus status);
 
     /**
+     * List ImportBatches for a set of programs in a single batch query (QAL-PERF-001).
+     *
+     * <p>Replaces the per-program {@link #findByProgram(UUID, ImportKind, ImportStatus)} loop in
+     * {@code ListImportsService.loadBatchesForStaff} with a single IN-clause query, reducing
+     * N programs from N round-trips to exactly 1.
+     *
+     * @param programIds the program UUIDs to include; must not be null or empty
+     * @param kind       optional kind filter; null means all kinds
+     * @param status     optional status filter; null means all statuses
+     * @return list of matching batches across all given programs (unordered)
+     */
+    List<ImportBatch> findByProgramIds(List<UUID> programIds, ImportKind kind, ImportStatus status);
+
+    /**
      * List ALL ImportBatches, optionally filtered by kind/status.
      *
      * <p>Used by the list endpoint (IMP-003) for ADMIN actors who see all programs.

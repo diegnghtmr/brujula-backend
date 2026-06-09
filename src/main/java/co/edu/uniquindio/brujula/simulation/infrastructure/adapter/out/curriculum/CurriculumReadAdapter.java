@@ -9,7 +9,10 @@ import co.edu.uniquindio.brujula.curriculum.application.port.in.ListSequentialTr
 import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadPort;
 import co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement;
 import co.edu.uniquindio.brujula.simulation.domain.SequentialPredecessor;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -57,6 +60,25 @@ class CurriculumReadAdapter implements CurriculumReadPort {
   public int courseCredits(UUID courseId) {
     CourseView course = getCourseQuery.getCourse(courseId);
     return course.credits();
+  }
+
+  /**
+   * Batch credits lookup via curriculum::api.GetCourseQuery.getCourses (QAL-PERF-002).
+   *
+   * <p>Issues a single batch read to curriculum instead of one call per course ID.
+   * Course IDs not found in curriculum are absent from the returned map.
+   */
+  @Override
+  public Map<UUID, Integer> coursesCredits(Set<UUID> courseIds) {
+    if (courseIds == null || courseIds.isEmpty()) {
+      return Map.of();
+    }
+    Map<UUID, CourseView> courseViews = getCourseQuery.getCourses(courseIds);
+    Map<UUID, Integer> credits = new HashMap<>();
+    for (Map.Entry<UUID, CourseView> entry : courseViews.entrySet()) {
+      credits.put(entry.getKey(), entry.getValue().credits());
+    }
+    return credits;
   }
 
   @Override
