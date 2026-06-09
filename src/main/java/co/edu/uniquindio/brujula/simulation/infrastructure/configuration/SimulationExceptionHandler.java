@@ -9,6 +9,8 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationBlockedEx
 import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
 import java.net.URI;
 import java.util.Map;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -30,8 +32,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   <li>{@link IdempotencyKeyConflictException} → 409 Conflict (X-001: key reuse with diff body)
  *   <li>{@link OptimisticLockingFailureException} → 409 Conflict (X-002: stale version)
  * </ul>
+ *
+ * <p>QAL-ADV-001 (WU1): scoped to the simulation REST adapter package so that shared exceptions
+ * (e.g. {@link IdempotencyKeyConflictException}) handled by multiple module advices are always
+ * resolved by the owning module's handler. Controllers are package-private; {@code basePackages}
+ * string is used instead of {@code assignableTypes}. Template from {@code ImportsExceptionHandler}.
  */
-@RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.simulation.infrastructure.adapter.in.rest")
 class SimulationExceptionHandler {
 
   @ExceptionHandler(SimulationNotFoundException.class)
@@ -92,12 +100,16 @@ class SimulationExceptionHandler {
 
   @ExceptionHandler(IdempotencyKeyConflictException.class)
   ProblemDetail handleIdempotencyConflict(IdempotencyKeyConflictException ex) {
-    return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    problem.setProperty("code", "IDEMPOTENCY_KEY_CONFLICT");
+    return problem;
   }
 
   @ExceptionHandler(OptimisticLockingFailureException.class)
   ProblemDetail handleOptimisticLocking(OptimisticLockingFailureException ex) {
-    return ProblemDetail.forStatusAndDetail(
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
         HttpStatus.CONFLICT, "Version conflict — reload and retry.");
+    problem.setProperty("code", "OPTIMISTIC_LOCK_CONFLICT");
+    return problem;
   }
 }

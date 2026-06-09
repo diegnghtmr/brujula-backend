@@ -3,6 +3,8 @@ package co.edu.uniquindio.brujula.identity.infrastructure.configuration;
 import co.edu.uniquindio.brujula.identity.application.EmailAlreadyRegisteredException;
 import co.edu.uniquindio.brujula.identity.domain.DomainNotAllowedException;
 import co.edu.uniquindio.brujula.identity.domain.UserNotFoundException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,8 +26,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   <li>{@link DomainNotAllowedException} → 422 Unprocessable Entity
  *   <li>{@link EmailAlreadyRegisteredException} → 409 Conflict (S2-B-3)
  * </ul>
+ *
+ * <p>QAL-ADV-001 (WU1): scoped to the identity REST adapter package so that domain exceptions
+ * are always resolved by this handler and cannot be intercepted by foreign module advices.
+ * Controllers are package-private; {@code basePackages} string is used instead of
+ * {@code assignableTypes}. Template from {@code ImportsExceptionHandler}.
  */
-@RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.identity.infrastructure.adapter.in.rest")
 class IdentityExceptionHandler {
 
   @ExceptionHandler(UserNotFoundException.class)

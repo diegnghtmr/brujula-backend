@@ -9,6 +9,8 @@ import co.edu.uniquindio.brujula.progress.domain.InactivePlanException;
 import co.edu.uniquindio.brujula.progress.domain.LastActiveSubscriptionException;
 import co.edu.uniquindio.brujula.progress.domain.MaxSubscriptionsExceededException;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -39,8 +41,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *
  * <p>Satisfies: SUB-1..4, PRG-1..4, CROSS-3. ADR-F3. FIX-W2: 422 for history-impact ack (spec
  * SUB-3-PLAN-NO-ACK). WU3: 404 for AttemptNotFoundException, 422 for GradeStatusMismatchException.
+ *
+ * <p>QAL-ADV-001 (WU1): scoped to the progress REST adapter package so that shared exceptions
+ * (e.g. {@link co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException})
+ * handled by multiple module advices are always resolved by the owning module's handler and never
+ * intercepted by a foreign module advice. Controllers are package-private, so {@code basePackages}
+ * (string) is used instead of {@code assignableTypes} (which does not compile). Template from
+ * {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsExceptionHandler}.
  */
-@RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.progress.infrastructure.adapter.in.rest")
 class ProgressExceptionHandler {
 
   @ExceptionHandler(SubscriptionNotFoundException.class)
@@ -93,12 +103,16 @@ class ProgressExceptionHandler {
   @ExceptionHandler(IdempotencyKeyConflictException.class)
   ProblemDetail handleIdempotencyConflict(IdempotencyKeyConflictException ex) {
     // FIX-S1: sharedkernel IdempotencyKeyConflictException consolidates progress and administration exceptions.
-    return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    problem.setProperty("code", "IDEMPOTENCY_KEY_CONFLICT");
+    return problem;
   }
 
   @ExceptionHandler(OptimisticLockingFailureException.class)
   ProblemDetail handleOptimisticLocking(OptimisticLockingFailureException ex) {
-    return ProblemDetail.forStatusAndDetail(
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
         HttpStatus.CONFLICT, "Version conflict — reload and retry.");
+    problem.setProperty("code", "OPTIMISTIC_LOCK_CONFLICT");
+    return problem;
   }
 }

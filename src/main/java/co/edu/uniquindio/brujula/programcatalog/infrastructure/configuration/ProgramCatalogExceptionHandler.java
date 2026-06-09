@@ -2,6 +2,8 @@ package co.edu.uniquindio.brujula.programcatalog.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.programcatalog.domain.ProgramNotFoundException;
 import co.edu.uniquindio.brujula.programcatalog.domain.StudyPlanNotFoundException;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,8 +21,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   <li>{@link ProgramNotFoundException} → 404 Not Found (CAT-001)
  *   <li>{@link StudyPlanNotFoundException} → 404 Not Found (CAT-002)
  * </ul>
+ *
+ * <p>QAL-ADV-001 (WU1): scoped to the programcatalog REST adapter package so that domain
+ * exceptions are always resolved by this handler and cannot be intercepted by foreign module
+ * advices. Controllers are package-private; {@code basePackages} string is used instead of
+ * {@code assignableTypes}. Template from {@code ImportsExceptionHandler}.
  */
-@RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.programcatalog.infrastructure.adapter.in.rest")
 class ProgramCatalogExceptionHandler {
 
   @ExceptionHandler(ProgramNotFoundException.class)
