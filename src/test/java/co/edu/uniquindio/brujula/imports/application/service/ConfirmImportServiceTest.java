@@ -458,6 +458,167 @@ class ConfirmImportServiceTest {
         verify(auditRecorder, never()).record(any());
     }
 
+    // -------------------------------------------------------------------------
+    // WU4-T4 (RED→GREEN) — multi-session grouping: 3 rows same option → 1 createOffering call
+    //   with ONE command carrying 3 sessions (QAL-IMP-001 / DEBT-F6-002)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Three rows sharing the same (course_id, period, option_label) on different weekdays
+     * MUST result in exactly ONE call to createOfferingUseCase with ONE CreateOfferingCommand
+     * containing 3 sessions. Before the grouping fix, this produces 3 separate calls (fragmented).
+     */
+    @Test
+    void three_rows_same_option_different_days_grouped_into_one_offering_with_three_sessions() {
+        UUID importId = UUID.randomUUID();
+        UUID periodId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        ImportBatch batch = threeRowSameOptionBatch(importId, periodId, courseId);
+
+        when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
+        when(loadImportBatchPort.findById(batch.getId())).thenReturn(Optional.of(batch));
+        when(createOfferingUseCase.createOffering(any()))
+                .thenReturn(minimalOfferingDetailView(periodId));
+        when(saveImportBatchPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(jsonCodecPort.toJson(any())).thenReturn("{}");
+
+        ConfirmImportCommand command = adminCommand(UUID.randomUUID(), "hash", 0L,
+                ImportBatchId.of(importId));
+
+        ImportSummary result = service.confirm(command);
+
+        assertThat(result.status()).isEqualTo("CONFIRMED");
+
+        // THE GROUPING ASSERTION: exactly 1 call, not 3
+        ArgumentCaptor<CreateOfferingCommand> captor =
+                ArgumentCaptor.forClass(CreateOfferingCommand.class);
+        verify(createOfferingUseCase, times(1)).createOffering(captor.capture());
+
+        CreateOfferingCommand sent = captor.getValue();
+        assertThat(sent.courseId())
+                .as("Grouped command must reference the shared courseId")
+                .isEqualTo(courseId);
+        assertThat(sent.periodId())
+                .as("Grouped command must reference the shared periodId")
+                .isEqualTo(periodId);
+        assertThat(sent.scheduleOptions())
+                .as("Grouped command must have exactly 1 schedule option")
+                .hasSize(1);
+
+        CreateOfferingCommand.ScheduleOptionDraft option = sent.scheduleOptions().getFirst();
+        assertThat(option.label())
+                .as("Option label must be G1")
+                .isEqualTo("G1");
+        assertThat(option.sessions())
+                .as("The single option must carry 3 sessions (MON, WED, FRI)")
+                .hasSize(3);
+
+        // Verify all 3 weekdays are represented in the sessions
+        List<String> days = option.sessions().stream()
+                .map(CreateOfferingCommand.SessionDraft::day)
+                .toList();
+        assertThat(days)
+                .as("Sessions must contain MONDAY, WEDNESDAY, FRIDAY in some order")
+                .containsExactlyInAnyOrder("MONDAY", "WEDNESDAY", "FRIDAY");
+    }
+
+    /**
+     * WU4-T5 (RED→GREEN) — exception propagation: when createOfferingUseCase throws on the
+     * FIRST offering group, the exception propagates and the batch is NOT marked CONFIRMED.
+     *
+     * <p>NOTE: This test proves EXCEPTION PROPAGATION only (the invalid group throws on the
+     * first createOffering call, so no group writes anything before the failure). It does NOT
+     * prove real DB rollback of an already-written group. The authoritative rollback proof is
+     * WU4-IT2 (ConfirmImportOfferingsIT), where a valid group is written within the TX before
+     * the invalid group fails, and COUNT==0 after rollback confirms full-TX atomicity.
+     *
+     * <p>This tests that the all-or-nothing TX invariant is preserved after the grouping refactor.
+     * Since grouping produces fewer calls, a failure on ANY group must roll back ALL prior groups.
+     */
+    @Test
+    void atomicity_exception_propagation_batch_not_confirmed_on_first_offering_failure() {
+        UUID importId = UUID.randomUUID();
+        UUID periodId = UUID.randomUUID();
+        UUID courseId1 = UUID.randomUUID();
+        UUID courseId2 = UUID.randomUUID();
+        // Batch with 2 distinct offerings: courseId1/G1 (2 sessions) and courseId2/G2 (1 session)
+        ImportBatch batch = twoGroupOfferingsBatch(importId, periodId, courseId1, courseId2);
+
+        when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
+        when(loadImportBatchPort.findById(batch.getId())).thenReturn(Optional.of(batch));
+        // First call throws — simulates constraint violation on the first offering group
+        when(createOfferingUseCase.createOffering(any()))
+                .thenThrow(new IllegalStateException("constraint violation on offering group 1"));
+
+        ConfirmImportCommand command = adminCommand(UUID.randomUUID(), "hash", 0L,
+                ImportBatchId.of(importId));
+
+        assertThatThrownBy(() -> service.confirm(command))
+                .as("Exception from first offering group must propagate (all-or-nothing)")
+                .isInstanceOf(IllegalStateException.class);
+
+        // Batch must NOT be saved/confirmed
+        verify(saveImportBatchPort, never()).save(any());
+        verify(auditRecorder, never()).record(any());
+    }
+
+    // -------------------------------------------------------------------------
+    // WU4-T6 — distinct option_label on same course + period → two separate offerings
+    //   Guards against a regression where the group key drops the optionLabel component,
+    //   which would silently over-merge G1 and G2 into a single offering (QAL-IMP-001).
+    // -------------------------------------------------------------------------
+
+    /**
+     * Two rows with the same courseId AND the same periodId but DIFFERENT option_label
+     * ("G1" on MON, "G2" on TUE) MUST produce exactly TWO separate createOffering calls,
+     * each with a distinct option label. A bug that strips optionLabel from the group key
+     * would collapse them into one call — this test would go RED immediately.
+     */
+    @Test
+    void two_options_same_course_produce_two_separate_offerings() {
+        UUID importId = UUID.randomUUID();
+        UUID periodId = UUID.randomUUID();
+        UUID courseId = UUID.randomUUID();
+        ImportBatch batch = sameCourseTwoOptionsBatch(importId, periodId, courseId);
+
+        when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
+        when(loadImportBatchPort.findById(batch.getId())).thenReturn(Optional.of(batch));
+        when(createOfferingUseCase.createOffering(any()))
+                .thenReturn(minimalOfferingDetailView(periodId));
+        when(saveImportBatchPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(jsonCodecPort.toJson(any())).thenReturn("{}");
+
+        ConfirmImportCommand command = adminCommand(UUID.randomUUID(), "hash", 0L,
+                ImportBatchId.of(importId));
+
+        ImportSummary result = service.confirm(command);
+
+        assertThat(result.status()).isEqualTo("CONFIRMED");
+
+        // THE OVER-MERGE GUARD: same course + same period + different option_label → 2 calls
+        ArgumentCaptor<CreateOfferingCommand> captor =
+                ArgumentCaptor.forClass(CreateOfferingCommand.class);
+        verify(createOfferingUseCase, times(2)).createOffering(captor.capture());
+
+        List<CreateOfferingCommand> commands = captor.getAllValues();
+        assertThat(commands).hasSize(2);
+
+        // Both commands must reference the SAME courseId and periodId
+        assertThat(commands).allSatisfy(cmd -> {
+            assertThat(cmd.courseId()).isEqualTo(courseId);
+            assertThat(cmd.periodId()).isEqualTo(periodId);
+            assertThat(cmd.scheduleOptions()).hasSize(1);
+        });
+
+        // Each command must carry a DISTINCT option label
+        List<String> capturedLabels = commands.stream()
+                .map(cmd -> cmd.scheduleOptions().getFirst().label())
+                .toList();
+        assertThat(capturedLabels)
+                .as("G1 and G2 must NOT be merged into a single offering")
+                .containsExactlyInAnyOrder("G1", "G2");
+    }
+
     // =========================================================================
     // Helpers
     // =========================================================================
@@ -631,5 +792,128 @@ class ConfirmImportServiceTest {
                 id, "COURSES", PROGRAM_ID, PLAN_ID, null,
                 "CONFIRMED", 3, 3, List.of(), List.of(),
                 Instant.now(), 1L);
+    }
+
+    /**
+     * Creates a VALIDATED OFFERINGS ImportBatch with 3 rows for the same (course, option_label)
+     * on different weekdays (MON, WED, FRI). Models a 3-session weekly offering.
+     */
+    private ImportBatch threeRowSameOptionBatch(UUID importId, UUID periodId, UUID courseId) {
+        List<ImportRow> rows = List.of(
+                new ImportRow(0, Map.of(
+                        "course", courseId.toString(),
+                        "option_label", "G1",
+                        "journey", "DIURNA",
+                        "day", "MON",
+                        "start_time", "08:00",
+                        "end_time", "10:00",
+                        "status", "ACTIVE")),
+                new ImportRow(1, Map.of(
+                        "course", courseId.toString(),
+                        "option_label", "G1",
+                        "journey", "DIURNA",
+                        "day", "WED",
+                        "start_time", "08:00",
+                        "end_time", "10:00",
+                        "status", "ACTIVE")),
+                new ImportRow(2, Map.of(
+                        "course", courseId.toString(),
+                        "option_label", "G1",
+                        "journey", "DIURNA",
+                        "day", "FRI",
+                        "start_time", "08:00",
+                        "end_time", "10:00",
+                        "status", "ACTIVE")));
+        return ImportBatch.reconstitute(
+                ImportBatchId.of(importId),
+                ImportKind.OFFERINGS, PROGRAM_ID, null, periodId,
+                ImportStatus.VALIDATED,
+                3, 3,
+                List.of(),
+                rows,
+                ImportBatch.CURRENT_SCHEMA_VERSION,
+                0L,
+                Instant.now());
+    }
+
+    /**
+     * Creates a VALIDATED OFFERINGS ImportBatch with 2 distinct offering groups:
+     * - group 1: courseId1 / G1 (2 rows: MON + WED)
+     * - group 2: courseId2 / G2 (1 row: FRI)
+     * Used to test atomicity with grouped confirm.
+     */
+    private ImportBatch twoGroupOfferingsBatch(UUID importId, UUID periodId,
+            UUID courseId1, UUID courseId2) {
+        List<ImportRow> rows = List.of(
+                new ImportRow(0, Map.of(
+                        "course", courseId1.toString(),
+                        "option_label", "G1",
+                        "journey", "DIURNA",
+                        "day", "MON",
+                        "start_time", "08:00",
+                        "end_time", "10:00",
+                        "status", "ACTIVE")),
+                new ImportRow(1, Map.of(
+                        "course", courseId1.toString(),
+                        "option_label", "G1",
+                        "journey", "DIURNA",
+                        "day", "WED",
+                        "start_time", "08:00",
+                        "end_time", "10:00",
+                        "status", "ACTIVE")),
+                new ImportRow(2, Map.of(
+                        "course", courseId2.toString(),
+                        "option_label", "G2",
+                        "journey", "NOCTURNA",
+                        "day", "FRI",
+                        "start_time", "18:00",
+                        "end_time", "20:00",
+                        "status", "ACTIVE")));
+        return ImportBatch.reconstitute(
+                ImportBatchId.of(importId),
+                ImportKind.OFFERINGS, PROGRAM_ID, null, periodId,
+                ImportStatus.VALIDATED,
+                3, 3,
+                List.of(),
+                rows,
+                ImportBatch.CURRENT_SCHEMA_VERSION,
+                0L,
+                Instant.now());
+    }
+
+    /**
+     * Creates a VALIDATED OFFERINGS ImportBatch with 2 rows for the SAME courseId and SAME
+     * periodId but DIFFERENT option_label: G1 on MON and G2 on TUE.
+     * Used by WU4-T6 to guard against the over-merge regression where the group key accidentally
+     * drops the optionLabel component and collapses both groups into one offering.
+     */
+    private ImportBatch sameCourseTwoOptionsBatch(UUID importId, UUID periodId, UUID courseId) {
+        List<ImportRow> rows = List.of(
+                new ImportRow(0, Map.of(
+                        "course", courseId.toString(),
+                        "option_label", "G1",
+                        "journey", "DIURNA",
+                        "day", "MON",
+                        "start_time", "08:00",
+                        "end_time", "10:00",
+                        "status", "ACTIVE")),
+                new ImportRow(1, Map.of(
+                        "course", courseId.toString(),
+                        "option_label", "G2",
+                        "journey", "DIURNA",
+                        "day", "TUE",
+                        "start_time", "08:00",
+                        "end_time", "10:00",
+                        "status", "ACTIVE")));
+        return ImportBatch.reconstitute(
+                ImportBatchId.of(importId),
+                ImportKind.OFFERINGS, PROGRAM_ID, null, periodId,
+                ImportStatus.VALIDATED,
+                2, 2,
+                List.of(),
+                rows,
+                ImportBatch.CURRENT_SCHEMA_VERSION,
+                0L,
+                Instant.now());
     }
 }
