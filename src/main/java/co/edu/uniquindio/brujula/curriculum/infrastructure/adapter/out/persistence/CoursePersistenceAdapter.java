@@ -6,6 +6,7 @@ import co.edu.uniquindio.brujula.curriculum.domain.Course;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseId;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +45,18 @@ class CoursePersistenceAdapter implements LoadCoursePort, SaveCoursePort {
   public Optional<Course> loadById(CourseId courseId) {
     return repository.findById(courseId.value())
         .map(CurriculumPersistenceMapper::toDomain);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<Course> loadByIds(Set<UUID> courseIds) {
+    if (courseIds == null || courseIds.isEmpty()) {
+      return List.of();
+    }
+    // findAllById issues a single IN-clause query for all IDs
+    return repository.findAllById(courseIds).stream()
+        .map(CurriculumPersistenceMapper::toDomain)
+        .toList();
   }
 
   // ---- SaveCoursePort ----

@@ -81,4 +81,19 @@ class ImportBatchPersistenceAdapter implements SaveImportBatchPort, LoadImportBa
                 .map(mapper::toDomain)
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ImportBatch> findByProgramIds(
+            List<UUID> programIds, ImportKind kind, ImportStatus status) {
+        if (programIds == null || programIds.isEmpty()) {
+            return List.of();
+        }
+        String kindStr = kind != null ? kind.name() : null;
+        String statusStr = status != null ? status.name() : null;
+        return repository.findByProgramIds(programIds, kindStr, statusStr)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
 }

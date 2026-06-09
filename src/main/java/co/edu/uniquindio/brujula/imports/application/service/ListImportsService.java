@@ -12,7 +12,7 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportStatus;
 import co.edu.uniquindio.brujula.imports.domain.model.Severity;
 
-import java.util.ArrayList;
+import java.util.ArrayList; // still used in toSummary
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -83,6 +83,9 @@ public class ListImportsService implements ListImportsUseCase {
 
   /**
    * Load batches for all programs assigned to the given staff member.
+   *
+   * <p>QAL-PERF-001: replaced the per-program O(N) loop with a single IN-clause batch query,
+   * issuing exactly 1 SQL statement regardless of how many programs are assigned.
    */
   private List<ImportBatch> loadBatchesForStaff(
       UUID staffId, ImportKind kindFilter, ImportStatus statusFilter) {
@@ -92,11 +95,8 @@ public class ListImportsService implements ListImportsUseCase {
       return List.of();
     }
 
-    List<ImportBatch> result = new ArrayList<>();
-    for (UUID programId : assignedPrograms) {
-      result.addAll(loadImportBatchPort.findByProgram(programId, kindFilter, statusFilter));
-    }
-    return result;
+    // Single IN-clause query — O(1) round-trips instead of O(N)
+    return loadImportBatchPort.findByProgramIds(assignedPrograms, kindFilter, statusFilter);
   }
 
   private ImportPageView emptyPage(int page, int size) {

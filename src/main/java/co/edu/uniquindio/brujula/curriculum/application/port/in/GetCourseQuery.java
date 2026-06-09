@@ -1,6 +1,8 @@
 package co.edu.uniquindio.brujula.curriculum.application.port.in;
 
 import co.edu.uniquindio.brujula.curriculum.application.dto.CourseView;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -22,4 +24,18 @@ public interface GetCourseQuery {
    * @throws co.edu.uniquindio.brujula.curriculum.domain.CourseNotFoundException if not found
    */
   CourseView getCourse(UUID courseId);
+
+  /**
+   * Return a map of course views for the given set of course IDs (batch read, QAL-PERF-002).
+   *
+   * <p>Additive method — does NOT change the existing {@link #getCourse(UUID)} signature.
+   * Course IDs not found in the curriculum are absent from the returned map (no exception thrown).
+   *
+   * <p>This method stays inside the {@code curriculum::api} {@link org.springframework.modulith.NamedInterface}
+   * package so Spring Modulith validates the cross-module edge.
+   *
+   * @param courseIds the set of course UUIDs to resolve; must not be null
+   * @return map from courseId to {@link CourseView} for each found course
+   */
+  Map<UUID, CourseView> getCourses(Set<UUID> courseIds);
 }

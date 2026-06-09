@@ -4,6 +4,8 @@ import co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement;
 import co.edu.uniquindio.brujula.simulation.domain.SequentialPredecessor;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -40,6 +42,21 @@ public interface CurriculumReadPort {
    * @throws co.edu.uniquindio.brujula.curriculum.domain.CourseNotFoundException if not found
    */
   int courseCredits(UUID courseId);
+
+  /**
+   * Return credits for a set of course IDs in a single batch call (QAL-PERF-002).
+   *
+   * <p>Replaces the per-course {@link #courseCredits(UUID)} loop in
+   * {@code GetSimulationService.buildValidationSnapshot} with a single batch read,
+   * reducing N courses from N round-trips to exactly 1.
+   *
+   * <p>Missing course IDs (not found in curriculum) are absent from the returned map.
+   * Callers MUST treat a missing entry as 0 credits or use a default as appropriate.
+   *
+   * @param courseIds the course UUIDs to resolve; must not be null
+   * @return map from courseId to credit count for all found courses
+   */
+  Map<UUID, Integer> coursesCredits(Set<UUID> courseIds);
 
   /**
    * Return the sequential-track predecessor information for a course.

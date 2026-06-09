@@ -8,7 +8,10 @@ import co.edu.uniquindio.brujula.curriculum.domain.CourseId;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseNotFoundException;
 import co.edu.uniquindio.brujula.curriculum.domain.RecommendedSemester;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Use case implementation: get a single course by ID.
@@ -30,6 +33,22 @@ public class GetCourseService implements GetCourseQuery {
     Course course = loadCoursePort.loadById(typedId)
         .orElseThrow(() -> new CourseNotFoundException(typedId));
     return toView(course);
+  }
+
+  /**
+   * Batch load courses by their UUIDs in a single query (QAL-PERF-002).
+   *
+   * <p>Course IDs not found in curriculum are absent from the returned map (no exception).
+   */
+  @Override
+  public Map<UUID, CourseView> getCourses(Set<UUID> courseIds) {
+    if (courseIds == null || courseIds.isEmpty()) {
+      return Map.of();
+    }
+    return loadCoursePort.loadByIds(courseIds).stream()
+        .collect(Collectors.toMap(
+            course -> course.id().value(),
+            this::toView));
   }
 
   private CourseView toView(Course course) {

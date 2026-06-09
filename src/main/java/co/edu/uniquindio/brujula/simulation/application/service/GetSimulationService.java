@@ -248,6 +248,21 @@ public class GetSimulationService implements GetSimulationQuery {
     }
     PassedCourseSet passedCourseSet = new PassedCourseSet(allPassedIds);
 
+    // QAL-PERF-002: Compute accumulated passed credits ONCE via batch call (O(1) queries)
+    // instead of recomputing per-selection with a per-course loop (O(M*N) queries).
+    // A course absent from the map contributes 0 credits (same behaviour as prior try-catch).
+    int accumulatedPassedCredits = 0;
+    if (!allPassedIds.isEmpty()) {
+      try {
+        Map<UUID, Integer> passedCreditMap = curriculumReadPort.coursesCredits(allPassedIds);
+        accumulatedPassedCredits = passedCreditMap.values().stream()
+            .mapToInt(Integer::intValue)
+            .sum();
+      } catch (Exception ignored) {
+        // If curriculum is unavailable, treat as 0 credits (fail-open)
+      }
+    }
+
     // Re-validate each selection as a candidate against all OTHER existing selections
     // Accumulate all blocking + warning notices across the whole simulation
     List<ValidationNotice> allBlocking = new ArrayList<>();
@@ -307,21 +322,7 @@ public class GetSimulationService implements GetSimulationQuery {
         seqPredecessor = null;
       }
 
-      // Accumulated passed credits
-      int accumulatedPassedCredits = 0;
-      try {
-        accumulatedPassedCredits = allPassedIds.stream()
-            .mapToInt(id -> {
-              try {
-                return curriculumReadPort.courseCredits(id);
-              } catch (Exception e) {
-                return 0;
-              }
-            })
-            .sum();
-      } catch (Exception ignored) {
-        // use 0 if credits not available
-      }
+      // accumulatedPassedCredits: computed once above via batch call (QAL-PERF-002)
 
       SimulationValidationResult result = validationService.validate(
           candidate, others, requirements, passedCourseSet, creditLimit,
