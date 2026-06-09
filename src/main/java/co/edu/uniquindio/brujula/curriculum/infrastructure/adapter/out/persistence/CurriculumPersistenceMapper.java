@@ -51,9 +51,53 @@ final class CurriculumPersistenceMapper {
         entity.getVersion());
   }
 
+  static CourseJpaEntity toJpaEntity(Course domain) {
+    CourseJpaEntity entity = new CourseJpaEntity();
+    entity.setId(domain.id().value());
+    entity.setPlanId(domain.planId());
+    entity.setProgramId(domain.programId());
+    entity.setOfficialCode(domain.officialCode());
+    entity.setName(domain.name());
+    entity.setType(domain.type().name());
+    entity.setCredits(domain.credits());
+    entity.setCurricularWeeklyHours(domain.curricularWeeklyHours());
+    entity.setStatus(domain.status().name());
+    entity.setVersion(domain.version());
+
+    // Build recommended semester children (cascade ALL — Hibernate manages them)
+    List<CourseRecommendedSemesterJpaEntity> semesterEntities =
+        domain.recommendedSemesters().stream()
+            .map(rs -> {
+              CourseRecommendedSemesterJpaEntity rsEntity = new CourseRecommendedSemesterJpaEntity();
+              rsEntity.setId(CourseRecommendedSemesterJpaEntity.CourseRecommendedSemesterId.of(
+                  domain.id().value(), rs.journeyCode()));
+              rsEntity.setCourse(entity);
+              rsEntity.setSemester(rs.semester());
+              return rsEntity;
+            })
+            .toList();
+    entity.setRecommendedSemesters(semesterEntities);
+    return entity;
+  }
+
   // ---------------------------------------------------------------------------
   // CourseRequirement
   // ---------------------------------------------------------------------------
+
+  static CourseRequirementJpaEntity toJpaEntity(CourseRequirement domain) {
+    CourseRequirementJpaEntity entity = new CourseRequirementJpaEntity();
+    entity.setId(domain.id().value());
+    entity.setTargetCourseId(domain.targetCourseId());
+    entity.setType(domain.type().name());
+    entity.setRequiredCourseId(domain.requiredCourseId());
+    entity.setRequiredCredits(domain.requiredCredits());
+    entity.setSimultaneityAllowed(domain.simultaneityAllowed());
+    entity.setConfidence(domain.confidence() != null ? domain.confidence().name() : null);
+    entity.setInferred(domain.inferred());
+    entity.setStatus(domain.status().name());
+    entity.setVersion(domain.version());
+    return entity;
+  }
 
   static CourseRequirement toDomain(CourseRequirementJpaEntity entity) {
     return CourseRequirement.reconstitute(

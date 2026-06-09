@@ -125,6 +125,55 @@ public final class Course {
   }
 
   // ---------------------------------------------------------------------------
+  // Write methods
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Update course fields. Returns a new immutable Course instance with updated values.
+   * The id, planId, programId, officialCode, status, and version are preserved from the original.
+   *
+   * @param name the new name (must not be blank)
+   * @param type the new course type
+   * @param credits the new credit count (must be &gt;= 0)
+   * @param curricularWeeklyHours the new weekly hours
+   * @param recommendedSemesters the new recommended semester list
+   * @return a new Course instance with the updated fields
+   */
+  public Course update(
+      String name,
+      CourseType type,
+      int credits,
+      int curricularWeeklyHours,
+      List<RecommendedSemester> recommendedSemesters) {
+    if (name == null || name.isBlank()) {
+      throw new IllegalArgumentException("name must not be null or blank");
+    }
+    if (credits < 0) {
+      throw new IllegalArgumentException("credits must be >= 0, got: " + credits);
+    }
+    return new Course(
+        this.id, this.planId, this.programId, this.officialCode,
+        name, type, credits, curricularWeeklyHours,
+        recommendedSemesters != null ? List.copyOf(recommendedSemesters) : this.recommendedSemesters,
+        this.status, this.version);
+  }
+
+  /**
+   * Archive this course (soft-delete). Returns a new Course instance with status ARCHIVED.
+   *
+   * @throws IllegalStateException if the course is already ARCHIVED
+   */
+  public Course archive() {
+    if (this.status == CourseStatus.ARCHIVED) {
+      throw new IllegalStateException("Course is already archived");
+    }
+    return new Course(
+        this.id, this.planId, this.programId, this.officialCode,
+        this.name, this.type, this.credits, this.curricularWeeklyHours,
+        this.recommendedSemesters, CourseStatus.ARCHIVED, this.version);
+  }
+
+  // ---------------------------------------------------------------------------
   // Validation
   // ---------------------------------------------------------------------------
 

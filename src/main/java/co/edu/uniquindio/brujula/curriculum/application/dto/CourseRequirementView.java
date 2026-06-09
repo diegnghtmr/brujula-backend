@@ -20,6 +20,8 @@ import java.util.UUID;
  * @param confidence confidence level of this edge (HIGH/MEDIUM/LOW; nullable)
  * @param inferred whether this edge was inferred rather than officially documented (nullable)
  * @param status the requirement status (ACTIVE or ARCHIVED)
+ * @param version the JPA optimistic-lock version; included so write operations can return the
+ *     post-flush version to the caller (used by UpdateCourseRequirement responses, mirrors CourseView)
  */
 public record CourseRequirementView(
     UUID id,
@@ -30,4 +32,5 @@ public record CourseRequirementView(
     Boolean simultaneityAllowed,
     String confidence,
     Boolean inferred,
-    String status) {}
+    String status,
+    long version) {}

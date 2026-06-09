@@ -41,6 +41,11 @@ class CourseRecommendedSemesterJpaEntity {
   String getJourneyCode() { return id != null ? id.journeyCode() : null; }
   int getSemester() { return semester; }
 
+  // Setters for the write path (CUR-001 / WU5)
+  void setId(CourseRecommendedSemesterId id) { this.id = id; }
+  void setCourse(CourseJpaEntity course) { this.course = course; }
+  void setSemester(int semester) { this.semester = semester; }
+
   // ---------------------------------------------------------------------------
   // Composite PK
   // ---------------------------------------------------------------------------
@@ -55,6 +60,14 @@ class CourseRecommendedSemesterJpaEntity {
     private String journeyCode;
 
     protected CourseRecommendedSemesterId() {}
+
+    // Factory for the write path
+    static CourseRecommendedSemesterId of(UUID courseId, String journeyCode) {
+      CourseRecommendedSemesterId pk = new CourseRecommendedSemesterId();
+      pk.courseId = courseId;
+      pk.journeyCode = journeyCode;
+      return pk;
+    }
 
     UUID courseId() { return courseId; }
     String journeyCode() { return journeyCode; }
