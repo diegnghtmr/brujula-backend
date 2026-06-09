@@ -45,7 +45,8 @@ public class DeleteCourseAttemptService implements DeleteCourseAttemptUseCase {
             .orElseThrow(() -> new AttemptNotFoundException(attemptId));
 
     // BOLA ownership guard
-    Subscription sub = loadSubscriptionPort.loadById(attempt.getSubscriptionId().value()).orElse(null);
+    Subscription sub =
+        loadSubscriptionPort.loadById(attempt.getSubscriptionId().value()).orElse(null);
     if (sub == null || !sub.getUserId().equals(actorId)) {
       throw new AttemptNotFoundException(attemptId);
     }

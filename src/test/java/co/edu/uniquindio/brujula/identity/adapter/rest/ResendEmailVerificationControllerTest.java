@@ -3,9 +3,7 @@ package co.edu.uniquindio.brujula.identity.adapter.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,11 +26,12 @@ import org.springframework.web.context.WebApplicationContext;
  * <p>STRICT TDD: tests written RED before the controller implementation exists.
  *
  * <p>Key scenarios:
+ *
  * <ul>
- *   <li>Known email → 202 Accepted (use case called)</li>
- *   <li>Unknown email → 202 Accepted (IDENTICAL response — no user enumeration)</li>
- *   <li>No-enumeration: same body (empty void 202) for both cases</li>
- *   <li>Endpoint is permitAll: unauthenticated request succeeds</li>
+ *   <li>Known email → 202 Accepted (use case called)
+ *   <li>Unknown email → 202 Accepted (IDENTICAL response — no user enumeration)
+ *   <li>No-enumeration: same body (empty void 202) for both cases
+ *   <li>Endpoint is permitAll: unauthenticated request succeeds
  * </ul>
  *
  * <p>Satisfies: S2-C, Design §1.3 permitAll for /auth/email-verifications/**, RNF-SEG-006.
@@ -43,8 +42,8 @@ class ResendEmailVerificationControllerTest extends AbstractPostgresIntegrationT
   @Autowired private WebApplicationContext context;
 
   /**
-   * Mock the use case so the controller test is isolated from business logic.
-   * No live Keycloak required.
+   * Mock the use case so the controller test is isolated from business logic. No live Keycloak
+   * required.
    */
   @MockitoBean private ResendEmailVerificationUseCase resendEmailVerificationUseCase;
 
@@ -107,9 +106,7 @@ class ResendEmailVerificationControllerTest extends AbstractPostgresIntegrationT
         .andExpect(
             result -> {
               int status = result.getResponse().getStatus();
-              assertThat(status)
-                  .as("resend must be permitAll (not 401/403)")
-                  .isNotIn(401, 403);
+              assertThat(status).as("resend must be permitAll (not 401/403)").isNotIn(401, 403);
             });
   }
 }

@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Thrown when the validation engine produces one or more blocking notices (→ HTTP 409 problem+json).
+ * Thrown when the validation engine produces one or more blocking notices (→ HTTP 409
+ * problem+json).
  *
- * <p>The exception carries the full list of blocking notices so the exception handler can render
- * a structured problem+json body with {@code code}, {@code title}, {@code detail}, and
- * {@code metadata} (spec VAL-001, VAL-002..005).
+ * <p>The exception carries the full list of blocking notices so the exception handler can render a
+ * structured problem+json body with {@code code}, {@code title}, {@code detail}, and {@code
+ * metadata} (spec VAL-001, VAL-002..005).
  */
 public class SimulationValidationBlockedException extends RuntimeException {
 

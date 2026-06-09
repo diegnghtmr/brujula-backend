@@ -1,6 +1,5 @@
 package co.edu.uniquindio.brujula.progress.infrastructure.configuration;
 
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.progress.domain.AttemptNotFoundException;
 import co.edu.uniquindio.brujula.progress.domain.DuplicateProgramSubscriptionException;
 import co.edu.uniquindio.brujula.progress.domain.GradeStatusMismatchException;
@@ -9,6 +8,7 @@ import co.edu.uniquindio.brujula.progress.domain.InactivePlanException;
 import co.edu.uniquindio.brujula.progress.domain.LastActiveSubscriptionException;
 import co.edu.uniquindio.brujula.progress.domain.MaxSubscriptionsExceededException;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -27,30 +27,35 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <p>Exception → HTTP mapping:
  *
  * <ul>
- *   <li>{@link SubscriptionNotFoundException} → 404 Not Found (BOLA-safe: also used for
- *       ownership violations to avoid resource enumeration).
+ *   <li>{@link SubscriptionNotFoundException} → 404 Not Found (BOLA-safe: also used for ownership
+ *       violations to avoid resource enumeration).
  *   <li>{@link AttemptNotFoundException} → 404 Not Found (BOLA-safe for course attempt ownership).
  *   <li>{@link GradeStatusMismatchException} → 422 Unprocessable Entity (grade-status coherence).
  *   <li>{@link MaxSubscriptionsExceededException} → 409 Conflict (cap=2).
  *   <li>{@link DuplicateProgramSubscriptionException} → 409 Conflict.
- *   <li>{@link HistoryImpactNotAcknowledgedException} → 422 Unprocessable Entity (spec SUB-3-PLAN-NO-ACK).
+ *   <li>{@link HistoryImpactNotAcknowledgedException} → 422 Unprocessable Entity (spec
+ *       SUB-3-PLAN-NO-ACK).
  *   <li>{@link LastActiveSubscriptionException} → 409 Conflict (must retain one subscription).
- *   <li>{@link co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException} → 409 Conflict (key reuse with different body).
+ *   <li>{@link
+ *       co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException}
+ *       → 409 Conflict (key reuse with different body).
  *   <li>{@link OptimisticLockingFailureException} → 409 Conflict (version conflict, CROSS-3).
  * </ul>
  *
  * <p>Satisfies: SUB-1..4, PRG-1..4, CROSS-3. ADR-F3. FIX-W2: 422 for history-impact ack (spec
  * SUB-3-PLAN-NO-ACK). WU3: 404 for AttemptNotFoundException, 422 for GradeStatusMismatchException.
  *
- * <p>QAL-ADV-001 (WU1): scoped to the progress REST adapter package so that shared exceptions
- * (e.g. {@link co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException})
+ * <p>QAL-ADV-001 (WU1): scoped to the progress REST adapter package so that shared exceptions (e.g.
+ * {@link
+ * co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException})
  * handled by multiple module advices are always resolved by the owning module's handler and never
  * intercepted by a foreign module advice. Controllers are package-private, so {@code basePackages}
  * (string) is used instead of {@code assignableTypes} (which does not compile). Template from
  * {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsExceptionHandler}.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.progress.infrastructure.adapter.in.rest")
+@RestControllerAdvice(
+    basePackages = "co.edu.uniquindio.brujula.progress.infrastructure.adapter.in.rest")
 class ProgressExceptionHandler {
 
   @ExceptionHandler(SubscriptionNotFoundException.class)
@@ -102,7 +107,8 @@ class ProgressExceptionHandler {
 
   @ExceptionHandler(IdempotencyKeyConflictException.class)
   ProblemDetail handleIdempotencyConflict(IdempotencyKeyConflictException ex) {
-    // FIX-S1: sharedkernel IdempotencyKeyConflictException consolidates progress and administration exceptions.
+    // FIX-S1: sharedkernel IdempotencyKeyConflictException consolidates progress and administration
+    // exceptions.
     ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     problem.setProperty("code", "IDEMPOTENCY_KEY_CONFLICT");
     return problem;
@@ -110,8 +116,9 @@ class ProgressExceptionHandler {
 
   @ExceptionHandler(OptimisticLockingFailureException.class)
   ProblemDetail handleOptimisticLocking(OptimisticLockingFailureException ex) {
-    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, "Version conflict — reload and retry.");
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT, "Version conflict — reload and retry.");
     problem.setProperty("code", "OPTIMISTIC_LOCK_CONFLICT");
     return problem;
   }

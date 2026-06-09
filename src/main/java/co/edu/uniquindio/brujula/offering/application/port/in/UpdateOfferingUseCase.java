@@ -6,9 +6,8 @@ import co.edu.uniquindio.brujula.offering.application.dto.UpdateOfferingCommand;
 /**
  * Input port: update offering notes with optimistic locking (STAFF/ADMIN, NOT idempotent).
  *
- * <p>Status transitions are NOT permitted — use {@code publishOffering} for that.
- * A successful update MUST increment {@code course_offering.version} (staleness activation
- * invariant, OFFW-006).
+ * <p>Status transitions are NOT permitted — use {@code publishOffering} for that. A successful
+ * update MUST increment {@code course_offering.version} (staleness activation invariant, OFFW-006).
  *
  * <p>Satisfies: OFFW-004.
  */

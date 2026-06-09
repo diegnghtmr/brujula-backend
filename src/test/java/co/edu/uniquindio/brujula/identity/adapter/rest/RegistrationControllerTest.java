@@ -19,8 +19,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -36,14 +36,16 @@ import org.springframework.web.context.WebApplicationContext;
  * <ul>
  *   <li>S2-B-5-1: POST without CSRF token → 403 (SPA CSRF enforced on public POST endpoints).
  *   <li>S2-B-5-2: Non-institutional email (blocked domain) → 422 with ProblemDetail.
- *   <li>S2-B-5-3: Valid institutional email + consent → 202 Accepted with RegistrationAccepted body.
+ *   <li>S2-B-5-3: Valid institutional email + consent → 202 Accepted with RegistrationAccepted
+ *       body.
  *   <li>S2-B-5-4: POST /auth/registration is reachable without authentication (permitAll).
  *   <li>S2-B-5-5: Duplicate email → 409 Conflict.
  * </ul>
  *
  * <p>CSRF: {@code /auth/registration} is in the {@code permitAll} matcher but is NOT excluded from
- * CSRF (no {@code csrf().ignoringRequestMatchers(...)}). SPA clients read the XSRF-TOKEN cookie from
- * a prior request and send it as X-XSRF-TOKEN. Tests supply it via {@code csrf()} post-processor.
+ * CSRF (no {@code csrf().ignoringRequestMatchers(...)}). SPA clients read the XSRF-TOKEN cookie
+ * from a prior request and send it as X-XSRF-TOKEN. Tests supply it via {@code csrf()}
+ * post-processor.
  *
  * <p>Satisfies: S2-B-5, OpenAPI contract POST /auth/registration → 202 RegistrationAccepted.
  */
@@ -85,7 +87,8 @@ class RegistrationControllerTest extends AbstractPostgresIntegrationTest {
             post("/auth/registration")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Idempotency-Key", "00000000-0000-0000-0000-000000000001")
-                .content(validRegistrationBody("no-csrf-" + System.nanoTime() + "@uniquindio.edu.co")))
+                .content(
+                    validRegistrationBody("no-csrf-" + System.nanoTime() + "@uniquindio.edu.co")))
         .andExpect(status().isForbidden());
   }
 
@@ -192,6 +195,7 @@ class RegistrationControllerTest extends AbstractPostgresIntegrationTest {
           "acceptedTerms": true,
           "acceptedDataProcessing": true
         }
-        """.formatted(VALID_FULL_NAME, email);
+        """
+        .formatted(VALID_FULL_NAME, email);
   }
 }

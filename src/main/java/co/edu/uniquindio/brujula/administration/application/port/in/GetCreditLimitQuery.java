@@ -9,8 +9,8 @@ import java.util.UUID;
  * Range: minimum 1, maximum 60 per contract CreditLimit schema.
  *
  * <p>Published via {@code @NamedInterface("api")} in this package's {@code package-info.java}.
- * Cross-module consumers (e.g. simulation) must access this port ONLY through
- * {@code administration::api}.
+ * Cross-module consumers (e.g. simulation) must access this port ONLY through {@code
+ * administration::api}.
  *
  * <p>ARQ-001: method signature uses only UUID primitives — no domain entities or JPA types.
  */

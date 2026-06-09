@@ -7,15 +7,15 @@ import java.util.UUID;
 /**
  * Immutable snapshot of an already-persisted selection within the same simulation.
  *
- * <p>Used by validation rules that need to compare the candidate against existing state
- * (schedule clash, credit summation, duplicate detection).
+ * <p>Used by validation rules that need to compare the candidate against existing state (schedule
+ * clash, credit summation, duplicate detection).
  *
- * @param selectionId    selection UUID
- * @param courseId       course UUID
- * @param courseName     human-readable course name
- * @param programId      program UUID
- * @param credits        credit load
- * @param sessions       time slots (sim-local records)
+ * @param selectionId selection UUID
+ * @param courseId course UUID
+ * @param courseName human-readable course name
+ * @param programId program UUID
+ * @param credits credit load
+ * @param sessions time slots (sim-local records)
  */
 public record ExistingSelection(
     UUID selectionId,

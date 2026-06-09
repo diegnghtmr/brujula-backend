@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * JPA-backed adapter implementing {@link LoadSimulationSelectionPort} and
- * {@link SaveSimulationSelectionPort}.
+ * JPA-backed adapter implementing {@link LoadSimulationSelectionPort} and {@link
+ * SaveSimulationSelectionPort}.
  *
  * <p>Package-private per ARQ-006b.
  */
@@ -24,8 +24,7 @@ class SimulationSelectionPersistenceAdapter
   private final SimulationSelectionPersistenceMapper mapper;
 
   SimulationSelectionPersistenceAdapter(
-      SimulationSelectionJpaRepository repository,
-      SimulationSelectionPersistenceMapper mapper) {
+      SimulationSelectionJpaRepository repository, SimulationSelectionPersistenceMapper mapper) {
     this.repository = repository;
     this.mapper = mapper;
   }
@@ -33,7 +32,8 @@ class SimulationSelectionPersistenceAdapter
   @Override
   @Transactional(readOnly = true)
   public Optional<SimulationSelection> loadById(UUID selectionId) {
-    return repository.findById(selectionId)
+    return repository
+        .findById(selectionId)
         .filter(e -> "ACTIVE".equals(e.getStatus()))
         .map(mapper::toDomain);
   }
@@ -41,8 +41,7 @@ class SimulationSelectionPersistenceAdapter
   @Override
   @Transactional(readOnly = true)
   public List<SimulationSelection> loadActiveBySimulationId(UUID simulationId) {
-    return repository.findBySimulationIdAndStatus(simulationId, "ACTIVE")
-        .stream()
+    return repository.findBySimulationIdAndStatus(simulationId, "ACTIVE").stream()
         .map(mapper::toDomain)
         .toList();
   }

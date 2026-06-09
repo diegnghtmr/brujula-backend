@@ -27,19 +27,21 @@ import org.springframework.web.bind.annotation.RestController;
  * from the API contract. Keycloak handles email verification and password reset natively on its own
  * pages. No backend token-confirm endpoints are needed. See architecture decision #1574.
  *
- * <p>S2-B-5: registerStudent delegates to {@link RegisterStudentUseCase}. The controller maps
- * the HTTP request to a {@link RegisterStudentCommand} and maps the result back to
- * {@link RegistrationAccepted} (202 Accepted). ARQ-001: no domain types are referenced directly —
- * only application DTOs and generated model types.
+ * <p>S2-B-5: registerStudent delegates to {@link RegisterStudentUseCase}. The controller maps the
+ * HTTP request to a {@link RegisterStudentCommand} and maps the result back to {@link
+ * RegistrationAccepted} (202 Accepted). ARQ-001: no domain types are referenced directly — only
+ * application DTOs and generated model types.
  *
  * <p>S2-C: resendEmailVerification delegates to {@link ResendEmailVerificationUseCase}. Always
- * returns 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown emails.
+ * returns 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown
+ * emails.
  *
  * <p>S2-D: requestPasswordRecovery delegates to {@link InitiatePasswordRecoveryUseCase}. Always
- * returns 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown emails.
+ * returns 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown
+ * emails.
  *
- * <p>Satisfies: S1-B-5 (G2 resolve), Design §2.1 AuthApi shim, S2-A-3 contract audit, S2-B-5,
- * S2-C, S2-D.
+ * <p>Satisfies: S1-B-5 (G2 resolve), Design §2.1 AuthApi shim, S2-A-3 contract audit, S2-B-5, S2-C,
+ * S2-D.
  */
 @RestController
 class AuthController implements AuthApi {
@@ -70,8 +72,8 @@ class AuthController implements AuthApi {
    *
    * <p>Maps the HTTP request fields to a {@link RegisterStudentCommand}. The termsVersion and
    * privacyVersion are NOT sourced from the request body — the backend reads them from
-   * configuration (G6 RESOLVED). The request carries only {@code acceptedTerms=true} and
-   * {@code acceptedDataProcessing=true} booleans as acknowledgements.
+   * configuration (G6 RESOLVED). The request carries only {@code acceptedTerms=true} and {@code
+   * acceptedDataProcessing=true} booleans as acknowledgements.
    *
    * <p>Returns 202 Accepted with a {@link RegistrationAccepted} body. Exceptions are mapped by
    * {@code IdentityExceptionHandler}: DomainNotAllowedException → 422,
@@ -98,7 +100,8 @@ class AuthController implements AuthApi {
 
     // Map onboardingState string to AccountStatus enum (ARQ-001: no domain type imported directly).
     // RegisterStudentResult.onboardingState() is a String (e.g. "PENDING_VERIFICATION", "ACTIVE").
-    // AccountStatus.fromValue() performs safe lookup and throws IllegalArgumentException on mismatch.
+    // AccountStatus.fromValue() performs safe lookup and throws IllegalArgumentException on
+    // mismatch.
     AccountStatus accountStatus = AccountStatus.fromValue(result.onboardingState());
     var response = new RegistrationAccepted(result.userId(), accountStatus);
 

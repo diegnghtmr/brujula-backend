@@ -13,9 +13,9 @@ import org.hibernate.type.SqlTypes;
 /**
  * JPA entity mapping to {@code simulation.simulation} (created by Flyway V018).
  *
- * <p>Package-private per ARQ-006b. Optimistic locking via {@code @Version}.
- * {@code status} stores only ACTIVE/DELETED (INV-004: CURRENT/OUTDATED never persisted).
- * {@code programIds} uses Postgres {@code uuid[]} via hypersistence UUIDArrayType.
+ * <p>Package-private per ARQ-006b. Optimistic locking via {@code @Version}. {@code status} stores
+ * only ACTIVE/DELETED (INV-004: CURRENT/OUTDATED never persisted). {@code programIds} uses Postgres
+ * {@code uuid[]} via hypersistence UUIDArrayType.
  */
 @Entity
 @Table(name = "simulation", schema = "simulation")
@@ -54,30 +54,75 @@ class SimulationJpaEntity {
   // JPA requires no-arg constructor
   protected SimulationJpaEntity() {}
 
-  UUID getId() { return id; }
-  void setId(UUID id) { this.id = id; }
+  UUID getId() {
+    return id;
+  }
 
-  UUID getOwnerId() { return ownerId; }
-  void setOwnerId(UUID ownerId) { this.ownerId = ownerId; }
+  void setId(UUID id) {
+    this.id = id;
+  }
 
-  String getName() { return name; }
-  void setName(String name) { this.name = name; }
+  UUID getOwnerId() {
+    return ownerId;
+  }
 
-  UUID getPeriodId() { return periodId; }
-  void setPeriodId(UUID periodId) { this.periodId = periodId; }
+  void setOwnerId(UUID ownerId) {
+    this.ownerId = ownerId;
+  }
 
-  UUID[] getProgramIds() { return programIds; }
-  void setProgramIds(UUID[] programIds) { this.programIds = programIds; }
+  String getName() {
+    return name;
+  }
 
-  String getStatus() { return status; }
-  void setStatus(String status) { this.status = status; }
+  void setName(String name) {
+    this.name = name;
+  }
 
-  Instant getCreatedAt() { return createdAt; }
-  void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+  UUID getPeriodId() {
+    return periodId;
+  }
 
-  Instant getUpdatedAt() { return updatedAt; }
-  void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+  void setPeriodId(UUID periodId) {
+    this.periodId = periodId;
+  }
 
-  long getVersion() { return version; }
-  void setVersion(long version) { this.version = version; }
+  UUID[] getProgramIds() {
+    return programIds;
+  }
+
+  void setProgramIds(UUID[] programIds) {
+    this.programIds = programIds;
+  }
+
+  String getStatus() {
+    return status;
+  }
+
+  void setStatus(String status) {
+    this.status = status;
+  }
+
+  Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  void setCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
+  void setUpdatedAt(Instant updatedAt) {
+    this.updatedAt = updatedAt;
+  }
+
+  long getVersion() {
+    return version;
+  }
+
+  void setVersion(long version) {
+    this.version = version;
+  }
 }

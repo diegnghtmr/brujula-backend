@@ -33,13 +33,14 @@ class CourseAvailabilityServiceTest {
     UUID c1 = UUID.randomUUID();
     UUID c2 = UUID.randomUUID();
 
-    List<PlanCourse> courses = List.of(
-        new PlanCourse(c1, "Course 1", 3, "REQUIRED", 1),
-        new PlanCourse(c2, "Course 2", 3, "REQUIRED", 2));
+    List<PlanCourse> courses =
+        List.of(
+            new PlanCourse(c1, "Course 1", 3, "REQUIRED", 1),
+            new PlanCourse(c2, "Course 2", 3, "REQUIRED", 2));
 
     // c2 requires c1 with HIGH confidence (HARD edge)
-    List<CourseRequirementEdge> requirements = List.of(
-        new CourseRequirementEdge(c2, c1, "COURSE_PASSED", "HIGH", false));
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(c2, c1, "COURSE_PASSED", "HIGH", false));
 
     // c1 is PASSED → c2 should be AVAILABLE
     Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of(c1, CourseProgressStatus.PASSED);
@@ -60,13 +61,14 @@ class CourseAvailabilityServiceTest {
     UUID c1 = UUID.randomUUID();
     UUID c2 = UUID.randomUUID();
 
-    List<PlanCourse> courses = List.of(
-        new PlanCourse(c1, "Course 1", 3, "REQUIRED", 1),
-        new PlanCourse(c2, "Course 2", 3, "REQUIRED", 2));
+    List<PlanCourse> courses =
+        List.of(
+            new PlanCourse(c1, "Course 1", 3, "REQUIRED", 1),
+            new PlanCourse(c2, "Course 2", 3, "REQUIRED", 2));
 
     // c2 requires c1 with HIGH confidence (HARD edge) — c1 NOT passed
-    List<CourseRequirementEdge> requirements = List.of(
-        new CourseRequirementEdge(c2, c1, "COURSE_PASSED", "HIGH", false));
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(c2, c1, "COURSE_PASSED", "HIGH", false));
 
     // c1 has no attempt — not in effectiveByCourse
     Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of();
@@ -89,13 +91,13 @@ class CourseAvailabilityServiceTest {
     UUID c1 = UUID.randomUUID();
     UUID c2 = UUID.randomUUID();
 
-    List<PlanCourse> courses = List.of(
-        new PlanCourse(c1, "C1", 3, "REQUIRED", 1),
-        new PlanCourse(c2, "C2", 3, "REQUIRED", 2));
+    List<PlanCourse> courses =
+        List.of(
+            new PlanCourse(c1, "C1", 3, "REQUIRED", 1), new PlanCourse(c2, "C2", 3, "REQUIRED", 2));
 
     // official (inferred=false) but MEDIUM confidence — still HARD because inferred=false
-    List<CourseRequirementEdge> requirements = List.of(
-        new CourseRequirementEdge(c2, c1, "COURSE_PASSED", "MEDIUM", false));
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(c2, c1, "COURSE_PASSED", "MEDIUM", false));
 
     Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of();
 
@@ -114,13 +116,13 @@ class CourseAvailabilityServiceTest {
     UUID c1 = UUID.randomUUID();
     UUID c3 = UUID.randomUUID();
 
-    List<PlanCourse> courses = List.of(
-        new PlanCourse(c1, "C1", 3, "REQUIRED", 1),
-        new PlanCourse(c3, "C3", 3, "REQUIRED", 2));
+    List<PlanCourse> courses =
+        List.of(
+            new PlanCourse(c1, "C1", 3, "REQUIRED", 1), new PlanCourse(c3, "C3", 3, "REQUIRED", 2));
 
     // SOFT edge: inferred=true + MEDIUM confidence
-    List<CourseRequirementEdge> requirements = List.of(
-        new CourseRequirementEdge(c3, c1, "COURSE_PASSED", "MEDIUM", true));
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(c3, c1, "COURSE_PASSED", "MEDIUM", true));
 
     Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of();
 
@@ -139,12 +141,12 @@ class CourseAvailabilityServiceTest {
     UUID c1 = UUID.randomUUID();
     UUID c3 = UUID.randomUUID();
 
-    List<PlanCourse> courses = List.of(
-        new PlanCourse(c1, "C1", 3, "REQUIRED", 1),
-        new PlanCourse(c3, "C3", 3, "REQUIRED", 2));
+    List<PlanCourse> courses =
+        List.of(
+            new PlanCourse(c1, "C1", 3, "REQUIRED", 1), new PlanCourse(c3, "C3", 3, "REQUIRED", 2));
 
-    List<CourseRequirementEdge> requirements = List.of(
-        new CourseRequirementEdge(c3, c1, "COURSE_PASSED", "LOW", true));
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(c3, c1, "COURSE_PASSED", "LOW", true));
 
     Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of();
 
@@ -236,16 +238,18 @@ class CourseAvailabilityServiceTest {
     UUID c2 = UUID.randomUUID();
     UUID c3 = UUID.randomUUID();
 
-    List<PlanCourse> courses = List.of(
-        new PlanCourse(c1, "C1", 3, "REQUIRED", 1),
-        new PlanCourse(c2, "C2", 3, "REQUIRED", 1),
-        new PlanCourse(c3, "C3", 3, "REQUIRED", 2));
+    List<PlanCourse> courses =
+        List.of(
+            new PlanCourse(c1, "C1", 3, "REQUIRED", 1),
+            new PlanCourse(c2, "C2", 3, "REQUIRED", 1),
+            new PlanCourse(c3, "C3", 3, "REQUIRED", 2));
 
-    List<CourseRequirementEdge> requirements = List.of(
-        // HARD edge for c1
-        new CourseRequirementEdge(c3, c1, "COURSE_PASSED", "HIGH", false),
-        // SOFT edge for c2
-        new CourseRequirementEdge(c3, c2, "COURSE_PASSED", "MEDIUM", true));
+    List<CourseRequirementEdge> requirements =
+        List.of(
+            // HARD edge for c1
+            new CourseRequirementEdge(c3, c1, "COURSE_PASSED", "HIGH", false),
+            // SOFT edge for c2
+            new CourseRequirementEdge(c3, c2, "COURSE_PASSED", "MEDIUM", true));
 
     Map<UUID, CourseProgressStatus> effectiveByCourse = Map.of(); // none passed
 

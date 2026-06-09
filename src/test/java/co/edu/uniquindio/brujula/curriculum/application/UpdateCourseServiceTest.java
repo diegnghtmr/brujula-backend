@@ -18,7 +18,6 @@ import co.edu.uniquindio.brujula.curriculum.domain.CourseId;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseNotFoundException;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseStatus;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseType;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,9 +29,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 /**
  * TDD RED → GREEN: unit tests for {@link UpdateCourseService}.
  *
- * <p>Covers: successful update returns new view, audit recorded; not found throws;
- * stale-version propagates OptimisticLockingFailureException.
- * WU5 – T5.1 (CUR-002, SC-009-C).
+ * <p>Covers: successful update returns new view, audit recorded; not found throws; stale-version
+ * propagates OptimisticLockingFailureException. WU5 – T5.1 (CUR-002, SC-009-C).
  */
 class UpdateCourseServiceTest {
 
@@ -54,21 +52,39 @@ class UpdateCourseServiceTest {
 
   @Test
   void updates_course_fields_and_records_audit() {
-    Course existing = Course.reconstitute(
-        courseId, planId, programId, null,
-        "Cálculo I", CourseType.REQUIRED, 4, 4, Collections.emptyList(),
-        CourseStatus.ACTIVE, 1L);
+    Course existing =
+        Course.reconstitute(
+            courseId,
+            planId,
+            programId,
+            null,
+            "Cálculo I",
+            CourseType.REQUIRED,
+            4,
+            4,
+            Collections.emptyList(),
+            CourseStatus.ACTIVE,
+            1L);
     when(saveCoursePort.findCurrentById(courseId)).thenReturn(Optional.of(existing));
 
-    Course updated = Course.reconstitute(
-        courseId, planId, programId, null,
-        "Cálculo II", CourseType.OPTIONAL, 5, 5, Collections.emptyList(),
-        CourseStatus.ACTIVE, 2L);
+    Course updated =
+        Course.reconstitute(
+            courseId,
+            planId,
+            programId,
+            null,
+            "Cálculo II",
+            CourseType.OPTIONAL,
+            5,
+            5,
+            Collections.emptyList(),
+            CourseStatus.ACTIVE,
+            2L);
     when(saveCoursePort.save(any(Course.class))).thenReturn(updated);
 
-    UpdateCourseCommand command = new UpdateCourseCommand(
-        actorId, courseId.value(), 1L,
-        "Cálculo II", null, "OPTIONAL", 5, 5, List.of());
+    UpdateCourseCommand command =
+        new UpdateCourseCommand(
+            actorId, courseId.value(), 1L, "Cálculo II", null, "OPTIONAL", 5, 5, List.of());
 
     CourseView result = service.updateCourse(command);
 
@@ -81,8 +97,9 @@ class UpdateCourseServiceTest {
   void not_found_throws_CourseNotFoundException() {
     when(saveCoursePort.findCurrentById(courseId)).thenReturn(Optional.empty());
 
-    UpdateCourseCommand command = new UpdateCourseCommand(
-        actorId, courseId.value(), 0L, "Name", null, "REQUIRED", 3, 3, List.of());
+    UpdateCourseCommand command =
+        new UpdateCourseCommand(
+            actorId, courseId.value(), 0L, "Name", null, "REQUIRED", 3, 3, List.of());
 
     assertThatThrownBy(() -> service.updateCourse(command))
         .isInstanceOf(CourseNotFoundException.class);
@@ -90,16 +107,26 @@ class UpdateCourseServiceTest {
 
   @Test
   void stale_version_propagates_optimistic_lock_exception() {
-    Course existing = Course.reconstitute(
-        courseId, planId, programId, null,
-        "Cálculo I", CourseType.REQUIRED, 4, 4, Collections.emptyList(),
-        CourseStatus.ACTIVE, 3L);
+    Course existing =
+        Course.reconstitute(
+            courseId,
+            planId,
+            programId,
+            null,
+            "Cálculo I",
+            CourseType.REQUIRED,
+            4,
+            4,
+            Collections.emptyList(),
+            CourseStatus.ACTIVE,
+            3L);
     when(saveCoursePort.findCurrentById(courseId)).thenReturn(Optional.of(existing));
     when(saveCoursePort.save(any(Course.class)))
         .thenThrow(new OptimisticLockingFailureException("Version conflict"));
 
-    UpdateCourseCommand command = new UpdateCourseCommand(
-        actorId, courseId.value(), 2L, "Cálculo I", null, "REQUIRED", 4, 4, List.of());
+    UpdateCourseCommand command =
+        new UpdateCourseCommand(
+            actorId, courseId.value(), 2L, "Cálculo I", null, "REQUIRED", 4, 4, List.of());
 
     assertThatThrownBy(() -> service.updateCourse(command))
         .isInstanceOf(OptimisticLockingFailureException.class);

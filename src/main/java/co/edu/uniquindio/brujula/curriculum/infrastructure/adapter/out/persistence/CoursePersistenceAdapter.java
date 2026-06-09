@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Package-private per ARQ-006. Satisfies: CUR-001, Phase 2 WU4 (read) and WU5 (write).
  *
- * <p>Transaction strategy: class-level {@code @Transactional} (read-write default) so write
- * methods inherit a writable transaction; each read method explicitly overrides with
+ * <p>Transaction strategy: class-level {@code @Transactional} (read-write default) so write methods
+ * inherit a writable transaction; each read method explicitly overrides with
  * {@code @Transactional(readOnly=true)} for performance (mirrors OfferingPersistenceAdapter).
  */
 @Component
@@ -43,8 +43,7 @@ class CoursePersistenceAdapter implements LoadCoursePort, SaveCoursePort {
   @Override
   @Transactional(readOnly = true)
   public Optional<Course> loadById(CourseId courseId) {
-    return repository.findById(courseId.value())
-        .map(CurriculumPersistenceMapper::toDomain);
+    return repository.findById(courseId.value()).map(CurriculumPersistenceMapper::toDomain);
   }
 
   @Override
@@ -72,7 +71,6 @@ class CoursePersistenceAdapter implements LoadCoursePort, SaveCoursePort {
   @Override
   @Transactional(readOnly = true)
   public Optional<Course> findCurrentById(CourseId courseId) {
-    return repository.findById(courseId.value())
-        .map(CurriculumPersistenceMapper::toDomain);
+    return repository.findById(courseId.value()).map(CurriculumPersistenceMapper::toDomain);
   }
 }

@@ -24,9 +24,9 @@ import java.util.Optional;
 /**
  * Use case: duplicate a simulation (SIM-006).
  *
- * <p>Idempotent via sharedkernel {@link IdempotencyStorePort} (X-001). Operation name:
- * {@value #OPERATION}. Creates a new simulation with a copy of the original's metadata.
- * Selections are copied in WU4 (for WU3 the duplicate has zero selections).
+ * <p>Idempotent via sharedkernel {@link IdempotencyStorePort} (X-001). Operation name: {@value
+ * #OPERATION}. Creates a new simulation with a copy of the original's metadata. Selections are
+ * copied in WU4 (for WU3 the duplicate has zero selections).
  *
  * <p>Ownership enforced per X-003.
  *
@@ -75,9 +75,11 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
     }
 
     // 2. Load source simulation
-    Simulation source = loadSimulationPort.loadById(command.simulationId())
-        .filter(s -> s.getLifecycleStatus() == SimulationLifecycle.ACTIVE)
-        .orElseThrow(() -> new SimulationNotFoundException(command.simulationId()));
+    Simulation source =
+        loadSimulationPort
+            .loadById(command.simulationId())
+            .filter(s -> s.getLifecycleStatus() == SimulationLifecycle.ACTIVE)
+            .orElseThrow(() -> new SimulationNotFoundException(command.simulationId()));
 
     // 3. Ownership guard (X-003)
     if (!source.getOwnerId().equals(command.ownerId())) {
@@ -85,39 +87,35 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
     }
 
     // 4. Determine name for duplicate
-    String duplicateName = command.name() != null
-        ? command.name()
-        : "Copy of " + source.getName();
+    String duplicateName = command.name() != null ? command.name() : "Copy of " + source.getName();
 
     // 5. Create duplicate with a new ID
     SimulationId newId = SimulationId.generate();
-    Simulation duplicate = Simulation.create(
-        newId,
-        command.ownerId(),
-        duplicateName,
-        source.getPeriodId(),
-        source.getProgramIds());
+    Simulation duplicate =
+        Simulation.create(
+            newId, command.ownerId(), duplicateName, source.getPeriodId(), source.getProgramIds());
     Simulation saved = saveSimulationPort.save(duplicate);
 
     // 5b. Copy source simulation's selections into the duplicate (WU4b — SIM-006 / Finding F10)
     List<SimulationSelection> sourceSelections =
         loadSimulationSelectionPort.loadActiveBySimulationId(command.simulationId());
     for (SimulationSelection sourceSelection : sourceSelections) {
-      SimulationSelection copiedSelection = SimulationSelection.reconstitute(
-          SimulationSelectionId.generate(),
-          saved.getId().value(),         // new simulationId
-          sourceSelection.getOfferingId(),
-          sourceSelection.getScheduleOptionId(),
-          sourceSelection.getCourseId(),
-          sourceSelection.getCourseName(),
-          sourceSelection.getProgramId(),
-          sourceSelection.getCredits(),
-          sourceSelection.getJourneyCode(),
-          sourceSelection.getOfferingStatus(),
-          sourceSelection.getSelectedOfferingVersion(),
-          sourceSelection.getSessions(),
-          "ACTIVE",
-          0L);
+      SimulationSelection copiedSelection =
+          SimulationSelection.reconstitute(
+              SimulationSelectionId.generate(),
+              saved.getId().value(), // new simulationId
+              sourceSelection.getOfferingId(),
+              sourceSelection.getScheduleOptionId(),
+              sourceSelection.getCourseId(),
+              sourceSelection.getCourseName(),
+              sourceSelection.getProgramId(),
+              sourceSelection.getCredits(),
+              sourceSelection.getJourneyCode(),
+              sourceSelection.getOfferingStatus(),
+              sourceSelection.getSelectedOfferingVersion(),
+              sourceSelection.getSessions(),
+              "ACTIVE",
+              0L);
       saveSimulationSelectionPort.save(copiedSelection);
     }
 
@@ -130,16 +128,17 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
     }
 
     // 7. Build view and store idempotency record
-    SimulationView view = new SimulationView(
-        saved.getId().value(),
-        saved.getName(),
-        saved.getPeriodId(),
-        periodName,
-        saved.getProgramIds(),
-        "CURRENT",
-        saved.getCreatedAt(),
-        saved.getUpdatedAt(),
-        saved.getVersion());
+    SimulationView view =
+        new SimulationView(
+            saved.getId().value(),
+            saved.getName(),
+            saved.getPeriodId(),
+            periodName,
+            saved.getProgramIds(),
+            "CURRENT",
+            saved.getCreatedAt(),
+            saved.getUpdatedAt(),
+            saved.getVersion());
 
     String responseBodyJson = jsonCodecPort.toJson(view);
     idempotencyStorePort.save(

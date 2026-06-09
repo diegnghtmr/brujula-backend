@@ -17,7 +17,10 @@ import java.util.Set;
  *     PENDING_VERIFICATION → ACTIVE when Keycloak has verified the email (obs #1574 sync-on-login).
  */
 public record ProvisionCommand(
-    String oidcSubject, String email, String fullName, Set<String> keycloakRoles,
+    String oidcSubject,
+    String email,
+    String fullName,
+    Set<String> keycloakRoles,
     Boolean emailVerified) {
 
   /** Backward-compat factory — creates a command with emailVerified=null (treated as false). */

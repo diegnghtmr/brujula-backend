@@ -9,8 +9,8 @@ import java.util.UUID;
  * journey) is strictly later than the target course's recommended semester — meaning the
  * prerequisite is in a higher semester than the course requiring it, which is impossible.
  *
- * <p>Maps to HTTP 422 (Unprocessable Entity) at the REST adapter layer (CUR-004).
- * No Spring/JPA imports (ARQ-002).
+ * <p>Maps to HTTP 422 (Unprocessable Entity) at the REST adapter layer (CUR-004). No Spring/JPA
+ * imports (ARQ-002).
  */
 public class SemesterOrderingViolationException extends RuntimeException {
 
@@ -28,7 +28,7 @@ public class SemesterOrderingViolationException extends RuntimeException {
       int targetSemester) {
     super(
         ("Semester ordering violation in journey '%s': required course (semester %d) is in a later"
-            + " semester than target course (semester %d). Required course: %s, Target course: %s")
+                + " semester than target course (semester %d). Required course: %s, Target course: %s")
             .formatted(
                 journeyCode,
                 requiredSemester,

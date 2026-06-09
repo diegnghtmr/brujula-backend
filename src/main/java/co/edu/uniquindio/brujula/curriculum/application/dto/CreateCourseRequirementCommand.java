@@ -13,7 +13,8 @@ import java.util.UUID;
  * @param targetCourseId the course that will have this requirement
  * @param planId the study plan UUID (used for cycle detection — load plan's full graph)
  * @param type the requirement type string (COURSE_PASSED, SEQUENCE, MINIMUM_CREDITS, CONFIGURABLE)
- * @param requiredCourseId the course that must be completed first (nullable for MINIMUM_CREDITS/CONFIGURABLE)
+ * @param requiredCourseId the course that must be completed first (nullable for
+ *     MINIMUM_CREDITS/CONFIGURABLE)
  * @param requiredCredits minimum credits required (nullable; only for MINIMUM_CREDITS)
  * @param simultaneityAllowed whether simultaneous enrollment is permitted
  */

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
  * RED→GREEN unit tests for {@link ArchivedOfferingRule} (spec VAL-007).
  *
  * <p>Each test genuinely exercises the rule branch under test:
+ *
  * <ul>
  *   <li>ARCHIVED status → blocked.
  *   <li>FINAL status → allowed.
@@ -89,11 +90,18 @@ class ArchivedOfferingRuleTest {
   // -------------------------------------------------------------------------
 
   private CandidateSelection buildCandidateWithStatus(String offeringStatus) {
-    SimScheduleSession session = new SimScheduleSession(
-        "FRIDAY", LocalTime.of(19, 0), LocalTime.of(22, 0));
+    SimScheduleSession session =
+        new SimScheduleSession("FRIDAY", LocalTime.of(19, 0), LocalTime.of(22, 0));
     return new CandidateSelection(
-        UUID.randomUUID(), UUID.randomUUID(), courseId,
-        "Programación II", programId, 3.0, "NOCTURNA",
-        offeringStatus, 1L, List.of(session));
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        courseId,
+        "Programación II",
+        programId,
+        3.0,
+        "NOCTURNA",
+        offeringStatus,
+        1L,
+        List.of(session));
   }
 }

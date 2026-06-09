@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -40,21 +39,51 @@ class AcademicPeriodJpaEntity {
 
   protected AcademicPeriodJpaEntity() {}
 
-  UUID getId() { return id; }
-  void setId(UUID id) { this.id = id; }
+  UUID getId() {
+    return id;
+  }
 
-  String getName() { return name; }
-  void setName(String name) { this.name = name; }
+  void setId(UUID id) {
+    this.id = id;
+  }
 
-  LocalDate getStartDate() { return startDate; }
-  void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+  String getName() {
+    return name;
+  }
 
-  LocalDate getEndDate() { return endDate; }
-  void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+  void setName(String name) {
+    this.name = name;
+  }
 
-  String getStatus() { return status; }
-  void setStatus(String status) { this.status = status; }
+  LocalDate getStartDate() {
+    return startDate;
+  }
 
-  long getVersion() { return version; }
-  void setVersion(long version) { this.version = version; }
+  void setStartDate(LocalDate startDate) {
+    this.startDate = startDate;
+  }
+
+  LocalDate getEndDate() {
+    return endDate;
+  }
+
+  void setEndDate(LocalDate endDate) {
+    this.endDate = endDate;
+  }
+
+  String getStatus() {
+    return status;
+  }
+
+  void setStatus(String status) {
+    this.status = status;
+  }
+
+  long getVersion() {
+    return version;
+  }
+
+  void setVersion(long version) {
+    this.version = version;
+  }
 }

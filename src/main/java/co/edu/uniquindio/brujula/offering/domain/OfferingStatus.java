@@ -21,6 +21,7 @@ public enum OfferingStatus {
    * Returns {@code true} if a transition from this status to {@code target} is legal.
    *
    * <p>Legal transitions per OFFW-005:
+   *
    * <ul>
    *   <li>DRAFT → PRELIMINARY ✓
    *   <li>DRAFT → FINAL ✓

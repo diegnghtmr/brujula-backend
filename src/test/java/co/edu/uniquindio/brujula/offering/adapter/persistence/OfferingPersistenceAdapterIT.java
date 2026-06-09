@@ -27,12 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * WU1-TDD: Integration tests for the OfferingPersistenceAdapter using V016+V017 seeded data.
  *
- * <p>Uses the real Flyway-migrated PostgreSQL database (via AbstractPostgresIntegrationTest).
- * Tests verify that:
+ * <p>Uses the real Flyway-migrated PostgreSQL database (via AbstractPostgresIntegrationTest). Tests
+ * verify that:
+ *
  * <ul>
  *   <li>listPeriods filters by status correctly
- *   <li>listOfferings requires periodId (400 when missing — enforced at controller layer,
- *       but persistence query requires it)
+ *   <li>listOfferings requires periodId (400 when missing — enforced at controller layer, but
+ *       persistence query requires it)
  *   <li>getOffering loads scheduleOptions
  *   <li>resolveScheduleOption returns full ScheduleOptionResolutionView
  *   <li>listOfferings excludes DRAFT/ARCHIVED offerings (student view)
@@ -67,8 +68,7 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
   @Test
   void listPeriodsContains2026_2Period() {
     List<AcademicPeriodView> periods = listPeriodsQuery.listPeriods(null);
-    assertThat(periods)
-        .anySatisfy(p -> assertThat(p.name()).isEqualTo("2026-2"));
+    assertThat(periods).anySatisfy(p -> assertThat(p.name()).isEqualTo("2026-2"));
   }
 
   // -------------------------------------------------------------------------
@@ -80,14 +80,14 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
     // Get the seeded period id
     List<AcademicPeriodView> periods = listPeriodsQuery.listPeriods("ACTIVE");
     assertThat(periods).isNotEmpty();
-    UUID periodId = periods.stream()
-        .filter(p -> p.name().equals("2026-2"))
-        .findFirst()
-        .map(AcademicPeriodView::id)
-        .orElse(periods.get(0).id());
+    UUID periodId =
+        periods.stream()
+            .filter(p -> p.name().equals("2026-2"))
+            .findFirst()
+            .map(AcademicPeriodView::id)
+            .orElse(periods.get(0).id());
 
-    ListOfferingsCriteria criteria =
-        new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
+    ListOfferingsCriteria criteria = new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
     OfferingPageView page = listOfferingsQuery.listOfferings(criteria);
 
     assertThat(page.content()).isNotEmpty();
@@ -102,14 +102,14 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
   @Test
   void listOfferingsExcludesDraftAndArchived() {
     List<AcademicPeriodView> periods = listPeriodsQuery.listPeriods("ACTIVE");
-    UUID periodId = periods.stream()
-        .filter(p -> p.name().equals("2026-2"))
-        .findFirst()
-        .map(AcademicPeriodView::id)
-        .orElse(periods.get(0).id());
+    UUID periodId =
+        periods.stream()
+            .filter(p -> p.name().equals("2026-2"))
+            .findFirst()
+            .map(AcademicPeriodView::id)
+            .orElse(periods.get(0).id());
 
-    ListOfferingsCriteria criteria =
-        new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
+    ListOfferingsCriteria criteria = new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
     OfferingPageView page = listOfferingsQuery.listOfferings(criteria);
 
     assertThat(page.content())
@@ -124,14 +124,14 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
   @Test
   void getOfferingLoadsScheduleOptions() {
     List<AcademicPeriodView> periods = listPeriodsQuery.listPeriods("ACTIVE");
-    UUID periodId = periods.stream()
-        .filter(p -> p.name().equals("2026-2"))
-        .findFirst()
-        .map(AcademicPeriodView::id)
-        .orElse(periods.get(0).id());
+    UUID periodId =
+        periods.stream()
+            .filter(p -> p.name().equals("2026-2"))
+            .findFirst()
+            .map(AcademicPeriodView::id)
+            .orElse(periods.get(0).id());
 
-    ListOfferingsCriteria criteria =
-        new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
+    ListOfferingsCriteria criteria = new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
     OfferingPageView page = listOfferingsQuery.listOfferings(criteria);
     assertThat(page.content()).isNotEmpty();
 
@@ -156,11 +156,12 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
   @Test
   void resolvePeriodByIdReturnsCorrectName() {
     List<AcademicPeriodView> periods = listPeriodsQuery.listPeriods("ACTIVE");
-    UUID periodId = periods.stream()
-        .filter(p -> p.name().equals("2026-2"))
-        .findFirst()
-        .map(AcademicPeriodView::id)
-        .orElse(periods.get(0).id());
+    UUID periodId =
+        periods.stream()
+            .filter(p -> p.name().equals("2026-2"))
+            .findFirst()
+            .map(AcademicPeriodView::id)
+            .orElse(periods.get(0).id());
 
     AcademicPeriodView resolved = resolvePeriodQuery.resolvePeriod(periodId);
     assertThat(resolved.name()).isEqualTo("2026-2");
@@ -179,14 +180,14 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
   @Test
   void resolveScheduleOptionReturnsFullView() {
     List<AcademicPeriodView> periods = listPeriodsQuery.listPeriods("ACTIVE");
-    UUID periodId = periods.stream()
-        .filter(p -> p.name().equals("2026-2"))
-        .findFirst()
-        .map(AcademicPeriodView::id)
-        .orElse(periods.get(0).id());
+    UUID periodId =
+        periods.stream()
+            .filter(p -> p.name().equals("2026-2"))
+            .findFirst()
+            .map(AcademicPeriodView::id)
+            .orElse(periods.get(0).id());
 
-    ListOfferingsCriteria criteria =
-        new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
+    ListOfferingsCriteria criteria = new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
     OfferingPageView page = listOfferingsQuery.listOfferings(criteria);
     assertThat(page.content()).isNotEmpty();
 
@@ -207,8 +208,7 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void resolveScheduleOptionThrowsNotFoundForUnknownId() {
-    assertThatThrownBy(
-            () -> resolveScheduleOptionQuery.resolveScheduleOption(UUID.randomUUID()))
+    assertThatThrownBy(() -> resolveScheduleOptionQuery.resolveScheduleOption(UUID.randomUUID()))
         .isInstanceOf(ScheduleOptionNotFoundException.class);
   }
 
@@ -230,11 +230,12 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
   @Test
   void listOfferingsReturnRealCourseNames() {
     List<AcademicPeriodView> periods = listPeriodsQuery.listPeriods("ACTIVE");
-    UUID periodId = periods.stream()
-        .filter(p -> p.name().equals("2026-2"))
-        .findFirst()
-        .map(AcademicPeriodView::id)
-        .orElseThrow();
+    UUID periodId =
+        periods.stream()
+            .filter(p -> p.name().equals("2026-2"))
+            .findFirst()
+            .map(AcademicPeriodView::id)
+            .orElseThrow();
 
     ListOfferingsCriteria criteria = new ListOfferingsCriteria(periodId, null, null, null, 0, 50);
     OfferingPageView page = listOfferingsQuery.listOfferings(criteria);
@@ -256,7 +257,8 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
     OfferingDetailView detail = getOfferingQuery.getOffering(calculoOfferingId);
 
     assertThat(detail.version())
-        .as("OfferingDetailView.version must reflect the entity version, not always 0L from a hardcoded literal")
+        .as(
+            "OfferingDetailView.version must reflect the entity version, not always 0L from a hardcoded literal")
         .isNotNull()
         .isGreaterThanOrEqualTo(0L);
   }
@@ -268,11 +270,12 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
     assertThat(detail.scheduleOptions())
         .isNotEmpty()
-        .allSatisfy(opt ->
-            assertThat(opt.version())
-                .as("ScheduleOptionView.version must not be null")
-                .isNotNull()
-                .isGreaterThanOrEqualTo(0L));
+        .allSatisfy(
+            opt ->
+                assertThat(opt.version())
+                    .as("ScheduleOptionView.version must not be null")
+                    .isNotNull()
+                    .isGreaterThanOrEqualTo(0L));
   }
 
   // -------------------------------------------------------------------------
@@ -286,14 +289,15 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
     assertThat(detail.scheduleOptions())
         .isNotEmpty()
-        .allSatisfy(opt -> {
-          assertThat(opt.offeringId())
-              .as("ScheduleOptionView.offeringId must not be null")
-              .isNotNull();
-          assertThat(opt.offeringId())
-              .as("ScheduleOptionView.offeringId must match the parent offering")
-              .isEqualTo(calculoOfferingId);
-        });
+        .allSatisfy(
+            opt -> {
+              assertThat(opt.offeringId())
+                  .as("ScheduleOptionView.offeringId must not be null")
+                  .isNotNull();
+              assertThat(opt.offeringId())
+                  .as("ScheduleOptionView.offeringId must match the parent offering")
+                  .isEqualTo(calculoOfferingId);
+            });
   }
 
   // -------------------------------------------------------------------------

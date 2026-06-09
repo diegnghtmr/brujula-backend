@@ -58,15 +58,16 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
   private static final String XSRF_TOKEN = "test-xsrf-token";
   private static final String VALID_CREATE_BODY =
       "{\"name\":\"2026-3\",\"startDate\":\"2026-07-01\",\"endDate\":\"2026-12-15\",\"status\":\"UPCOMING\"}";
-  private static final String VALID_UPDATE_BODY =
-      "{\"status\":\"ACTIVE\",\"version\":1}";
+  private static final String VALID_UPDATE_BODY = "{\"status\":\"ACTIVE\",\"version\":1}";
 
   @BeforeEach
   void setUp() {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     // Stub the actor resolution used by resolveActorId() inside the controller
     when(getCurrentUserQuery.getCurrentUserBySubject(any(String.class)))
-        .thenReturn(new UserProfile(ACTOR_ID, "sub-admin", "admin@test.com", "Admin", "ADMIN", "ACTIVE", true));
+        .thenReturn(
+            new UserProfile(
+                ACTOR_ID, "sub-admin", "admin@test.com", "Admin", "ADMIN", "ACTIVE", true));
   }
 
   // -------------------------------------------------------------------------
@@ -75,7 +76,8 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
 
   @Test
   void staff_gets_403_on_create_period() throws Exception {
-    mockMvc.perform(
+    mockMvc
+        .perform(
             post(CREATE_PERIOD_URL)
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF")))
                 .with(csrf())
@@ -87,7 +89,8 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
 
   @Test
   void student_gets_403_on_create_period() throws Exception {
-    mockMvc.perform(
+    mockMvc
+        .perform(
             post(CREATE_PERIOD_URL)
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .with(csrf())
@@ -100,11 +103,18 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
   @Test
   void admin_gets_201_on_create_period() throws Exception {
     UUID periodId = UUID.randomUUID();
-    AcademicPeriodView view = new AcademicPeriodView(
-        periodId, "2026-3", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 12, 15), "UPCOMING", 0L);
+    AcademicPeriodView view =
+        new AcademicPeriodView(
+            periodId,
+            "2026-3",
+            LocalDate.of(2026, 7, 1),
+            LocalDate.of(2026, 12, 15),
+            "UPCOMING",
+            0L);
     when(createPeriodUseCase.createPeriod(any())).thenReturn(view);
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             post(CREATE_PERIOD_URL)
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .with(csrf())
@@ -123,7 +133,8 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
     when(createPeriodUseCase.createPeriod(any()))
         .thenThrow(new IdempotencyKeyConflictException(UUID.randomUUID(), "CREATE_PERIOD"));
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             post(CREATE_PERIOD_URL)
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .with(csrf())
@@ -137,9 +148,11 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
   @Test
   void period_name_duplicate_returns_409() throws Exception {
     when(createPeriodUseCase.createPeriod(any()))
-        .thenThrow(new DataIntegrityViolationException("duplicate key value violates unique constraint"));
+        .thenThrow(
+            new DataIntegrityViolationException("duplicate key value violates unique constraint"));
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             post(CREATE_PERIOD_URL)
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .with(csrf())
@@ -156,7 +169,8 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
 
   @Test
   void staff_gets_403_on_update_period() throws Exception {
-    mockMvc.perform(
+    mockMvc
+        .perform(
             patch(UPDATE_PERIOD_URL, UUID.randomUUID())
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF")))
                 .with(csrf())
@@ -168,11 +182,13 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
   @Test
   void admin_gets_200_on_update_period() throws Exception {
     UUID periodId = UUID.randomUUID();
-    AcademicPeriodView view = new AcademicPeriodView(
-        periodId, "2026-3", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 12, 15), "ACTIVE", 2L);
+    AcademicPeriodView view =
+        new AcademicPeriodView(
+            periodId, "2026-3", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 12, 15), "ACTIVE", 2L);
     when(updatePeriodUseCase.updatePeriod(any())).thenReturn(view);
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             patch(UPDATE_PERIOD_URL, periodId)
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .with(csrf())
@@ -189,7 +205,8 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
     when(updatePeriodUseCase.updatePeriod(any()))
         .thenThrow(new OptimisticLockingFailureException("stale version"));
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             patch(UPDATE_PERIOD_URL, UUID.randomUUID())
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .with(csrf())
@@ -205,7 +222,8 @@ class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegratio
     when(updatePeriodUseCase.updatePeriod(any()))
         .thenThrow(new PeriodNotFoundException("period not found: " + UUID.randomUUID()));
 
-    mockMvc.perform(
+    mockMvc
+        .perform(
             patch(UPDATE_PERIOD_URL, UUID.randomUUID())
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_ADMIN")))
                 .with(csrf())

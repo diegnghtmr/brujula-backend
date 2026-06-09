@@ -16,8 +16,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <p>Verifies that the curriculum schema tables {@code curriculum.course}, {@code
  * curriculum.course_recommended_semester}, {@code curriculum.course_requirement}, {@code
  * curriculum.sequential_track}, {@code curriculum.sequential_track_level}, {@code
- * curriculum.sequential_track_level_option}, and {@code curriculum.degree_work_modality} exist
- * with correct columns, FKs, and indexes after migration. Fails until the migration file exists.
+ * curriculum.sequential_track_level_option}, and {@code curriculum.degree_work_modality} exist with
+ * correct columns, FKs, and indexes after migration. Fails until the migration file exists.
  *
  * <p>Satisfies: CUR-001 through CUR-007, Design §5 V011.
  */
@@ -187,8 +187,7 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
             Integer.class);
 
     assertThat(count)
-        .as(
-            "curriculum.course_recommended_semester must have an index on (journey_code, semester)")
+        .as("curriculum.course_recommended_semester must have an index on (journey_code, semester)")
         .isGreaterThanOrEqualTo(1);
   }
 
@@ -499,8 +498,8 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
   // -------------------------------------------------------------------------
 
   /**
-   * RED test (FIX-1 / W-001): asserts that the delete rule on the
-   * {@code course_requirement_required_fk} foreign key is {@code NO ACTION} or {@code RESTRICT}.
+   * RED test (FIX-1 / W-001): asserts that the delete rule on the {@code
+   * course_requirement_required_fk} foreign key is {@code NO ACTION} or {@code RESTRICT}.
    *
    * <p>ON DELETE SET NULL would silently corrupt COURSE_PASSED requirements when the referenced
    * course is deleted. The design prescribes archiving via status, not row deletion.
@@ -539,7 +538,8 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
    * <p>A COURSE_PASSED requirement without a required course is semantically invalid (CUR-003).
    */
   @Test
-  void curriculum_course_requirement_type_coherence_check_rejects_course_passed_without_required_id() {
+  void
+      curriculum_course_requirement_type_coherence_check_rejects_course_passed_without_required_id() {
     // Insert a parent course first so we can reference it as target_course_id
     jdbcTemplate.execute(
         """
@@ -643,8 +643,8 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
   // -------------------------------------------------------------------------
 
   /**
-   * Asserts that the {@code course_official_code_uq} unique constraint exists on
-   * {@code curriculum.course} (ADR-F2-005).
+   * Asserts that the {@code course_official_code_uq} unique constraint exists on {@code
+   * curriculum.course} (ADR-F2-005).
    */
   @Test
   void curriculum_course_official_code_is_unique_per_program_constraint_exists() {
@@ -713,8 +713,8 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
   // -------------------------------------------------------------------------
 
   /**
-   * Asserts that the {@code sequential_track_level_uq} unique constraint exists on
-   * {@code curriculum.sequential_track_level}.
+   * Asserts that the {@code sequential_track_level_uq} unique constraint exists on {@code
+   * curriculum.sequential_track_level}.
    */
   @Test
   void curriculum_sequential_track_level_unique_constraint_exists() {
@@ -737,9 +737,7 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
         .isEqualTo(1);
   }
 
-  /**
-   * Asserts that inserting two levels with the same (track_id, level) pair is rejected.
-   */
+  /** Asserts that inserting two levels with the same (track_id, level) pair is rejected. */
   @Test
   void curriculum_sequential_track_level_unique_constraint_rejects_duplicate_track_level() {
     jdbcTemplate.execute(

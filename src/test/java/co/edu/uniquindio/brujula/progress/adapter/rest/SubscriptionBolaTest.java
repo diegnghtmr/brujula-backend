@@ -26,22 +26,24 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * QAL-SEC-002 — BOLA HTTP-layer ownership tests for subscription resources.
  *
- * <p>Uses {@code @SpringBootTest} + Testcontainers PostgreSQL (via {@link AbstractPostgresIntegrationTest})
- * + {@code spring-security-test} {@code oidcLogin()} with TWO distinct OIDC subjects.
+ * <p>Uses {@code @SpringBootTest} + Testcontainers PostgreSQL (via {@link
+ * AbstractPostgresIntegrationTest}) + {@code spring-security-test} {@code oidcLogin()} with TWO
+ * distinct OIDC subjects.
  *
- * <p>Principal-B owns subscription SUB-1 (seeded via real persistence port).
- * Principal-A sends GET on SUB-1's ID and expects HTTP 404 — the deliberate enumeration-safe
- * response (existing domain contract: ownership violation is surfaced as SubscriptionNotFoundException
- * → 404, to avoid revealing resource existence to unauthorised callers).
+ * <p>Principal-B owns subscription SUB-1 (seeded via real persistence port). Principal-A sends GET
+ * on SUB-1's ID and expects HTTP 404 — the deliberate enumeration-safe response (existing domain
+ * contract: ownership violation is surfaced as SubscriptionNotFoundException → 404, to avoid
+ * revealing resource existence to unauthorised callers).
  *
- * <p>The test asserts the CURRENT domain behavior and must NOT change it to 403.
- * Per DEC-3 (design): simulation uses 403 (X-003 spec), subscriptions use 404
- * (enumeration-safety deliberate design — CROSS-2).
+ * <p>The test asserts the CURRENT domain behavior and must NOT change it to 403. Per DEC-3
+ * (design): simulation uses 403 (X-003 spec), subscriptions use 404 (enumeration-safety deliberate
+ * design — CROSS-2).
  *
- * <p>ANTI-FAKE-GREEN: NO {@code @MockitoBean} on GetSubscriptionQuery. The real service +
- * real persistence exercises the ownership guard end-to-end through the HTTP adapter.
+ * <p>ANTI-FAKE-GREEN: NO {@code @MockitoBean} on GetSubscriptionQuery. The real service + real
+ * persistence exercises the ownership guard end-to-end through the HTTP adapter.
  *
  * <p>Scenarios covered:
+ *
  * <ul>
  *   <li>T-WU2.4 — cross-owner GET → 404 (enumeration-safe); no subscription data from B leaked
  * </ul>
@@ -62,13 +64,17 @@ class SubscriptionBolaTest extends AbstractPostgresIntegrationTest {
 
   /** Principal-B: the legitimate owner of the subscription seeded in @BeforeEach. */
   private String principalBSubject;
+
   private UUID principalBUserId;
 
   /** The subscription owned by principal-B. */
   private UUID subOwnedByBId;
 
-  /** Domain identifiers seeded on principal-B's subscription — must not appear in error responses. */
+  /**
+   * Domain identifiers seeded on principal-B's subscription — must not appear in error responses.
+   */
   private UUID subProgramId;
+
   private UUID subPlanId;
 
   @BeforeEach
@@ -77,20 +83,22 @@ class SubscriptionBolaTest extends AbstractPostgresIntegrationTest {
 
     // Principal-A: attacker (distinct sub + userId)
     principalASubject = "bola-sub-prog-attacker-" + UUID.randomUUID();
-    AppUser principalA = AppUser.provision(
-        principalASubject,
-        "prog-attacker-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Principal A Attacker Progress",
-        Role.STUDENT);
+    AppUser principalA =
+        AppUser.provision(
+            principalASubject,
+            "prog-attacker-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Principal A Attacker Progress",
+            Role.STUDENT);
     saveAppUserPort.save(principalA);
 
     // Principal-B: legitimate owner
     principalBSubject = "bola-sub-prog-owner-" + UUID.randomUUID();
-    AppUser principalB = AppUser.provision(
-        principalBSubject,
-        "prog-owner-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Principal B Owner Progress",
-        Role.STUDENT);
+    AppUser principalB =
+        AppUser.provision(
+            principalBSubject,
+            "prog-owner-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Principal B Owner Progress",
+            Role.STUDENT);
     saveAppUserPort.save(principalB);
     principalBUserId = principalB.id();
 
@@ -98,12 +106,13 @@ class SubscriptionBolaTest extends AbstractPostgresIntegrationTest {
     // Real ownership check in GetSubscriptionService fires on the HTTP request from principal-A.
     subProgramId = UUID.randomUUID();
     subPlanId = UUID.randomUUID();
-    Subscription subOwnedByB = Subscription.create(
-        SubscriptionId.generate(),
-        principalBUserId,
-        subProgramId, // programId — arbitrary, not validated by ownership check
-        subPlanId, // planId — arbitrary
-        "DIURNA");
+    Subscription subOwnedByB =
+        Subscription.create(
+            SubscriptionId.generate(),
+            principalBUserId,
+            subProgramId, // programId — arbitrary, not validated by ownership check
+            subPlanId, // planId — arbitrary
+            "DIURNA");
     Subscription saved = saveSubscriptionPort.save(subOwnedByB);
     subOwnedByBId = saved.getId().value();
   }
@@ -115,15 +124,15 @@ class SubscriptionBolaTest extends AbstractPostgresIntegrationTest {
   /**
    * T-WU2.4: principal-A sends GET on principal-B's subscription.
    *
-   * <p>Real GetSubscriptionService checks userId equality. When the IDs differ it throws
-   * {@link co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException}, which
-   * {@code ProgressExceptionHandler} maps to HTTP 404.
+   * <p>Real GetSubscriptionService checks userId equality. When the IDs differ it throws {@link
+   * co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException}, which {@code
+   * ProgressExceptionHandler} maps to HTTP 404.
    *
    * <p>This is the deliberate BOLA-safe response: 404 does not confirm resource existence,
    * preventing enumeration attacks (see DEC-3 / QAL-SEC-002).
    *
-   * <p>No subscription data from principal-B must appear in the response: the 404 body
-   * contains only an error description, never subscription fields (id, programId, planId, etc.).
+   * <p>No subscription data from principal-B must appear in the response: the 404 body contains
+   * only an error description, never subscription fields (id, programId, planId, etc.).
    */
   @Test
   void cross_owner_get_subscription_returns_404_no_data_leaked() throws Exception {
@@ -137,20 +146,21 @@ class SubscriptionBolaTest extends AbstractPostgresIntegrationTest {
         .andExpect(status().isNotFound())
         // Assert no subscription data from principal-B leaks into the response.
         // A 404 ProblemDetail body must not contain a programId or userId field.
-        .andExpect(result -> {
-          String body = result.getResponse().getContentAsString();
-          // The 404 error body must not expose any of principal-B's subscription domain data.
-          // A plain ProblemDetail (status/type/title/detail) is the only acceptable shape.
-          assertThat(body)
-              .as("Response must not leak principal-B's userId")
-              .doesNotContain(principalBUserId.toString());
-          assertThat(body)
-              .as("Response must not leak principal-B's programId")
-              .doesNotContain(subProgramId.toString());
-          assertThat(body)
-              .as("Response must not leak principal-B's planId")
-              .doesNotContain(subPlanId.toString());
-        });
+        .andExpect(
+            result -> {
+              String body = result.getResponse().getContentAsString();
+              // The 404 error body must not expose any of principal-B's subscription domain data.
+              // A plain ProblemDetail (status/type/title/detail) is the only acceptable shape.
+              assertThat(body)
+                  .as("Response must not leak principal-B's userId")
+                  .doesNotContain(principalBUserId.toString());
+              assertThat(body)
+                  .as("Response must not leak principal-B's programId")
+                  .doesNotContain(subProgramId.toString());
+              assertThat(body)
+                  .as("Response must not leak principal-B's planId")
+                  .doesNotContain(subPlanId.toString());
+            });
   }
 
   // -------------------------------------------------------------------------
@@ -158,8 +168,8 @@ class SubscriptionBolaTest extends AbstractPostgresIntegrationTest {
   // -------------------------------------------------------------------------
 
   /**
-   * Sanity: principal-B (the owner) can GET their own subscription → 200 OK.
-   * Confirms the seeding worked and the real ownership check passes for the legitimate owner.
+   * Sanity: principal-B (the owner) can GET their own subscription → 200 OK. Confirms the seeding
+   * worked and the real ownership check passes for the legitimate owner.
    */
   @Test
   void owner_can_get_own_subscription_returns_200() throws Exception {

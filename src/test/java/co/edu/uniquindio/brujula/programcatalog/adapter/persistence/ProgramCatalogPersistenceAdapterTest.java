@@ -1,7 +1,6 @@
 package co.edu.uniquindio.brujula.programcatalog.adapter.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import co.edu.uniquindio.brujula.AbstractPostgresIntegrationTest;
 import co.edu.uniquindio.brujula.programcatalog.application.port.out.LoadJourneyPort;
@@ -28,11 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * RED → GREEN persistence adapter tests: catalog JPA round-trip.
  *
- * <p>Covers: program load-all + load-by-id, study plan load-by-programId + load-by-id,
- * journey load-all-active. Tests directly through the port interfaces.
+ * <p>Covers: program load-all + load-by-id, study plan load-by-programId + load-by-id, journey
+ * load-all-active. Tests directly through the port interfaces.
  *
- * <p>Uses Testcontainers PostgreSQL + Flyway for a real schema.
- * Satisfies: CAT-001/CAT-002/CAT-003, Design §Phase-1 WU4-1.x.
+ * <p>Uses Testcontainers PostgreSQL + Flyway for a real schema. Satisfies: CAT-001/CAT-002/CAT-003,
+ * Design §Phase-1 WU4-1.x.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class ProgramCatalogPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
@@ -77,9 +76,7 @@ class ProgramCatalogPersistenceAdapterTest extends AbstractPostgresIntegrationTe
 
     List<AcademicProgram> all = loadProgramPort.loadAll();
 
-    assertThat(all)
-        .extracting(p -> p.id().value())
-        .contains(programId);
+    assertThat(all).extracting(p -> p.id().value()).contains(programId);
   }
 
   @Test
@@ -132,9 +129,7 @@ class ProgramCatalogPersistenceAdapterTest extends AbstractPostgresIntegrationTe
 
     List<StudyPlan> plans = loadStudyPlanPort.loadByProgramId(programId);
 
-    assertThat(plans)
-        .extracting(p -> p.id().value())
-        .containsExactlyInAnyOrder(plan1Id, plan2Id);
+    assertThat(plans).extracting(p -> p.id().value()).containsExactlyInAnyOrder(plan1Id, plan2Id);
   }
 
   @Test
@@ -194,10 +189,8 @@ class ProgramCatalogPersistenceAdapterTest extends AbstractPostgresIntegrationTe
 
     List<Journey> journeys = loadJourneyPort.loadAllActive();
 
-    Journey found = journeys.stream()
-        .filter(j -> j.id().value().equals(journeyId))
-        .findFirst()
-        .orElseThrow();
+    Journey found =
+        journeys.stream().filter(j -> j.id().value().equals(journeyId)).findFirst().orElseThrow();
 
     assertThat(found.code()).isEqualTo(code);
     assertThat(found.name()).isEqualTo("Jornada Especial");
@@ -213,17 +206,26 @@ class ProgramCatalogPersistenceAdapterTest extends AbstractPostgresIntegrationTe
     jdbcTemplate.update(
         "INSERT INTO catalog.academic_program (id, name, faculty, status, version) "
             + "VALUES (?, ?, ?, ?, 0)",
-        id, name, faculty, status);
+        id,
+        name,
+        faculty,
+        status);
     entityManager.flush();
     return id;
   }
 
-  private UUID insertStudyPlan(UUID programId, String name, String status, int credits, Integer year) {
+  private UUID insertStudyPlan(
+      UUID programId, String name, String status, int credits, Integer year) {
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO catalog.study_plan (id, program_id, name, status, total_credits, reference_year, version) "
             + "VALUES (?, ?, ?, ?, ?, ?, 0)",
-        id, programId, name, status, credits, year);
+        id,
+        programId,
+        name,
+        status,
+        credits,
+        year);
     entityManager.flush();
     return id;
   }
@@ -233,7 +235,11 @@ class ProgramCatalogPersistenceAdapterTest extends AbstractPostgresIntegrationTe
     jdbcTemplate.update(
         "INSERT INTO catalog.study_plan (id, program_id, name, status, total_credits, version) "
             + "VALUES (?, ?, ?, ?, ?, 0)",
-        id, programId, name, status, credits);
+        id,
+        programId,
+        name,
+        status,
+        credits);
     entityManager.flush();
     return id;
   }
@@ -242,7 +248,10 @@ class ProgramCatalogPersistenceAdapterTest extends AbstractPostgresIntegrationTe
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO catalog.journey (id, code, name, active) VALUES (?, ?, ?, ?)",
-        id, code, name, active);
+        id,
+        code,
+        name,
+        active);
     entityManager.flush();
     return id;
   }

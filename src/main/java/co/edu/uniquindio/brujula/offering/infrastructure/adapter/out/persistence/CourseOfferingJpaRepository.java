@@ -1,14 +1,12 @@
 package co.edu.uniquindio.brujula.offering.infrastructure.adapter.out.persistence;
 
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Spring Data repository for {@link CourseOfferingJpaEntity}.
@@ -18,25 +16,25 @@ import java.util.UUID;
 interface CourseOfferingJpaRepository extends JpaRepository<CourseOfferingJpaEntity, UUID> {
 
   /**
-   * Returns a page of published offerings (PRELIMINARY or FINAL) for a given period,
-   * optionally filtered by programId. No eager fetch needed for summary projection.
+   * Returns a page of published offerings (PRELIMINARY or FINAL) for a given period, optionally
+   * filtered by programId. No eager fetch needed for summary projection.
    */
-  @Query("""
+  @Query(
+      """
       SELECT o FROM CourseOfferingJpaEntity o
       WHERE o.periodId = :periodId
         AND o.status IN ('PRELIMINARY', 'FINAL')
         AND (:programId IS NULL OR o.programId = :programId)
       """)
   Page<CourseOfferingJpaEntity> findPublished(
-      @Param("periodId") UUID periodId,
-      @Param("programId") UUID programId,
-      Pageable pageable);
+      @Param("periodId") UUID periodId, @Param("programId") UUID programId, Pageable pageable);
 
   /**
-   * Returns the offering with its schedule options and sessions eagerly loaded.
-   * Uses JOIN FETCH to avoid N+1 on the nested collections.
+   * Returns the offering with its schedule options and sessions eagerly loaded. Uses JOIN FETCH to
+   * avoid N+1 on the nested collections.
    */
-  @Query("""
+  @Query(
+      """
       SELECT DISTINCT o FROM CourseOfferingJpaEntity o
       LEFT JOIN FETCH o.scheduleOptions opt
       LEFT JOIN FETCH opt.sessions
@@ -45,13 +43,14 @@ interface CourseOfferingJpaRepository extends JpaRepository<CourseOfferingJpaEnt
   Optional<CourseOfferingJpaEntity> findByIdWithOptions(@Param("id") UUID id);
 
   /**
-   * Returns a page of offerings for privileged callers (STAFF/ADMIN).
-   * Includes DRAFT, PRELIMINARY, and FINAL statuses. When {@code statusFilter} is provided,
-   * only that status is returned. ARCHIVED is always excluded from staff listing.
+   * Returns a page of offerings for privileged callers (STAFF/ADMIN). Includes DRAFT, PRELIMINARY,
+   * and FINAL statuses. When {@code statusFilter} is provided, only that status is returned.
+   * ARCHIVED is always excluded from staff listing.
    *
    * <p>Satisfies: OFFW-007.
    */
-  @Query("""
+  @Query(
+      """
       SELECT o FROM CourseOfferingJpaEntity o
       WHERE o.periodId = :periodId
         AND o.status != 'ARCHIVED'

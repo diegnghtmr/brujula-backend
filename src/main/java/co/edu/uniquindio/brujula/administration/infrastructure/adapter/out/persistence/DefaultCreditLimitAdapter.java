@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
  * Default driven adapter for {@link LoadCreditLimitPort}.
  *
  * <p>The {@code administration.credit_limit} table does not exist yet (ADR-F4-006 — deferred). This
- * adapter returns {@code Optional.empty()} for every request, signalling to
- * {@link co.edu.uniquindio.brujula.administration.application.service.GetCreditLimitService} that
- * the system default of 23 should be used.
+ * adapter returns {@code Optional.empty()} for every request, signalling to {@link
+ * co.edu.uniquindio.brujula.administration.application.service.GetCreditLimitService} that the
+ * system default of 23 should be used.
  *
  * <p>When the credit_limit table and its Flyway migration are added in a future fast-follow, this
  * adapter is replaced by a real JPA implementation without changing the application service.

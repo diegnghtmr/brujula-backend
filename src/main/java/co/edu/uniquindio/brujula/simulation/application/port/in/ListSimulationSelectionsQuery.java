@@ -1,7 +1,6 @@
 package co.edu.uniquindio.brujula.simulation.application.port.in;
 
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -16,7 +15,7 @@ public interface ListSimulationSelectionsQuery {
    * List active selections for the given simulation.
    *
    * @param simulationId target simulation UUID
-   * @param ownerId      caller UUID (from SecurityContext, BOLA-safe)
+   * @param ownerId caller UUID (from SecurityContext, BOLA-safe)
    * @return list of selection views (may be empty)
    */
   List<SimulationSelectionView> listSelections(UUID simulationId, UUID ownerId);

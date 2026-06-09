@@ -28,25 +28,30 @@ class RequirementsValidatorTest {
   void cycle_produces_circular_sequence_error() {
     // Row 0: B requires A (A → B edge)
     // Row 1: A requires B (B → A edge) — creates cycle
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of(
-            "destination_course", "B",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "A",
-            "simultaneous_allowed", "false")),
-        new ImportRow(1, Map.of(
-            "destination_course", "A",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "B",
-            "simultaneous_allowed", "false"))
-    );
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "destination_course", "B",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "A",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "destination_course", "A",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "B",
+                    "simultaneous_allowed", "false")));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
 
     // At least one row should have CIRCULAR_SEQUENCE
-    boolean hasCircularSequence = issueMap.values().stream()
-        .flatMap(List::stream)
-        .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
+    boolean hasCircularSequence =
+        issueMap.values().stream()
+            .flatMap(List::stream)
+            .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
     assertThat(hasCircularSequence).isTrue();
   }
 
@@ -54,41 +59,50 @@ class RequirementsValidatorTest {
   @Test
   void intra_batch_cycle_detected_across_rows() {
     // Chain: A→B, B→C, C→A (three-node cycle)
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of(
-            "destination_course", "B",
-            "requirement_type", "SEQUENCE",
-            "required_course_or_value", "A",
-            "simultaneous_allowed", "false")),
-        new ImportRow(1, Map.of(
-            "destination_course", "C",
-            "requirement_type", "SEQUENCE",
-            "required_course_or_value", "B",
-            "simultaneous_allowed", "false")),
-        new ImportRow(2, Map.of(
-            "destination_course", "A",
-            "requirement_type", "SEQUENCE",
-            "required_course_or_value", "C",
-            "simultaneous_allowed", "false"))
-    );
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "destination_course", "B",
+                    "requirement_type", "SEQUENCE",
+                    "required_course_or_value", "A",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "destination_course", "C",
+                    "requirement_type", "SEQUENCE",
+                    "required_course_or_value", "B",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                2,
+                Map.of(
+                    "destination_course", "A",
+                    "requirement_type", "SEQUENCE",
+                    "required_course_or_value", "C",
+                    "simultaneous_allowed", "false")));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
 
-    boolean hasCircularSequence = issueMap.values().stream()
-        .flatMap(List::stream)
-        .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
+    boolean hasCircularSequence =
+        issueMap.values().stream()
+            .flatMap(List::stream)
+            .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
     assertThat(hasCircularSequence).isTrue();
   }
 
   /** T3.2 SC-007-C: destination course missing produces DESTINATION_COURSE_NOT_FOUND. */
   @Test
   void destination_course_not_found_produces_error() {
-    ImportRow row = new ImportRow(0, Map.of(
-        "destination_course", "",
-        "requirement_type", "COURSE_PASSED",
-        "required_course_or_value", "MAT101",
-        "simultaneous_allowed", "false"
-    ));
+    ImportRow row =
+        new ImportRow(
+            0,
+            Map.of(
+                "destination_course", "",
+                "requirement_type", "COURSE_PASSED",
+                "required_course_or_value", "MAT101",
+                "simultaneous_allowed", "false"));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(List.of(row));
 
@@ -100,12 +114,14 @@ class RequirementsValidatorTest {
   /** T3.2: valid requirement row produces no issues. */
   @Test
   void valid_row_produces_no_issues() {
-    ImportRow row = new ImportRow(0, Map.of(
-        "destination_course", "MAT201",
-        "requirement_type", "COURSE_PASSED",
-        "required_course_or_value", "MAT101",
-        "simultaneous_allowed", "false"
-    ));
+    ImportRow row =
+        new ImportRow(
+            0,
+            Map.of(
+                "destination_course", "MAT201",
+                "requirement_type", "COURSE_PASSED",
+                "required_course_or_value", "MAT101",
+                "simultaneous_allowed", "false"));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(List.of(row));
 
@@ -115,12 +131,14 @@ class RequirementsValidatorTest {
   /** T3.2: invalid requirement_type produces INVALID_REQUIREMENT_TYPE. */
   @Test
   void invalid_requirement_type_produces_error() {
-    ImportRow row = new ImportRow(0, Map.of(
-        "destination_course", "MAT201",
-        "requirement_type", "UNKNOWN_TYPE",
-        "required_course_or_value", "MAT101",
-        "simultaneous_allowed", "false"
-    ));
+    ImportRow row =
+        new ImportRow(
+            0,
+            Map.of(
+                "destination_course", "MAT201",
+                "requirement_type", "UNKNOWN_TYPE",
+                "required_course_or_value", "MAT101",
+                "simultaneous_allowed", "false"));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(List.of(row));
 
@@ -134,37 +152,42 @@ class RequirementsValidatorTest {
    *
    * <p>Uses two rows (one self-loop + one unrelated) so that the batch size exceeds the
    * minimum-two-rows threshold that activates cycle detection in {@code detectIntrabatchCycles}.
-   * The self-loop row (A→A) is the cycle-introducing edge: the DFS visits A, marks it GRAY,
-   * then sees successor A is GRAY → back-edge detected.
+   * The self-loop row (A→A) is the cycle-introducing edge: the DFS visits A, marks it GRAY, then
+   * sees successor A is GRAY → back-edge detected.
    */
   @Test
   void self_loop_produces_circular_sequence_error() {
-    List<ImportRow> rows = List.of(
-        // Row 0: A requires A — self-loop
-        new ImportRow(0, Map.of(
-            "destination_course", "A",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "A",
-            "simultaneous_allowed", "false")),
-        // Row 1: unrelated valid row to satisfy the size >= 2 threshold
-        new ImportRow(1, Map.of(
-            "destination_course", "C",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "B",
-            "simultaneous_allowed", "false"))
-    );
+    List<ImportRow> rows =
+        List.of(
+            // Row 0: A requires A — self-loop
+            new ImportRow(
+                0,
+                Map.of(
+                    "destination_course", "A",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "A",
+                    "simultaneous_allowed", "false")),
+            // Row 1: unrelated valid row to satisfy the size >= 2 threshold
+            new ImportRow(
+                1,
+                Map.of(
+                    "destination_course", "C",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "B",
+                    "simultaneous_allowed", "false")));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
 
-    boolean hasCircularSequence = issueMap.values().stream()
-        .flatMap(List::stream)
-        .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
+    boolean hasCircularSequence =
+        issueMap.values().stream()
+            .flatMap(List::stream)
+            .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
     assertThat(hasCircularSequence).isTrue();
   }
 
   /**
-   * T3.2 SC-007-B (b): diamond/DAG A→B, A→C, B→D, C→D does NOT produce CIRCULAR_SEQUENCE.
-   * This proves the detector has no false positives on shared-dependency graphs.
+   * T3.2 SC-007-B (b): diamond/DAG A→B, A→C, B→D, C→D does NOT produce CIRCULAR_SEQUENCE. This
+   * proves the detector has no false positives on shared-dependency graphs.
    */
   @Test
   void diamond_dag_does_not_produce_circular_sequence_error() {
@@ -173,34 +196,43 @@ class RequirementsValidatorTest {
     // dest=D requires B (edge B→D)
     // dest=D requires C (edge C→D) — duplicate (D,C) pair shares dest with (D,B) but not duplicate
     // NOTE: (D,B) and (D,C) have different required_course, so no duplicate error
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of(
-            "destination_course", "B",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "A",
-            "simultaneous_allowed", "false")),
-        new ImportRow(1, Map.of(
-            "destination_course", "C",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "A",
-            "simultaneous_allowed", "false")),
-        new ImportRow(2, Map.of(
-            "destination_course", "D",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "B",
-            "simultaneous_allowed", "false")),
-        new ImportRow(3, Map.of(
-            "destination_course", "D",
-            "requirement_type", "SEQUENCE",
-            "required_course_or_value", "C",
-            "simultaneous_allowed", "false"))
-    );
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "destination_course", "B",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "A",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "destination_course", "C",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "A",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                2,
+                Map.of(
+                    "destination_course", "D",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "B",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                3,
+                Map.of(
+                    "destination_course", "D",
+                    "requirement_type", "SEQUENCE",
+                    "required_course_or_value", "C",
+                    "simultaneous_allowed", "false")));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
 
-    boolean hasCircularSequence = issueMap.values().stream()
-        .flatMap(List::stream)
-        .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
+    boolean hasCircularSequence =
+        issueMap.values().stream()
+            .flatMap(List::stream)
+            .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
     assertThat(hasCircularSequence).isFalse();
   }
 
@@ -210,81 +242,101 @@ class RequirementsValidatorTest {
    */
   @Test
   void disconnected_graph_cycle_in_second_component_is_flagged() {
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of(
-            "destination_course", "Y",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "X",
-            "simultaneous_allowed", "false")),
-        new ImportRow(1, Map.of(
-            "destination_course", "Q",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "P",
-            "simultaneous_allowed", "false")),
-        new ImportRow(2, Map.of(
-            "destination_course", "P",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "Q",
-            "simultaneous_allowed", "false"))
-    );
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "destination_course", "Y",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "X",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "destination_course", "Q",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "P",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                2,
+                Map.of(
+                    "destination_course", "P",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "Q",
+                    "simultaneous_allowed", "false")));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
 
-    boolean hasCircularSequence = issueMap.values().stream()
-        .flatMap(List::stream)
-        .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
+    boolean hasCircularSequence =
+        issueMap.values().stream()
+            .flatMap(List::stream)
+            .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
     assertThat(hasCircularSequence).isTrue();
   }
 
   /** T3.2 SC-007-B (d): four-node cycle A→B→C→D→A is flagged as CIRCULAR_SEQUENCE. */
   @Test
   void four_node_cycle_produces_circular_sequence_error() {
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of(
-            "destination_course", "B",
-            "requirement_type", "SEQUENCE",
-            "required_course_or_value", "A",
-            "simultaneous_allowed", "false")),
-        new ImportRow(1, Map.of(
-            "destination_course", "C",
-            "requirement_type", "SEQUENCE",
-            "required_course_or_value", "B",
-            "simultaneous_allowed", "false")),
-        new ImportRow(2, Map.of(
-            "destination_course", "D",
-            "requirement_type", "SEQUENCE",
-            "required_course_or_value", "C",
-            "simultaneous_allowed", "false")),
-        new ImportRow(3, Map.of(
-            "destination_course", "A",
-            "requirement_type", "SEQUENCE",
-            "required_course_or_value", "D",
-            "simultaneous_allowed", "false"))
-    );
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "destination_course", "B",
+                    "requirement_type", "SEQUENCE",
+                    "required_course_or_value", "A",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "destination_course", "C",
+                    "requirement_type", "SEQUENCE",
+                    "required_course_or_value", "B",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                2,
+                Map.of(
+                    "destination_course", "D",
+                    "requirement_type", "SEQUENCE",
+                    "required_course_or_value", "C",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                3,
+                Map.of(
+                    "destination_course", "A",
+                    "requirement_type", "SEQUENCE",
+                    "required_course_or_value", "D",
+                    "simultaneous_allowed", "false")));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
 
-    boolean hasCircularSequence = issueMap.values().stream()
-        .flatMap(List::stream)
-        .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
+    boolean hasCircularSequence =
+        issueMap.values().stream()
+            .flatMap(List::stream)
+            .anyMatch(issue -> "CIRCULAR_SEQUENCE".equals(issue.code()));
     assertThat(hasCircularSequence).isTrue();
   }
 
   /** T3.2: duplicate (destination, required) pair produces DUPLICATE_REQUIREMENT_IN_BATCH. */
   @Test
   void duplicate_pair_produces_duplicate_requirement_in_batch() {
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of(
-            "destination_course", "MAT201",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "MAT101",
-            "simultaneous_allowed", "false")),
-        new ImportRow(1, Map.of(
-            "destination_course", "MAT201",
-            "requirement_type", "COURSE_PASSED",
-            "required_course_or_value", "MAT101",
-            "simultaneous_allowed", "false"))
-    );
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "destination_course", "MAT201",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "MAT101",
+                    "simultaneous_allowed", "false")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "destination_course", "MAT201",
+                    "requirement_type", "COURSE_PASSED",
+                    "required_course_or_value", "MAT101",
+                    "simultaneous_allowed", "false")));
 
     Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
 

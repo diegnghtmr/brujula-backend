@@ -2,7 +2,6 @@ package co.edu.uniquindio.brujula.identity.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -11,13 +10,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import co.edu.uniquindio.brujula.identity.application.port.in.ResendEmailVerificationUseCase;
-import co.edu.uniquindio.brujula.identity.application.port.out.KeycloakUserId;
 import co.edu.uniquindio.brujula.identity.application.port.out.KeycloakUserProvisioningPort;
 import co.edu.uniquindio.brujula.identity.application.port.out.LoadAppUserPort;
 import co.edu.uniquindio.brujula.identity.application.service.ResendEmailVerificationService;
 import co.edu.uniquindio.brujula.identity.domain.AppUser;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,15 +26,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *
  * <p>STRICT TDD: tests written RED before the service exists.
  *
- * <p>Key security constraint: NO USER ENUMERATION.
- * The endpoint MUST return the same 202 response regardless of whether the email
- * is registered or not. These tests prove it at the service layer.
+ * <p>Key security constraint: NO USER ENUMERATION. The endpoint MUST return the same 202 response
+ * regardless of whether the email is registered or not. These tests prove it at the service layer.
  *
  * <p>Scenarios:
+ *
  * <ul>
- *   <li>Known email → port triggered with correct KeycloakUserId</li>
- *   <li>Unknown email → port NOT triggered, service returns normally (no exception)</li>
- *   <li>Both paths return void (no exception) — identical behavior proves no enumeration</li>
+ *   <li>Known email → port triggered with correct KeycloakUserId
+ *   <li>Unknown email → port NOT triggered, service returns normally (no exception)
+ *   <li>Both paths return void (no exception) — identical behavior proves no enumeration
  * </ul>
  *
  * <p>Satisfies: S2-C, Spec §Email verification resend, RNF-SEG-006 no user enumeration.
@@ -69,7 +66,8 @@ class ResendEmailVerificationServiceTest {
         .thenReturn(Optional.of(existingUser));
 
     // The adapter looks up by email in Keycloak and triggers the action — mock port returns a
-    // KeycloakUserId (the adapter finds it by email internally; port contract uses email for resend)
+    // KeycloakUserId (the adapter finds it by email internally; port contract uses email for
+    // resend)
     // The service calls triggerEmailVerificationByEmail which maps to the existing port method
     // For resend we use triggerEmailVerification with a by-email approach: port looks up user.
     // Design decision: add resendEmailVerification(email, redirectUri) to the port — this avoids
@@ -80,7 +78,8 @@ class ResendEmailVerificationServiceTest {
     sut.resend("student@uniquindio.edu.co");
 
     // Assert — Keycloak was triggered
-    verify(keycloakPort).resendEmailVerification(eq("student@uniquindio.edu.co"), eq(VERIFY_REDIRECT_URI));
+    verify(keycloakPort)
+        .resendEmailVerification(eq("student@uniquindio.edu.co"), eq(VERIFY_REDIRECT_URI));
   }
 
   // -------------------------------------------------------------------------
@@ -109,12 +108,11 @@ class ResendEmailVerificationServiceTest {
     AppUser existingUser = AppUser.register("known@uniquindio.edu.co", "Known User");
     when(loadAppUserPort.findByEmail("known@uniquindio.edu.co"))
         .thenReturn(Optional.of(existingUser));
-    when(loadAppUserPort.findByEmail("unknown@uniquindio.edu.co"))
-        .thenReturn(Optional.empty());
+    when(loadAppUserPort.findByEmail("unknown@uniquindio.edu.co")).thenReturn(Optional.empty());
 
     // Act + Assert — both calls complete without throwing (identical observable outcome)
     // This is the no-enumeration proof: callers cannot distinguish known from unknown.
-    sut.resend("known@uniquindio.edu.co");   // known: completes normally
+    sut.resend("known@uniquindio.edu.co"); // known: completes normally
     sut.resend("unknown@uniquindio.edu.co"); // unknown: also completes normally, no exception
 
     // The difference is only in side-effects the caller cannot observe:
@@ -129,10 +127,10 @@ class ResendEmailVerificationServiceTest {
 
   /**
    * W-003 (no-enumeration consistency): when Keycloak throws {@code KeycloakProvisioningException}
-   * for a KNOWN email, the service must swallow it and return normally — identical to
-   * {@code InitiatePasswordRecoveryService} (which already swallows). Without this fix a
-   * Keycloak 5xx for a known email would produce a 500 while an unknown email produces 202,
-   * creating a status-channel asymmetry that partially breaks no-enumeration.
+   * for a KNOWN email, the service must swallow it and return normally — identical to {@code
+   * InitiatePasswordRecoveryService} (which already swallows). Without this fix a Keycloak 5xx for
+   * a known email would produce a 500 while an unknown email produces 202, creating a
+   * status-channel asymmetry that partially breaks no-enumeration.
    */
   @Test
   void resend_whenKeycloakFails_swallowsException_andReturnsNormally() {
@@ -142,8 +140,9 @@ class ResendEmailVerificationServiceTest {
         .thenReturn(Optional.of(existingUser));
 
     // Port throws KeycloakProvisioningException (simulates Keycloak 5xx)
-    doThrow(new KeycloakUserProvisioningPort.KeycloakProvisioningException(
-            "Keycloak unavailable", "KEYCLOAK_SERVER_ERROR"))
+    doThrow(
+            new KeycloakUserProvisioningPort.KeycloakProvisioningException(
+                "Keycloak unavailable", "KEYCLOAK_SERVER_ERROR"))
         .when(keycloakPort)
         .resendEmailVerification(anyString(), anyString());
 

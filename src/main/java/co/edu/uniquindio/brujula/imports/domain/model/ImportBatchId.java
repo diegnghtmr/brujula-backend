@@ -10,15 +10,15 @@ import java.util.UUID;
  */
 public record ImportBatchId(UUID value) {
 
-    public ImportBatchId {
-        Objects.requireNonNull(value, "ImportBatchId value must not be null");
-    }
+  public ImportBatchId {
+    Objects.requireNonNull(value, "ImportBatchId value must not be null");
+  }
 
-    public static ImportBatchId generate() {
-        return new ImportBatchId(UUID.randomUUID());
-    }
+  public static ImportBatchId generate() {
+    return new ImportBatchId(UUID.randomUUID());
+  }
 
-    public static ImportBatchId of(UUID value) {
-        return new ImportBatchId(value);
-    }
+  public static ImportBatchId of(UUID value) {
+    return new ImportBatchId(value);
+  }
 }

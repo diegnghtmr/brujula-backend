@@ -11,15 +11,15 @@ import java.util.stream.Collectors;
 /**
  * Domain service: computes the {@link CourseAvailability} for each course in a plan.
  *
- * <p>Pure function — no Spring beans, no ports, no I/O. All inputs are passed in; this service
- * only performs in-memory computation (ADR-F3-004). Mirrors {@code PrerequisiteAcyclicityService}
+ * <p>Pure function — no Spring beans, no ports, no I/O. All inputs are passed in; this service only
+ * performs in-memory computation (ADR-F3-004). Mirrors {@code PrerequisiteAcyclicityService}
  * purity. Enforced by {@code ProgressDomainPurityTest}.
  *
  * <p>Algorithm per ADR-F3-004:
  *
  * <ol>
- *   <li>If the course already has an effective declared status (PASSED/FAILED/CANCELLED), that status
- *       is returned as-is (the student's recorded outcome wins).
+ *   <li>If the course already has an effective declared status (PASSED/FAILED/CANCELLED), that
+ *       status is returned as-is (the student's recorded outcome wins).
  *   <li>For courses with no attempts (status not in effectiveByCourse), evaluate requirement edges:
  *       <ul>
  *         <li>HARD edge (official or HIGH confidence): if the required course is NOT effectively
@@ -41,8 +41,8 @@ public class CourseAvailabilityService {
    * @param planCourses the full set of courses in the plan (bulk-loaded by the application layer)
    * @param requirements all requirement edges for this plan's courses (bulk-loaded by the
    *     application layer — no N+1)
-   * @param effectiveByCourse effective declared status per courseId (from
-   *     {@link EffectiveAttemptResolver})
+   * @param effectiveByCourse effective declared status per courseId (from {@link
+   *     EffectiveAttemptResolver})
    * @return map of courseId → {@link CourseAvailability}; never null; one entry per plan course
    */
   public Map<UUID, CourseAvailability> compute(
@@ -58,16 +58,13 @@ public class CourseAvailabilityService {
     Map<UUID, List<CourseRequirementEdge>> edgesByTarget = new HashMap<>();
     if (requirements != null) {
       for (CourseRequirementEdge edge : requirements) {
-        edgesByTarget
-            .computeIfAbsent(edge.targetCourseId(), k -> new ArrayList<>())
-            .add(edge);
+        edgesByTarget.computeIfAbsent(edge.targetCourseId(), k -> new ArrayList<>()).add(edge);
       }
     }
 
     // Set of courseIds in the plan (for off-plan detection later if needed)
-    Set<UUID> planCourseIds = planCourses.stream()
-        .map(PlanCourse::courseId)
-        .collect(Collectors.toSet());
+    Set<UUID> planCourseIds =
+        planCourses.stream().map(PlanCourse::courseId).collect(Collectors.toSet());
 
     Map<UUID, CourseAvailability> result = new HashMap<>();
 
@@ -90,13 +87,15 @@ public class CourseAvailabilityService {
         UUID requiredCourseId = edge.requiredCourseId();
         if (requiredCourseId == null) {
           // TODO (FIX-S2): MINIMUM_CREDITS and CONFIGURABLE edges with no specific requiredCourseId
-          // are silently skipped here. A future implementation should evaluate credit totals against
+          // are silently skipped here. A future implementation should evaluate credit totals
+          // against
           // the threshold value stored in the edge (out of WU4 scope; ADR-F3 deferred).
           continue;
         }
 
         // Check if the required course is effectively PASSED
-        boolean prereqPassed = CourseProgressStatus.PASSED.equals(effectiveByCourse.get(requiredCourseId));
+        boolean prereqPassed =
+            CourseProgressStatus.PASSED.equals(effectiveByCourse.get(requiredCourseId));
         if (prereqPassed) {
           continue; // prereq satisfied
         }
@@ -111,7 +110,8 @@ public class CourseAvailabilityService {
         }
       }
 
-      CourseProgressStatus computedStatus = blocked ? CourseProgressStatus.BLOCKED : CourseProgressStatus.AVAILABLE;
+      CourseProgressStatus computedStatus =
+          blocked ? CourseProgressStatus.BLOCKED : CourseProgressStatus.AVAILABLE;
       result.put(courseId, new CourseAvailability(computedStatus, List.copyOf(unmet)));
     }
 

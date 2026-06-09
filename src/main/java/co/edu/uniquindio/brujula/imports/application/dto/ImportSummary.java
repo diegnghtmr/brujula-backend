@@ -35,5 +35,6 @@ public record ImportSummary(
    * @param message human-readable message
    * @param severity "ERROR" or "WARNING"
    */
-  public record ImportIssueDto(int row, String column, String code, String message, String severity) {}
+  public record ImportIssueDto(
+      int row, String column, String code, String message, String severity) {}
 }

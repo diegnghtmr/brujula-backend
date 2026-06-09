@@ -3,26 +3,23 @@ package co.edu.uniquindio.brujula.progress.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.progress.application.dto.CourseAttemptView;
 import co.edu.uniquindio.brujula.progress.application.dto.CreateCourseAttemptCommand;
-import co.edu.uniquindio.brujula.progress.application.port.in.CreateCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.SaveCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.service.CreateCourseAttemptService;
-import co.edu.uniquindio.brujula.progress.domain.AttemptNotFoundException;
 import co.edu.uniquindio.brujula.progress.domain.GradeStatusMismatchException;
 import co.edu.uniquindio.brujula.progress.domain.Subscription;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import java.math.BigDecimal;
@@ -67,13 +64,14 @@ class CreateCourseAttemptServiceTest {
     jsonCodecPort = mock(JsonCodecPort.class);
     auditRecorder = mock(AuditRecorder.class);
 
-    sut = new CreateCourseAttemptService(
-        loadSubscriptionPort,
-        saveCourseAttemptPort,
-        loadCourseAttemptPort,
-        idempotencyStorePort,
-        jsonCodecPort,
-        auditRecorder);
+    sut =
+        new CreateCourseAttemptService(
+            loadSubscriptionPort,
+            saveCourseAttemptPort,
+            loadCourseAttemptPort,
+            idempotencyStorePort,
+            jsonCodecPort,
+            auditRecorder);
   }
 
   @Test
@@ -87,9 +85,17 @@ class CreateCourseAttemptServiceTest {
     when(saveCourseAttemptPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
 
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, testPeriodId, "DIURNA",
-        "PASSED", new BigDecimal("4.2"), "hash1");
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            actorId,
+            subscriptionId,
+            courseId,
+            testPeriodId,
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("4.2"),
+            "hash1");
 
     CourseAttemptView view = sut.createCourseAttempt(command);
 
@@ -110,9 +116,17 @@ class CreateCourseAttemptServiceTest {
         .thenReturn(Optional.empty());
     when(loadSubscriptionPort.loadById(subscriptionId)).thenReturn(Optional.of(foreignSub));
 
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, testPeriodId, "DIURNA",
-        "PASSED", new BigDecimal("4.2"), "hash1");
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            actorId,
+            subscriptionId,
+            courseId,
+            testPeriodId,
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("4.2"),
+            "hash1");
 
     assertThatThrownBy(() -> sut.createCourseAttempt(command))
         .isInstanceOf(SubscriptionNotFoundException.class);
@@ -129,9 +143,17 @@ class CreateCourseAttemptServiceTest {
         .thenReturn(Optional.empty());
     when(loadSubscriptionPort.loadById(subscriptionId)).thenReturn(Optional.of(subscription));
 
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, testPeriodId, "DIURNA",
-        "PASSED", new BigDecimal("2.5"), "hash1");
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            actorId,
+            subscriptionId,
+            courseId,
+            testPeriodId,
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("2.5"),
+            "hash1");
 
     assertThatThrownBy(() -> sut.createCourseAttempt(command))
         .isInstanceOf(GradeStatusMismatchException.class);
@@ -146,9 +168,17 @@ class CreateCourseAttemptServiceTest {
         .thenReturn(Optional.empty());
     when(loadSubscriptionPort.loadById(subscriptionId)).thenReturn(Optional.of(subscription));
 
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, testPeriodId, "DIURNA",
-        "CANCELLED", new BigDecimal("3.0"), "hash1");
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            actorId,
+            subscriptionId,
+            courseId,
+            testPeriodId,
+            "DIURNA",
+            "CANCELLED",
+            new BigDecimal("3.0"),
+            "hash1");
 
     assertThatThrownBy(() -> sut.createCourseAttempt(command))
         .isInstanceOf(GradeStatusMismatchException.class);
@@ -166,9 +196,17 @@ class CreateCourseAttemptServiceTest {
     when(saveCourseAttemptPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
 
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, opaquePeriodId, "DIURNA",
-        "PASSED", new BigDecimal("4.0"), "hash1");
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            actorId,
+            subscriptionId,
+            courseId,
+            opaquePeriodId,
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("4.0"),
+            "hash1");
 
     CourseAttemptView view = sut.createCourseAttempt(command);
     assertThat(view).isNotNull();
@@ -178,18 +216,36 @@ class CreateCourseAttemptServiceTest {
   @Test
   void idempotent_replay_returns_original_view_without_persisting() {
     UUID idempotencyKey = UUID.randomUUID();
-    CourseAttemptView originalView = new CourseAttemptView(
-        UUID.randomUUID(), subscriptionId, courseId, "N/A", testPeriodId, null, "DIURNA",
-        "PASSED", new BigDecimal("4.2"), Instant.now(), 0L); // FIX-S1: plain String
+    CourseAttemptView originalView =
+        new CourseAttemptView(
+            UUID.randomUUID(),
+            subscriptionId,
+            courseId,
+            "N/A",
+            testPeriodId,
+            null,
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("4.2"),
+            Instant.now(),
+            0L); // FIX-S1: plain String
 
     when(idempotencyStorePort.find(idempotencyKey, CreateCourseAttemptService.OPERATION))
         .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord("hash1", 201, "{}")));
     when(jsonCodecPort.fromJson("{}", CourseAttemptView.class)).thenReturn(originalView);
 
     // idempotency replay happens BEFORE periodId is checked in domain, so null is safe here
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
-        "PASSED", new BigDecimal("4.2"), "hash1");
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            actorId,
+            subscriptionId,
+            courseId,
+            null,
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("4.2"),
+            "hash1");
 
     CourseAttemptView result = sut.createCourseAttempt(command);
 
@@ -205,9 +261,17 @@ class CreateCourseAttemptServiceTest {
         .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord("old-hash", 201, "{}")));
 
     // idempotency conflict check happens BEFORE periodId validation, so null is safe here
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
-        "PASSED", new BigDecimal("4.2"), "new-hash"); // different hash
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            actorId,
+            subscriptionId,
+            courseId,
+            null,
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("4.2"),
+            "new-hash"); // different hash
 
     assertThatThrownBy(() -> sut.createCourseAttempt(command))
         .isInstanceOf(IdempotencyKeyConflictException.class);
@@ -222,9 +286,17 @@ class CreateCourseAttemptServiceTest {
     when(loadSubscriptionPort.loadById(subscriptionId)).thenReturn(Optional.empty());
 
     // subscription not found check happens BEFORE CourseAttempt.register(), so null is safe here
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey, actorId, subscriptionId, courseId, null, "DIURNA",
-        "PASSED", new BigDecimal("4.2"), "hash1");
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            actorId,
+            subscriptionId,
+            courseId,
+            null,
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("4.2"),
+            "hash1");
 
     assertThatThrownBy(() -> sut.createCourseAttempt(command))
         .isInstanceOf(SubscriptionNotFoundException.class);

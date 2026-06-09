@@ -7,8 +7,8 @@ import java.util.UUID;
 /**
  * Subscription — aggregate root representing a student's enrollment in a program/plan.
  *
- * <p>Design: ADR-F3-002. Contract alignment (#1630): NO primary flag, cap=2 enforced at
- * application level.
+ * <p>Design: ADR-F3-002. Contract alignment (#1630): NO primary flag, cap=2 enforced at application
+ * level.
  *
  * <p>No Spring/JPA imports (ARQ-002). Framework-free pure domain object.
  */
@@ -56,11 +56,7 @@ public final class Subscription {
    * @param referenceJourneyCode non-blank journey code (e.g. DIURNA, NOCTURNA)
    */
   public static Subscription create(
-      SubscriptionId id,
-      UUID userId,
-      UUID programId,
-      UUID planId,
-      String referenceJourneyCode) {
+      SubscriptionId id, UUID userId, UUID programId, UUID planId, String referenceJourneyCode) {
     Objects.requireNonNull(id, "id must not be null");
     if (userId == null) throw new IllegalArgumentException("userId must not be null");
     if (programId == null) throw new IllegalArgumentException("programId must not be null");
@@ -68,13 +64,17 @@ public final class Subscription {
     requireNonBlankJourney(referenceJourneyCode);
 
     return new Subscription(
-        id, userId, programId, planId, referenceJourneyCode,
-        SubscriptionStatus.ACTIVE, Instant.now(), 0L);
+        id,
+        userId,
+        programId,
+        planId,
+        referenceJourneyCode,
+        SubscriptionStatus.ACTIVE,
+        Instant.now(),
+        0L);
   }
 
-  /**
-   * Reconstitute a Subscription from persistence (all fields explicit, no default logic).
-   */
+  /** Reconstitute a Subscription from persistence (all fields explicit, no default logic). */
   public static Subscription reconstitute(
       SubscriptionId id,
       UUID userId,
@@ -92,7 +92,8 @@ public final class Subscription {
     Objects.requireNonNull(createdAt, "createdAt must not be null");
     requireNonBlankJourney(referenceJourneyCode);
 
-    return new Subscription(id, userId, programId, planId, referenceJourneyCode, status, createdAt, version);
+    return new Subscription(
+        id, userId, programId, planId, referenceJourneyCode, status, createdAt, version);
   }
 
   // ---------------------------------------------------------------------------
@@ -150,14 +151,37 @@ public final class Subscription {
   // Accessors
   // ---------------------------------------------------------------------------
 
-  public SubscriptionId getId() { return id; }
-  public UUID getUserId() { return userId; }
-  public UUID getProgramId() { return programId; }
-  public UUID getPlanId() { return planId; }
-  public String getReferenceJourneyCode() { return referenceJourneyCode; }
-  public SubscriptionStatus getStatus() { return status; }
-  public Instant getCreatedAt() { return createdAt; }
-  public long getVersion() { return version; }
+  public SubscriptionId getId() {
+    return id;
+  }
+
+  public UUID getUserId() {
+    return userId;
+  }
+
+  public UUID getProgramId() {
+    return programId;
+  }
+
+  public UUID getPlanId() {
+    return planId;
+  }
+
+  public String getReferenceJourneyCode() {
+    return referenceJourneyCode;
+  }
+
+  public SubscriptionStatus getStatus() {
+    return status;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public long getVersion() {
+    return version;
+  }
 
   // ---------------------------------------------------------------------------
   // Private helpers

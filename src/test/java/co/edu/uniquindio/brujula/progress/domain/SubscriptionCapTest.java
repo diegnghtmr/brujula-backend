@@ -15,10 +15,10 @@ class SubscriptionCapTest {
   void subscription_cap_guard_throws_when_active_count_equals_2() {
     // The cap guard is enforced at application-service level by counting active subscriptions.
     // This test validates the domain exception exists and is thrown correctly.
-    assertThatThrownBy(() -> {
-          throw new MaxSubscriptionsExceededException(
-              java.util.UUID.randomUUID(), 2);
-        })
+    assertThatThrownBy(
+            () -> {
+              throw new MaxSubscriptionsExceededException(java.util.UUID.randomUUID(), 2);
+            })
         .isInstanceOf(MaxSubscriptionsExceededException.class)
         .hasMessageContaining("2");
   }

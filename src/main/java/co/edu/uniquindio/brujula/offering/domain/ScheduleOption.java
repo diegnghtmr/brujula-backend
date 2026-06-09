@@ -8,8 +8,8 @@ import java.util.UUID;
 /**
  * Domain entity representing a schedule option for a course offering.
  *
- * <p>Contains one or more {@link ScheduleSession} entries. Weekly hours are computed
- * by {@link WeeklyHoursCalculator} — never stored.
+ * <p>Contains one or more {@link ScheduleSession} entries. Weekly hours are computed by {@link
+ * WeeklyHoursCalculator} — never stored.
  */
 public class ScheduleOption {
 

@@ -8,11 +8,11 @@ import java.util.UUID;
  *
  * <p>Plain types only (no domain VOs) per ARQ-001. NOT idempotent.
  *
- * @param periodId        the target period UUID
- * @param actorId         authenticated ADMIN user ID
- * @param startDate       new start date (nullable — keeps current when null)
- * @param endDate         new end date (nullable — keeps current when null)
- * @param status          new status string (nullable — keeps current when null)
+ * @param periodId the target period UUID
+ * @param actorId authenticated ADMIN user ID
+ * @param startDate new start date (nullable — keeps current when null)
+ * @param endDate new end date (nullable — keeps current when null)
+ * @param status new status string (nullable — keeps current when null)
  * @param expectedVersion optimistic lock version from the client
  */
 public record UpdatePeriodCommand(

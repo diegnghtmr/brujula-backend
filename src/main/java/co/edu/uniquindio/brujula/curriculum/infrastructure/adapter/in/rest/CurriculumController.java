@@ -21,8 +21,6 @@ import co.edu.uniquindio.brujula.curriculum.application.port.in.ListPlanCoursesQ
 import co.edu.uniquindio.brujula.curriculum.application.port.in.ListSequentialTracksQuery;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.UpdateCourseRequirementUseCase;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.UpdateCourseUseCase;
-import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
-import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetStudyPlanQuery;
 import co.edu.uniquindio.brujula.generated.api.CurriculumApi;
 import co.edu.uniquindio.brujula.generated.model.ChangeStudyPlanStatusRequest;
 import co.edu.uniquindio.brujula.generated.model.Course;
@@ -52,6 +50,8 @@ import co.edu.uniquindio.brujula.generated.model.StudyPlan;
 import co.edu.uniquindio.brujula.generated.model.StudyPlanCreateRequest;
 import co.edu.uniquindio.brujula.generated.model.StudyPlanUpdateRequest;
 import co.edu.uniquindio.brujula.generated.model.VersionedAction;
+import co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery;
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetStudyPlanQuery;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.util.HexFormat;
@@ -68,9 +68,11 @@ import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * REST adapter implementing the generated {@link CurriculumApi} interface (contract-first, ARQ-001).
+ * REST adapter implementing the generated {@link CurriculumApi} interface (contract-first,
+ * ARQ-001).
  *
  * <p>Implements read-only curriculum endpoints for Phase 4+5 WU4:
+ *
  * <ul>
  *   <li>GET /courses/{courseId} — getCourse (CUR-001)
  *   <li>GET /courses/{courseId}/requirements — listCourseRequirements (CUR-003)
@@ -161,10 +163,11 @@ class CurriculumController implements CurriculumApi {
     String callerRole = resolveCallerRole();
     List<CourseView> views = listPlanCoursesQuery.listPlanCourses(planId, callerRole);
     // Apply type/status filters at controller level if provided
-    List<CourseView> filtered = views.stream()
-        .filter(v -> type == null || v.type().equals(type.getValue()))
-        .filter(v -> status == null || v.status().equals(status.getValue()))
-        .toList();
+    List<CourseView> filtered =
+        views.stream()
+            .filter(v -> type == null || v.type().equals(type.getValue()))
+            .filter(v -> status == null || v.status().equals(status.getValue()))
+            .toList();
     int total = filtered.size();
     int from = Math.min(page * size, total);
     int to = Math.min(from + size, total);
@@ -176,7 +179,8 @@ class CurriculumController implements CurriculumApi {
   /** CUR-003: list course requirements for a course. */
   @Override
   public ResponseEntity<List<CourseRequirement>> listCourseRequirements(UUID courseId) {
-    List<CourseRequirementView> views = listCourseRequirementsQuery.listCourseRequirements(courseId);
+    List<CourseRequirementView> views =
+        listCourseRequirementsQuery.listCourseRequirements(courseId);
     List<CourseRequirement> result = views.stream().map(this::toCourseRequirementDto).toList();
     return ResponseEntity.ok(result);
   }
@@ -186,7 +190,8 @@ class CurriculumController implements CurriculumApi {
   public ResponseEntity<List<SequentialTrack>> listSequentialTracks(
       UUID planId, @Nullable SequentialTrackKind kind) {
     String kindFilter = kind != null ? kind.getValue() : null;
-    List<SequentialTrackView> views = listSequentialTracksQuery.listSequentialTracks(planId, kindFilter);
+    List<SequentialTrackView> views =
+        listSequentialTracksQuery.listSequentialTracks(planId, kindFilter);
     List<SequentialTrack> result = views.stream().map(this::toSequentialTrackDto).toList();
     return ResponseEntity.ok(result);
   }
@@ -194,7 +199,8 @@ class CurriculumController implements CurriculumApi {
   /** CUR-006: list degree work modalities for a plan. */
   @Override
   public ResponseEntity<List<DegreeWorkModality>> listDegreeWorkModalities(UUID planId) {
-    List<DegreeWorkModalityView> views = listDegreeWorkModalitiesQuery.listDegreeWorkModalities(planId);
+    List<DegreeWorkModalityView> views =
+        listDegreeWorkModalitiesQuery.listDegreeWorkModalities(planId);
     List<DegreeWorkModality> result = views.stream().map(this::toDegreeWorkModalityDto).toList();
     return ResponseEntity.ok(result);
   }
@@ -221,25 +227,35 @@ class CurriculumController implements CurriculumApi {
     UUID actorId = resolveActorId();
     String requestHash = hashRequest(courseCreateRequest);
     List<CourseView.RecommendedSemesterView> semesters =
-        courseCreateRequest.getRecommendedSemesters() == null ? List.of()
+        courseCreateRequest.getRecommendedSemesters() == null
+            ? List.of()
             : courseCreateRequest.getRecommendedSemesters().stream()
-                .map(rs -> new CourseView.RecommendedSemesterView(rs.getJourneyCode(), rs.getSemester()))
+                .map(
+                    rs ->
+                        new CourseView.RecommendedSemesterView(
+                            rs.getJourneyCode(), rs.getSemester()))
                 .toList();
     // programId is not in CourseCreateRequest — resolve from plan (CAT-002 GetStudyPlanQuery).
     UUID programId = getStudyPlanQuery.getStudyPlan(planId, resolveCallerRole()).programId();
-    CreateCourseCommand command = new CreateCourseCommand(
-        idempotencyKey,
-        requestHash,
-        actorId,
-        planId,
-        programId,
-        courseCreateRequest.getName(),
-        courseCreateRequest.getOfficialCode(),
-        courseCreateRequest.getType() != null ? courseCreateRequest.getType().getValue() : "REQUIRED",
-        courseCreateRequest.getCredits() != null ? courseCreateRequest.getCredits().intValue() : 0,
-        courseCreateRequest.getCurricularWeeklyHours() != null
-            ? courseCreateRequest.getCurricularWeeklyHours().intValue() : 0,
-        semesters);
+    CreateCourseCommand command =
+        new CreateCourseCommand(
+            idempotencyKey,
+            requestHash,
+            actorId,
+            planId,
+            programId,
+            courseCreateRequest.getName(),
+            courseCreateRequest.getOfficialCode(),
+            courseCreateRequest.getType() != null
+                ? courseCreateRequest.getType().getValue()
+                : "REQUIRED",
+            courseCreateRequest.getCredits() != null
+                ? courseCreateRequest.getCredits().intValue()
+                : 0,
+            courseCreateRequest.getCurricularWeeklyHours() != null
+                ? courseCreateRequest.getCurricularWeeklyHours().intValue()
+                : 0,
+            semesters);
     CourseView view = createCourseUseCase.createCourse(command);
     URI location = URI.create("/courses/" + view.id());
     return ResponseEntity.status(HttpStatus.CREATED).location(location).body(toCourseDto(view));
@@ -249,26 +265,32 @@ class CurriculumController implements CurriculumApi {
   @Override
   @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
   public ResponseEntity<Course> updateCourse(
-      String xXsrfToken,
-      UUID courseId,
-      CourseUpdateRequest courseUpdateRequest) {
+      String xXsrfToken, UUID courseId, CourseUpdateRequest courseUpdateRequest) {
     UUID actorId = resolveActorId();
     List<CourseView.RecommendedSemesterView> semesters =
-        courseUpdateRequest.getRecommendedSemesters() == null ? List.of()
+        courseUpdateRequest.getRecommendedSemesters() == null
+            ? List.of()
             : courseUpdateRequest.getRecommendedSemesters().stream()
-                .map(rs -> new CourseView.RecommendedSemesterView(rs.getJourneyCode(), rs.getSemester()))
+                .map(
+                    rs ->
+                        new CourseView.RecommendedSemesterView(
+                            rs.getJourneyCode(), rs.getSemester()))
                 .toList();
-    UpdateCourseCommand command = new UpdateCourseCommand(
-        actorId,
-        courseId,
-        courseUpdateRequest.getVersion() != null ? courseUpdateRequest.getVersion() : 0L,
-        courseUpdateRequest.getName(),
-        courseUpdateRequest.getOfficialCode(),
-        courseUpdateRequest.getType() != null ? courseUpdateRequest.getType().getValue() : null,
-        courseUpdateRequest.getCredits() != null ? courseUpdateRequest.getCredits().intValue() : 0,
-        courseUpdateRequest.getCurricularWeeklyHours() != null
-            ? courseUpdateRequest.getCurricularWeeklyHours().intValue() : 0,
-        semesters);
+    UpdateCourseCommand command =
+        new UpdateCourseCommand(
+            actorId,
+            courseId,
+            courseUpdateRequest.getVersion() != null ? courseUpdateRequest.getVersion() : 0L,
+            courseUpdateRequest.getName(),
+            courseUpdateRequest.getOfficialCode(),
+            courseUpdateRequest.getType() != null ? courseUpdateRequest.getType().getValue() : null,
+            courseUpdateRequest.getCredits() != null
+                ? courseUpdateRequest.getCredits().intValue()
+                : 0,
+            courseUpdateRequest.getCurricularWeeklyHours() != null
+                ? courseUpdateRequest.getCurricularWeeklyHours().intValue()
+                : 0,
+            semesters);
     CourseView view = updateCourseUseCase.updateCourse(command);
     return ResponseEntity.ok(toCourseDto(view));
   }
@@ -277,14 +299,13 @@ class CurriculumController implements CurriculumApi {
   @Override
   @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
   public ResponseEntity<Course> archiveCourse(
-      String xXsrfToken,
-      UUID courseId,
-      VersionedAction versionedAction) {
+      String xXsrfToken, UUID courseId, VersionedAction versionedAction) {
     UUID actorId = resolveActorId();
-    ArchiveCourseCommand command = new ArchiveCourseCommand(
-        actorId,
-        courseId,
-        versionedAction.getVersion() != null ? versionedAction.getVersion() : 0L);
+    ArchiveCourseCommand command =
+        new ArchiveCourseCommand(
+            actorId,
+            courseId,
+            versionedAction.getVersion() != null ? versionedAction.getVersion() : 0L);
     CourseView view = archiveCourseUseCase.archiveCourse(command);
     return ResponseEntity.ok(toCourseDto(view));
   }
@@ -300,8 +321,10 @@ class CurriculumController implements CurriculumApi {
     UUID actorId = resolveActorId();
     String requestHash = hashRequest(courseRequirementCreateRequest);
     // planId needed for cycle detection — load via course's plan; for now pass courseId as sentinel
-    // (controller callers must include planId in the request body per ADR, but contract only has courseId path)
-    // The service needs planId to build the graph; since the contract only has courseId, we load the
+    // (controller callers must include planId in the request body per ADR, but contract only has
+    // courseId path)
+    // The service needs planId to build the graph; since the contract only has courseId, we load
+    // the
     // course to get planId — but that requires an additional query. For contract compliance, use
     // a workaround: store planId in the command as null and let the service skip cycle detection
     // when planId is null (unsafe). BETTER: use a planId from the request body if available.
@@ -309,20 +332,23 @@ class CurriculumController implements CurriculumApi {
     // We resolve it inline here from the GetCourseQuery (available in this controller).
     CourseView courseView = getCourseQuery.getCourse(courseId);
     UUID planId = courseView.planId();
-    CreateCourseRequirementCommand command = new CreateCourseRequirementCommand(
-        idempotencyKey,
-        requestHash,
-        actorId,
-        courseId,
-        planId,
-        courseRequirementCreateRequest.getType() != null
-            ? courseRequirementCreateRequest.getType().getValue() : "COURSE_PASSED",
-        courseRequirementCreateRequest.getRequiredCourseId(),
-        courseRequirementCreateRequest.getRequiredCredits(),
-        courseRequirementCreateRequest.getSimultaneityAllowed());
+    CreateCourseRequirementCommand command =
+        new CreateCourseRequirementCommand(
+            idempotencyKey,
+            requestHash,
+            actorId,
+            courseId,
+            planId,
+            courseRequirementCreateRequest.getType() != null
+                ? courseRequirementCreateRequest.getType().getValue()
+                : "COURSE_PASSED",
+            courseRequirementCreateRequest.getRequiredCourseId(),
+            courseRequirementCreateRequest.getRequiredCredits(),
+            courseRequirementCreateRequest.getSimultaneityAllowed());
     CourseRequirementView view = createCourseRequirementUseCase.createCourseRequirement(command);
     URI location = URI.create("/courses/" + courseId + "/requirements/" + view.id());
-    return ResponseEntity.status(HttpStatus.CREATED).location(location)
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .location(location)
         .body(toCourseRequirementDto(view));
   }
 
@@ -334,16 +360,19 @@ class CurriculumController implements CurriculumApi {
       UUID requirementId,
       CourseRequirementUpdateRequest courseRequirementUpdateRequest) {
     UUID actorId = resolveActorId();
-    UpdateCourseRequirementCommand command = new UpdateCourseRequirementCommand(
-        actorId,
-        requirementId,
-        courseRequirementUpdateRequest.getVersion() != null
-            ? courseRequirementUpdateRequest.getVersion() : 0L,
-        courseRequirementUpdateRequest.getType() != null
-            ? courseRequirementUpdateRequest.getType().getValue() : null,
-        courseRequirementUpdateRequest.getRequiredCourseId(),
-        courseRequirementUpdateRequest.getRequiredCredits(),
-        courseRequirementUpdateRequest.getSimultaneityAllowed());
+    UpdateCourseRequirementCommand command =
+        new UpdateCourseRequirementCommand(
+            actorId,
+            requirementId,
+            courseRequirementUpdateRequest.getVersion() != null
+                ? courseRequirementUpdateRequest.getVersion()
+                : 0L,
+            courseRequirementUpdateRequest.getType() != null
+                ? courseRequirementUpdateRequest.getType().getValue()
+                : null,
+            courseRequirementUpdateRequest.getRequiredCourseId(),
+            courseRequirementUpdateRequest.getRequiredCredits(),
+            courseRequirementUpdateRequest.getSimultaneityAllowed());
     CourseRequirementView view = updateCourseRequirementUseCase.updateCourseRequirement(command);
     return ResponseEntity.ok(toCourseRequirementDto(view));
   }
@@ -353,22 +382,38 @@ class CurriculumController implements CurriculumApi {
   // ---------------------------------------------------------------------------
 
   @Override
-  public ResponseEntity<StudyPlan> changeStudyPlanStatus(UUID idempotencyKey, String xXsrfToken, UUID planId, ChangeStudyPlanStatusRequest changeStudyPlanStatusRequest) {
+  public ResponseEntity<StudyPlan> changeStudyPlanStatus(
+      UUID idempotencyKey,
+      String xXsrfToken,
+      UUID planId,
+      ChangeStudyPlanStatusRequest changeStudyPlanStatusRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
   @Override
-  public ResponseEntity<DegreeWorkModality> createDegreeWorkModality(UUID idempotencyKey, String xXsrfToken, UUID planId, DegreeWorkModalityCreateRequest degreeWorkModalityCreateRequest) {
+  public ResponseEntity<DegreeWorkModality> createDegreeWorkModality(
+      UUID idempotencyKey,
+      String xXsrfToken,
+      UUID planId,
+      DegreeWorkModalityCreateRequest degreeWorkModalityCreateRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
   @Override
-  public ResponseEntity<SequentialTrack> createSequentialTrack(UUID idempotencyKey, String xXsrfToken, UUID planId, SequentialTrackCreateRequest sequentialTrackCreateRequest) {
+  public ResponseEntity<SequentialTrack> createSequentialTrack(
+      UUID idempotencyKey,
+      String xXsrfToken,
+      UUID planId,
+      SequentialTrackCreateRequest sequentialTrackCreateRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
   @Override
-  public ResponseEntity<StudyPlan> createStudyPlan(UUID idempotencyKey, String xXsrfToken, UUID programId, StudyPlanCreateRequest studyPlanCreateRequest) {
+  public ResponseEntity<StudyPlan> createStudyPlan(
+      UUID idempotencyKey,
+      String xXsrfToken,
+      UUID programId,
+      StudyPlanCreateRequest studyPlanCreateRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
@@ -378,17 +423,22 @@ class CurriculumController implements CurriculumApi {
   }
 
   @Override
-  public ResponseEntity<DegreeWorkModality> updateDegreeWorkModality(String xXsrfToken, UUID modalityId, DegreeWorkModalityUpdateRequest degreeWorkModalityUpdateRequest) {
+  public ResponseEntity<DegreeWorkModality> updateDegreeWorkModality(
+      String xXsrfToken,
+      UUID modalityId,
+      DegreeWorkModalityUpdateRequest degreeWorkModalityUpdateRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
   @Override
-  public ResponseEntity<SequentialTrack> updateSequentialTrack(String xXsrfToken, UUID trackId, SequentialTrackUpdateRequest sequentialTrackUpdateRequest) {
+  public ResponseEntity<SequentialTrack> updateSequentialTrack(
+      String xXsrfToken, UUID trackId, SequentialTrackUpdateRequest sequentialTrackUpdateRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
   @Override
-  public ResponseEntity<StudyPlan> updateStudyPlan(String xXsrfToken, UUID planId, StudyPlanUpdateRequest studyPlanUpdateRequest) {
+  public ResponseEntity<StudyPlan> updateStudyPlan(
+      String xXsrfToken, UUID planId, StudyPlanUpdateRequest studyPlanUpdateRequest) {
     return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
   }
 
@@ -410,12 +460,15 @@ class CurriculumController implements CurriculumApi {
     course.setVersion(view.version());
     course.setRecommendedSemesters(
         view.recommendedSemesters().stream()
-            .map(rs -> new RecommendedSemester().journeyCode(rs.journeyCode()).semester(rs.semester()))
+            .map(
+                rs ->
+                    new RecommendedSemester().journeyCode(rs.journeyCode()).semester(rs.semester()))
             .toList());
     return course;
   }
 
-  private CoursePage buildCoursePage(List<CourseView> views, int totalElements, int page, int size) {
+  private CoursePage buildCoursePage(
+      List<CourseView> views, int totalElements, int page, int size) {
     CoursePage coursePage = new CoursePage();
     coursePage.setPage(page);
     coursePage.setSize(size);
@@ -426,18 +479,20 @@ class CurriculumController implements CurriculumApi {
   }
 
   private CourseRequirement toCourseRequirementDto(CourseRequirementView view) {
-    CourseRequirement req = new CourseRequirement(
-        view.id(),
-        view.targetCourseId(),
-        RequirementType.fromValue(view.type()),
-        CourseStatus.fromValue(view.status()),
-        view.version());
+    CourseRequirement req =
+        new CourseRequirement(
+            view.id(),
+            view.targetCourseId(),
+            RequirementType.fromValue(view.type()),
+            CourseStatus.fromValue(view.status()),
+            view.version());
     req.setRequiredCourseId(view.requiredCourseId());
     req.setRequiredCredits(view.requiredCredits());
     req.setSimultaneityAllowed(view.simultaneityAllowed());
-    req.setConfidence(view.confidence() != null
-        ? CourseRequirement.ConfidenceEnum.fromValue(view.confidence())
-        : null);
+    req.setConfidence(
+        view.confidence() != null
+            ? CourseRequirement.ConfidenceEnum.fromValue(view.confidence())
+            : null);
     req.setInferred(view.inferred());
     return req;
   }
@@ -453,37 +508,44 @@ class CurriculumController implements CurriculumApi {
     track.setVersion(view.version());
     track.setLevels(
         view.levels().stream()
-            .map(l -> new SequentialTrackLevel()
-                .level(l.level())
-                .optionCourseIds(List.copyOf(l.optionCourseIds())))
+            .map(
+                l ->
+                    new SequentialTrackLevel()
+                        .level(l.level())
+                        .optionCourseIds(List.copyOf(l.optionCourseIds())))
             .toList());
     return track;
   }
 
   private PlanMalla toPlanMallaDto(PlanMallaView view) {
-    List<PlanMallaSemesterBucketsInner> buckets = view.semesterBuckets().stream()
-        .map(b -> {
-          List<MallaCourse> courses = b.courses().stream()
-              .map(cs -> {
-                List<MallaRequirement> requirements = cs.requirements().stream()
-                    .map(this::toMallaRequirementDto)
-                    .toList();
-                MallaCourse mc = new MallaCourse();
-                mc.setId(cs.id());
-                mc.setOfficialCode(cs.officialCode());
-                mc.setName(cs.name());
-                mc.setType(CourseType.fromValue(cs.type()));
-                mc.setCredits((double) cs.credits());
-                mc.setRequirements(requirements);
-                return mc;
-              })
-              .toList();
-          PlanMallaSemesterBucketsInner bucket = new PlanMallaSemesterBucketsInner();
-          bucket.setRecommendedSemester(b.recommendedSemester());
-          bucket.setCourses(courses);
-          return bucket;
-        })
-        .toList();
+    List<PlanMallaSemesterBucketsInner> buckets =
+        view.semesterBuckets().stream()
+            .map(
+                b -> {
+                  List<MallaCourse> courses =
+                      b.courses().stream()
+                          .map(
+                              cs -> {
+                                List<MallaRequirement> requirements =
+                                    cs.requirements().stream()
+                                        .map(this::toMallaRequirementDto)
+                                        .toList();
+                                MallaCourse mc = new MallaCourse();
+                                mc.setId(cs.id());
+                                mc.setOfficialCode(cs.officialCode());
+                                mc.setName(cs.name());
+                                mc.setType(CourseType.fromValue(cs.type()));
+                                mc.setCredits((double) cs.credits());
+                                mc.setRequirements(requirements);
+                                return mc;
+                              })
+                          .toList();
+                  PlanMallaSemesterBucketsInner bucket = new PlanMallaSemesterBucketsInner();
+                  bucket.setRecommendedSemester(b.recommendedSemester());
+                  bucket.setCourses(courses);
+                  return bucket;
+                })
+            .toList();
     PlanMalla planMalla = new PlanMalla();
     planMalla.setPlanId(view.planId());
     planMalla.setJourneyCode(view.journeyCode());
@@ -495,9 +557,10 @@ class CurriculumController implements CurriculumApi {
   private MallaRequirement toMallaRequirementDto(PlanMallaView.RequirementSummary rs) {
     MallaRequirement mr = new MallaRequirement(RequirementType.fromValue(rs.type()));
     mr.setRequiredCourseId(rs.requiredCourseId());
-    mr.setConfidence(rs.confidence() != null
-        ? MallaRequirement.ConfidenceEnum.fromValue(rs.confidence())
-        : null);
+    mr.setConfidence(
+        rs.confidence() != null
+            ? MallaRequirement.ConfidenceEnum.fromValue(rs.confidence())
+            : null);
     mr.setInferred(rs.inferred());
     mr.setSimultaneityAllowed(rs.simultaneityAllowed());
     return mr;
@@ -509,9 +572,8 @@ class CurriculumController implements CurriculumApi {
     modality.setPlanId(view.planId());
     modality.setName(view.name());
     modality.setCredits(view.credits() != null ? view.credits().doubleValue() : null);
-    modality.setCurricularWeeklyHours(view.curricularWeeklyHours() != null
-        ? view.curricularWeeklyHours().doubleValue()
-        : null);
+    modality.setCurricularWeeklyHours(
+        view.curricularWeeklyHours() != null ? view.curricularWeeklyHours().doubleValue() : null);
     modality.setStatus(CourseStatus.fromValue(view.status()));
     modality.setVersion(view.version());
     return modality;

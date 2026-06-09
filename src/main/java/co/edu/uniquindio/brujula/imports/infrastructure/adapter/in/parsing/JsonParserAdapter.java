@@ -16,8 +16,9 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * JSON parser adapter — reads JSON import files using Jackson 3 (ADR-F6-003).
  *
- * <p>Expected JSON format: a top-level array of objects, where each object maps column header
- * names to string values. Example:
+ * <p>Expected JSON format: a top-level array of objects, where each object maps column header names
+ * to string values. Example:
+ *
  * <pre>
  * [
  *   { "course_name": "Cálculo I", "official_code": "MAT101", "credits": "3", ... },
@@ -25,15 +26,15 @@ import tools.jackson.databind.ObjectMapper;
  * ]
  * </pre>
  *
- * <p>All values are read as strings (consistent with XLSX cell representation). Numeric and
- * boolean JSON values are coerced to their string representation.
+ * <p>All values are read as strings (consistent with XLSX cell representation). Numeric and boolean
+ * JSON values are coerced to their string representation.
  *
- * <p>Uses {@code tools.jackson} (Jackson 3) — the default Spring Boot 4 ObjectMapper. Do NOT
- * use {@code com.fasterxml.jackson} (Jackson 2) here, as Spring Boot 4 auto-configures only
- * the Jackson 3 bean.
+ * <p>Uses {@code tools.jackson} (Jackson 3) — the default Spring Boot 4 ObjectMapper. Do NOT use
+ * {@code com.fasterxml.jackson} (Jackson 2) here, as Spring Boot 4 auto-configures only the Jackson
+ * 3 bean.
  *
- * <p>Infrastructure adapter — package-private class, registered via {@code @Component}.
- * Callers use {@link FileParserPort}.
+ * <p>Infrastructure adapter — package-private class, registered via {@code @Component}. Callers use
+ * {@link FileParserPort}.
  */
 @Component
 class JsonParserAdapter implements FileParserPort {
@@ -68,8 +69,7 @@ class JsonParserAdapter implements FileParserPort {
         return new ParseResult(
             List.of(),
             List.of(
-                ImportIssue.error(
-                    0, null, "EMPTY_FILE", "The JSON file contains no data rows.")));
+                ImportIssue.error(0, null, "EMPTY_FILE", "The JSON file contains no data rows.")));
       }
 
       List<ImportRow> rows = new ArrayList<>();
@@ -89,8 +89,7 @@ class JsonParserAdapter implements FileParserPort {
         return new ParseResult(
             List.of(),
             List.of(
-                ImportIssue.error(
-                    0, null, "EMPTY_FILE", "The JSON file contains no data rows.")));
+                ImportIssue.error(0, null, "EMPTY_FILE", "The JSON file contains no data rows.")));
       }
 
       return new ParseResult(rows, List.of());
@@ -100,10 +99,7 @@ class JsonParserAdapter implements FileParserPort {
           List.of(),
           List.of(
               ImportIssue.error(
-                  0,
-                  null,
-                  "INVALID_FORMAT",
-                  "The file is not valid JSON: " + e.getMessage())));
+                  0, null, "INVALID_FORMAT", "The file is not valid JSON: " + e.getMessage())));
     }
   }
 }

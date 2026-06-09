@@ -1,11 +1,11 @@
 package co.edu.uniquindio.brujula.simulation.adapter.rest;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,8 +45,8 @@ import org.springframework.web.context.WebApplicationContext;
  * primary correctness guarantee. These tests catch contract regressions (missing {@code $.code},
  * wrong status), not {@code basePackages} removal while handlers remain behaviorally identical.
  *
- * <p>T-WU1.1: verifies simulation controller → {@code SimulationExceptionHandler} maps
- * {@link IdempotencyKeyConflictException} to HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
+ * <p>T-WU1.1: verifies simulation controller → {@code SimulationExceptionHandler} maps {@link
+ * IdempotencyKeyConflictException} to HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SimulationExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest {
@@ -83,8 +83,9 @@ class SimulationExceptionHandlerScopeTest extends AbstractPostgresIntegrationTes
   }
 
   /**
-   * T-WU1.1 — QAL-ADV-001-S2: simulation controller throwing {@link IdempotencyKeyConflictException}
-   * MUST return HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
+   * T-WU1.1 — QAL-ADV-001-S2: simulation controller throwing {@link
+   * IdempotencyKeyConflictException} MUST return HTTP 409 with {@code $.code =
+   * "IDEMPOTENCY_KEY_CONFLICT"}.
    *
    * <p>Asserting {@code $.code} makes this test load-bearing: it will fail if any handler in the
    * chain omits the {@code code} property, regardless of {@code basePackages} state.
@@ -112,7 +113,8 @@ class SimulationExceptionHandlerScopeTest extends AbstractPostgresIntegrationTes
                 .content(
                     """
                     {"name":"Scope Test Sim","periodId":"%s","programIds":["%s"]}
-                    """.formatted(periodId, programId)))
+                    """
+                        .formatted(periodId, programId)))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code", is("IDEMPOTENCY_KEY_CONFLICT")));
   }

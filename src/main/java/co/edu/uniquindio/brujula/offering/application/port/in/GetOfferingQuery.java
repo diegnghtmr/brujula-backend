@@ -1,7 +1,6 @@
 package co.edu.uniquindio.brujula.offering.application.port.in;
 
 import co.edu.uniquindio.brujula.offering.application.dto.OfferingDetailView;
-
 import java.util.UUID;
 
 /** Primary port: retrieve full details for a single published offering. */
@@ -12,7 +11,8 @@ public interface GetOfferingQuery {
    *
    * @param offeringId the offering UUID
    * @return offering detail view
-   * @throws co.edu.uniquindio.brujula.offering.domain.OfferingNotFoundException if not found or not published
+   * @throws co.edu.uniquindio.brujula.offering.domain.OfferingNotFoundException if not found or not
+   *     published
    */
   OfferingDetailView getOffering(UUID offeringId);
 }

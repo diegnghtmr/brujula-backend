@@ -50,7 +50,8 @@ public class UpdateCourseAttemptService implements UpdateCourseAttemptUseCase {
             .orElseThrow(() -> new AttemptNotFoundException(command.attemptId()));
 
     // BOLA ownership guard
-    Subscription sub = loadSubscriptionPort.loadById(attempt.getSubscriptionId().value()).orElse(null);
+    Subscription sub =
+        loadSubscriptionPort.loadById(attempt.getSubscriptionId().value()).orElse(null);
     if (sub == null || !sub.getUserId().equals(command.actorId())) {
       throw new AttemptNotFoundException(command.attemptId());
     }
@@ -86,7 +87,7 @@ public class UpdateCourseAttemptService implements UpdateCourseAttemptUseCase {
         attempt.getCourseId(),
         "N/A", // courseName resolved by WU4
         attempt.getPeriodId(),
-        null,   // periodName resolved by WU4
+        null, // periodName resolved by WU4
         attempt.getJourneyCode(),
         attempt.getStatus().name(), // FIX-S1: plain String, no domain type in application DTO
         gradeValue,

@@ -17,8 +17,8 @@ import java.util.UUID;
  *   <li>{@code planId} and {@code programId} must not be null.
  * </ul>
  *
- * <p>Status defaults to {@link CourseStatus#ACTIVE}. Version initializes to {@code 0}.
- * {@code officialCode} is null on creation and set by {@link OfficialCodeMinter} at seed time
+ * <p>Status defaults to {@link CourseStatus#ACTIVE}. Version initializes to {@code 0}. {@code
+ * officialCode} is null on creation and set by {@link OfficialCodeMinter} at seed time
  * (ADR-F2-005). UUIDs remain the primary key (RN-024/025).
  *
  * <p>No Spring/JPA imports (ARQ-002).
@@ -67,8 +67,8 @@ public final class Course {
   // ---------------------------------------------------------------------------
 
   /**
-   * Create a new Course. OfficialCode defaults to null (set later by minter).
-   * Status defaults to ACTIVE. Version initializes to 0.
+   * Create a new Course. OfficialCode defaults to null (set later by minter). Status defaults to
+   * ACTIVE. Version initializes to 0.
    */
   public static Course create(
       CourseId id,
@@ -94,9 +94,7 @@ public final class Course {
         0L);
   }
 
-  /**
-   * Reconstitute a Course from persistence (all fields explicit; no default logic).
-   */
+  /** Reconstitute a Course from persistence (all fields explicit; no default logic). */
   public static Course reconstitute(
       CourseId id,
       UUID planId,
@@ -129,8 +127,8 @@ public final class Course {
   // ---------------------------------------------------------------------------
 
   /**
-   * Update course fields. Returns a new immutable Course instance with updated values.
-   * The id, planId, programId, officialCode, status, and version are preserved from the original.
+   * Update course fields. Returns a new immutable Course instance with updated values. The id,
+   * planId, programId, officialCode, status, and version are preserved from the original.
    *
    * @param name the new name (must not be blank)
    * @param type the new course type
@@ -152,10 +150,19 @@ public final class Course {
       throw new IllegalArgumentException("credits must be >= 0, got: " + credits);
     }
     return new Course(
-        this.id, this.planId, this.programId, this.officialCode,
-        name, type, credits, curricularWeeklyHours,
-        recommendedSemesters != null ? List.copyOf(recommendedSemesters) : this.recommendedSemesters,
-        this.status, this.version);
+        this.id,
+        this.planId,
+        this.programId,
+        this.officialCode,
+        name,
+        type,
+        credits,
+        curricularWeeklyHours,
+        recommendedSemesters != null
+            ? List.copyOf(recommendedSemesters)
+            : this.recommendedSemesters,
+        this.status,
+        this.version);
   }
 
   /**
@@ -168,9 +175,17 @@ public final class Course {
       throw new IllegalStateException("Course is already archived");
     }
     return new Course(
-        this.id, this.planId, this.programId, this.officialCode,
-        this.name, this.type, this.credits, this.curricularWeeklyHours,
-        this.recommendedSemesters, CourseStatus.ARCHIVED, this.version);
+        this.id,
+        this.planId,
+        this.programId,
+        this.officialCode,
+        this.name,
+        this.type,
+        this.credits,
+        this.curricularWeeklyHours,
+        this.recommendedSemesters,
+        CourseStatus.ARCHIVED,
+        this.version);
   }
 
   // ---------------------------------------------------------------------------

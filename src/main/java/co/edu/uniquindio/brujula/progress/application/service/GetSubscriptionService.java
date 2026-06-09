@@ -24,9 +24,7 @@ public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubs
 
   @Override
   public List<SubscriptionView> listMySubscriptions(UUID userId) {
-    return loadSubscriptionPort.loadActiveByUserId(userId).stream()
-        .map(this::toView)
-        .toList();
+    return loadSubscriptionPort.loadActiveByUserId(userId).stream().map(this::toView).toList();
   }
 
   @Override

@@ -3,10 +3,11 @@ package co.edu.uniquindio.brujula.progress.domain;
 import java.util.UUID;
 
 /**
- * Thrown when a student attempts to subscribe to a plan that is not ACTIVE (e.g. ARCHIVED or DRAFT).
+ * Thrown when a student attempts to subscribe to a plan that is not ACTIVE (e.g. ARCHIVED or
+ * DRAFT).
  *
- * <p>Spec: SUB-1-INACTIVE-PLAN — "The referenced plan MUST be ACTIVE; a ARCHIVED plan rejected
- * with HTTP 422."
+ * <p>Spec: SUB-1-INACTIVE-PLAN — "The referenced plan MUST be ACTIVE; a ARCHIVED plan rejected with
+ * HTTP 422."
  *
  * <p>Maps to HTTP 422 Unprocessable Entity via {@link
  * co.edu.uniquindio.brujula.progress.infrastructure.configuration.ProgressExceptionHandler}.

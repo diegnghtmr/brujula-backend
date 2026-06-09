@@ -40,7 +40,9 @@ public class EffectiveAttemptResolver {
       switch (attempt.getStatus()) {
         case PASSED -> hasPassed = true;
         case FAILED -> hasFailed = true;
-        case CANCELLED -> { /* continue — least favorable */ }
+        case CANCELLED -> {
+          /* continue — least favorable */
+        }
       }
     }
 

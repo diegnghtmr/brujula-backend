@@ -94,9 +94,9 @@ class FlywayV008ConsentColumnsTest extends AbstractPostgresIntegrationTest {
   }
 
   /**
-   * W-002: verify that the onboarding_state column default is 'ACTIVE'.
-   * The V008 UPDATE was a no-op (WHERE 'ACTIVE' = 'ACTIVE') — the column DEFAULT handles backfill.
-   * This test proves the DEFAULT value is 'ACTIVE', making the no-op UPDATE harmless and removable.
+   * W-002: verify that the onboarding_state column default is 'ACTIVE'. The V008 UPDATE was a no-op
+   * (WHERE 'ACTIVE' = 'ACTIVE') — the column DEFAULT handles backfill. This test proves the DEFAULT
+   * value is 'ACTIVE', making the no-op UPDATE harmless and removable.
    */
   @Test
   void identity_app_user_onboarding_state_column_default_is_active() {
@@ -112,7 +112,8 @@ class FlywayV008ConsentColumnsTest extends AbstractPostgresIntegrationTest {
             String.class);
 
     assertThat(columnDefault)
-        .as("onboarding_state column default must be 'ACTIVE' so existing rows are correctly backfilled")
+        .as(
+            "onboarding_state column default must be 'ACTIVE' so existing rows are correctly backfilled")
         .contains("ACTIVE");
   }
 

@@ -5,7 +5,6 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportBatchId;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportIssue;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportRow;
-import co.edu.uniquindio.brujula.imports.domain.model.Severity;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +12,11 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Orchestrating import validator — delegates to per-kind validators and assembles the result
- * into a validated or invalid {@link ImportBatch} (IMP-002, SC-002-A through SC-002-E).
+ * Orchestrating import validator — delegates to per-kind validators and assembles the result into a
+ * validated or invalid {@link ImportBatch} (IMP-002, SC-002-A through SC-002-E).
  *
- * <p>Framework-free. Wired in {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
+ * <p>Framework-free. Wired in {@link
+ * co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
  */
 public class ImportValidator {
 
@@ -59,7 +59,8 @@ public class ImportValidator {
     // If there are global issues (structural errors), the batch is immediately INVALID
     if (!globalIssues.isEmpty()) {
       List<ImportIssue> allIssues = new ArrayList<>(globalIssues);
-      return ImportBatch.invalid(batchId, kind, programId, planId, periodId, 0, 0, allIssues, createdAt);
+      return ImportBatch.invalid(
+          batchId, kind, programId, planId, periodId, 0, 0, allIssues, createdAt);
     }
 
     // Delegate to the per-kind validator
@@ -96,18 +97,36 @@ public class ImportValidator {
         allIssues.add(ImportIssue.error(0, null, "EMPTY_FILE", "No valid rows found."));
       }
       return ImportBatch.invalid(
-          batchId, kind, programId, planId, periodId, validRowCount, totalRows, allIssues, createdAt);
+          batchId,
+          kind,
+          programId,
+          planId,
+          periodId,
+          validRowCount,
+          totalRows,
+          allIssues,
+          createdAt);
     }
 
     // All rows are valid (or have only warnings)
     if (validRows.isEmpty()) {
       List<ImportIssue> emptyIssues = new ArrayList<>();
       emptyIssues.add(ImportIssue.error(0, null, "EMPTY_FILE", "No valid rows found."));
-      return ImportBatch.invalid(batchId, kind, programId, planId, periodId, 0, totalRows, emptyIssues, createdAt);
+      return ImportBatch.invalid(
+          batchId, kind, programId, planId, periodId, 0, totalRows, emptyIssues, createdAt);
     }
 
     return ImportBatch.validated(
-        batchId, kind, programId, planId, periodId, validRowCount, totalRows, allIssues, validRows, createdAt);
+        batchId,
+        kind,
+        programId,
+        planId,
+        periodId,
+        validRowCount,
+        totalRows,
+        allIssues,
+        validRows,
+        createdAt);
   }
 
   private Map<Integer, List<ImportIssue>> validateByKind(ImportKind kind, List<ImportRow> rows) {

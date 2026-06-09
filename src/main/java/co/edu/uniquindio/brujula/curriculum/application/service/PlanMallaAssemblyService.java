@@ -9,7 +9,6 @@ import co.edu.uniquindio.brujula.curriculum.domain.CourseRequirement;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseStatus;
 import co.edu.uniquindio.brujula.curriculum.domain.RecommendedSemester;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -19,13 +18,13 @@ import java.util.stream.Collectors;
 /**
  * Use case implementation: assemble the plan-level malla (curricular grid).
  *
- * <p>Loads all courses for the plan in one indexed query, filters to ACTIVE status,
- * then groups by recommended semester for the requested journey code — entirely in-memory.
- * Requirement edges are bulk-loaded via a single {@link LoadCourseRequirementPort#loadByTargetCourseIds}
- * call (no N+1 per course) and attached to each course summary (CUR-008 §2, ADR-F2-001).
+ * <p>Loads all courses for the plan in one indexed query, filters to ACTIVE status, then groups by
+ * recommended semester for the requested journey code — entirely in-memory. Requirement edges are
+ * bulk-loaded via a single {@link LoadCourseRequirementPort#loadByTargetCourseIds} call (no N+1 per
+ * course) and attached to each course summary (CUR-008 §2, ADR-F2-001).
  *
- * <p>A static advisory {@code graduationRequirements} string is populated per CUR-008 §3 —
- * this is informational copy only; no graduation_gate entity is modelled in Fase 2.
+ * <p>A static advisory {@code graduationRequirements} string is populated per CUR-008 §3 — this is
+ * informational copy only; no graduation_gate entity is modelled in Fase 2.
  *
  * <p>No Spring annotations — wiring is handled in the infrastructure configuration layer (ARQ-002).
  */
@@ -36,8 +35,8 @@ public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
    *
    * <p>Applies to all programs: both Sistemas and Lenguas share the same two graduation gates
    * (suficiencia en lengua extranjera + Cátedra Multidisciplinar) according to Universidad del
-   * Quindío curricular regulations in force at the time of Fase 2 implementation.
-   * User-facing copy in neutral professional Spanish.
+   * Quindío curricular regulations in force at the time of Fase 2 implementation. User-facing copy
+   * in neutral professional Spanish.
    */
   static final String GRADUATION_REQUIREMENTS_ADVISORY =
       "Para optar al título de grado se requiere acreditar suficiencia en lengua extranjera "
@@ -49,8 +48,7 @@ public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
   private final LoadCourseRequirementPort loadCourseRequirementPort;
 
   public PlanMallaAssemblyService(
-      LoadCoursePort loadCoursePort,
-      LoadCourseRequirementPort loadCourseRequirementPort) {
+      LoadCoursePort loadCoursePort, LoadCourseRequirementPort loadCourseRequirementPort) {
     this.loadCoursePort = loadCoursePort;
     this.loadCourseRequirementPort = loadCourseRequirementPort;
   }
@@ -60,22 +58,23 @@ public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
     List<Course> allCourses = loadCoursePort.loadByPlanId(planId);
 
     // Collect ACTIVE courses that have a semester recommendation for the requested journey
-    List<Course> activeCourses = allCourses.stream()
-        .filter(c -> c.status() == CourseStatus.ACTIVE)
-        .filter(c -> c.recommendedSemesters().stream()
-            .anyMatch(rs -> journeyCode.equals(rs.journeyCode())))
-        .toList();
+    List<Course> activeCourses =
+        allCourses.stream()
+            .filter(c -> c.status() == CourseStatus.ACTIVE)
+            .filter(
+                c ->
+                    c.recommendedSemesters().stream()
+                        .anyMatch(rs -> journeyCode.equals(rs.journeyCode())))
+            .toList();
 
     // Bulk-load all requirement edges for the active courses — single query, no N+1 (ADR-F2-001)
-    List<UUID> activeCourseIds = activeCourses.stream()
-        .map(c -> c.id().value())
-        .toList();
+    List<UUID> activeCourseIds = activeCourses.stream().map(c -> c.id().value()).toList();
     List<CourseRequirement> allRequirements =
         loadCourseRequirementPort.loadByTargetCourseIds(activeCourseIds);
 
     // Index requirements by target course ID for O(1) lookup
-    Map<UUID, List<CourseRequirement>> requirementsByCourseId = allRequirements.stream()
-        .collect(Collectors.groupingBy(CourseRequirement::targetCourseId));
+    Map<UUID, List<CourseRequirement>> requirementsByCourseId =
+        allRequirements.stream().collect(Collectors.groupingBy(CourseRequirement::targetCourseId));
 
     // Group active courses by their recommended semester for the requested journey
     Map<Integer, List<PlanMallaView.CourseSummary>> bySemester = new TreeMap<>();
@@ -84,18 +83,21 @@ public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
           .filter(rs -> journeyCode.equals(rs.journeyCode()))
           .map(RecommendedSemester::semester)
           .findFirst()
-          .ifPresent(semester -> {
-            List<CourseRequirement> courseReqs =
-                requirementsByCourseId.getOrDefault(course.id().value(), List.of());
-            bySemester.computeIfAbsent(semester, k -> new ArrayList<>())
-                .add(toCourseSummary(course, courseReqs));
-          });
+          .ifPresent(
+              semester -> {
+                List<CourseRequirement> courseReqs =
+                    requirementsByCourseId.getOrDefault(course.id().value(), List.of());
+                bySemester
+                    .computeIfAbsent(semester, k -> new ArrayList<>())
+                    .add(toCourseSummary(course, courseReqs));
+              });
     }
 
-    List<PlanMallaView.SemesterBucket> buckets = bySemester.entrySet().stream()
-        .sorted(Map.Entry.comparingByKey())
-        .map(e -> new PlanMallaView.SemesterBucket(e.getKey(), List.copyOf(e.getValue())))
-        .toList();
+    List<PlanMallaView.SemesterBucket> buckets =
+        bySemester.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .map(e -> new PlanMallaView.SemesterBucket(e.getKey(), List.copyOf(e.getValue())))
+            .toList();
 
     return new PlanMallaView(planId, journeyCode, buckets, GRADUATION_REQUIREMENTS_ADVISORY);
   }
@@ -106,9 +108,8 @@ public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
 
   private PlanMallaView.CourseSummary toCourseSummary(
       Course course, List<CourseRequirement> requirements) {
-    List<PlanMallaView.RequirementSummary> reqSummaries = requirements.stream()
-        .map(this::toRequirementSummary)
-        .toList();
+    List<PlanMallaView.RequirementSummary> reqSummaries =
+        requirements.stream().map(this::toRequirementSummary).toList();
     return new PlanMallaView.CourseSummary(
         course.id().value(),
         course.officialCode(),

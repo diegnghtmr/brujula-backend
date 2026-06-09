@@ -15,7 +15,7 @@ public interface ProgressReadPort {
   /**
    * Return the set of courseIds the student has effectively passed within the given program.
    *
-   * @param ownerId   student UUID
+   * @param ownerId student UUID
    * @param programId program UUID (scope the lookup to the correct subscription)
    * @return set of passed course UUIDs; empty if none or no subscription found
    */

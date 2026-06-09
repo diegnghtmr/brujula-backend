@@ -20,11 +20,9 @@ class WeeklyScheduleAssemblerTest {
   private static final UUID PROGRAM_B = UUID.randomUUID();
 
   private WeeklyScheduleAssembler.SelectionSessions makeSelection(
-      UUID id, String courseName, UUID programId,
-      String day, LocalTime start, LocalTime end) {
+      UUID id, String courseName, UUID programId, String day, LocalTime start, LocalTime end) {
     return new WeeklyScheduleAssembler.SelectionSessions(
-        id, courseName, programId,
-        List.of(new SimScheduleSession(day, start, end)));
+        id, courseName, programId, List.of(new SimScheduleSession(day, start, end)));
   }
 
   // -------------------------------------------------------------------------
@@ -54,11 +52,12 @@ class WeeklyScheduleAssemblerTest {
     UUID idA = UUID.randomUUID();
     UUID idB = UUID.randomUUID();
 
-    List<WeeklyScheduleAssembler.SelectionSessions> selections = List.of(
-        makeSelection(idA, "Algebra", PROGRAM_A, "MONDAY",
-            LocalTime.of(8, 0), LocalTime.of(10, 0)),
-        makeSelection(idB, "Calculus", PROGRAM_A, "MONDAY",
-            LocalTime.of(10, 0), LocalTime.of(12, 0)));
+    List<WeeklyScheduleAssembler.SelectionSessions> selections =
+        List.of(
+            makeSelection(
+                idA, "Algebra", PROGRAM_A, "MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)),
+            makeSelection(
+                idB, "Calculus", PROGRAM_A, "MONDAY", LocalTime.of(10, 0), LocalTime.of(12, 0)));
 
     List<WeeklyScheduleEntry> entries = assembler.assemble(selections);
 
@@ -71,11 +70,12 @@ class WeeklyScheduleAssemblerTest {
     UUID idA = UUID.randomUUID();
     UUID idB = UUID.randomUUID();
 
-    List<WeeklyScheduleAssembler.SelectionSessions> selections = List.of(
-        makeSelection(idA, "Algebra", PROGRAM_A, "MONDAY",
-            LocalTime.of(8, 0), LocalTime.of(10, 0)),
-        makeSelection(idB, "Calculus", PROGRAM_A, "TUESDAY",
-            LocalTime.of(8, 0), LocalTime.of(10, 0)));
+    List<WeeklyScheduleAssembler.SelectionSessions> selections =
+        List.of(
+            makeSelection(
+                idA, "Algebra", PROGRAM_A, "MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)),
+            makeSelection(
+                idB, "Calculus", PROGRAM_A, "TUESDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)));
 
     List<WeeklyScheduleEntry> entries = assembler.assemble(selections);
 
@@ -94,11 +94,22 @@ class WeeklyScheduleAssemblerTest {
     UUID idA = UUID.randomUUID();
     UUID idB = UUID.randomUUID();
 
-    List<WeeklyScheduleAssembler.SelectionSessions> selections = List.of(
-        makeSelection(idA, "Software Engineering", PROGRAM_A, "WEDNESDAY",
-            LocalTime.of(18, 0), LocalTime.of(20, 0)),
-        makeSelection(idB, "Databases", PROGRAM_A, "WEDNESDAY",
-            LocalTime.of(19, 0), LocalTime.of(21, 0)));
+    List<WeeklyScheduleAssembler.SelectionSessions> selections =
+        List.of(
+            makeSelection(
+                idA,
+                "Software Engineering",
+                PROGRAM_A,
+                "WEDNESDAY",
+                LocalTime.of(18, 0),
+                LocalTime.of(20, 0)),
+            makeSelection(
+                idB,
+                "Databases",
+                PROGRAM_A,
+                "WEDNESDAY",
+                LocalTime.of(19, 0),
+                LocalTime.of(21, 0)));
 
     List<WeeklyScheduleEntry> entries = assembler.assemble(selections);
 
@@ -111,11 +122,12 @@ class WeeklyScheduleAssemblerTest {
     UUID idA = UUID.randomUUID();
     UUID idB = UUID.randomUUID();
 
-    List<WeeklyScheduleAssembler.SelectionSessions> selections = List.of(
-        makeSelection(idA, "Course A", PROGRAM_A, "FRIDAY",
-            LocalTime.of(14, 0), LocalTime.of(16, 0)),
-        makeSelection(idB, "Course B", PROGRAM_B, "FRIDAY",
-            LocalTime.of(14, 0), LocalTime.of(16, 0)));
+    List<WeeklyScheduleAssembler.SelectionSessions> selections =
+        List.of(
+            makeSelection(
+                idA, "Course A", PROGRAM_A, "FRIDAY", LocalTime.of(14, 0), LocalTime.of(16, 0)),
+            makeSelection(
+                idB, "Course B", PROGRAM_B, "FRIDAY", LocalTime.of(14, 0), LocalTime.of(16, 0)));
 
     List<WeeklyScheduleEntry> entries = assembler.assemble(selections);
 
@@ -130,9 +142,15 @@ class WeeklyScheduleAssemblerTest {
   @Test
   void assemble_entriesCarryRealCourseNameAndProgramId() {
     UUID selId = UUID.randomUUID();
-    List<WeeklyScheduleAssembler.SelectionSessions> selections = List.of(
-        makeSelection(selId, "Ingeniería de Software I", PROGRAM_A, "THURSDAY",
-            LocalTime.of(16, 0), LocalTime.of(18, 0)));
+    List<WeeklyScheduleAssembler.SelectionSessions> selections =
+        List.of(
+            makeSelection(
+                selId,
+                "Ingeniería de Software I",
+                PROGRAM_A,
+                "THURSDAY",
+                LocalTime.of(16, 0),
+                LocalTime.of(18, 0)));
 
     List<WeeklyScheduleEntry> entries = assembler.assemble(selections);
 
@@ -151,17 +169,20 @@ class WeeklyScheduleAssemblerTest {
   @Test
   void assemble_multipleSessionsPerSelection_allSessionsFlattened() {
     UUID selId = UUID.randomUUID();
-    List<SimScheduleSession> sessions = List.of(
-        new SimScheduleSession("MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)),
-        new SimScheduleSession("WEDNESDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)));
+    List<SimScheduleSession> sessions =
+        List.of(
+            new SimScheduleSession("MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)),
+            new SimScheduleSession("WEDNESDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)));
 
-    List<WeeklyScheduleAssembler.SelectionSessions> selections = List.of(
-        new WeeklyScheduleAssembler.SelectionSessions(selId, "Physics", PROGRAM_A, sessions));
+    List<WeeklyScheduleAssembler.SelectionSessions> selections =
+        List.of(
+            new WeeklyScheduleAssembler.SelectionSessions(selId, "Physics", PROGRAM_A, sessions));
 
     List<WeeklyScheduleEntry> entries = assembler.assemble(selections);
 
     assertThat(entries).hasSize(2);
-    assertThat(entries).extracting(WeeklyScheduleEntry::day)
+    assertThat(entries)
+        .extracting(WeeklyScheduleEntry::day)
         .containsExactlyInAnyOrder("MONDAY", "WEDNESDAY");
     assertThat(entries).allMatch(e -> !e.inClash()); // same selection, can't clash with itself
   }
@@ -176,27 +197,28 @@ class WeeklyScheduleAssemblerTest {
     UUID idB = UUID.randomUUID();
     UUID idC = UUID.randomUUID();
 
-    List<WeeklyScheduleAssembler.SelectionSessions> selections = List.of(
-        // A: MONDAY 08:00-10:00
-        makeSelection(idA, "Algebra", PROGRAM_A, "MONDAY",
-            LocalTime.of(8, 0), LocalTime.of(10, 0)),
-        // B: MONDAY 09:00-11:00 (overlaps A)
-        makeSelection(idB, "Calculus", PROGRAM_A, "MONDAY",
-            LocalTime.of(9, 0), LocalTime.of(11, 0)),
-        // C: TUESDAY 08:00-10:00 (no overlap with A or B)
-        makeSelection(idC, "Physics", PROGRAM_A, "TUESDAY",
-            LocalTime.of(8, 0), LocalTime.of(10, 0)));
+    List<WeeklyScheduleAssembler.SelectionSessions> selections =
+        List.of(
+            // A: MONDAY 08:00-10:00
+            makeSelection(
+                idA, "Algebra", PROGRAM_A, "MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)),
+            // B: MONDAY 09:00-11:00 (overlaps A)
+            makeSelection(
+                idB, "Calculus", PROGRAM_A, "MONDAY", LocalTime.of(9, 0), LocalTime.of(11, 0)),
+            // C: TUESDAY 08:00-10:00 (no overlap with A or B)
+            makeSelection(
+                idC, "Physics", PROGRAM_A, "TUESDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)));
 
     List<WeeklyScheduleEntry> entries = assembler.assemble(selections);
 
     assertThat(entries).hasSize(3);
     // A and B clash, C does not
-    WeeklyScheduleEntry entryA = entries.stream()
-        .filter(e -> e.selectionId().equals(idA)).findFirst().orElseThrow();
-    WeeklyScheduleEntry entryB = entries.stream()
-        .filter(e -> e.selectionId().equals(idB)).findFirst().orElseThrow();
-    WeeklyScheduleEntry entryC = entries.stream()
-        .filter(e -> e.selectionId().equals(idC)).findFirst().orElseThrow();
+    WeeklyScheduleEntry entryA =
+        entries.stream().filter(e -> e.selectionId().equals(idA)).findFirst().orElseThrow();
+    WeeklyScheduleEntry entryB =
+        entries.stream().filter(e -> e.selectionId().equals(idB)).findFirst().orElseThrow();
+    WeeklyScheduleEntry entryC =
+        entries.stream().filter(e -> e.selectionId().equals(idC)).findFirst().orElseThrow();
 
     assertThat(entryA.inClash()).isTrue();
     assertThat(entryB.inClash()).isTrue();

@@ -23,8 +23,7 @@ import java.util.UUID;
 @Table(name = "sequential_track_level_option", schema = "curriculum")
 class SequentialTrackLevelOptionJpaEntity {
 
-  @EmbeddedId
-  private SequentialTrackLevelOptionId id;
+  @EmbeddedId private SequentialTrackLevelOptionId id;
 
   @MapsId("levelId")
   @ManyToOne(fetch = FetchType.LAZY)
@@ -34,8 +33,13 @@ class SequentialTrackLevelOptionJpaEntity {
   // JPA requires a no-arg constructor
   protected SequentialTrackLevelOptionJpaEntity() {}
 
-  SequentialTrackLevelOptionId getId() { return id; }
-  UUID getCourseId() { return id != null ? id.courseId() : null; }
+  SequentialTrackLevelOptionId getId() {
+    return id;
+  }
+
+  UUID getCourseId() {
+    return id != null ? id.courseId() : null;
+  }
 
   // ---------------------------------------------------------------------------
   // Composite PK
@@ -52,15 +56,19 @@ class SequentialTrackLevelOptionJpaEntity {
 
     protected SequentialTrackLevelOptionId() {}
 
-    UUID levelId() { return levelId; }
-    UUID courseId() { return courseId; }
+    UUID levelId() {
+      return levelId;
+    }
+
+    UUID courseId() {
+      return courseId;
+    }
 
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
       if (!(o instanceof SequentialTrackLevelOptionId other)) return false;
-      return Objects.equals(levelId, other.levelId)
-          && Objects.equals(courseId, other.courseId);
+      return Objects.equals(levelId, other.levelId) && Objects.equals(courseId, other.courseId);
     }
 
     @Override

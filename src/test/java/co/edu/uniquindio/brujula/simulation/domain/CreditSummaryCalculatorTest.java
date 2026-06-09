@@ -27,8 +27,7 @@ class CreditSummaryCalculatorTest {
   @Test
   void exceeds_whenExisting21PlusCandiate3IsOver23Limit() {
     // 21 existing + 3 candidate = 24 > 23 limit → blocked
-    List<ExistingSelection> existing = List.of(
-        buildSelection(programA, 21.0));
+    List<ExistingSelection> existing = List.of(buildSelection(programA, 21.0));
     CandidateSelection candidate = buildCandidate(programA, 3.0);
     ProgramCreditLimit limit = new ProgramCreditLimit(programA, "Sistemas", 23);
 
@@ -45,8 +44,7 @@ class CreditSummaryCalculatorTest {
   @Test
   void allowedWhenExisting21PlusCandidate2EqualsLimit() {
     // 21 existing + 2 candidate = 23 = limit → allowed (exactly at limit is OK)
-    List<ExistingSelection> existing = List.of(
-        buildSelection(programA, 21.0));
+    List<ExistingSelection> existing = List.of(buildSelection(programA, 21.0));
     CandidateSelection candidate = buildCandidate(programA, 2.0);
     ProgramCreditLimit limit = new ProgramCreditLimit(programA, "Sistemas", 23);
 
@@ -58,8 +56,7 @@ class CreditSummaryCalculatorTest {
   @Test
   void differentProgramCreditsAreNotSummed() {
     // Existing 21 credits for programA; candidate 3 credits for programB — separate tracking
-    List<ExistingSelection> existing = List.of(
-        buildSelection(programA, 21.0));
+    List<ExistingSelection> existing = List.of(buildSelection(programA, 21.0));
     CandidateSelection candidate = buildCandidate(programB, 3.0);
     ProgramCreditLimit limit = new ProgramCreditLimit(programB, "Lenguas", 23);
 
@@ -97,12 +94,21 @@ class CreditSummaryCalculatorTest {
   // -------------------------------------------------------------------------
 
   private ExistingSelection buildSelection(UUID programId, double credits) {
-    return new ExistingSelection(UUID.randomUUID(), UUID.randomUUID(), "Some Course",
-        programId, credits, List.of());
+    return new ExistingSelection(
+        UUID.randomUUID(), UUID.randomUUID(), "Some Course", programId, credits, List.of());
   }
 
   private CandidateSelection buildCandidate(UUID programId, double credits) {
-    return new CandidateSelection(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
-        "New Course", programId, credits, "DIURNA", "FINAL", 1L, List.of());
+    return new CandidateSelection(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        "New Course",
+        programId,
+        credits,
+        "DIURNA",
+        "FINAL",
+        1L,
+        List.of());
   }
 }

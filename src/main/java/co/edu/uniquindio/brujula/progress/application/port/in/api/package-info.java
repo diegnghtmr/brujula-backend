@@ -5,8 +5,9 @@
  * simulation) can depend on {@code progress::api} without gaining access to progress mutation
  * use-cases or internal REST query interfaces.
  *
- * <p>Only {@link co.edu.uniquindio.brujula.progress.application.port.in.api.GetStudentCourseHistoryQuery}
- * is exposed here. Mutation use-cases (CreateSubscriptionUseCase, CreateCourseAttemptUseCase, etc.)
+ * <p>Only {@link
+ * co.edu.uniquindio.brujula.progress.application.port.in.api.GetStudentCourseHistoryQuery} is
+ * exposed here. Mutation use-cases (CreateSubscriptionUseCase, CreateCourseAttemptUseCase, etc.)
  * and internal read queries (GetSubscriptionQuery, GetCourseAttemptQuery, etc.) remain in the
  * parent package {@code port.in} which carries NO named interface (INV-001, ADR-F4-002).
  *

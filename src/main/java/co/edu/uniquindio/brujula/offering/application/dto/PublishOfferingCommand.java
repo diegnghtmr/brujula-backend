@@ -11,13 +11,13 @@ import java.util.UUID;
  *
  * <p>Satisfies: OFFW-005.
  *
- * @param idempotencyKey            idempotency key UUID from the Idempotency-Key header
- * @param offeringId                offering UUID to publish/transition
- * @param actorId                   UUID of the authenticated STAFF/ADMIN caller
- * @param targetStatus              desired new status string (PRELIMINARY, FINAL, or ARCHIVED)
- * @param expectedVersion           expected optimistic-lock version; mismatch → 409
+ * @param idempotencyKey idempotency key UUID from the Idempotency-Key header
+ * @param offeringId offering UUID to publish/transition
+ * @param actorId UUID of the authenticated STAFF/ADMIN caller
+ * @param targetStatus desired new status string (PRELIMINARY, FINAL, or ARCHIVED)
+ * @param expectedVersion expected optimistic-lock version; mismatch → 409
  * @param acknowledgeIntensityWarning caller-supplied flag; ADVISORY only — never blocks
- * @param requestHash               SHA-256 hex digest of the request body for idempotency
+ * @param requestHash SHA-256 hex digest of the request body for idempotency
  */
 public record PublishOfferingCommand(
     UUID idempotencyKey,

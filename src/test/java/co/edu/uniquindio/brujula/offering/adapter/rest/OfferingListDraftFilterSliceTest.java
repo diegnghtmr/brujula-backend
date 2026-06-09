@@ -21,11 +21,9 @@ import co.edu.uniquindio.brujula.offering.application.port.in.GetOfferingQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.UpdateOfferingUseCase;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -41,6 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
  * WU2-TDD: OFFW-007 — listOfferings DRAFT filter widening for STAFF/ADMIN.
  *
  * <p>Tests:
+ *
  * <ul>
  *   <li>STAFF can list DRAFT offerings (status=DRAFT returns non-empty page)
  *   <li>STUDENT requesting status=DRAFT gets an empty page (DRAFT filtered out — NOT 403)
@@ -71,14 +70,23 @@ class OfferingListDraftFilterSliceTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void staff_can_list_draft_offerings() throws Exception {
-    OfferingPageView draftPage = new OfferingPageView(
-        List.of(new OfferingSummaryView(
-            UUID.randomUUID(), COURSE_ID, "Álgebra", PROGRAM_ID, PERIOD_ID,
-            "DRAFT", null, 0L)),
-        0, 20, 1L);
+    OfferingPageView draftPage =
+        new OfferingPageView(
+            List.of(
+                new OfferingSummaryView(
+                    UUID.randomUUID(),
+                    COURSE_ID,
+                    "Álgebra",
+                    PROGRAM_ID,
+                    PERIOD_ID,
+                    "DRAFT",
+                    null,
+                    0L)),
+            0,
+            20,
+            1L);
 
-    when(listOfferingsQuery.listOfferings(any(ListOfferingsCriteria.class)))
-        .thenReturn(draftPage);
+    when(listOfferingsQuery.listOfferings(any(ListOfferingsCriteria.class))).thenReturn(draftPage);
 
     mockMvc
         .perform(

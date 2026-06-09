@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 /**
  * Use case implementation: get a single course by ID.
  *
- * <p>Throws {@link CourseNotFoundException} (maps to HTTP 404) if the course is not found.
- * No Spring annotations — wired via infrastructure configuration (ARQ-002).
+ * <p>Throws {@link CourseNotFoundException} (maps to HTTP 404) if the course is not found. No
+ * Spring annotations — wired via infrastructure configuration (ARQ-002).
  */
 public class GetCourseService implements GetCourseQuery {
 
@@ -30,8 +30,8 @@ public class GetCourseService implements GetCourseQuery {
   @Override
   public CourseView getCourse(UUID courseId) {
     CourseId typedId = new CourseId(courseId);
-    Course course = loadCoursePort.loadById(typedId)
-        .orElseThrow(() -> new CourseNotFoundException(typedId));
+    Course course =
+        loadCoursePort.loadById(typedId).orElseThrow(() -> new CourseNotFoundException(typedId));
     return toView(course);
   }
 
@@ -46,15 +46,12 @@ public class GetCourseService implements GetCourseQuery {
       return Map.of();
     }
     return loadCoursePort.loadByIds(courseIds).stream()
-        .collect(Collectors.toMap(
-            course -> course.id().value(),
-            this::toView));
+        .collect(Collectors.toMap(course -> course.id().value(), this::toView));
   }
 
   private CourseView toView(Course course) {
-    List<CourseView.RecommendedSemesterView> semesterViews = course.recommendedSemesters().stream()
-        .map(this::toSemesterView)
-        .toList();
+    List<CourseView.RecommendedSemesterView> semesterViews =
+        course.recommendedSemesters().stream().map(this::toSemesterView).toList();
     return new CourseView(
         course.id().value(),
         course.planId(),

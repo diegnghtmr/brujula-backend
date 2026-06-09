@@ -5,8 +5,8 @@ import java.util.Objects;
 
 /**
  * Thrown when {@code reviewSimulation} re-runs all validations and finds persistent blocking
- * violations (spec STALE-002). Maps to HTTP 409 application/problem+json via
- * {@code SimulationExceptionHandler}.
+ * violations (spec STALE-002). Maps to HTTP 409 application/problem+json via {@code
+ * SimulationExceptionHandler}.
  *
  * <p>Distinct from {@link SimulationValidationBlockedException} (add-selection 409) to allow
  * different HTTP responses or titles if needed. Same structure: holds the blocking notices list.
@@ -25,8 +25,8 @@ public class SimulationStillBlockedException extends RuntimeException {
   }
 
   /**
-   * Returns the primary (first) blocking notice, used by the exception handler to set
-   * the problem+json code and detail fields.
+   * Returns the primary (first) blocking notice, used by the exception handler to set the
+   * problem+json code and detail fields.
    */
   public ValidationNotice primaryNotice() {
     return blocking.isEmpty()

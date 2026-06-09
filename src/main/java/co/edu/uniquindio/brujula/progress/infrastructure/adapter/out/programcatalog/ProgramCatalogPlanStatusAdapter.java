@@ -1,17 +1,17 @@
 package co.edu.uniquindio.brujula.progress.infrastructure.adapter.out.programcatalog;
 
-import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
 import co.edu.uniquindio.brujula.programcatalog.application.dto.StudyPlanView;
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetStudyPlanQuery;
 import co.edu.uniquindio.brujula.programcatalog.domain.StudyPlanNotFoundException;
+import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
  * Driven adapter: validates study plan status by delegating to {@link GetStudyPlanQuery}.
  *
- * <p>Implements the {@link ValidatePlanStatusPort} anti-corruption façade so that the
- * {@code progress.application} layer does NOT directly import programcatalog types (Spring Modulith
+ * <p>Implements the {@link ValidatePlanStatusPort} anti-corruption façade so that the {@code
+ * progress.application} layer does NOT directly import programcatalog types (Spring Modulith
  * named-interface boundary enforcement — FIX-W3). The programcatalog import is legal here because
  * this class is in {@code progress.infrastructure}, which may depend on programcatalog.
  *

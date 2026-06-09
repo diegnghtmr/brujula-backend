@@ -51,9 +51,10 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>Implements the generated {@link SimulationsApi} contract-first interface (ARQ-001).
  * Package-private per ARQ-006b. STUDENT-only.
  *
- * <p>WU3 SCOPE: create, list, get (skeleton), update, delete, duplicate are implemented.
- * WU4a SCOPE: addSelection, removeSelection, listSelections are implemented.
- * The following endpoint returns HTTP 501 until WU5:
+ * <p>WU3 SCOPE: create, list, get (skeleton), update, delete, duplicate are implemented. WU4a
+ * SCOPE: addSelection, removeSelection, listSelections are implemented. The following endpoint
+ * returns HTTP 501 until WU5:
+ *
  * <ul>
  *   <li>{@code POST .../review} (reviewSimulation) — WU5
  * </ul>
@@ -110,20 +111,19 @@ class SimulationController implements SimulationsApi {
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<Simulation> createSimulation(
-      UUID idempotencyKey,
-      String xXsrfToken,
-      SimulationCreateRequest simulationCreateRequest) {
+      UUID idempotencyKey, String xXsrfToken, SimulationCreateRequest simulationCreateRequest) {
 
     UUID callerId = resolveCallerId();
     String requestHash = computeHash(simulationCreateRequest);
 
-    CreateSimulationCommand command = new CreateSimulationCommand(
-        idempotencyKey,
-        callerId,
-        simulationCreateRequest.getName(),
-        simulationCreateRequest.getPeriodId(),
-        new ArrayList<>(simulationCreateRequest.getProgramIds()),
-        requestHash);
+    CreateSimulationCommand command =
+        new CreateSimulationCommand(
+            idempotencyKey,
+            callerId,
+            simulationCreateRequest.getName(),
+            simulationCreateRequest.getPeriodId(),
+            new ArrayList<>(simulationCreateRequest.getProgramIds()),
+            requestHash);
 
     SimulationView view = createSimulationUseCase.createSimulation(command);
     Simulation response = mapper.toDto(view);
@@ -147,10 +147,9 @@ class SimulationController implements SimulationsApi {
     UUID callerId = resolveCallerId();
     String statusFilter = status != null ? status.getValue() : null;
 
-    ListSimulationsCriteria criteria = new ListSimulationsCriteria(
-        callerId, periodId, statusFilter,
-        page != null ? page : 0,
-        size != null ? size : 20);
+    ListSimulationsCriteria criteria =
+        new ListSimulationsCriteria(
+            callerId, periodId, statusFilter, page != null ? page : 0, size != null ? size : 20);
 
     SimulationPageView pageView = listMySimulationsQuery.listMySimulations(criteria);
     return ResponseEntity.ok(mapper.toPageDto(pageView));
@@ -176,17 +175,15 @@ class SimulationController implements SimulationsApi {
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<Simulation> updateSimulation(
-      String xXsrfToken,
-      UUID simulationId,
-      SimulationUpdateRequest simulationUpdateRequest) {
+      String xXsrfToken, UUID simulationId, SimulationUpdateRequest simulationUpdateRequest) {
 
     UUID callerId = resolveCallerId();
-    long version = simulationUpdateRequest.getVersion() != null
-        ? simulationUpdateRequest.getVersion()
-        : 0L;
+    long version =
+        simulationUpdateRequest.getVersion() != null ? simulationUpdateRequest.getVersion() : 0L;
 
-    UpdateSimulationCommand command = new UpdateSimulationCommand(
-        simulationId, callerId, simulationUpdateRequest.getName(), version);
+    UpdateSimulationCommand command =
+        new UpdateSimulationCommand(
+            simulationId, callerId, simulationUpdateRequest.getName(), version);
 
     SimulationView view = updateSimulationUseCase.updateSimulation(command);
     return ResponseEntity.ok(mapper.toDto(view));
@@ -220,11 +217,12 @@ class SimulationController implements SimulationsApi {
     String name = duplicateSimulationRequest != null ? duplicateSimulationRequest.getName() : null;
     String requestHash = computeDuplicateHash(simulationId, name);
 
-    DuplicateSimulationCommand command = new DuplicateSimulationCommand(
-        idempotencyKey, simulationId, callerId, name, requestHash);
+    DuplicateSimulationCommand command =
+        new DuplicateSimulationCommand(idempotencyKey, simulationId, callerId, name, requestHash);
 
     SimulationView view = duplicateSimulationUseCase.duplicateSimulation(command);
-    return ResponseEntity.created(URI.create("/me/simulations/" + view.id())).body(mapper.toDto(view));
+    return ResponseEntity.created(URI.create("/me/simulations/" + view.id()))
+        .body(mapper.toDto(view));
   }
 
   // -------------------------------------------------------------------------
@@ -240,24 +238,25 @@ class SimulationController implements SimulationsApi {
       SimulationSelectionCreateRequest simulationSelectionCreateRequest) {
 
     UUID callerId = resolveCallerId();
-    boolean acknowledgeWarnings = Boolean.TRUE.equals(
-        simulationSelectionCreateRequest.getAcknowledgeWarnings());
-    String requestHash = computeSelectionHash(simulationId,
-        simulationSelectionCreateRequest.getScheduleOptionId());
+    boolean acknowledgeWarnings =
+        Boolean.TRUE.equals(simulationSelectionCreateRequest.getAcknowledgeWarnings());
+    String requestHash =
+        computeSelectionHash(simulationId, simulationSelectionCreateRequest.getScheduleOptionId());
 
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey,
-        simulationId,
-        callerId,
-        simulationSelectionCreateRequest.getScheduleOptionId(),
-        acknowledgeWarnings,
-        requestHash);
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey,
+            simulationId,
+            callerId,
+            simulationSelectionCreateRequest.getScheduleOptionId(),
+            acknowledgeWarnings,
+            requestHash);
 
     SimulationSelectionView view = addSimulationSelectionUseCase.addSelection(command);
     SimulationSelection response = mapper.toSelectionDto(view);
 
-    return ResponseEntity
-        .created(URI.create("/me/simulations/" + simulationId + "/selections/" + view.id()))
+    return ResponseEntity.created(
+            URI.create("/me/simulations/" + simulationId + "/selections/" + view.id()))
         .body(response);
   }
 
@@ -284,9 +283,7 @@ class SimulationController implements SimulationsApi {
     UUID callerId = resolveCallerId();
     List<SimulationSelectionView> views =
         listSimulationSelectionsQuery.listSelections(simulationId, callerId);
-    List<SimulationSelection> response = views.stream()
-        .map(mapper::toSelectionDto)
-        .toList();
+    List<SimulationSelection> response = views.stream().map(mapper::toSelectionDto).toList();
     return ResponseEntity.ok(response);
   }
 
@@ -298,7 +295,8 @@ class SimulationController implements SimulationsApi {
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<SimulationDetail> reviewSimulation(String xXsrfToken, UUID simulationId) {
     UUID callerId = resolveCallerId();
-    SimulationDetailView detailView = reviewSimulationUseCase.reviewSimulation(simulationId, callerId);
+    SimulationDetailView detailView =
+        reviewSimulationUseCase.reviewSimulation(simulationId, callerId);
     SimulationDetail detail = mapper.toDetailDto(detailView);
     return ResponseEntity.ok(detail);
   }
@@ -330,9 +328,15 @@ class SimulationController implements SimulationsApi {
 
   private String computeHash(SimulationCreateRequest req) {
     try {
-      String input = req.getName() + "|" + req.getPeriodId() + "|"
-          + req.getProgramIds().stream().map(UUID::toString).sorted()
-              .reduce("", (a, b) -> a + b);
+      String input =
+          req.getName()
+              + "|"
+              + req.getPeriodId()
+              + "|"
+              + req.getProgramIds().stream()
+                  .map(UUID::toString)
+                  .sorted()
+                  .reduce("", (a, b) -> a + b);
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       byte[] hash = digest.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
       return HexFormat.of().formatHex(hash);

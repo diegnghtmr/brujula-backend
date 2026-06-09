@@ -40,25 +40,23 @@ public class ListProgramsService implements ListProgramsQuery {
   // Filter helpers
   // ---------------------------------------------------------------------------
 
-  private List<AcademicProgram> applyStatusFilter(List<AcademicProgram> programs, String statusFilter) {
+  private List<AcademicProgram> applyStatusFilter(
+      List<AcademicProgram> programs, String statusFilter) {
     if (statusFilter == null || statusFilter.isBlank()) {
       return programs;
     }
     ProgramStatus target = ProgramStatus.valueOf(statusFilter.toUpperCase());
-    return programs.stream()
-        .filter(p -> p.status() == target)
-        .toList();
+    return programs.stream().filter(p -> p.status() == target).toList();
   }
 
-  private List<ProgramView> applyPagination(List<AcademicProgram> programs, int page, int pageSize) {
+  private List<ProgramView> applyPagination(
+      List<AcademicProgram> programs, int page, int pageSize) {
     int from = page * pageSize;
     if (from >= programs.size()) {
       return List.of();
     }
     int to = Math.min(from + pageSize, programs.size());
-    return programs.subList(from, to).stream()
-        .map(this::toView)
-        .toList();
+    return programs.subList(from, to).stream().map(this::toView).toList();
   }
 
   // ---------------------------------------------------------------------------

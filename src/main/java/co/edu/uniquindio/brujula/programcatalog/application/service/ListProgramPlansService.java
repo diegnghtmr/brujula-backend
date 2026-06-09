@@ -26,10 +26,7 @@ public class ListProgramPlansService implements ListProgramPlansQuery {
   @Override
   public List<StudyPlanView> listProgramPlans(UUID programId, String callerRole) {
     List<StudyPlan> plans = loadStudyPlanPort.loadByProgramId(programId);
-    return plans.stream()
-        .filter(plan -> isVisible(plan, callerRole))
-        .map(this::toView)
-        .toList();
+    return plans.stream().filter(plan -> isVisible(plan, callerRole)).map(this::toView).toList();
   }
 
   // ---------------------------------------------------------------------------
@@ -41,7 +38,8 @@ public class ListProgramPlansService implements ListProgramPlansQuery {
    *
    * <p>Uses an ALLOWLIST for privileged access: only {@code "STAFF"} and {@code "ADMIN"} may see
    * DRAFT and ARCHIVED plans. Everything else — including {@code null} and unknown role strings —
-   * is treated as unprivileged and sees only ACTIVE plans (CAT-002: unauthenticated = student-level).
+   * is treated as unprivileged and sees only ACTIVE plans (CAT-002: unauthenticated =
+   * student-level).
    */
   private boolean isVisible(StudyPlan plan, String callerRole) {
     if (isPrivilegedRole(callerRole)) {

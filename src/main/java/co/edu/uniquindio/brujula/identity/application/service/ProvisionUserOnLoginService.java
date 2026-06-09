@@ -29,8 +29,8 @@ import java.util.Set;
  *
  * <p>Sync-on-login (S2-B-4, obs #1574): when an existing AppUser is in PENDING_VERIFICATION state
  * and the OIDC claims contain {@code email_verified=true}, transitions the user to ACTIVE and
- * persists. This is the Keycloak-native email verification sync mechanism — no backend token-confirm
- * endpoint needed.
+ * persists. This is the Keycloak-native email verification sync mechanism — no backend
+ * token-confirm endpoint needed.
  *
  * <p>No Spring annotations here — wired by the infrastructure configuration. Satisfies S1-B-3.
  */

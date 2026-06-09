@@ -7,8 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Anti-corruption adapter: bridges simulation's {@link ProgressReadPort} to
- * progress's published {@code progress::api.GetStudentCourseHistoryQuery} (ADR-F4-002, INV-001).
+ * Anti-corruption adapter: bridges simulation's {@link ProgressReadPort} to progress's published
+ * {@code progress::api.GetStudentCourseHistoryQuery} (ADR-F4-002, INV-001).
  *
  * <p>Read-only — no mutations to progress domain.
  */

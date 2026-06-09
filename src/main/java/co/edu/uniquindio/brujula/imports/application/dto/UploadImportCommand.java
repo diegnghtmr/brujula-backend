@@ -6,8 +6,9 @@ import java.util.UUID;
 /**
  * Command DTO for the UploadImport use case.
  *
- * <p>Carries all inputs needed by {@link co.edu.uniquindio.brujula.imports.application.service.UploadImportService}:
- * actor identity, idempotency key, file content, and target program/plan/period references.
+ * <p>Carries all inputs needed by {@link
+ * co.edu.uniquindio.brujula.imports.application.service.UploadImportService}: actor identity,
+ * idempotency key, file content, and target program/plan/period references.
  *
  * <p>Application DTO — NOT the generated REST model (WU4 maps from MultipartFile + request params
  * to this command). No Spring/JPA imports (ARQ-002).
@@ -20,13 +21,18 @@ public record UploadImportCommand(
     /** Actor email (from OIDC principal or security context). */
     String actorEmail,
     /**
-     * Actor role: "STAFF" or "ADMIN". ADMIN bypasses the program assignment check; STAFF is
-     * subject to it.
+     * Actor role: "STAFF" or "ADMIN". ADMIN bypasses the program assignment check; STAFF is subject
+     * to it.
      */
     String actorRole,
-    /** Actor UUID (for audit recording). May be null if the controller cannot resolve it cheaply. */
+    /**
+     * Actor UUID (for audit recording). May be null if the controller cannot resolve it cheaply.
+     */
     UUID actorId,
-    /** Import kind name: "COURSES", "REQUIREMENTS", or "OFFERINGS". Converted to domain enum by the service. */
+    /**
+     * Import kind name: "COURSES", "REQUIREMENTS", or "OFFERINGS". Converted to domain enum by the
+     * service.
+     */
     String kind,
     /** Target program UUID. */
     UUID programId,

@@ -64,7 +64,8 @@ public class IdentityOidcUserService implements OAuth2UserService<OidcUserReques
     // 3. Build Spring Security authorities from the domain role and onboarding state (G3 pattern).
     // S2-E: ONBOARDING_ACTIVE authority is included only for ACTIVE users.
     // PENDING_VERIFICATION users will NOT have this authority → /api/v1/academic/** is blocked.
-    Collection<GrantedAuthority> authorities = buildAuthorities(appUser.role(), appUser.onboardingState());
+    Collection<GrantedAuthority> authorities =
+        buildAuthorities(appUser.role(), appUser.onboardingState());
 
     // 4. Return a DefaultOidcUser with the provisioned authorities and user-name attribute
     String userNameAttributeName =
@@ -82,6 +83,7 @@ public class IdentityOidcUserService implements OAuth2UserService<OidcUserReques
    * Build Spring Security granted authorities for a provisioned user.
    *
    * <p>Includes:
+   *
    * <ul>
    *   <li>{@code ROLE_STUDENT}, {@code ROLE_STAFF}, or {@code ROLE_ADMIN} (from domain Role).
    *   <li>{@code ONBOARDING_ACTIVE} — included ONLY when onboardingState == ACTIVE (S2-E guard).
@@ -92,7 +94,8 @@ public class IdentityOidcUserService implements OAuth2UserService<OidcUserReques
    * the next OIDC login activates their account and this method includes ONBOARDING_ACTIVE in the
    * new session's authorities (sync-on-login pattern, obs #1574).
    */
-  private Collection<GrantedAuthority> buildAuthorities(Role role, OnboardingState onboardingState) {
+  private Collection<GrantedAuthority> buildAuthorities(
+      Role role, OnboardingState onboardingState) {
     List<GrantedAuthority> authorities = new ArrayList<>();
     authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
     // S2-E: Add ONBOARDING_ACTIVE only for fully verified/active users.

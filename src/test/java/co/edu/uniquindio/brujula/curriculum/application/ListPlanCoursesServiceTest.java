@@ -19,11 +19,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-4.1 RED: Verifies ListPlanCoursesService delegates to LoadCoursePort,
- * filters ARCHIVED courses when callerRole=STUDENT, and returns mapped CourseView list.
+ * WU1-4.1 RED: Verifies ListPlanCoursesService delegates to LoadCoursePort, filters ARCHIVED
+ * courses when callerRole=STUDENT, and returns mapped CourseView list.
  *
- * <p>FIX-2 (WARNING-2): INACTIVE courses must also be hidden from STUDENT (per CourseStatus Javadoc).
- * STAFF and ADMIN see all statuses including INACTIVE.
+ * <p>FIX-2 (WARNING-2): INACTIVE courses must also be hidden from STUDENT (per CourseStatus
+ * Javadoc). STAFF and ADMIN see all statuses including INACTIVE.
  */
 class ListPlanCoursesServiceTest {
 
@@ -43,11 +43,19 @@ class ListPlanCoursesServiceTest {
   @Test
   void delegatesToLoadCoursePortAndReturnsMappedViews() {
     CourseId id1 = CourseId.generate();
-    Course activeCourse = Course.reconstitute(
-        id1, planId, programId, "ISC-S1-LOGICA", "Lógica de Programación",
-        CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 1)),
-        CourseStatus.ACTIVE, 0L);
+    Course activeCourse =
+        Course.reconstitute(
+            id1,
+            planId,
+            programId,
+            "ISC-S1-LOGICA",
+            "Lógica de Programación",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 1)),
+            CourseStatus.ACTIVE,
+            0L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(activeCourse));
 
@@ -64,17 +72,33 @@ class ListPlanCoursesServiceTest {
     CourseId activeId = CourseId.generate();
     CourseId archivedId = CourseId.generate();
 
-    Course activeCourse = Course.reconstitute(
-        activeId, planId, programId, "ISC-S2-PROG1", "Programación I",
-        CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 2)),
-        CourseStatus.ACTIVE, 0L);
+    Course activeCourse =
+        Course.reconstitute(
+            activeId,
+            planId,
+            programId,
+            "ISC-S2-PROG1",
+            "Programación I",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 2)),
+            CourseStatus.ACTIVE,
+            0L);
 
-    Course archivedCourse = Course.reconstitute(
-        archivedId, planId, programId, "ISC-S2-OLDCOURSE", "Old Course",
-        CourseType.REQUIRED, 2, 2,
-        List.of(),
-        CourseStatus.ARCHIVED, 1L);
+    Course archivedCourse =
+        Course.reconstitute(
+            archivedId,
+            planId,
+            programId,
+            "ISC-S2-OLDCOURSE",
+            "Old Course",
+            CourseType.REQUIRED,
+            2,
+            2,
+            List.of(),
+            CourseStatus.ARCHIVED,
+            1L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(activeCourse, archivedCourse));
 
@@ -89,12 +113,32 @@ class ListPlanCoursesServiceTest {
     CourseId activeId = CourseId.generate();
     CourseId archivedId = CourseId.generate();
 
-    Course activeCourse = Course.reconstitute(
-        activeId, planId, programId, "ISC-S2-PROG1", "Programación I",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
-    Course archivedCourse = Course.reconstitute(
-        archivedId, planId, programId, "ISC-S2-OLD", "Old Course",
-        CourseType.REQUIRED, 2, 2, List.of(), CourseStatus.ARCHIVED, 1L);
+    Course activeCourse =
+        Course.reconstitute(
+            activeId,
+            planId,
+            programId,
+            "ISC-S2-PROG1",
+            "Programación I",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
+    Course archivedCourse =
+        Course.reconstitute(
+            archivedId,
+            planId,
+            programId,
+            "ISC-S2-OLD",
+            "Old Course",
+            CourseType.REQUIRED,
+            2,
+            2,
+            List.of(),
+            CourseStatus.ARCHIVED,
+            1L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(activeCourse, archivedCourse));
 
@@ -122,12 +166,32 @@ class ListPlanCoursesServiceTest {
     CourseId activeId = CourseId.generate();
     CourseId inactiveId = CourseId.generate();
 
-    Course activeCourse = Course.reconstitute(
-        activeId, planId, programId, "ISC-S1-LOGICA", "Lógica",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
-    Course inactiveCourse = Course.reconstitute(
-        inactiveId, planId, programId, "ISC-S2-OLD", "Old Inactive Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+    Course activeCourse =
+        Course.reconstitute(
+            activeId,
+            planId,
+            programId,
+            "ISC-S1-LOGICA",
+            "Lógica",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
+    Course inactiveCourse =
+        Course.reconstitute(
+            inactiveId,
+            planId,
+            programId,
+            "ISC-S2-OLD",
+            "Old Inactive Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.INACTIVE,
+            1L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(activeCourse, inactiveCourse));
 
@@ -143,12 +207,32 @@ class ListPlanCoursesServiceTest {
     CourseId activeId = CourseId.generate();
     CourseId inactiveId = CourseId.generate();
 
-    Course activeCourse = Course.reconstitute(
-        activeId, planId, programId, "ISC-S1-LOGICA", "Lógica",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
-    Course inactiveCourse = Course.reconstitute(
-        inactiveId, planId, programId, "ISC-S2-OLD", "Old Inactive Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+    Course activeCourse =
+        Course.reconstitute(
+            activeId,
+            planId,
+            programId,
+            "ISC-S1-LOGICA",
+            "Lógica",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
+    Course inactiveCourse =
+        Course.reconstitute(
+            inactiveId,
+            planId,
+            programId,
+            "ISC-S2-OLD",
+            "Old Inactive Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.INACTIVE,
+            1L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(activeCourse, inactiveCourse));
 
@@ -162,9 +246,19 @@ class ListPlanCoursesServiceTest {
     // ADMIN should see all statuses including INACTIVE
     CourseId inactiveId = CourseId.generate();
 
-    Course inactiveCourse = Course.reconstitute(
-        inactiveId, planId, programId, "ISC-S2-OLD", "Old Inactive Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+    Course inactiveCourse =
+        Course.reconstitute(
+            inactiveId,
+            planId,
+            programId,
+            "ISC-S2-OLD",
+            "Old Inactive Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.INACTIVE,
+            1L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(inactiveCourse));
 
@@ -184,15 +278,45 @@ class ListPlanCoursesServiceTest {
     CourseId archivedId = CourseId.generate();
     CourseId inactiveId = CourseId.generate();
 
-    Course active = Course.reconstitute(
-        activeId, planId, programId, "ISC-A", "Active Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
-    Course archived = Course.reconstitute(
-        archivedId, planId, programId, "ISC-ARCH", "Archived Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ARCHIVED, 1L);
-    Course inactive = Course.reconstitute(
-        inactiveId, planId, programId, "ISC-INACT", "Inactive Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+    Course active =
+        Course.reconstitute(
+            activeId,
+            planId,
+            programId,
+            "ISC-A",
+            "Active Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
+    Course archived =
+        Course.reconstitute(
+            archivedId,
+            planId,
+            programId,
+            "ISC-ARCH",
+            "Archived Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ARCHIVED,
+            1L);
+    Course inactive =
+        Course.reconstitute(
+            inactiveId,
+            planId,
+            programId,
+            "ISC-INACT",
+            "Inactive Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.INACTIVE,
+            1L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(active, archived, inactive));
 
@@ -209,15 +333,45 @@ class ListPlanCoursesServiceTest {
     CourseId archivedId = CourseId.generate();
     CourseId inactiveId = CourseId.generate();
 
-    Course active = Course.reconstitute(
-        activeId, planId, programId, "ISC-A", "Active Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
-    Course archived = Course.reconstitute(
-        archivedId, planId, programId, "ISC-ARCH", "Archived Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ARCHIVED, 1L);
-    Course inactive = Course.reconstitute(
-        inactiveId, planId, programId, "ISC-INACT", "Inactive Course",
-        CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+    Course active =
+        Course.reconstitute(
+            activeId,
+            planId,
+            programId,
+            "ISC-A",
+            "Active Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
+    Course archived =
+        Course.reconstitute(
+            archivedId,
+            planId,
+            programId,
+            "ISC-ARCH",
+            "Archived Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ARCHIVED,
+            1L);
+    Course inactive =
+        Course.reconstitute(
+            inactiveId,
+            planId,
+            programId,
+            "ISC-INACT",
+            "Inactive Course",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.INACTIVE,
+            1L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(active, archived, inactive));
 
@@ -238,12 +392,45 @@ class ListPlanCoursesServiceTest {
     CourseId archivedId = CourseId.generate();
     CourseId inactiveId = CourseId.generate();
 
-    Course active = Course.reconstitute(
-        activeId, planId, programId, "ISC-A", "Active", CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ACTIVE, 0L);
-    Course archived = Course.reconstitute(
-        archivedId, planId, programId, "ISC-ARCH", "Archived", CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.ARCHIVED, 1L);
-    Course inactive = Course.reconstitute(
-        inactiveId, planId, programId, "ISC-INACT", "Inactive", CourseType.REQUIRED, 3, 4, List.of(), CourseStatus.INACTIVE, 1L);
+    Course active =
+        Course.reconstitute(
+            activeId,
+            planId,
+            programId,
+            "ISC-A",
+            "Active",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
+    Course archived =
+        Course.reconstitute(
+            archivedId,
+            planId,
+            programId,
+            "ISC-ARCH",
+            "Archived",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ARCHIVED,
+            1L);
+    Course inactive =
+        Course.reconstitute(
+            inactiveId,
+            planId,
+            programId,
+            "ISC-INACT",
+            "Inactive",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(),
+            CourseStatus.INACTIVE,
+            1L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(active, archived, inactive));
 

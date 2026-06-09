@@ -16,15 +16,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 /**
  * Maps curriculum domain exceptions to HTTP problem responses (RFC 9457).
  *
- * <p>Lives in infrastructure.configuration (not adapter.in.rest) so that it may reference
- * domain exception types without violating ARQ-001, while still being picked up by Spring's
+ * <p>Lives in infrastructure.configuration (not adapter.in.rest) so that it may reference domain
+ * exception types without violating ARQ-001, while still being picked up by Spring's
  * {@code @ControllerAdvice} scan. Infrastructure is permitted to depend on domain (ARQ-008).
  *
  * <p>Scoped to the curriculum REST package with {@link Ordered#HIGHEST_PRECEDENCE} to prevent
- * cross-module handler hijacking for shared exceptions like
- * {@link IdempotencyKeyConflictException} (DEBT-F6-001 pattern).
+ * cross-module handler hijacking for shared exceptions like {@link IdempotencyKeyConflictException}
+ * (DEBT-F6-001 pattern).
  *
  * <p>Exception → HTTP mapping:
+ *
  * <ul>
  *   <li>{@link CourseNotFoundException} → 404 Not Found (CUR-001)
  *   <li>{@link CourseRequirementNotFoundException} → 404 Not Found (CUR-003)
@@ -35,7 +36,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * </ul>
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.curriculum.infrastructure.adapter.in.rest")
+@RestControllerAdvice(
+    basePackages = "co.edu.uniquindio.brujula.curriculum.infrastructure.adapter.in.rest")
 class CurriculumExceptionHandler {
 
   @ExceptionHandler(CourseNotFoundException.class)
@@ -50,16 +52,17 @@ class CurriculumExceptionHandler {
 
   @ExceptionHandler(PrerequisiteCycleException.class)
   ProblemDetail handlePrerequisiteCycle(PrerequisiteCycleException ex) {
-    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-        HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
     problem.setProperty("code", "PREREQUISITE_CYCLE");
     return problem;
   }
 
   @ExceptionHandler(OptimisticLockingFailureException.class)
   ProblemDetail handleOptimisticLock(OptimisticLockingFailureException ex) {
-    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, "Version conflict: the resource was modified by another request.");
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT, "Version conflict: the resource was modified by another request.");
     problem.setProperty("code", "OPTIMISTIC_LOCK_CONFLICT");
     return problem;
   }
@@ -73,8 +76,9 @@ class CurriculumExceptionHandler {
 
   @ExceptionHandler(DataIntegrityViolationException.class)
   ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-    ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-        HttpStatus.CONFLICT, "Data integrity constraint violated.");
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.CONFLICT, "Data integrity constraint violated.");
     problem.setProperty("code", "DATA_INTEGRITY_VIOLATION");
     return problem;
   }

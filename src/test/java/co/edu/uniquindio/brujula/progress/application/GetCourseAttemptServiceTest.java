@@ -98,7 +98,8 @@ class GetCourseAttemptServiceTest {
     when(loadCourseAttemptPort.countBySubscriptionIdAndCourseId(subscriptionId, null))
         .thenReturn(1L);
 
-    ListCourseAttemptsQuery query = new ListCourseAttemptsQuery(actorId, subscriptionId, null, 0, 20);
+    ListCourseAttemptsQuery query =
+        new ListCourseAttemptsQuery(actorId, subscriptionId, null, 0, 20);
     CourseAttemptPageView page = sut.listMyCourseAttempts(query);
 
     assertThat(page.content()).hasSize(1);

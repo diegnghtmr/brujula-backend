@@ -20,8 +20,8 @@ import org.junit.jupiter.api.Test;
 /**
  * WU2-2.1 RED: Verifies ListProgramsService returns paginated results and filters by status.
  *
- * <p>When statusFilter is "ACTIVE", only ACTIVE programs are returned.
- * When statusFilter is null, all programs are returned.
+ * <p>When statusFilter is "ACTIVE", only ACTIVE programs are returned. When statusFilter is null,
+ * all programs are returned.
  */
 class ListProgramsServiceTest {
 
@@ -36,10 +36,12 @@ class ListProgramsServiceTest {
 
   @Test
   void returnsAllProgramsWhenNoStatusFilter() {
-    AcademicProgram active = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Ingeniería de Sistemas", "FIET", ProgramStatus.ACTIVE, 0L);
-    AcademicProgram archived = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Old Program", "FIET", ProgramStatus.ARCHIVED, 1L);
+    AcademicProgram active =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Ingeniería de Sistemas", "FIET", ProgramStatus.ACTIVE, 0L);
+    AcademicProgram archived =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Old Program", "FIET", ProgramStatus.ARCHIVED, 1L);
 
     when(loadProgramPort.loadAll()).thenReturn(List.of(active, archived));
 
@@ -51,12 +53,15 @@ class ListProgramsServiceTest {
 
   @Test
   void returnsOnlyActiveWhenStatusFilterIsActive() {
-    AcademicProgram active = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Ingeniería de Sistemas", "FIET", ProgramStatus.ACTIVE, 0L);
-    AcademicProgram inactive = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Lenguas Modernas", "FCHSH", ProgramStatus.INACTIVE, 0L);
-    AcademicProgram archived = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Old Program", "FIET", ProgramStatus.ARCHIVED, 1L);
+    AcademicProgram active =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Ingeniería de Sistemas", "FIET", ProgramStatus.ACTIVE, 0L);
+    AcademicProgram inactive =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Lenguas Modernas", "FCHSH", ProgramStatus.INACTIVE, 0L);
+    AcademicProgram archived =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Old Program", "FIET", ProgramStatus.ARCHIVED, 1L);
 
     when(loadProgramPort.loadAll()).thenReturn(List.of(active, inactive, archived));
 
@@ -68,12 +73,15 @@ class ListProgramsServiceTest {
 
   @Test
   void paginationIsApplied() {
-    AcademicProgram p1 = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Program 1", "FIET", ProgramStatus.ACTIVE, 0L);
-    AcademicProgram p2 = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Program 2", "FIET", ProgramStatus.ACTIVE, 0L);
-    AcademicProgram p3 = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Program 3", "FIET", ProgramStatus.ACTIVE, 0L);
+    AcademicProgram p1 =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Program 1", "FIET", ProgramStatus.ACTIVE, 0L);
+    AcademicProgram p2 =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Program 2", "FIET", ProgramStatus.ACTIVE, 0L);
+    AcademicProgram p3 =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Program 3", "FIET", ProgramStatus.ACTIVE, 0L);
 
     when(loadProgramPort.loadAll()).thenReturn(List.of(p1, p2, p3));
 
@@ -87,12 +95,15 @@ class ListProgramsServiceTest {
 
   @Test
   void secondPageReturnsRemainingItems() {
-    AcademicProgram p1 = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Program 1", "FIET", ProgramStatus.ACTIVE, 0L);
-    AcademicProgram p2 = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Program 2", "FIET", ProgramStatus.ACTIVE, 0L);
-    AcademicProgram p3 = AcademicProgram.reconstitute(
-        ProgramId.generate(), "Program 3", "FIET", ProgramStatus.ACTIVE, 0L);
+    AcademicProgram p1 =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Program 1", "FIET", ProgramStatus.ACTIVE, 0L);
+    AcademicProgram p2 =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Program 2", "FIET", ProgramStatus.ACTIVE, 0L);
+    AcademicProgram p3 =
+        AcademicProgram.reconstitute(
+            ProgramId.generate(), "Program 3", "FIET", ProgramStatus.ACTIVE, 0L);
 
     when(loadProgramPort.loadAll()).thenReturn(List.of(p1, p2, p3));
 
@@ -141,8 +152,9 @@ class ListProgramsServiceTest {
   @Test
   void programViewContainsRequiredFields() {
     ProgramId id = ProgramId.generate();
-    AcademicProgram program = AcademicProgram.reconstitute(
-        id, "Ingeniería de Sistemas", "FIET", ProgramStatus.ACTIVE, 2L);
+    AcademicProgram program =
+        AcademicProgram.reconstitute(
+            id, "Ingeniería de Sistemas", "FIET", ProgramStatus.ACTIVE, 2L);
 
     when(loadProgramPort.loadAll()).thenReturn(List.of(program));
 

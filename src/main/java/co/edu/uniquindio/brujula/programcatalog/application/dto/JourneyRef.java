@@ -5,8 +5,7 @@ import java.util.UUID;
 /**
  * Application-layer DTO for a Journey reference (read view).
  *
- * <p>Returned by {@code ListJourneysQuery} to REST adapters (CAT-003).
- * No Spring/framework imports.
+ * <p>Returned by {@code ListJourneysQuery} to REST adapters (CAT-003). No Spring/framework imports.
  *
  * @param id the journey UUID
  * @param code the journey code (e.g. "DIURNA", "NOCTURNA")

@@ -8,13 +8,11 @@ import co.edu.uniquindio.brujula.imports.domain.exception.MissingImportParameter
 import co.edu.uniquindio.brujula.imports.domain.exception.SchemaVersionMismatchException;
 import co.edu.uniquindio.brujula.imports.domain.exception.UnsupportedFileTypeException;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
-
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -22,11 +20,12 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 /**
  * Maps imports-module domain exceptions to RFC 9457 {@code application/problem+json} responses.
  *
- * <p>Lives in {@code infrastructure.configuration} (same pattern as OfferingExceptionHandler)
- * so that it may reference domain exception types without violating ARQ-001. Infrastructure
- * may depend on domain (ARQ-008).
+ * <p>Lives in {@code infrastructure.configuration} (same pattern as OfferingExceptionHandler) so
+ * that it may reference domain exception types without violating ARQ-001. Infrastructure may depend
+ * on domain (ARQ-008).
  *
  * <p>Exception → HTTP mapping (IMP-012):
+ *
  * <ul>
  *   <li>{@link UnsupportedFileTypeException} → 415 UNSUPPORTED_FILE_TYPE
  *   <li>{@link FileSizeExceededException} → 413 FILE_TOO_LARGE
@@ -39,20 +38,21 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
  *   <li>{@link SchemaVersionMismatchException} → 409 SCHEMA_VERSION_MISMATCH
  * </ul>
  *
- * <p>The {@code code} property is set on the ProblemDetail so it appears at the top-level
- * {@code $.code} field (matching OfferingExceptionHandler convention). Satisfies IMP-012.
+ * <p>The {@code code} property is set on the ProblemDetail so it appears at the top-level {@code
+ * $.code} field (matching OfferingExceptionHandler convention). Satisfies IMP-012.
  *
- * <p>Scoped to the imports REST package with {@link Ordered#HIGHEST_PRECEDENCE}. The shared
- * {@link IdempotencyKeyConflictException} (sharedkernel) is handled by several module advices,
- * all registered as unscoped global {@code @RestControllerAdvice}. Without scoping + precedence
- * here, another module's advice (resolved by bean order) could intercept this controller's
- * idempotency conflict and emit a response without the expected {@code $.code}. Scoping this
- * advice to its own controller package and giving it top precedence guarantees imports requests
- * are mapped by this handler without altering any other module. (The broader pre-existing issue
- * of overlapping global advices for shared exceptions is tracked as separate technical debt.)
+ * <p>Scoped to the imports REST package with {@link Ordered#HIGHEST_PRECEDENCE}. The shared {@link
+ * IdempotencyKeyConflictException} (sharedkernel) is handled by several module advices, all
+ * registered as unscoped global {@code @RestControllerAdvice}. Without scoping + precedence here,
+ * another module's advice (resolved by bean order) could intercept this controller's idempotency
+ * conflict and emit a response without the expected {@code $.code}. Scoping this advice to its own
+ * controller package and giving it top precedence guarantees imports requests are mapped by this
+ * handler without altering any other module. (The broader pre-existing issue of overlapping global
+ * advices for shared exceptions is tracked as separate technical debt.)
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(basePackages = "co.edu.uniquindio.brujula.imports.infrastructure.adapter.in.rest")
+@RestControllerAdvice(
+    basePackages = "co.edu.uniquindio.brujula.imports.infrastructure.adapter.in.rest")
 class ImportsExceptionHandler {
 
   // -------------------------------------------------------------------------
@@ -73,8 +73,7 @@ class ImportsExceptionHandler {
 
   @ExceptionHandler(ImportAccessDeniedException.class)
   ProblemDetail handleAccessDenied(ImportAccessDeniedException ex) {
-    ProblemDetail problem =
-        ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
     problem.setProperty("code", "IMPORT_ACCESS_DENIED");
     return problem;
   }
@@ -85,8 +84,7 @@ class ImportsExceptionHandler {
 
   @ExceptionHandler(ImportBatchNotFoundException.class)
   ProblemDetail handleImportNotFound(ImportBatchNotFoundException ex) {
-    ProblemDetail problem =
-        ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
     problem.setProperty("code", "IMPORT_NOT_FOUND");
     return problem;
   }
@@ -97,32 +95,28 @@ class ImportsExceptionHandler {
 
   @ExceptionHandler(IdempotencyKeyConflictException.class)
   ProblemDetail handleIdempotencyConflict(IdempotencyKeyConflictException ex) {
-    ProblemDetail problem =
-        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     problem.setProperty("code", "IDEMPOTENCY_KEY_CONFLICT");
     return problem;
   }
 
   @ExceptionHandler(ImportBatchNotConfirmableException.class)
   ProblemDetail handleImportNotConfirmable(ImportBatchNotConfirmableException ex) {
-    ProblemDetail problem =
-        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     problem.setProperty("code", "IMPORT_NOT_CONFIRMABLE");
     return problem;
   }
 
   @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
   ProblemDetail handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
-    ProblemDetail problem =
-        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     problem.setProperty("code", "OPTIMISTIC_LOCK_CONFLICT");
     return problem;
   }
 
   @ExceptionHandler(SchemaVersionMismatchException.class)
   ProblemDetail handleSchemaVersionMismatch(SchemaVersionMismatchException ex) {
-    ProblemDetail problem =
-        ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     problem.setProperty("code", SchemaVersionMismatchException.ERROR_CODE);
     return problem;
   }
@@ -132,8 +126,8 @@ class ImportsExceptionHandler {
   // -------------------------------------------------------------------------
 
   /**
-   * Application-level file size guard (thrown by UploadImportService when
-   * the parsed bytes exceed the configured limit).
+   * Application-level file size guard (thrown by UploadImportService when the parsed bytes exceed
+   * the configured limit).
    */
   @ExceptionHandler(FileSizeExceededException.class)
   ProblemDetail handleFileSizeExceeded(FileSizeExceededException ex) {
@@ -152,8 +146,7 @@ class ImportsExceptionHandler {
   ProblemDetail handleMaxUploadSizeExceeded(MaxUploadSizeExceededException ex) {
     ProblemDetail problem =
         ProblemDetail.forStatusAndDetail(
-            HttpStatus.PAYLOAD_TOO_LARGE,
-            "File size exceeds the configured maximum upload size.");
+            HttpStatus.PAYLOAD_TOO_LARGE, "File size exceeds the configured maximum upload size.");
     problem.setProperty("code", "FILE_TOO_LARGE");
     return problem;
   }

@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Test;
 /**
  * WU3 application unit tests for {@link UpdateSimulationService}.
  *
- * <p>Covers: happy path rename, non-owner → 403, not-found → 404.
- * OptimisticLockingFailureException is tested at the JPA level in IT.
+ * <p>Covers: happy path rename, non-owner → 403, not-found → 404. OptimisticLockingFailureException
+ * is tested at the JPA level in IT.
  */
 class UpdateSimulationServiceTest {
 
@@ -53,15 +53,16 @@ class UpdateSimulationServiceTest {
   @Test
   void rename_updates_name_and_returns_view() {
     UUID simulationId = UUID.randomUUID();
-    Simulation sim = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "Old Name", periodId, List.of(programId));
+    Simulation sim =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "Old Name", periodId, List.of(programId));
 
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(sim));
     when(saveSimulationPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(offeringReadPort.resolvePeriodName(periodId)).thenReturn("2026-2");
 
-    UpdateSimulationCommand command = new UpdateSimulationCommand(
-        simulationId, ownerId, "New Name", 0L);
+    UpdateSimulationCommand command =
+        new UpdateSimulationCommand(simulationId, ownerId, "New Name", 0L);
     SimulationView view = sut.updateSimulation(command);
 
     assertThat(view.name()).isEqualTo("New Name");
@@ -74,19 +75,28 @@ class UpdateSimulationServiceTest {
     // post-flush version (N+1), not the input command's stale version (N). The save port
     // simulates the JPA @Version increment by returning a reconstituted simulation at version 1.
     UUID simulationId = UUID.randomUUID();
-    Simulation atVersionZero = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "Old Name", periodId, List.of(programId));
+    Simulation atVersionZero =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "Old Name", periodId, List.of(programId));
     Instant now = Instant.now();
-    Simulation flushedAtVersionOne = Simulation.reconstitute(
-        SimulationId.of(simulationId), ownerId, "New Name", periodId, List.of(programId),
-        SimulationLifecycle.ACTIVE, now, now, 1L);
+    Simulation flushedAtVersionOne =
+        Simulation.reconstitute(
+            SimulationId.of(simulationId),
+            ownerId,
+            "New Name",
+            periodId,
+            List.of(programId),
+            SimulationLifecycle.ACTIVE,
+            now,
+            now,
+            1L);
 
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(atVersionZero));
     when(saveSimulationPort.save(any())).thenReturn(flushedAtVersionOne);
     when(offeringReadPort.resolvePeriodName(periodId)).thenReturn("2026-2");
 
-    UpdateSimulationCommand command = new UpdateSimulationCommand(
-        simulationId, ownerId, "New Name", 0L);
+    UpdateSimulationCommand command =
+        new UpdateSimulationCommand(simulationId, ownerId, "New Name", 0L);
     SimulationView view = sut.updateSimulation(command);
 
     assertThat(view.version()).isEqualTo(1L);
@@ -95,13 +105,14 @@ class UpdateSimulationServiceTest {
   @Test
   void non_owner_throws_access_denied() {
     UUID simulationId = UUID.randomUUID();
-    Simulation sim = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "Name", periodId, List.of(programId));
+    Simulation sim =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "Name", periodId, List.of(programId));
 
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(sim));
 
-    UpdateSimulationCommand command = new UpdateSimulationCommand(
-        simulationId, otherUserId, "Hijack", 0L);
+    UpdateSimulationCommand command =
+        new UpdateSimulationCommand(simulationId, otherUserId, "Hijack", 0L);
 
     assertThatThrownBy(() -> sut.updateSimulation(command))
         .isInstanceOf(SimulationAccessDeniedException.class);
@@ -112,8 +123,8 @@ class UpdateSimulationServiceTest {
     UUID simulationId = UUID.randomUUID();
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.empty());
 
-    UpdateSimulationCommand command = new UpdateSimulationCommand(
-        simulationId, ownerId, "Name", 0L);
+    UpdateSimulationCommand command =
+        new UpdateSimulationCommand(simulationId, ownerId, "Name", 0L);
 
     assertThatThrownBy(() -> sut.updateSimulation(command))
         .isInstanceOf(SimulationNotFoundException.class);

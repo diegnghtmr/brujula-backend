@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 /**
  * WU2-1.3 RED: StudyPlan invariant tests.
  *
- * <p>Asserts: totalCredits > 0; status defaults to DRAFT; version field exists.
- * Also covers Journey aggregate basic properties.
+ * <p>Asserts: totalCredits > 0; status defaults to DRAFT; version field exists. Also covers Journey
+ * aggregate basic properties.
  */
 class StudyPlanTest {
 
@@ -73,7 +73,8 @@ class StudyPlanTest {
   @Test
   void reconstitutesFromPersistenceWithAllStatuses() {
     PlanId id = PlanId.generate();
-    StudyPlan plan = StudyPlan.reconstitute(id, programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 5L);
+    StudyPlan plan =
+        StudyPlan.reconstitute(id, programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 5L);
 
     assertThat(plan.status()).isEqualTo(PlanStatus.ACTIVE);
     assertThat(plan.version()).isEqualTo(5L);
@@ -82,7 +83,9 @@ class StudyPlanTest {
 
   @Test
   void reconstitutesArchivedPlan() {
-    StudyPlan plan = StudyPlan.reconstitute(PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 100, null, 2L);
+    StudyPlan plan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 100, null, 2L);
 
     assertThat(plan.status()).isEqualTo(PlanStatus.ARCHIVED);
   }

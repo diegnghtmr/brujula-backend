@@ -7,9 +7,9 @@ import co.edu.uniquindio.brujula.imports.application.dto.ImportSummary;
  * Input port: confirm a VALIDATED ImportBatch, atomically replaying all stored rows through the
  * appropriate write use-cases (IMP-005).
  *
- * <p>The confirm operation is annotated {@code @Transactional} in its service implementation.
- * All row writes are performed inside a single physical transaction (ADR-F6-001). Any failure
- * on any row propagates and rolls back ALL writes — no partial commits (Decision #2 / INV-03).
+ * <p>The confirm operation is annotated {@code @Transactional} in its service implementation. All
+ * row writes are performed inside a single physical transaction (ADR-F6-001). Any failure on any
+ * row propagates and rolls back ALL writes — no partial commits (Decision #2 / INV-03).
  *
  * <p>Published in the imports module application layer. No Spring/JPA imports (ARQ-003).
  */
@@ -19,16 +19,16 @@ public interface ConfirmImportUseCase {
    * Confirm a validated ImportBatch.
    *
    * <p>Pipeline:
+   *
    * <ol>
    *   <li>Idempotency check — replay if same key+hash; conflict if key reused with different hash
    *   <li>Load ImportBatch — not found → 404
    *   <li>Assignment guard — STAFF must be active and assigned; ADMIN bypasses
    *   <li>Optimistic-lock check — expectedVersion mismatch → 409
    *   <li>Domain guard — only VALIDATED batches are confirmable → 409 for INVALID/CONFIRMED
-   *   <li>Atomic row replay (inside the {@code @Transactional} boundary):
-   *       COURSES → {@code CreateCourseUseCase};
-   *       REQUIREMENTS → {@code CreateCourseRequirementUseCase};
-   *       OFFERINGS → deferred to WU7 (throws UnsupportedOperationException)
+   *   <li>Atomic row replay (inside the {@code @Transactional} boundary): COURSES → {@code
+   *       CreateCourseUseCase}; REQUIREMENTS → {@code CreateCourseRequirementUseCase}; OFFERINGS →
+   *       deferred to WU7 (throws UnsupportedOperationException)
    *   <li>Mark batch CONFIRMED, persist
    *   <li>Record audit entry IMPORT_CONFIRMED
    *   <li>Store idempotency record (inside the TX)
@@ -37,16 +37,17 @@ public interface ConfirmImportUseCase {
    *
    * @param command the confirm command
    * @return ImportSummary with status CONFIRMED (or replayed from idempotency store)
-   * @throws co.edu.uniquindio.brujula.imports.domain.exception.ImportBatchNotFoundException
-   *     if no batch with the given importId exists (→ 404)
-   * @throws co.edu.uniquindio.brujula.imports.domain.exception.ImportAccessDeniedException
-   *     if STAFF actor is not assigned to the batch's program (→ 403)
+   * @throws co.edu.uniquindio.brujula.imports.domain.exception.ImportBatchNotFoundException if no
+   *     batch with the given importId exists (→ 404)
+   * @throws co.edu.uniquindio.brujula.imports.domain.exception.ImportAccessDeniedException if STAFF
+   *     actor is not assigned to the batch's program (→ 403)
    * @throws co.edu.uniquindio.brujula.imports.domain.exception.ImportBatchNotConfirmableException
    *     if the batch is INVALID or CONFIRMED (→ 409)
-   * @throws co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException
+   * @throws
+   *     co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException
    *     if the idempotency key was reused with a different body (→ 409)
-   * @throws org.springframework.orm.ObjectOptimisticLockingFailureException
-   *     if the expectedVersion does not match the stored version (→ 409)
+   * @throws org.springframework.orm.ObjectOptimisticLockingFailureException if the expectedVersion
+   *     does not match the stored version (→ 409)
    */
   ImportSummary confirm(ConfirmImportCommand command);
 }

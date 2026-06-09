@@ -16,10 +16,11 @@ import java.util.UUID;
 /**
  * Per-kind validator for OFFERINGS import rows (IMP-008, IMP-002).
  *
- * <p>Validates each row against the OFFERINGS column mapping (ADR-014). Produces
- * {@link ImportIssue} entries with error codes from the spec vocabulary. Framework-free.
+ * <p>Validates each row against the OFFERINGS column mapping (ADR-014). Produces {@link
+ * ImportIssue} entries with error codes from the spec vocabulary. Framework-free.
  *
- * <p>Wired as a plain bean in {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
+ * <p>Wired as a plain bean in {@link
+ * co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
  */
 public class OfferingsValidator {
 
@@ -35,9 +36,9 @@ public class OfferingsValidator {
    *
    * <p>Multiple rows sharing the same {@code (course, option_label)} are VALID when they carry
    * different weekday/time combinations — they represent multiple weekly sessions of the same
-   * schedule option (QAL-IMP-001 / DEBT-F6-002). A conflict only exists when two rows within
-   * the same option share an identical {@code (course, option_label, day, start_time)} tuple,
-   * which would create overlapping/duplicate sessions.
+   * schedule option (QAL-IMP-001 / DEBT-F6-002). A conflict only exists when two rows within the
+   * same option share an identical {@code (course, option_label, day, start_time)} tuple, which
+   * would create overlapping/duplicate sessions.
    *
    * @param rows list of import rows
    * @return map of row index → issues for that row
@@ -66,16 +67,13 @@ public class OfferingsValidator {
     // period: required
     String period = cells.getOrDefault("period", "").trim();
     if (period.isEmpty()) {
-      issues.add(
-          ImportIssue.error(
-              rowNumber, "period", "PERIOD_NOT_FOUND", "period is required."));
+      issues.add(ImportIssue.error(rowNumber, "period", "PERIOD_NOT_FOUND", "period is required."));
     }
 
     // course: required and must be a valid UUID
     String course = cells.getOrDefault("course", "").trim();
     if (course.isEmpty()) {
-      issues.add(
-          ImportIssue.error(rowNumber, "course", "COURSE_NOT_FOUND", "course is required."));
+      issues.add(ImportIssue.error(rowNumber, "course", "COURSE_NOT_FOUND", "course is required."));
     } else {
       try {
         UUID.fromString(course);
@@ -100,8 +98,7 @@ public class OfferingsValidator {
     // day: required, must be in valid set
     String day = cells.getOrDefault("day", "").trim().toUpperCase();
     if (day.isEmpty()) {
-      issues.add(
-          ImportIssue.error(rowNumber, "day", "INVALID_DAY", "day is required."));
+      issues.add(ImportIssue.error(rowNumber, "day", "INVALID_DAY", "day is required."));
     } else if (!VALID_DAYS.contains(day)) {
       issues.add(
           ImportIssue.error(
@@ -135,8 +132,7 @@ public class OfferingsValidator {
     String endTimeStr = cells.getOrDefault("end_time", "").trim();
     if (endTimeStr.isEmpty()) {
       issues.add(
-          ImportIssue.error(
-              rowNumber, "end_time", "END_BEFORE_START", "end_time is required."));
+          ImportIssue.error(rowNumber, "end_time", "END_BEFORE_START", "end_time is required."));
     } else {
       try {
         LocalTime endTime = LocalTime.parse(endTimeStr, TIME_FORMATTER);
@@ -163,8 +159,7 @@ public class OfferingsValidator {
     String status = cells.getOrDefault("status", "").trim().toUpperCase();
     if (status.isEmpty()) {
       issues.add(
-          ImportIssue.error(
-              rowNumber, "status", "INVALID_OFFERING_STATUS", "status is required."));
+          ImportIssue.error(rowNumber, "status", "INVALID_OFFERING_STATUS", "status is required."));
     } else if (!VALID_STATUSES.contains(status)) {
       issues.add(
           ImportIssue.error(

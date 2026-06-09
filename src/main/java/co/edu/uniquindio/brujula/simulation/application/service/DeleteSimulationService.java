@@ -22,17 +22,18 @@ public class DeleteSimulationService implements DeleteSimulationUseCase {
   private final SaveSimulationPort saveSimulationPort;
 
   public DeleteSimulationService(
-      LoadSimulationPort loadSimulationPort,
-      SaveSimulationPort saveSimulationPort) {
+      LoadSimulationPort loadSimulationPort, SaveSimulationPort saveSimulationPort) {
     this.loadSimulationPort = loadSimulationPort;
     this.saveSimulationPort = saveSimulationPort;
   }
 
   @Override
   public void deleteSimulation(UUID simulationId, UUID callerId) {
-    Simulation simulation = loadSimulationPort.loadById(simulationId)
-        .filter(s -> s.getLifecycleStatus() == SimulationLifecycle.ACTIVE)
-        .orElseThrow(() -> new SimulationNotFoundException(simulationId));
+    Simulation simulation =
+        loadSimulationPort
+            .loadById(simulationId)
+            .filter(s -> s.getLifecycleStatus() == SimulationLifecycle.ACTIVE)
+            .orElseThrow(() -> new SimulationNotFoundException(simulationId));
 
     // BOLA ownership guard (X-003)
     if (!simulation.getOwnerId().equals(callerId)) {

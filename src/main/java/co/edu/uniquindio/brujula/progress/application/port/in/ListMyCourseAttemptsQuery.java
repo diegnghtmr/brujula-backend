@@ -3,9 +3,7 @@ package co.edu.uniquindio.brujula.progress.application.port.in;
 import co.edu.uniquindio.brujula.progress.application.dto.CourseAttemptPageView;
 import co.edu.uniquindio.brujula.progress.application.dto.ListCourseAttemptsQuery;
 
-/**
- * Input port: list course attempts for the authenticated student with optional filters (PRG-2).
- */
+/** Input port: list course attempts for the authenticated student with optional filters (PRG-2). */
 public interface ListMyCourseAttemptsQuery {
 
   /**

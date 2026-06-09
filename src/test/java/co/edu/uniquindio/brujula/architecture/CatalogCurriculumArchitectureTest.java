@@ -14,16 +14,19 @@ import com.tngtech.archunit.lang.ArchRule;
  * <h2>Coverage summary for the two new modules</h2>
  *
  * <h3>Rules in this file</h3>
+ *
  * <ul>
  *   <li>{@link #curriculum_does_not_depend_on_identity} — ARQ-008 / CROSS-002: curriculum boundary
  *       denylist (identity module)
  *   <li>{@link #curriculum_does_not_depend_on_administration} — ARQ-008 / CROSS-002: curriculum
  *       boundary denylist (administration module)
- *   <li>{@link #curriculum_does_not_depend_on_jpa_entities_of_programcatalog} — CROSS-002: curriculum
- *       may reference programcatalog application-layer types only (no JPA entity leakage)
+ *   <li>{@link #curriculum_does_not_depend_on_jpa_entities_of_programcatalog} — CROSS-002:
+ *       curriculum may reference programcatalog application-layer types only (no JPA entity
+ *       leakage)
  * </ul>
  *
  * <h3>Rules confirmed in sibling tests (no duplication)</h3>
+ *
  * <ul>
  *   <li>ARQ-001 (REST adapters do not access domain) — {@code ArchitectureRulesTest}
  *   <li>ARQ-006b (JPA entities are package-private) — {@code ArchitectureRulesTest}
@@ -35,8 +38,8 @@ import com.tngtech.archunit.lang.ArchRule;
  * </ul>
  *
  * <p>Together with {@code ModularityTest.verifyModularStructure()}, this class provides complete
- * CROSS-002 coverage: {@code programcatalog} depends only on {@code sharedkernel + audit};
- * {@code curriculum} depends only on {@code sharedkernel + audit + programcatalog}.
+ * CROSS-002 coverage: {@code programcatalog} depends only on {@code sharedkernel + audit}; {@code
+ * curriculum} depends only on {@code sharedkernel + audit + programcatalog}.
  */
 @AnalyzeClasses(
     packages = "co.edu.uniquindio.brujula.curriculum",
@@ -59,8 +62,8 @@ class CatalogCurriculumArchitectureTest {
    * objects must remain identity-free.
    *
    * <p>The authoritative positive constraint is {@code ModularityTest.verifyModularStructure()},
-   * backed by the updated {@code allowedDependencies} declaration in
-   * {@code co.edu.uniquindio.brujula.curriculum.package-info} ({@code identity::api}).
+   * backed by the updated {@code allowedDependencies} declaration in {@code
+   * co.edu.uniquindio.brujula.curriculum.package-info} ({@code identity::api}).
    */
   @ArchTest
   static final ArchRule curriculum_does_not_depend_on_identity =
@@ -68,7 +71,8 @@ class CatalogCurriculumArchitectureTest {
           .that()
           .resideInAPackage("co.edu.uniquindio.brujula.curriculum..")
           .and()
-          .resideOutsideOfPackage("co.edu.uniquindio.brujula.curriculum.infrastructure.adapter.in.rest..")
+          .resideOutsideOfPackage(
+              "co.edu.uniquindio.brujula.curriculum.infrastructure.adapter.in.rest..")
           .should()
           .dependOnClassesThat()
           .resideInAPackage(IDENTITY_PKG)
@@ -79,8 +83,8 @@ class CatalogCurriculumArchitectureTest {
   /**
    * CROSS-002 / ARQ-008 — {@code curriculum} must not import {@code administration} module classes.
    *
-   * <p>Symmetric to {@link #curriculum_does_not_depend_on_identity}. The administration module
-   * owns staff/user-management logic; curriculum has no business coupling to it.
+   * <p>Symmetric to {@link #curriculum_does_not_depend_on_identity}. The administration module owns
+   * staff/user-management logic; curriculum has no business coupling to it.
    */
   @ArchTest
   static final ArchRule curriculum_does_not_depend_on_administration =
@@ -101,8 +105,8 @@ class CatalogCurriculumArchitectureTest {
    * application-layer ports and DTOs), it must never import programcatalog's internal persistence
    * classes. Cross-module JPA entity access is forbidden by ARQ-006 and ARQ-006b.
    *
-   * <p>Curriculum accesses programcatalog concepts only via {@code application.dto},
-   * {@code application.port.in}, and {@code application.port.out} — never via JPA entities.
+   * <p>Curriculum accesses programcatalog concepts only via {@code application.dto}, {@code
+   * application.port.in}, and {@code application.port.out} — never via JPA entities.
    */
   @ArchTest
   static final ArchRule curriculum_does_not_depend_on_jpa_entities_of_programcatalog =

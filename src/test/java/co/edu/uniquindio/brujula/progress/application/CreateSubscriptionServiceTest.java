@@ -8,20 +8,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand;
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
-import co.edu.uniquindio.brujula.progress.domain.Subscription;
-import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
 import co.edu.uniquindio.brujula.progress.application.dto.CreateSubscriptionCommand;
 import co.edu.uniquindio.brujula.progress.application.dto.SubscriptionView;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.SaveSubscriptionPort;
+import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
 import co.edu.uniquindio.brujula.progress.application.service.CreateSubscriptionService;
 import co.edu.uniquindio.brujula.progress.domain.DuplicateProgramSubscriptionException;
-import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
 import co.edu.uniquindio.brujula.progress.domain.InactivePlanException;
 import co.edu.uniquindio.brujula.progress.domain.MaxSubscriptionsExceededException;
+import co.edu.uniquindio.brujula.progress.domain.Subscription;
+import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import java.time.Instant;
@@ -59,13 +59,14 @@ class CreateSubscriptionServiceTest {
     auditRecorder = mock(AuditRecorder.class);
     validatePlanStatusPort = mock(ValidatePlanStatusPort.class);
 
-    sut = new CreateSubscriptionService(
-        loadSubscriptionPort,
-        saveSubscriptionPort,
-        idempotencyStorePort,
-        jsonCodecPort,
-        auditRecorder,
-        validatePlanStatusPort);
+    sut =
+        new CreateSubscriptionService(
+            loadSubscriptionPort,
+            saveSubscriptionPort,
+            idempotencyStorePort,
+            jsonCodecPort,
+            auditRecorder,
+            validatePlanStatusPort);
   }
 
   @Test
@@ -78,7 +79,8 @@ class CreateSubscriptionServiceTest {
         .thenReturn(Optional.empty());
     // FIX-W1: lockActiveByUserIdForUpdate returns empty list (0 active subscriptions)
     when(loadSubscriptionPort.lockActiveByUserIdForUpdate(userId)).thenReturn(List.of());
-    when(loadSubscriptionPort.existsActiveByUserIdAndProgramId(userId, programId)).thenReturn(false);
+    when(loadSubscriptionPort.existsActiveByUserIdAndProgramId(userId, programId))
+        .thenReturn(false);
     when(saveSubscriptionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(jsonCodecPort.toJson(any())).thenReturn("{\"id\":\"...\"}");
     // FIX-W3: plan must be ACTIVE (via anti-corruption facade)
@@ -101,12 +103,14 @@ class CreateSubscriptionServiceTest {
   void archived_plan_rejected_with_inactive_plan_exception() {
     UUID idempotencyKey = UUID.randomUUID();
     CreateSubscriptionCommand command =
-        new CreateSubscriptionCommand(idempotencyKey, userId, programId, planId, "DIURNA", "hash-arch");
+        new CreateSubscriptionCommand(
+            idempotencyKey, userId, programId, planId, "DIURNA", "hash-arch");
 
     when(idempotencyStorePort.find(idempotencyKey, CreateSubscriptionService.OPERATION))
         .thenReturn(Optional.empty());
     when(loadSubscriptionPort.lockActiveByUserIdForUpdate(userId)).thenReturn(List.of());
-    when(loadSubscriptionPort.existsActiveByUserIdAndProgramId(userId, programId)).thenReturn(false);
+    when(loadSubscriptionPort.existsActiveByUserIdAndProgramId(userId, programId))
+        .thenReturn(false);
     // Plan is ARCHIVED — subscription MUST be rejected (via anti-corruption facade)
     when(validatePlanStatusPort.getPlanStatus(planId)).thenReturn("ARCHIVED");
 
@@ -126,8 +130,12 @@ class CreateSubscriptionServiceTest {
     when(idempotencyStorePort.find(idempotencyKey, CreateSubscriptionService.OPERATION))
         .thenReturn(Optional.empty());
     // FIX-W1: 2 existing locked active subscriptions → cap exceeded
-    Subscription s1 = Subscription.create(SubscriptionId.generate(), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
-    Subscription s2 = Subscription.create(SubscriptionId.generate(), userId, UUID.randomUUID(), UUID.randomUUID(), "NOCTURNA");
+    Subscription s1 =
+        Subscription.create(
+            SubscriptionId.generate(), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription s2 =
+        Subscription.create(
+            SubscriptionId.generate(), userId, UUID.randomUUID(), UUID.randomUUID(), "NOCTURNA");
     when(loadSubscriptionPort.lockActiveByUserIdForUpdate(userId)).thenReturn(List.of(s1, s2));
 
     assertThatThrownBy(() -> sut.createSubscription(command))
@@ -146,7 +154,14 @@ class CreateSubscriptionServiceTest {
         .thenReturn(Optional.empty());
     // 1 locked active subscription → cap not exceeded, proceed to duplicate check
     when(loadSubscriptionPort.lockActiveByUserIdForUpdate(userId))
-        .thenReturn(List.of(Subscription.create(SubscriptionId.generate(), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA")));
+        .thenReturn(
+            List.of(
+                Subscription.create(
+                    SubscriptionId.generate(),
+                    userId,
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "DIURNA")));
     when(loadSubscriptionPort.existsActiveByUserIdAndProgramId(userId, programId)).thenReturn(true);
 
     assertThatThrownBy(() -> sut.createSubscription(command))
@@ -160,10 +175,20 @@ class CreateSubscriptionServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     String requestHash = "hash4";
     CreateSubscriptionCommand command =
-        new CreateSubscriptionCommand(idempotencyKey, userId, programId, planId, "DIURNA", requestHash);
+        new CreateSubscriptionCommand(
+            idempotencyKey, userId, programId, planId, "DIURNA", requestHash);
 
     SubscriptionView storedView =
-        new SubscriptionView(UUID.randomUUID(), programId, "P", planId, "Plan", "DIURNA", "Diurna", 0L, Instant.now());
+        new SubscriptionView(
+            UUID.randomUUID(),
+            programId,
+            "P",
+            planId,
+            "Plan",
+            "DIURNA",
+            "Diurna",
+            0L,
+            Instant.now());
 
     IdempotencyStorePort.StoredRecord stored =
         new IdempotencyStorePort.StoredRecord(requestHash, 201, "{...}");
@@ -182,7 +207,8 @@ class CreateSubscriptionServiceTest {
   void idempotency_key_reuse_with_different_body_throws_conflict() {
     UUID idempotencyKey = UUID.randomUUID();
     CreateSubscriptionCommand command =
-        new CreateSubscriptionCommand(idempotencyKey, userId, programId, planId, "DIURNA", "new-hash");
+        new CreateSubscriptionCommand(
+            idempotencyKey, userId, programId, planId, "DIURNA", "new-hash");
 
     IdempotencyStorePort.StoredRecord stored =
         new IdempotencyStorePort.StoredRecord("original-hash", 201, "{...}");
