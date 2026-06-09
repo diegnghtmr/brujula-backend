@@ -1,12 +1,17 @@
 package co.edu.uniquindio.brujula.imports.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
+import co.edu.uniquindio.brujula.imports.application.port.in.GetImportUseCase;
+import co.edu.uniquindio.brujula.imports.application.port.in.ListImportsUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.in.UploadImportUseCase;
 import co.edu.uniquindio.brujula.imports.application.port.out.FileParserPort;
+import co.edu.uniquindio.brujula.imports.application.port.out.LoadImportBatchPort;
 import co.edu.uniquindio.brujula.imports.application.port.out.SaveImportBatchPort;
 import co.edu.uniquindio.brujula.imports.application.port.out.StaffAssignmentPort;
 import co.edu.uniquindio.brujula.imports.application.service.CoursesValidator;
+import co.edu.uniquindio.brujula.imports.application.service.GetImportService;
 import co.edu.uniquindio.brujula.imports.application.service.ImportValidator;
+import co.edu.uniquindio.brujula.imports.application.service.ListImportsService;
 import co.edu.uniquindio.brujula.imports.application.service.OfferingsValidator;
 import co.edu.uniquindio.brujula.imports.application.service.RequirementsValidator;
 import co.edu.uniquindio.brujula.imports.application.service.UploadImportService;
@@ -72,5 +77,19 @@ class ImportsConfiguration {
         jsonCodecPort,
         auditRecorder,
         importValidationProperties.getMaxFileSizeBytes());
+  }
+
+  @Bean
+  ListImportsUseCase listImportsUseCase(
+      LoadImportBatchPort loadImportBatchPort,
+      StaffAssignmentPort staffAssignmentPort) {
+    return new ListImportsService(loadImportBatchPort, staffAssignmentPort);
+  }
+
+  @Bean
+  GetImportUseCase getImportUseCase(
+      LoadImportBatchPort loadImportBatchPort,
+      StaffAssignmentPort staffAssignmentPort) {
+    return new GetImportService(loadImportBatchPort, staffAssignmentPort);
   }
 }

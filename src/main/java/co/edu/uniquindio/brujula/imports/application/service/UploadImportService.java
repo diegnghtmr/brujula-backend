@@ -84,6 +84,9 @@ public class UploadImportService implements UploadImportUseCase {
 
   @Override
   public ImportSummary upload(UploadImportCommand command) {
+    // Resolve the kind string to a domain enum once, early — fail-fast on unknown values.
+    ImportKind resolvedKind = ImportKind.valueOf(command.kind());
+
     // 1. Idempotency check (mirrors CreateOfferingService / CreateStaffService pattern)
     Optional<IdempotencyStorePort.StoredRecord> existing =
         idempotencyStorePort.find(command.idempotencyKey(), OPERATION);
@@ -104,13 +107,13 @@ public class UploadImportService implements UploadImportUseCase {
     }
 
     // 4. Required-parameter guard
-    validateRequiredParameters(command);
+    validateRequiredParameters(command, resolvedKind);
 
     // 5. Assignment guard (STAFF only, WARNING-1 closure)
     enforceAssignmentGuard(command);
 
     // 6. Parse
-    FileParserPort.ParseResult parseResult = parser.parse(command.fileBytes(), command.kind());
+    FileParserPort.ParseResult parseResult = parser.parse(command.fileBytes(), resolvedKind);
 
     // 7. Validate — build ImportBatch domain object
     ImportBatchId batchId = ImportBatchId.generate();
@@ -120,7 +123,7 @@ public class UploadImportService implements UploadImportUseCase {
       batch =
           importValidator.validate(
               batchId,
-              command.kind(),
+              resolvedKind,
               command.programId(),
               command.planId(),
               command.periodId(),
@@ -131,7 +134,7 @@ public class UploadImportService implements UploadImportUseCase {
       batch =
           importValidator.validate(
               batchId,
-              command.kind(),
+              resolvedKind,
               command.programId(),
               command.planId(),
               command.periodId(),
@@ -183,13 +186,13 @@ public class UploadImportService implements UploadImportUseCase {
    *
    * @throws MissingImportParameterException if a required param is absent (→ 400)
    */
-  private void validateRequiredParameters(UploadImportCommand command) {
-    switch (command.kind()) {
+  private void validateRequiredParameters(UploadImportCommand command, ImportKind kind) {
+    switch (kind) {
       case COURSES, REQUIREMENTS -> {
         if (command.planId() == null) {
           throw new MissingImportParameterException(
               "planId",
-              "planId is required when kind is %s".formatted(command.kind()));
+              "planId is required when kind is %s".formatted(kind));
         }
       }
       case OFFERINGS -> {

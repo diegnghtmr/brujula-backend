@@ -3,6 +3,8 @@ package co.edu.uniquindio.brujula.imports.infrastructure.adapter.out.administrat
 import co.edu.uniquindio.brujula.administration.application.port.in.spi.IsStaffAssignedToProgramQuery;
 import co.edu.uniquindio.brujula.administration.application.port.in.spi.ResolveStaffByEmailQuery;
 import co.edu.uniquindio.brujula.imports.application.port.out.StaffAssignmentPort;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -52,5 +54,10 @@ class StaffAssignmentAdapter implements StaffAssignmentPort {
   @Override
   public Optional<UUID> resolveActiveStaffId(String email) {
     return resolveByEmailQuery.resolveActiveStaffId(email);
+  }
+
+  @Override
+  public List<UUID> getAssignedPrograms(UUID staffId) {
+    return new ArrayList<>(isAssignedQuery.assignedPrograms(staffId));
   }
 }

@@ -31,4 +31,17 @@ interface ImportBatchJpaRepository extends JpaRepository<ImportBatchJpaEntity, U
             @Param("programId") UUID programId,
             @Param("kind") String kind,
             @Param("status") String status);
+
+    /**
+     * List all batches, with optional kind and status filters (for ADMIN access).
+     */
+    @Query("""
+            SELECT b FROM ImportBatchJpaEntity b
+            WHERE (:kind IS NULL OR b.kind = :kind)
+              AND (:status IS NULL OR b.status = :status)
+            ORDER BY b.createdAt DESC
+            """)
+    List<ImportBatchJpaEntity> findAllByFilters(
+            @Param("kind") String kind,
+            @Param("status") String status);
 }
