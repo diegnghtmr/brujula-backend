@@ -192,15 +192,50 @@ tasks.jacocoTestReport {
 
 tasks.jacocoTestCoverageVerification {
     dependsOn(tasks.jacocoTestReport)
+    // Mirror the same classDirectories filter as jacocoTestReport so verification
+    // scope is **/domain/** + **/application/service/** only, excluding generated/
+    // configuration/adapter code that is genuinely untestable infrastructure.
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map { fileTree(it) {
+                // Include only domain and application.service for coverage gate
+                include("**/domain/**", "**/application/service/**")
+                // EXCL: **/generated/** — OpenAPI-generated sources, no testable logic — WU5
+                // EXCL: **/configuration/** — Spring @Configuration bean wiring, framework glue — WU5
+                // EXCL: **/adapter/** — infrastructure adapters; covered by integration/TC tests not
+                //        counted here; excluding prevents JPA/REST boilerplate from dragging line% — WU5
+                exclude("**/generated/**", "**/configuration/**", "**/adapter/**")
+            }}
+        )
+    )
     violationRules {
         rule {
-            // Only enforce on domain + application.service (Fase 0 has no implementations yet)
-            // Threshold set to 0 for Fase 0 — real threshold applied in Fase 1
+            // Gate: 80% line coverage + 70% branch coverage on domain + application/service bundle
+            // Measured before locking (WU5 T-WU5.1): LINE=89.6%, BRANCH=73.8% — both exceed threshold.
+            // Element=BUNDLE (aggregate of all filtered classes) matches classDirectories scope above.
+            // DEBT-F7-003: Gate is BUNDLE-level per DEC-1 (intentional). Some packages individually fall
+            // below threshold — worst: programcatalog/domain branch~61%, imports/application/service
+            // line~75%/branch~66%. Tracked as DEBT-F7-003. Future pass: add targeted branch tests or
+            // switch to per-package enforcement via Element=PACKAGE rules in a separate violationRules block.
             limit {
-                minimum = "0.0".toBigDecimal()
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = "0.80".toBigDecimal()
+            }
+        }
+        rule {
+            limit {
+                counter = "BRANCH"
+                value = "COVEREDRATIO"
+                minimum = "0.70".toBigDecimal()
             }
         }
     }
+}
+
+// Wire jacocoTestCoverageVerification into check so `./gradlew check` enforces the gate
+tasks.named("check") {
+    dependsOn(tasks.jacocoTestCoverageVerification)
 }
 
 // ============================================================
