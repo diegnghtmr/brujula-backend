@@ -19,6 +19,8 @@ import java.util.UUID;
  * @param curricularWeeklyHours weekly hours in the curricular schedule
  * @param recommendedSemesters per-journey semester recommendations
  * @param status the course status string (ACTIVE, INACTIVE, ARCHIVED)
+ * @param version the JPA optimistic-lock version; included so write operations can return the
+ *     post-flush version to the caller (used by UpdateCourse and ArchiveCourse responses)
  */
 public record CourseView(
     UUID id,
@@ -30,7 +32,8 @@ public record CourseView(
     int credits,
     int curricularWeeklyHours,
     List<RecommendedSemesterView> recommendedSemesters,
-    String status) {
+    String status,
+    long version) {
 
   /** Nested DTO for a per-journey recommended semester. */
   public record RecommendedSemesterView(String journeyCode, int semester) {}

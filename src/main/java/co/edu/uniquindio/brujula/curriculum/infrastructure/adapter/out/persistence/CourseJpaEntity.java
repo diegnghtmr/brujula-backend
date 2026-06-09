@@ -73,4 +73,22 @@ class CourseJpaEntity {
   String getStatus() { return status; }
   long getVersion() { return version; }
   List<CourseRecommendedSemesterJpaEntity> getRecommendedSemesters() { return recommendedSemesters; }
+
+  // Setters for the write path (CUR-001 / WU5)
+  void setId(UUID id) { this.id = id; }
+  void setPlanId(UUID planId) { this.planId = planId; }
+  void setProgramId(UUID programId) { this.programId = programId; }
+  void setOfficialCode(String officialCode) { this.officialCode = officialCode; }
+  void setName(String name) { this.name = name; }
+  void setType(String type) { this.type = type; }
+  void setCredits(int credits) { this.credits = credits; }
+  void setCurricularWeeklyHours(int curricularWeeklyHours) { this.curricularWeeklyHours = curricularWeeklyHours; }
+  void setStatus(String status) { this.status = status; }
+  void setVersion(long version) { this.version = version; }
+  void setRecommendedSemesters(List<CourseRecommendedSemesterJpaEntity> recommendedSemesters) {
+    this.recommendedSemesters.clear();
+    if (recommendedSemesters != null) {
+      this.recommendedSemesters.addAll(recommendedSemesters);
+    }
+  }
 }
