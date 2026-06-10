@@ -29,7 +29,7 @@
 --   offerings:      'd0000000-PPPP-4000-MMMM-000000000001'
 --   schedule opts:  'e0000000-PPPP-4000-MMMM-000000000001'
 --   import batches: 'f0000000-0000-4000-NNNN-000000000001'
---   schedule sess:  'g0000000-PPPP-4000-MMMM-000000000001'
+--   schedule sess:  'f1000000-PPPP-4000-MMMM-000000000001'
 --
 -- NOTE: This seed does NOT depend on V012/V013 ISC/Lenguas seed data.
 --       It is self-contained and targets only synthetic UUIDs in the 'a0000000...' range.
@@ -142,12 +142,13 @@ ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------------
 -- 7. Schedule sessions: one Monday session per option
---    g0000000-{p:04x}-4000-{m:04x}-000000000001
+--    f1000000-{p:04x}-4000-{m:04x}-000000000001
 --    Deterministic UUID derived from (p, m) so ON CONFLICT (id) DO NOTHING deduplicates re-runs.
+--    NOTE: all UUID characters must be hex (0-9, a-f). Prefix 'f1' used to distinguish sessions.
 -- ---------------------------------------------------------------------------
 INSERT INTO offering.schedule_session (id, schedule_option_id, day, starts_at, ends_at)
 SELECT
-    ('g0000000-' || LPAD(TO_HEX(p), 4, '0') || '-4000-' || LPAD(TO_HEX(m), 4, '0') || '-000000000001')::UUID,
+    ('f1000000-' || LPAD(TO_HEX(p), 4, '0') || '-4000-' || LPAD(TO_HEX(m), 4, '0') || '-000000000001')::UUID,
     ('e0000000-' || LPAD(TO_HEX(p), 4, '0') || '-4000-' || LPAD(TO_HEX(m), 4, '0') || '-000000000001')::UUID,
     'MONDAY',
     '08:00:00',
