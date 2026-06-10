@@ -33,6 +33,7 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationService;
 import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -181,10 +182,11 @@ public class AddSimulationSelectionService implements AddSimulationSelectionUseC
         curriculumReadPort.sequentialPredecessor(resolved.courseId(), null);
 
     // 10. Compute accumulated passed credits for MINIMUM_CREDITS rule (VAL-009 / WU4b)
-    // Sum the real credits for each passed course via CurriculumReadPort.courseCredits().
-    // This feeds MinCreditsRule with the actual credit total, not a course-count proxy.
+    // DEBT-F7-001 fix: single batch call replaces the O(N) per-course loop.
+    // coursesCredits(Set) fetches all credits in one round-trip; absent entries → 0 credits.
+    Map<UUID, Integer> passedCreditsMap = curriculumReadPort.coursesCredits(allPassedIds);
     int accumulatedPassedCredits =
-        allPassedIds.stream().mapToInt(id -> curriculumReadPort.courseCredits(id)).sum();
+        passedCreditsMap.values().stream().mapToInt(Integer::intValue).sum();
 
     // 11. Run validation engine (WU4a + WU4b rules)
     SimulationValidationResult validationResult =
