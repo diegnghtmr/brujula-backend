@@ -7,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,22 +35,24 @@ public class OfferingsValidator {
    *
    * <p>Multiple rows sharing the same {@code (course, option_label)} are VALID when they carry
    * different weekday/time combinations — they represent multiple weekly sessions of the same
-   * schedule option (QAL-IMP-001 / DEBT-F6-002). A conflict only exists when two rows within the
-   * same option share an identical {@code (course, option_label, day, start_time)} tuple, which
-   * would create overlapping/duplicate sessions.
+   * schedule option (QAL-IMP-001 / DEBT-F6-002). A conflict exists when two rows within the same
+   * {@code (course, option_label, day)} group have overlapping half-open time intervals {@code
+   * [start, end)}. Touching endpoints (e.g. 08:00-10:00 and 10:00-12:00) are NOT a conflict
+   * (DEBT-F7-002).
    *
    * @param rows list of import rows
    * @return map of row index → issues for that row
    */
   public Map<Integer, List<ImportIssue>> validateAll(List<ImportRow> rows) {
     Map<Integer, List<ImportIssue>> result = new HashMap<>();
-    // Track duplicate (course, option_label, day, start_time) tuples — session-level conflict.
-    // A repeated (course, option_label) with a DIFFERENT (day, start_time) is a VALID additional
-    // session of the same option, NOT a duplicate.
-    Set<String> seenSessionKeys = new HashSet<>();
+    // Track seen (start, end) intervals per (course, option_label, day) group key.
+    // Two sessions in the same group conflict when their half-open intervals overlap:
+    //   newStart < existingEnd  &&  newEnd > existingStart
+    // Touching endpoints (e.g. 08:00-10:00 and 10:00-12:00) are NOT a conflict.
+    Map<String, List<LocalTime[]>> seenIntervalsByGroup = new HashMap<>();
 
     for (ImportRow row : rows) {
-      List<ImportIssue> issues = validateSingleRow(row, seenSessionKeys);
+      List<ImportIssue> issues = validateSingleRow(row, seenIntervalsByGroup);
       if (!issues.isEmpty()) {
         result.put(row.index(), issues);
       }
@@ -59,7 +60,8 @@ public class OfferingsValidator {
     return result;
   }
 
-  private List<ImportIssue> validateSingleRow(ImportRow row, Set<String> seenSessionKeys) {
+  private List<ImportIssue> validateSingleRow(
+      ImportRow row, Map<String, List<LocalTime[]>> seenIntervalsByGroup) {
     List<ImportIssue> issues = new ArrayList<>();
     int rowNumber = row.index() + 1;
     Map<String, String> cells = row.cells();
@@ -169,22 +171,44 @@ public class OfferingsValidator {
               "status '%s' is not valid. Allowed: %s".formatted(status, VALID_STATUSES)));
     }
 
-    // Session-level duplicate detection: (course, option_label, day, start_time) must be unique.
-    // A repeated (course, option_label) on a DIFFERENT day/time is a valid additional weekly
-    // session of the same schedule option. Only an identical time-slot within the same option
-    // is a genuine conflict (would create overlapping sessions — QAL-IMP-001 / DEBT-F6-002).
-    if (!course.isEmpty() && !optionLabel.isEmpty() && !day.isEmpty() && !startTimeStr.isEmpty()) {
-      String sessionKey = course + "||" + optionLabel + "||" + day + "||" + startTimeStr;
-      if (seenSessionKeys.contains(sessionKey)) {
-        issues.add(
-            ImportIssue.error(
-                rowNumber,
-                "option_label",
-                "DUPLICATE_SESSION_IN_OPTION",
-                "A session for option_label '%s', course '%s', day '%s' at %s already exists in this file."
-                    .formatted(optionLabel, course, day, startTimeStr)));
-      } else {
-        seenSessionKeys.add(sessionKey);
+    // Session-level interval-overlap detection (DEBT-F7-002).
+    // Group key: (course, option_label, day). Within each group, no two sessions may have
+    // overlapping half-open intervals [start, end). Touching endpoints are NOT a conflict.
+    // Overlap condition: newStart < existingEnd  &&  newEnd > existingStart.
+    if (!course.isEmpty()
+        && !optionLabel.isEmpty()
+        && !day.isEmpty()
+        && startTime != null
+        && !endTimeStr.isEmpty()) {
+      try {
+        LocalTime endTime = LocalTime.parse(endTimeStr, TIME_FORMATTER);
+        if (endTime.isAfter(startTime)) {
+          // Capture as effectively-final for use inside the lambda.
+          final LocalTime sessionStart = startTime;
+          final LocalTime sessionEnd = endTime;
+          // Only check/register the interval when both times are structurally valid (end > start).
+          String groupKey = course + "||" + optionLabel + "||" + day;
+          List<LocalTime[]> existing =
+              seenIntervalsByGroup.computeIfAbsent(groupKey, k -> new ArrayList<>());
+          boolean overlaps =
+              existing.stream()
+                  .anyMatch(
+                      interval ->
+                          sessionStart.isBefore(interval[1]) && sessionEnd.isAfter(interval[0]));
+          if (overlaps) {
+            issues.add(
+                ImportIssue.error(
+                    rowNumber,
+                    "option_label",
+                    "DUPLICATE_SESSION_IN_OPTION",
+                    "A session for option_label '%s', course '%s', day '%s' overlapping [%s, %s) already exists in this file."
+                        .formatted(optionLabel, course, day, startTimeStr, endTimeStr)));
+          } else {
+            existing.add(new LocalTime[] {sessionStart, sessionEnd});
+          }
+        }
+      } catch (DateTimeParseException ignored) {
+        // end_time parse failure is already reported above; skip overlap registration.
       }
     }
 
