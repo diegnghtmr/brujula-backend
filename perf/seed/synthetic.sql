@@ -184,6 +184,53 @@ FROM generate_series(1, 50) AS i
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------------
+-- 9. Staff account + program assignments (for list-imports.js)
+--
+-- administration.staff_account is NOT auto-provisioned by OIDC login; it is
+-- managed by ADMIN users via the administration module.  We must seed it here
+-- so the k6 harness is fully reproducible from a fresh docker compose up + seed
+-- with no manual steps.
+--
+-- UUID scheme (consistent with existing pattern above):
+--   staff account:      19000000-0000-4000-0001-000000000001
+--   staff assignments:  19100000-0000-4000-{i:04x}-000000000001  (i = 1..10)
+--
+-- The 10 program UUIDs match synthetic programs seeded in block 1 above
+-- (a0000000-0000-4000-{i:04x}-000000000001, i = 1..10).
+--
+-- No FK from staff_program_assignment.program_id to catalog.academic_program
+-- (cross-schema FK intentionally omitted in V003; see migration comment).
+-- ---------------------------------------------------------------------------
+
+-- 9a. Staff account for staff@uniquindio.edu.co
+INSERT INTO administration.staff_account (id, email, full_name, status, version, created_at, updated_at)
+VALUES (
+    '19000000-0000-4000-0001-000000000001',
+    'staff@uniquindio.edu.co',
+    'Staff Test',
+    'ACTIVE',
+    0,
+    NOW(),
+    NOW()
+)
+ON CONFLICT (email) DO NOTHING;
+
+-- 9b. Assign the staff account to synthetic programs 1..10
+--     (10 assignments are sufficient for list-imports.js to return non-empty results)
+--     staff_id resolved via sub-select so this block is safe whether the account was
+--     seeded by 9a above or by a prior manual run that produced a different UUID.
+INSERT INTO administration.staff_program_assignment (id, staff_id, program_id, active, assigned_at, version)
+SELECT
+    ('19100000-0000-4000-' || LPAD(TO_HEX(i), 4, '0') || '-000000000001')::UUID,
+    (SELECT id FROM administration.staff_account WHERE email = 'staff@uniquindio.edu.co'),
+    ('a0000000-0000-4000-' || LPAD(TO_HEX(i), 4, '0') || '-000000000001')::UUID,
+    true,
+    NOW(),
+    0
+FROM generate_series(1, 10) AS i
+ON CONFLICT (staff_id, program_id) DO NOTHING;
+
+-- ---------------------------------------------------------------------------
 -- Summary
 -- ---------------------------------------------------------------------------
 DO $$
@@ -193,5 +240,6 @@ BEGIN
     RAISE NOTICE '  % study plans', (SELECT COUNT(*) FROM catalog.study_plan WHERE name LIKE 'Synthetic Plan%');
     RAISE NOTICE '  % courses', (SELECT COUNT(*) FROM curriculum.course WHERE name LIKE 'Synthetic Course%');
     RAISE NOTICE '  % offerings', (SELECT COUNT(*) FROM offering.course_offering WHERE course_name LIKE 'Synthetic Course%');
-    RAISE NOTICE '  % import batches', (SELECT COUNT(*) FROM imports.import_batch WHERE status = 'VALIDATED');
+    RAISE NOTICE '  % import batches (50 total / 10 visible to the seeded staff user)', (SELECT COUNT(*) FROM imports.import_batch WHERE status = 'VALIDATED');
+    RAISE NOTICE '  % staff assignments', (SELECT COUNT(*) FROM administration.staff_program_assignment WHERE staff_id = (SELECT id FROM administration.staff_account WHERE email = 'staff@uniquindio.edu.co'));
 END $$;
