@@ -1,13 +1,20 @@
 # Brújula frontend — local development image
 # Base: node:24.3.0-alpine3.22 (Node 24.3.0 LTS, version-pins #1533)
 # Build: pnpm install + build → static files served via vite preview
+#
+# T-WU7.2 fix: pin pnpm to 11.0.8 (same as local dev; avoids pnpm@latest
+# ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY in non-TTY Docker builder).
+# CI=true is set so pnpm skips TTY checks and treats this as a CI environment.
 
 FROM node:24.3.0-alpine3.22 AS builder
 
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Set CI=true so pnpm 11 does not prompt for confirmations in non-TTY environments
+ENV CI=true
+
+# Install pnpm — pin version to match local dev toolchain (11.0.8)
+RUN corepack enable && corepack prepare pnpm@11.0.8 --activate
 
 # Copy package manifests (layer cache)
 COPY package.json pnpm-lock.yaml ./
@@ -18,17 +25,22 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 # Copy source
 COPY . .
 
-# Build production bundle
-RUN pnpm build
+# Build production bundle.
+# Invoke tsc and vite directly from node_modules/.bin to bypass pnpm's
+# dependency integrity check (ERR_PNPM_IGNORED_BUILDS) that fires because
+# pnpm install ran with --ignore-scripts. The build itself does not need
+# postinstall scripts (esbuild/msw are pre-compiled for this platform).
+RUN node_modules/.bin/tsc -b && node_modules/.bin/vite build
 
 # ----------------------------------------------------------------
 FROM node:24.3.0-alpine3.22 AS runtime
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Copy built assets and vite for preview server
+# Copy built assets and vite for preview server.
+# Do NOT invoke pnpm in the runtime stage — pnpm@latest in non-TTY Docker
+# triggers ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY during its pre-run
+# deps-status check. Run vite directly from node_modules/.bin instead.
 COPY --from=builder /app/dist dist/
 COPY --from=builder /app/node_modules node_modules/
 COPY --from=builder /app/package.json package.json
@@ -37,4 +49,4 @@ COPY --from=builder /app/tsconfig.json tsconfig.json
 
 EXPOSE 5173
 
-CMD ["pnpm", "preview", "--host", "0.0.0.0", "--port", "5173"]
+CMD ["node_modules/.bin/vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
