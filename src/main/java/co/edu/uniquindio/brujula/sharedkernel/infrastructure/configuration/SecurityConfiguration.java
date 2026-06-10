@@ -1,6 +1,7 @@
 package co.edu.uniquindio.brujula.sharedkernel.infrastructure.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,8 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.util.AntPathMatcher;
 
 /**
@@ -43,6 +46,17 @@ import org.springframework.util.AntPathMatcher;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
+
+  /**
+   * Frontend SPA base URL injected from {@code brujula.frontend.base-url}.
+   *
+   * <p>Used as the post-login redirect target so that a successful Keycloak OIDC login sends the
+   * browser to the SPA instead of the API-only backend root (fix/oauth-success-redirect). Override
+   * per environment via the {@code BRUJULA_FRONTEND_BASE_URL} environment variable or a
+   * profile-specific YAML entry.
+   */
+  @Value("${brujula.frontend.base-url}")
+  private String frontendBaseUrl;
 
   /**
    * OIDC user service — wired from identity module (WU-B, S1-B-5). Triggers user provisioning on
@@ -86,8 +100,10 @@ public class SecurityConfiguration {
             oauth2 -> {
               // Default authorization endpoint: /oauth2/authorization/keycloak
               // Default redirect-uri (callback): /login/oauth2/code/keycloak
-              // On success: session established via Spring Session JDBC.
-              oauth2.defaultSuccessUrl("/", true);
+              // On success: redirect to the frontend SPA (fix/oauth-success-redirect).
+              // alwaysUse=true: ignore any saved backend request (saved request would be an
+              // API path with no page — landing there produces a Whitelabel 404 for the browser).
+              oauth2.successHandler(oauthSuccessHandler());
               // Wire IdentityOidcUserService for user provisioning (WU-B, S1-B-5).
               // When present, maps Keycloak claims → AppUser and sets ROLE_ authorities.
               if (oidcUserService != null) {
@@ -177,6 +193,29 @@ public class SecurityConfiguration {
                         (request, response, authentication) -> response.setStatus(204)));
 
     return http.build();
+  }
+
+  /**
+   * OAuth2 login success handler — redirects to the frontend SPA after a successful Keycloak OIDC
+   * authentication (fix/oauth-success-redirect).
+   *
+   * <p>Uses {@link SimpleUrlAuthenticationSuccessHandler} with {@code alwaysUse=true} so the
+   * browser always lands on the SPA root, ignoring any saved backend request URL. A saved request
+   * pointing at an API path would produce a Whitelabel 404 — not a valid SPA landing page.
+   *
+   * <p>The target URL is injected from {@code brujula.frontend.base-url} (default {@code
+   * http://localhost:5173} for local dev; override via {@code BRUJULA_FRONTEND_BASE_URL} env var in
+   * production or Docker Compose).
+   *
+   * <p>Exposed as a {@code @Bean} to allow behavioral test assertions on the configured redirect
+   * target (see {@code OAuthLoginSuccessRedirectTest}).
+   */
+  @Bean
+  public AuthenticationSuccessHandler oauthSuccessHandler() {
+    SimpleUrlAuthenticationSuccessHandler handler =
+        new SimpleUrlAuthenticationSuccessHandler(frontendBaseUrl);
+    handler.setAlwaysUseDefaultTargetUrl(true);
+    return handler;
   }
 
   /**

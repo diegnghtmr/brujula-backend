@@ -2,6 +2,10 @@
 # The KeycloakAdminApiAdapter tests use MockRestServiceServer for offline testing.
 # These are placeholder values; actual HTTP calls are intercepted by the mock server.
 brujula:
+  frontend:
+    # Test-profile frontend URL used to assert OAuth2 login success redirect target.
+    # Must match the value asserted in OAuthLoginSuccessRedirectTest.
+    base-url: "http://localhost:5173"
   keycloak:
     auth-server-url: http://localhost:9090
     realm: brujula-dev
