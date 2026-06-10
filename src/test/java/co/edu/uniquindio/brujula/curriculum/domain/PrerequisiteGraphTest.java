@@ -32,8 +32,7 @@ class PrerequisiteGraphTest {
   @Test
   void emptyGraphIsValid() {
     PrerequisiteGraph graph = new PrerequisiteGraph();
-    assertThatCode(() -> service.validateAcyclicity(graph))
-        .doesNotThrowAnyException();
+    assertThatCode(() -> service.validateAcyclicity(graph)).doesNotThrowAnyException();
   }
 
   @Test
@@ -41,8 +40,7 @@ class PrerequisiteGraphTest {
     PrerequisiteGraph graph = new PrerequisiteGraph();
     // A is prereq for B (edge: A → B meaning B depends on A)
     graph.addEdge(courseA, courseB);
-    assertThatCode(() -> service.validateAcyclicity(graph))
-        .doesNotThrowAnyException();
+    assertThatCode(() -> service.validateAcyclicity(graph)).doesNotThrowAnyException();
   }
 
   @Test
@@ -82,8 +80,7 @@ class PrerequisiteGraphTest {
     graph.addEdge(courseA, courseB);
     graph.addEdge(courseA, courseC);
     graph.addEdge(courseB, courseD);
-    assertThatCode(() -> service.validateAcyclicity(graph))
-        .doesNotThrowAnyException();
+    assertThatCode(() -> service.validateAcyclicity(graph)).doesNotThrowAnyException();
   }
 
   @Test
@@ -93,8 +90,7 @@ class PrerequisiteGraphTest {
     graph.addEdge(courseA, courseB);
     graph.addEdge(courseB, courseC);
     graph.addEdge(courseC, courseD);
-    assertThatCode(() -> service.validateAcyclicity(graph))
-        .doesNotThrowAnyException();
+    assertThatCode(() -> service.validateAcyclicity(graph)).doesNotThrowAnyException();
   }
 
   @Test
@@ -103,8 +99,7 @@ class PrerequisiteGraphTest {
     PrerequisiteGraph graph = new PrerequisiteGraph();
     graph.addEdge(courseA, courseB);
     graph.addEdge(courseC, courseD);
-    assertThatCode(() -> service.validateAcyclicity(graph))
-        .doesNotThrowAnyException();
+    assertThatCode(() -> service.validateAcyclicity(graph)).doesNotThrowAnyException();
   }
 
   @Test
@@ -117,7 +112,6 @@ class PrerequisiteGraphTest {
     graph.addEdge(courseA, courseC);
     graph.addEdge(courseB, courseD);
     graph.addEdge(courseC, courseD);
-    assertThatCode(() -> service.validateAcyclicity(graph))
-        .doesNotThrowAnyException();
+    assertThatCode(() -> service.validateAcyclicity(graph)).doesNotThrowAnyException();
   }
 }

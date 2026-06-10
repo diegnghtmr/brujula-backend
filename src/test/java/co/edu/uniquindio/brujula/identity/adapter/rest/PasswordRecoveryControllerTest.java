@@ -26,10 +26,11 @@ import org.springframework.web.context.WebApplicationContext;
  * <p>STRICT TDD: tests written RED before the controller implementation exists.
  *
  * <p>Key scenarios:
+ *
  * <ul>
- *   <li>Known email → 202 Accepted</li>
- *   <li>Unknown email → SAME 202 Accepted (no user enumeration)</li>
- *   <li>Endpoint is permitAll: unauthenticated request succeeds</li>
+ *   <li>Known email → 202 Accepted
+ *   <li>Unknown email → SAME 202 Accepted (no user enumeration)
+ *   <li>Endpoint is permitAll: unauthenticated request succeeds
  * </ul>
  *
  * <p>Satisfies: S2-D, Design §1.3 permitAll for /auth/password-recovery/**, RNF-SEG-006.
@@ -40,8 +41,8 @@ class PasswordRecoveryControllerTest extends AbstractPostgresIntegrationTest {
   @Autowired private WebApplicationContext context;
 
   /**
-   * Mock the use case so the controller test is isolated from business logic.
-   * No live Keycloak required.
+   * Mock the use case so the controller test is isolated from business logic. No live Keycloak
+   * required.
    */
   @MockitoBean private InitiatePasswordRecoveryUseCase initiatePasswordRecoveryUseCase;
 

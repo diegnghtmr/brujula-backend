@@ -16,7 +16,6 @@ import co.edu.uniquindio.brujula.AbstractPostgresIntegrationTest;
 import co.edu.uniquindio.brujula.identity.application.port.out.SaveAppUserPort;
 import co.edu.uniquindio.brujula.identity.domain.AppUser;
 import co.edu.uniquindio.brujula.identity.domain.Role;
-import co.edu.uniquindio.brujula.progress.application.dto.CourseAttemptPageView;
 import co.edu.uniquindio.brujula.progress.application.dto.CourseAttemptView;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteCourseAttemptUseCase;
@@ -27,15 +26,14 @@ import co.edu.uniquindio.brujula.progress.domain.AttemptNotFoundException;
 import co.edu.uniquindio.brujula.progress.domain.AttemptStatus;
 import co.edu.uniquindio.brujula.progress.domain.GradeStatusMismatchException;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
-import org.springframework.dao.OptimisticLockingFailureException;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -70,9 +68,15 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   @MockitoBean private GetCourseAttemptQuery getCourseAttemptQuery;
   @MockitoBean private UpdateCourseAttemptUseCase updateCourseAttemptUseCase;
   @MockitoBean private DeleteCourseAttemptUseCase deleteCourseAttemptUseCase;
+
   // WU4: mock new query services so this test class doesn't wire real application services
-  @MockitoBean private co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionCurriculumQuery getSubscriptionCurriculumQuery;
-  @MockitoBean private co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionProgressQuery getSubscriptionProgressQuery;
+  @MockitoBean
+  private co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionCurriculumQuery
+      getSubscriptionCurriculumQuery;
+
+  @MockitoBean
+  private co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionProgressQuery
+      getSubscriptionProgressQuery;
 
   private MockMvc mockMvc;
   private String studentSubject;
@@ -83,19 +87,21 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
 
     studentSubject = "student-" + UUID.randomUUID();
-    AppUser student = AppUser.provision(
-        studentSubject,
-        "student-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Test Student",
-        Role.STUDENT);
+    AppUser student =
+        AppUser.provision(
+            studentSubject,
+            "student-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Test Student",
+            Role.STUDENT);
     saveAppUserPort.save(student);
 
     staffSubject = "staff-" + UUID.randomUUID();
-    AppUser staff = AppUser.provision(
-        staffSubject,
-        "staff-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Test Staff",
-        Role.STAFF);
+    AppUser staff =
+        AppUser.provision(
+            staffSubject,
+            "staff-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Test Staff",
+            Role.STAFF);
     saveAppUserPort.save(staff);
   }
 
@@ -103,21 +109,26 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   void unauthenticated_returns_4xx() throws Exception {
     // Spring Security may redirect (302) or return 401 depending on the configured entry point.
     // Either way it must NOT return a 2xx.
-    mockMvc.perform(get("/me/course-attempts"))
-        .andExpect(result -> {
-          int s = result.getResponse().getStatus();
-          if (s >= 200 && s < 300) {
-            throw new AssertionError("Expected 4xx but was " + s);
-          }
-        });
+    mockMvc
+        .perform(get("/me/course-attempts"))
+        .andExpect(
+            result -> {
+              int s = result.getResponse().getStatus();
+              if (s >= 200 && s < 300) {
+                throw new AssertionError("Expected 4xx but was " + s);
+              }
+            });
   }
 
   @Test
   void staff_role_on_me_returns_403() throws Exception {
-    mockMvc.perform(get("/me/course-attempts")
-            .with(oidcLogin()
-                .idToken(t -> t.subject(staffSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+    mockMvc
+        .perform(
+            get("/me/course-attempts")
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(staffSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isForbidden());
   }
 
@@ -126,15 +137,19 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
     CourseAttemptView view = buildAttemptView();
     when(createCourseAttemptUseCase.createCourseAttempt(any())).thenReturn(view);
 
-    mockMvc.perform(post("/me/course-attempts")
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject)))
-            .with(csrf())
-            .header("Idempotency-Key", UUID.randomUUID())
-            .header("X-XSRF-TOKEN", "csrf-token")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
+    mockMvc
+        .perform(
+            post("/me/course-attempts")
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject)))
+                .with(csrf())
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
                 {
                   "subscriptionId": "550e8400-e29b-41d4-a716-446655440001",
                   "courseId": "550e8400-e29b-41d4-a716-446655440002",
@@ -150,15 +165,19 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void create_without_idempotency_key_returns_400() throws Exception {
-    mockMvc.perform(post("/me/course-attempts")
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject)))
-            .with(csrf())
-            // No Idempotency-Key header intentionally
-            .header("X-XSRF-TOKEN", "csrf-token")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
+    mockMvc
+        .perform(
+            post("/me/course-attempts")
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject)))
+                .with(csrf())
+                // No Idempotency-Key header intentionally
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
                 {
                   "subscriptionId": "550e8400-e29b-41d4-a716-446655440001",
                   "courseId": "550e8400-e29b-41d4-a716-446655440002",
@@ -176,15 +195,19 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
     when(createCourseAttemptUseCase.createCourseAttempt(any()))
         .thenThrow(new GradeStatusMismatchException(AttemptStatus.PASSED, "grade below 3.0"));
 
-    mockMvc.perform(post("/me/course-attempts")
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject)))
-            .with(csrf())
-            .header("Idempotency-Key", UUID.randomUUID())
-            .header("X-XSRF-TOKEN", "csrf-token")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
+    mockMvc
+        .perform(
+            post("/me/course-attempts")
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject)))
+                .with(csrf())
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
                 {
                   "subscriptionId": "550e8400-e29b-41d4-a716-446655440001",
                   "courseId": "550e8400-e29b-41d4-a716-446655440002",
@@ -202,14 +225,18 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
     when(updateCourseAttemptUseCase.updateCourseAttempt(any()))
         .thenThrow(new OptimisticLockingFailureException("version conflict"));
 
-    mockMvc.perform(put("/me/course-attempts/" + UUID.randomUUID())
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject)))
-            .with(csrf())
-            .header("X-XSRF-TOKEN", "csrf-token")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
+    mockMvc
+        .perform(
+            put("/me/course-attempts/" + UUID.randomUUID())
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject)))
+                .with(csrf())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
                 {"status": "PASSED", "finalGrade": 3.5, "version": 0}
                 """))
         .andExpect(status().isConflict());
@@ -221,10 +248,13 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
     when(getCourseAttemptQuery.getCourseAttempt(any(), any()))
         .thenThrow(new AttemptNotFoundException(attemptId));
 
-    mockMvc.perform(get("/me/course-attempts/" + attemptId)
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject))))
+    mockMvc
+        .perform(
+            get("/me/course-attempts/" + attemptId)
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject))))
         .andExpect(status().isNotFound());
   }
 
@@ -232,12 +262,15 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   void delete_attempt_returns_204() throws Exception {
     UUID attemptId = UUID.randomUUID();
 
-    mockMvc.perform(delete("/me/course-attempts/" + attemptId)
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject)))
-            .with(csrf())
-            .header("X-XSRF-TOKEN", "csrf-token"))
+    mockMvc
+        .perform(
+            delete("/me/course-attempts/" + attemptId)
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject)))
+                .with(csrf())
+                .header("X-XSRF-TOKEN", "csrf-token"))
         .andExpect(status().isNoContent());
   }
 
@@ -246,11 +279,15 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   void get_subscription_curriculum_unknown_returns_404() throws Exception {
     UUID subId = UUID.randomUUID();
     when(getSubscriptionCurriculumQuery.getSubscriptionCurriculum(any(), any()))
-        .thenThrow(new co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException(subId));
-    mockMvc.perform(get("/me/subscriptions/" + subId + "/curriculum")
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject))))
+        .thenThrow(
+            new co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException(subId));
+    mockMvc
+        .perform(
+            get("/me/subscriptions/" + subId + "/curriculum")
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject))))
         .andExpect(status().isNotFound());
   }
 
@@ -258,11 +295,15 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   void get_subscription_progress_unknown_returns_404() throws Exception {
     UUID subId = UUID.randomUUID();
     when(getSubscriptionProgressQuery.getSubscriptionProgress(any(), any()))
-        .thenThrow(new co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException(subId));
-    mockMvc.perform(get("/me/subscriptions/" + subId + "/progress")
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject))))
+        .thenThrow(
+            new co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException(subId));
+    mockMvc
+        .perform(
+            get("/me/subscriptions/" + subId + "/progress")
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject))))
         .andExpect(status().isNotFound());
   }
 
@@ -272,15 +313,19 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
     when(createCourseAttemptUseCase.createCourseAttempt(any()))
         .thenThrow(new IdempotencyKeyConflictException(idempotencyKey, "CREATE_COURSE_ATTEMPT"));
 
-    mockMvc.perform(post("/me/course-attempts")
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject)))
-            .with(csrf())
-            .header("Idempotency-Key", idempotencyKey)
-            .header("X-XSRF-TOKEN", "csrf-token")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
+    mockMvc
+        .perform(
+            post("/me/course-attempts")
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject)))
+                .with(csrf())
+                .header("Idempotency-Key", idempotencyKey)
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
                 {
                   "subscriptionId": "550e8400-e29b-41d4-a716-446655440001",
                   "courseId": "550e8400-e29b-41d4-a716-446655440002",
@@ -300,31 +345,36 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   void attempt_view_with_null_period_id_serializes_as_null_not_zero_uuid() throws Exception {
     // Arrange: simulate a mocked service returning a view where periodId is null
     // (e.g. legacy data row reconstituted from DB). Controller must not substitute.
-    CourseAttemptView viewWithNullPeriod = new CourseAttemptView(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        "Test Course",
-        null, // periodId = null — legacy/reconstituted row; controller passes through as-is
-        null,
-        "DIURNA",
-        "PASSED", // FIX-S1: plain String
-        new BigDecimal("4.2"),
-        Instant.now(),
-        0L);
+    CourseAttemptView viewWithNullPeriod =
+        new CourseAttemptView(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "Test Course",
+            null, // periodId = null — legacy/reconstituted row; controller passes through as-is
+            null,
+            "DIURNA",
+            "PASSED", // FIX-S1: plain String
+            new BigDecimal("4.2"),
+            Instant.now(),
+            0L);
     when(createCourseAttemptUseCase.createCourseAttempt(any())).thenReturn(viewWithNullPeriod);
 
     // Act: request with a valid periodId (contract requires @NotNull in request);
     // the service mock overrides and returns null periodId in the view
-    mockMvc.perform(post("/me/course-attempts")
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject)))
-            .with(csrf())
-            .header("Idempotency-Key", UUID.randomUUID())
-            .header("X-XSRF-TOKEN", "csrf-token")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
+    mockMvc
+        .perform(
+            post("/me/course-attempts")
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject)))
+                .with(csrf())
+                .header("Idempotency-Key", UUID.randomUUID())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
                 {
                   "subscriptionId": "550e8400-e29b-41d4-a716-446655440001",
                   "courseId": "550e8400-e29b-41d4-a716-446655440002",

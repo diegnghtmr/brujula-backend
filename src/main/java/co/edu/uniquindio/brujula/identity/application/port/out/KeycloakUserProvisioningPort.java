@@ -70,8 +70,8 @@ public interface KeycloakUserProvisioningPort {
    * Resend the email verification action for a user identified by email.
    *
    * <p>Used by the email-verification resend endpoint (S2-C). Looks up the Keycloak user by email,
-   * then triggers {@code execute-actions-email ["VERIFY_EMAIL", "UPDATE_PASSWORD"]} (OPTION A).
-   * If no user is found in Keycloak, returns silently (no user enumeration).
+   * then triggers {@code execute-actions-email ["VERIFY_EMAIL", "UPDATE_PASSWORD"]} (OPTION A). If
+   * no user is found in Keycloak, returns silently (no user enumeration).
    *
    * @param email the institutional email of the user to look up in Keycloak
    * @param redirectUri the SPA landing URI to redirect after verification

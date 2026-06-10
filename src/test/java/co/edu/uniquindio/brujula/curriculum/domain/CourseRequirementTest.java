@@ -10,11 +10,13 @@ import org.junit.jupiter.api.Test;
  * WU1-1.9 RED: Verifies CourseRequirement aggregate validation rules.
  *
  * <p>Rules:
+ *
  * <ul>
  *   <li>COURSE_PASSED requires non-null requiredCourseId.
  *   <li>MINIMUM_CREDITS requires non-null requiredCredits.
  *   <li>COURSE_PASSED with null requiredCourseId is rejected.
- *   <li>reconstitute() enforces the same per-type invariants as the factory methods (FIX-1, WARNING-1).
+ *   <li>reconstitute() enforces the same per-type invariants as the factory methods (FIX-1,
+ *       WARNING-1).
  * </ul>
  */
 class CourseRequirementTest {
@@ -29,8 +31,9 @@ class CourseRequirementTest {
 
   @Test
   void createsValidCoursePassedRequirement() {
-    CourseRequirement req = CourseRequirement.coursePassed(
-        reqId, targetCourseId, requiredCourseId, false, Confidence.HIGH, false);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            reqId, targetCourseId, requiredCourseId, false, Confidence.HIGH, false);
     assertThat(req.id()).isEqualTo(reqId);
     assertThat(req.targetCourseId()).isEqualTo(targetCourseId);
     assertThat(req.type()).isEqualTo(RequirementType.COURSE_PASSED);
@@ -42,8 +45,10 @@ class CourseRequirementTest {
 
   @Test
   void coursePassedRejectsNullRequiredCourseId() {
-    assertThatThrownBy(() ->
-            CourseRequirement.coursePassed(reqId, targetCourseId, null, false, Confidence.HIGH, false))
+    assertThatThrownBy(
+            () ->
+                CourseRequirement.coursePassed(
+                    reqId, targetCourseId, null, false, Confidence.HIGH, false))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("requiredCourseId");
   }
@@ -54,8 +59,8 @@ class CourseRequirementTest {
 
   @Test
   void createsValidSequenceRequirement() {
-    CourseRequirement req = CourseRequirement.sequence(
-        reqId, targetCourseId, requiredCourseId, true);
+    CourseRequirement req =
+        CourseRequirement.sequence(reqId, targetCourseId, requiredCourseId, true);
     assertThat(req.type()).isEqualTo(RequirementType.SEQUENCE);
     assertThat(req.requiredCourseId()).isEqualTo(requiredCourseId);
     assertThat(req.simultaneityAllowed()).isTrue();
@@ -63,8 +68,7 @@ class CourseRequirementTest {
 
   @Test
   void sequenceRejectsNullRequiredCourseId() {
-    assertThatThrownBy(() ->
-            CourseRequirement.sequence(reqId, targetCourseId, null, true))
+    assertThatThrownBy(() -> CourseRequirement.sequence(reqId, targetCourseId, null, true))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("requiredCourseId");
   }
@@ -83,16 +87,14 @@ class CourseRequirementTest {
 
   @Test
   void minimumCreditsRejectsNullCredits() {
-    assertThatThrownBy(() ->
-            CourseRequirement.minimumCredits(reqId, targetCourseId, null))
+    assertThatThrownBy(() -> CourseRequirement.minimumCredits(reqId, targetCourseId, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("requiredCredits");
   }
 
   @Test
   void minimumCreditsRejectsNegativeCredits() {
-    assertThatThrownBy(() ->
-            CourseRequirement.minimumCredits(reqId, targetCourseId, -1))
+    assertThatThrownBy(() -> CourseRequirement.minimumCredits(reqId, targetCourseId, -1))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("requiredCredits");
   }
@@ -115,22 +117,23 @@ class CourseRequirementTest {
 
   @Test
   void statusDefaultsToActive() {
-    CourseRequirement req = CourseRequirement.coursePassed(
-        reqId, targetCourseId, requiredCourseId, false, Confidence.MEDIUM, true);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            reqId, targetCourseId, requiredCourseId, false, Confidence.MEDIUM, true);
     assertThat(req.status()).isEqualTo(CourseRequirementStatus.ACTIVE);
   }
 
   @Test
   void versionDefaultsToZero() {
-    CourseRequirement req = CourseRequirement.coursePassed(
-        reqId, targetCourseId, requiredCourseId, false, null, null);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(reqId, targetCourseId, requiredCourseId, false, null, null);
     assertThat(req.version()).isEqualTo(0L);
   }
 
   @Test
   void rejectsNullTargetCourseId() {
-    assertThatThrownBy(() ->
-            CourseRequirement.coursePassed(reqId, null, requiredCourseId, false, null, null))
+    assertThatThrownBy(
+            () -> CourseRequirement.coursePassed(reqId, null, requiredCourseId, false, null, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("targetCourseId");
   }
@@ -142,10 +145,18 @@ class CourseRequirementTest {
   @Test
   void reconstituteAllowsValidCoursePassed() {
     // A persisted COURSE_PASSED requirement with a valid requiredCourseId must reconstitute fine
-    CourseRequirement req = CourseRequirement.reconstitute(
-        reqId, targetCourseId, RequirementType.COURSE_PASSED,
-        requiredCourseId, null, false, Confidence.HIGH, false,
-        CourseRequirementStatus.ACTIVE, 1L);
+    CourseRequirement req =
+        CourseRequirement.reconstitute(
+            reqId,
+            targetCourseId,
+            RequirementType.COURSE_PASSED,
+            requiredCourseId,
+            null,
+            false,
+            Confidence.HIGH,
+            false,
+            CourseRequirementStatus.ACTIVE,
+            1L);
     assertThat(req.type()).isEqualTo(RequirementType.COURSE_PASSED);
     assertThat(req.requiredCourseId()).isEqualTo(requiredCourseId);
     assertThat(req.version()).isEqualTo(1L);
@@ -154,11 +165,19 @@ class CourseRequirementTest {
   @Test
   void reconstituteRejectsCoursePassedWithNullRequiredCourseId() {
     // COURSE_PASSED with null requiredCourseId violates CUR-002 invariant even via reconstitute
-    assertThatThrownBy(() ->
-            CourseRequirement.reconstitute(
-                reqId, targetCourseId, RequirementType.COURSE_PASSED,
-                null, null, false, Confidence.HIGH, false,
-                CourseRequirementStatus.ACTIVE, 1L))
+    assertThatThrownBy(
+            () ->
+                CourseRequirement.reconstitute(
+                    reqId,
+                    targetCourseId,
+                    RequirementType.COURSE_PASSED,
+                    null,
+                    null,
+                    false,
+                    Confidence.HIGH,
+                    false,
+                    CourseRequirementStatus.ACTIVE,
+                    1L))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("requiredCourseId");
   }
@@ -166,11 +185,19 @@ class CourseRequirementTest {
   @Test
   void reconstituteRejectsSequenceWithNullRequiredCourseId() {
     // SEQUENCE with null requiredCourseId violates per-type invariant even via reconstitute
-    assertThatThrownBy(() ->
-            CourseRequirement.reconstitute(
-                reqId, targetCourseId, RequirementType.SEQUENCE,
-                null, null, true, null, null,
-                CourseRequirementStatus.ACTIVE, 2L))
+    assertThatThrownBy(
+            () ->
+                CourseRequirement.reconstitute(
+                    reqId,
+                    targetCourseId,
+                    RequirementType.SEQUENCE,
+                    null,
+                    null,
+                    true,
+                    null,
+                    null,
+                    CourseRequirementStatus.ACTIVE,
+                    2L))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("requiredCourseId");
   }
@@ -178,23 +205,40 @@ class CourseRequirementTest {
   @Test
   void reconstituteRejectsMinimumCreditsWithNullRequiredCredits() {
     // MINIMUM_CREDITS with null requiredCredits violates per-type invariant even via reconstitute
-    assertThatThrownBy(() ->
-            CourseRequirement.reconstitute(
-                reqId, targetCourseId, RequirementType.MINIMUM_CREDITS,
-                null, null, null, null, null,
-                CourseRequirementStatus.ACTIVE, 1L))
+    assertThatThrownBy(
+            () ->
+                CourseRequirement.reconstitute(
+                    reqId,
+                    targetCourseId,
+                    RequirementType.MINIMUM_CREDITS,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    CourseRequirementStatus.ACTIVE,
+                    1L))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("requiredCredits");
   }
 
   @Test
   void reconstituteRejectsMinimumCreditsWithNegativeCredits() {
-    // MINIMUM_CREDITS with negative requiredCredits violates per-type invariant even via reconstitute
-    assertThatThrownBy(() ->
-            CourseRequirement.reconstitute(
-                reqId, targetCourseId, RequirementType.MINIMUM_CREDITS,
-                null, -5, null, null, null,
-                CourseRequirementStatus.ACTIVE, 1L))
+    // MINIMUM_CREDITS with negative requiredCredits violates per-type invariant even via
+    // reconstitute
+    assertThatThrownBy(
+            () ->
+                CourseRequirement.reconstitute(
+                    reqId,
+                    targetCourseId,
+                    RequirementType.MINIMUM_CREDITS,
+                    null,
+                    -5,
+                    null,
+                    null,
+                    null,
+                    CourseRequirementStatus.ACTIVE,
+                    1L))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("requiredCredits");
   }
@@ -202,10 +246,18 @@ class CourseRequirementTest {
   @Test
   void reconstituteAllowsValidMinimumCredits() {
     // A persisted MINIMUM_CREDITS requirement with valid requiredCredits must reconstitute fine
-    CourseRequirement req = CourseRequirement.reconstitute(
-        reqId, targetCourseId, RequirementType.MINIMUM_CREDITS,
-        null, 60, null, null, null,
-        CourseRequirementStatus.ACTIVE, 3L);
+    CourseRequirement req =
+        CourseRequirement.reconstitute(
+            reqId,
+            targetCourseId,
+            RequirementType.MINIMUM_CREDITS,
+            null,
+            60,
+            null,
+            null,
+            null,
+            CourseRequirementStatus.ACTIVE,
+            3L);
     assertThat(req.type()).isEqualTo(RequirementType.MINIMUM_CREDITS);
     assertThat(req.requiredCredits()).isEqualTo(60);
   }
@@ -213,10 +265,18 @@ class CourseRequirementTest {
   @Test
   void reconstituteAllowsConfigurableWithNullFields() {
     // CONFIGURABLE requires no specific fields — both null course ID and null credits are fine
-    CourseRequirement req = CourseRequirement.reconstitute(
-        reqId, targetCourseId, RequirementType.CONFIGURABLE,
-        null, null, null, null, null,
-        CourseRequirementStatus.ARCHIVED, 1L);
+    CourseRequirement req =
+        CourseRequirement.reconstitute(
+            reqId,
+            targetCourseId,
+            RequirementType.CONFIGURABLE,
+            null,
+            null,
+            null,
+            null,
+            null,
+            CourseRequirementStatus.ARCHIVED,
+            1L);
     assertThat(req.type()).isEqualTo(RequirementType.CONFIGURABLE);
   }
 }

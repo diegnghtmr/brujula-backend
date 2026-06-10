@@ -15,8 +15,8 @@ import java.util.Objects;
  *       course name (ADR-F2-005).
  * </ul>
  *
- * <p>Deterministic: same name + program + semester always yields the same code.
- * UUIDs remain the primary key; official codes are for human readability (RN-024/025).
+ * <p>Deterministic: same name + program + semester always yields the same code. UUIDs remain the
+ * primary key; official codes are for human readability (RN-024/025).
  *
  * <p>No Spring/JPA imports (ARQ-002). Pure Java domain service.
  */
@@ -52,10 +52,12 @@ public class OfficialCodeMinter {
    * Normalize a course name into an uppercase, accent-folded, non-alnum-stripped slug.
    *
    * <p>Steps:
+   *
    * <ol>
    *   <li>Unicode NFD decomposition: "ó" → "o" + combining acute.
    *   <li>Strip combining diacritical marks (category Mn).
-   *   <li>Handle ñ → N explicitly (NFD decomposes ñ to n + combining tilde, which gets stripped to n).
+   *   <li>Handle ñ → N explicitly (NFD decomposes ñ to n + combining tilde, which gets stripped to
+   *       n).
    *   <li>Strip all non-alphanumeric characters (spaces, hyphens, punctuation).
    *   <li>Uppercase the result.
    * </ol>
@@ -63,12 +65,11 @@ public class OfficialCodeMinter {
   String normalizeSlug(String name) {
     Objects.requireNonNull(name, "name must not be null");
     // Pre-process: replace ñ/Ñ before NFD decomposition so they survive the stripping
-    String normalized = name
-        .replace('ñ', 'n')
-        .replace('Ñ', 'N');
+    String normalized = name.replace('ñ', 'n').replace('Ñ', 'N');
     // NFD decomposition + strip combining marks
-    normalized = Normalizer.normalize(normalized, Normalizer.Form.NFD)
-        .replaceAll("\\p{InCombiningDiacriticalMarks}", "");
+    normalized =
+        Normalizer.normalize(normalized, Normalizer.Form.NFD)
+            .replaceAll("\\p{InCombiningDiacriticalMarks}", "");
     // Strip all non-alphanumeric characters (spaces, hyphens, parentheses, etc.)
     normalized = normalized.replaceAll("[^A-Za-z0-9]", "");
     return normalized.toUpperCase();

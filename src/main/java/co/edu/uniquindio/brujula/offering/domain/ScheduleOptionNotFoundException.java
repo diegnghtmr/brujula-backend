@@ -1,8 +1,6 @@
 package co.edu.uniquindio.brujula.offering.domain;
 
-/**
- * Thrown when a requested {@link ScheduleOption} does not exist.
- */
+/** Thrown when a requested {@link ScheduleOption} does not exist. */
 public class ScheduleOptionNotFoundException extends RuntimeException {
 
   public ScheduleOptionNotFoundException(ScheduleOptionId id) {

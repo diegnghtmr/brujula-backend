@@ -21,7 +21,6 @@ import co.edu.uniquindio.brujula.offering.domain.PeriodStatus;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,7 +47,8 @@ class CreatePeriodServiceTest {
     idempotencyStorePort = mock(IdempotencyStorePort.class);
     jsonCodecPort = mock(JsonCodecPort.class);
     auditRecorder = mock(AuditRecorder.class);
-    service = new CreatePeriodService(savePeriodPort, idempotencyStorePort, jsonCodecPort, auditRecorder);
+    service =
+        new CreatePeriodService(savePeriodPort, idempotencyStorePort, jsonCodecPort, auditRecorder);
   }
 
   @Test
@@ -61,13 +61,20 @@ class CreatePeriodServiceTest {
 
     when(idempotencyStorePort.find(idempotencyKey, "CREATE_PERIOD")).thenReturn(Optional.empty());
 
-    AcademicPeriod savedPeriod = AcademicPeriod.reconstitute(
-        AcademicPeriodId.of(UUID.randomUUID()), "2026-2", start, end, PeriodStatus.UPCOMING, 0L);
+    AcademicPeriod savedPeriod =
+        AcademicPeriod.reconstitute(
+            AcademicPeriodId.of(UUID.randomUUID()),
+            "2026-2",
+            start,
+            end,
+            PeriodStatus.UPCOMING,
+            0L);
     when(savePeriodPort.save(any())).thenReturn(savedPeriod);
     when(jsonCodecPort.toJson(any())).thenReturn("{\"id\":\"...\"}");
 
-    CreatePeriodCommand command = new CreatePeriodCommand(
-        idempotencyKey, actorId, "2026-2", start, end, "UPCOMING", requestHash);
+    CreatePeriodCommand command =
+        new CreatePeriodCommand(
+            idempotencyKey, actorId, "2026-2", start, end, "UPCOMING", requestHash);
 
     AcademicPeriodView result = service.createPeriod(command);
 
@@ -77,8 +84,8 @@ class CreatePeriodServiceTest {
     verify(savePeriodPort).save(any());
     verify(auditRecorder).record(argThat(cmd -> "PERIOD_CREATED".equals(cmd.action())));
     verify(jsonCodecPort).toJson(any(AcademicPeriodView.class));
-    verify(idempotencyStorePort).save(
-        eq(idempotencyKey), eq("CREATE_PERIOD"), eq(requestHash), eq(201), any(String.class));
+    verify(idempotencyStorePort)
+        .save(eq(idempotencyKey), eq("CREATE_PERIOD"), eq(requestHash), eq(201), any(String.class));
   }
 
   @Test
@@ -86,16 +93,22 @@ class CreatePeriodServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     String requestHash = "hash-abc";
     UUID periodId = UUID.randomUUID();
-    String storedJson = "{\"id\":\"" + periodId + "\",\"name\":\"2026-2\",\"startDate\":null,"
-        + "\"endDate\":null,\"status\":\"UPCOMING\",\"version\":0}";
-    AcademicPeriodView replayView = new AcademicPeriodView(periodId, "2026-2", null, null, "UPCOMING", 0L);
+    String storedJson =
+        "{\"id\":\""
+            + periodId
+            + "\",\"name\":\"2026-2\",\"startDate\":null,"
+            + "\"endDate\":null,\"status\":\"UPCOMING\",\"version\":0}";
+    AcademicPeriodView replayView =
+        new AcademicPeriodView(periodId, "2026-2", null, null, "UPCOMING", 0L);
 
     when(idempotencyStorePort.find(idempotencyKey, "CREATE_PERIOD"))
-        .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord(requestHash, 201, storedJson)));
+        .thenReturn(
+            Optional.of(new IdempotencyStorePort.StoredRecord(requestHash, 201, storedJson)));
     when(jsonCodecPort.fromJson(storedJson, AcademicPeriodView.class)).thenReturn(replayView);
 
-    CreatePeriodCommand command = new CreatePeriodCommand(
-        idempotencyKey, UUID.randomUUID(), "2026-2", null, null, "UPCOMING", requestHash);
+    CreatePeriodCommand command =
+        new CreatePeriodCommand(
+            idempotencyKey, UUID.randomUUID(), "2026-2", null, null, "UPCOMING", requestHash);
 
     AcademicPeriodView result = service.createPeriod(command);
 
@@ -112,10 +125,12 @@ class CreatePeriodServiceTest {
     String storedJson = "{\"id\":\"00000000-0000-0000-0000-000000000001\"}";
 
     when(idempotencyStorePort.find(idempotencyKey, "CREATE_PERIOD"))
-        .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord("stored-hash", 201, storedJson)));
+        .thenReturn(
+            Optional.of(new IdempotencyStorePort.StoredRecord("stored-hash", 201, storedJson)));
 
-    CreatePeriodCommand command = new CreatePeriodCommand(
-        idempotencyKey, UUID.randomUUID(), "2026-2", null, null, "UPCOMING", "different-hash");
+    CreatePeriodCommand command =
+        new CreatePeriodCommand(
+            idempotencyKey, UUID.randomUUID(), "2026-2", null, null, "UPCOMING", "different-hash");
 
     assertThatThrownBy(() -> service.createPeriod(command))
         .isInstanceOf(IdempotencyKeyConflictException.class);

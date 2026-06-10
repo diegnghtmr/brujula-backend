@@ -26,14 +26,15 @@ class CourseAttemptTest {
   @Test
   void register_passed_attempt_with_passing_grade_succeeds() {
     Grade grade = new Grade(new BigDecimal("4.2"));
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.PASSED,
-        grade,
-        testPeriodId,
-        "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            subscriptionId,
+            courseId,
+            AttemptStatus.PASSED,
+            grade,
+            testPeriodId,
+            "DIURNA");
 
     assertThat(attempt.getStatus()).isEqualTo(AttemptStatus.PASSED);
     assertThat(attempt.getGrade()).isNotNull();
@@ -44,14 +45,15 @@ class CourseAttemptTest {
   @Test
   void register_failed_attempt_with_failing_grade_succeeds() {
     Grade grade = new Grade(new BigDecimal("2.0"));
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.FAILED,
-        grade,
-        testPeriodId,
-        "NOCTURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            subscriptionId,
+            courseId,
+            AttemptStatus.FAILED,
+            grade,
+            testPeriodId,
+            "NOCTURNA");
 
     assertThat(attempt.getStatus()).isEqualTo(AttemptStatus.FAILED);
     assertThat(attempt.getGrade().value()).isEqualByComparingTo(new BigDecimal("2.0"));
@@ -59,14 +61,15 @@ class CourseAttemptTest {
 
   @Test
   void register_cancelled_attempt_without_grade_succeeds() {
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.CANCELLED,
-        null,
-        testPeriodId,
-        "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            subscriptionId,
+            courseId,
+            AttemptStatus.CANCELLED,
+            null,
+            testPeriodId,
+            "DIURNA");
 
     assertThat(attempt.getStatus()).isEqualTo(AttemptStatus.CANCELLED);
     assertThat(attempt.getGrade()).isNull();
@@ -75,68 +78,78 @@ class CourseAttemptTest {
   @Test
   void passed_with_failing_grade_throws_grade_status_mismatch() {
     Grade badGrade = new Grade(new BigDecimal("2.5"));
-    assertThatThrownBy(() -> CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.PASSED,
-        badGrade,
-        testPeriodId,
-        "DIURNA"))
+    assertThatThrownBy(
+            () ->
+                CourseAttempt.register(
+                    AttemptId.generate(),
+                    subscriptionId,
+                    courseId,
+                    AttemptStatus.PASSED,
+                    badGrade,
+                    testPeriodId,
+                    "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
 
   @Test
   void passed_with_null_grade_throws_grade_status_mismatch() {
-    assertThatThrownBy(() -> CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.PASSED,
-        null,
-        testPeriodId,
-        "DIURNA"))
+    assertThatThrownBy(
+            () ->
+                CourseAttempt.register(
+                    AttemptId.generate(),
+                    subscriptionId,
+                    courseId,
+                    AttemptStatus.PASSED,
+                    null,
+                    testPeriodId,
+                    "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
 
   @Test
   void failed_with_passing_grade_throws_grade_status_mismatch() {
     Grade passingGrade = new Grade(new BigDecimal("3.5"));
-    assertThatThrownBy(() -> CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.FAILED,
-        passingGrade,
-        testPeriodId,
-        "DIURNA"))
+    assertThatThrownBy(
+            () ->
+                CourseAttempt.register(
+                    AttemptId.generate(),
+                    subscriptionId,
+                    courseId,
+                    AttemptStatus.FAILED,
+                    passingGrade,
+                    testPeriodId,
+                    "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
 
   @Test
   void failed_with_null_grade_throws_grade_status_mismatch() {
-    assertThatThrownBy(() -> CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.FAILED,
-        null,
-        testPeriodId,
-        "DIURNA"))
+    assertThatThrownBy(
+            () ->
+                CourseAttempt.register(
+                    AttemptId.generate(),
+                    subscriptionId,
+                    courseId,
+                    AttemptStatus.FAILED,
+                    null,
+                    testPeriodId,
+                    "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
 
   @Test
   void cancelled_with_grade_throws_grade_status_mismatch() {
     Grade grade = new Grade(new BigDecimal("3.0"));
-    assertThatThrownBy(() -> CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.CANCELLED,
-        grade,
-        testPeriodId,
-        "DIURNA"))
+    assertThatThrownBy(
+            () ->
+                CourseAttempt.register(
+                    AttemptId.generate(),
+                    subscriptionId,
+                    courseId,
+                    AttemptStatus.CANCELLED,
+                    grade,
+                    testPeriodId,
+                    "DIURNA"))
         .isInstanceOf(GradeStatusMismatchException.class);
   }
 
@@ -144,14 +157,15 @@ class CourseAttemptTest {
   void opaque_period_id_is_stored_without_validation() {
     Grade grade = new Grade(new BigDecimal("4.0"));
     UUID opaquePeriodId = UUID.randomUUID();
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.PASSED,
-        grade,
-        opaquePeriodId,
-        "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            subscriptionId,
+            courseId,
+            AttemptStatus.PASSED,
+            grade,
+            opaquePeriodId,
+            "DIURNA");
 
     assertThat(attempt.getPeriodId()).isEqualTo(opaquePeriodId);
   }
@@ -164,14 +178,16 @@ class CourseAttemptTest {
   @Test
   void register_with_null_period_id_throws_null_pointer_exception() {
     Grade grade = new Grade(new BigDecimal("4.0"));
-    assertThatThrownBy(() -> CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.PASSED,
-        grade,
-        null,
-        "DIURNA"))
+    assertThatThrownBy(
+            () ->
+                CourseAttempt.register(
+                    AttemptId.generate(),
+                    subscriptionId,
+                    courseId,
+                    AttemptStatus.PASSED,
+                    grade,
+                    null,
+                    "DIURNA"))
         .isInstanceOf(NullPointerException.class)
         .hasMessageContaining("periodId");
   }
@@ -180,14 +196,15 @@ class CourseAttemptTest {
   void register_with_non_null_period_id_is_stored() {
     Grade grade = new Grade(new BigDecimal("4.0"));
     UUID periodId = UUID.randomUUID();
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.PASSED,
-        grade,
-        periodId,
-        "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            subscriptionId,
+            courseId,
+            AttemptStatus.PASSED,
+            grade,
+            periodId,
+            "DIURNA");
 
     assertThat(attempt.getPeriodId()).isEqualTo(periodId);
   }
@@ -195,14 +212,15 @@ class CourseAttemptTest {
   @Test
   void registered_at_is_set_on_create() {
     Grade grade = new Grade(new BigDecimal("3.5"));
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(),
-        subscriptionId,
-        courseId,
-        AttemptStatus.PASSED,
-        grade,
-        testPeriodId,
-        "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            subscriptionId,
+            courseId,
+            AttemptStatus.PASSED,
+            grade,
+            testPeriodId,
+            "DIURNA");
 
     assertThat(attempt.getRegisteredAt()).isNotNull();
   }
@@ -212,9 +230,17 @@ class CourseAttemptTest {
     Grade originalGrade = new Grade(new BigDecimal("2.0"));
     AttemptId id = AttemptId.generate();
     // reconstitute is still nullable (DB may have old rows without periodId from before FIX-W4)
-    CourseAttempt attempt = CourseAttempt.reconstitute(
-        id, subscriptionId, courseId, AttemptStatus.FAILED, originalGrade, testPeriodId, "DIURNA",
-        java.time.Instant.now(), 0L);
+    CourseAttempt attempt =
+        CourseAttempt.reconstitute(
+            id,
+            subscriptionId,
+            courseId,
+            AttemptStatus.FAILED,
+            originalGrade,
+            testPeriodId,
+            "DIURNA",
+            java.time.Instant.now(),
+            0L);
 
     Grade newGrade = new Grade(new BigDecimal("3.5"));
     attempt.update(AttemptStatus.PASSED, newGrade, null, "DIURNA");
@@ -227,9 +253,17 @@ class CourseAttemptTest {
   void update_with_invalid_grade_throws_grade_status_mismatch() {
     Grade originalGrade = new Grade(new BigDecimal("2.0"));
     AttemptId id = AttemptId.generate();
-    CourseAttempt attempt = CourseAttempt.reconstitute(
-        id, subscriptionId, courseId, AttemptStatus.FAILED, originalGrade, testPeriodId, "DIURNA",
-        java.time.Instant.now(), 0L);
+    CourseAttempt attempt =
+        CourseAttempt.reconstitute(
+            id,
+            subscriptionId,
+            courseId,
+            AttemptStatus.FAILED,
+            originalGrade,
+            testPeriodId,
+            "DIURNA",
+            java.time.Instant.now(),
+            0L);
 
     Grade invalidGrade = new Grade(new BigDecimal("2.5")); // PASSED requires >= 3.0
     assertThatThrownBy(() -> attempt.update(AttemptStatus.PASSED, invalidGrade, null, "DIURNA"))

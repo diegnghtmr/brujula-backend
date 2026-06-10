@@ -12,7 +12,8 @@ import java.util.Objects;
  * @param unmetRequirements list of unmet prerequisites (blocking or advisory). Non-null; empty when
  *     there are no unmet requirements
  */
-public record CourseAvailability(CourseProgressStatus status, List<UnmetRequirement> unmetRequirements) {
+public record CourseAvailability(
+    CourseProgressStatus status, List<UnmetRequirement> unmetRequirements) {
 
   public CourseAvailability {
     Objects.requireNonNull(status, "status must not be null");

@@ -51,18 +51,22 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST adapter: course attempt endpoints ({@code /me/course-attempts/**}).
  *
- * <p>Implements the generated {@link ProgressApi} contract-first interface (ARQ-001). Package-private
- * per ARQ-006b. STUDENT-only; STAFF/ADMIN access rejected via {@code @PreAuthorize("hasRole('STUDENT')")}.
+ * <p>Implements the generated {@link ProgressApi} contract-first interface (ARQ-001).
+ * Package-private per ARQ-006b. STUDENT-only; STAFF/ADMIN access rejected via
+ * {@code @PreAuthorize("hasRole('STUDENT')")}.
  *
  * <p>Also implements curriculum and progress summary endpoints ({@code AVL-1}, {@code AVL-2}).
  * Delegates to {@link GetSubscriptionCurriculumQuery} and {@link GetSubscriptionProgressQuery}.
  *
  * <p>Satisfies: PRG-1..4, AVL-1, AVL-2, CROSS-2, CROSS-3, CROSS-4. ARQ-001.
  *
- * <p>FIX-W2: {@code ProgressSummary.programName} is now resolved via {@code GetSubscriptionProgressService}
- * which calls the programcatalog published port. No longer a UUID placeholder.
- * <p>CONTRACT GAP (W-3-doc): {@code PeriodAverage.periodName} still uses {@code periodId.toString()}
- * as placeholder until a period catalog lookup port is implemented (known debt).
+ * <p>FIX-W2: {@code ProgressSummary.programName} is now resolved via {@code
+ * GetSubscriptionProgressService} which calls the programcatalog published port. No longer a UUID
+ * placeholder.
+ *
+ * <p>CONTRACT GAP (W-3-doc): {@code PeriodAverage.periodName} still uses {@code
+ * periodId.toString()} as placeholder until a period catalog lookup port is implemented (known
+ * debt).
  */
 @RestController
 class CourseAttemptController implements ProgressApi {
@@ -109,29 +113,29 @@ class CourseAttemptController implements ProgressApi {
     UUID callerId = resolveCallerId();
     String requestHash = computeHash(courseAttemptCreateRequest);
 
-    String statusName = courseAttemptCreateRequest.getStatus() != null
-        ? courseAttemptCreateRequest.getStatus().getValue()
-        : null;
+    String statusName =
+        courseAttemptCreateRequest.getStatus() != null
+            ? courseAttemptCreateRequest.getStatus().getValue()
+            : null;
 
-    CreateCourseAttemptCommand command = new CreateCourseAttemptCommand(
-        idempotencyKey,
-        callerId,
-        courseAttemptCreateRequest.getSubscriptionId(),
-        courseAttemptCreateRequest.getCourseId(),
-        courseAttemptCreateRequest.getPeriodId(),
-        courseAttemptCreateRequest.getJourneyCode(),
-        statusName,
-        courseAttemptCreateRequest.getFinalGrade() != null
-            ? BigDecimal.valueOf(courseAttemptCreateRequest.getFinalGrade())
-            : null,
-        requestHash);
+    CreateCourseAttemptCommand command =
+        new CreateCourseAttemptCommand(
+            idempotencyKey,
+            callerId,
+            courseAttemptCreateRequest.getSubscriptionId(),
+            courseAttemptCreateRequest.getCourseId(),
+            courseAttemptCreateRequest.getPeriodId(),
+            courseAttemptCreateRequest.getJourneyCode(),
+            statusName,
+            courseAttemptCreateRequest.getFinalGrade() != null
+                ? BigDecimal.valueOf(courseAttemptCreateRequest.getFinalGrade())
+                : null,
+            requestHash);
 
     CourseAttemptView view = createCourseAttemptUseCase.createCourseAttempt(command);
     CourseAttempt response = toDto(view);
 
-    return ResponseEntity
-        .created(URI.create("/me/course-attempts/" + view.id()))
-        .body(response);
+    return ResponseEntity.created(URI.create("/me/course-attempts/" + view.id())).body(response);
   }
 
   // -------------------------------------------------------------------------
@@ -148,18 +152,20 @@ class CourseAttemptController implements ProgressApi {
       @Nullable List<String> sort) {
 
     UUID callerId = resolveCallerId();
-    ListCourseAttemptsQuery query = new ListCourseAttemptsQuery(
-        callerId, subscriptionId, courseId, page != null ? page : 0, size != null ? size : 20);
+    ListCourseAttemptsQuery query =
+        new ListCourseAttemptsQuery(
+            callerId, subscriptionId, courseId, page != null ? page : 0, size != null ? size : 20);
 
     CourseAttemptPageView pageView = listMyCourseAttemptsQuery.listMyCourseAttempts(query);
 
     List<CourseAttempt> dtos = pageView.content().stream().map(this::toDto).toList();
-    CourseAttemptPage result = new CourseAttemptPage(
-        pageView.page(),
-        pageView.size(),
-        pageView.totalElements(),
-        pageView.totalPages(),
-        dtos);
+    CourseAttemptPage result =
+        new CourseAttemptPage(
+            pageView.page(),
+            pageView.size(),
+            pageView.totalElements(),
+            pageView.totalPages(),
+            dtos);
 
     return ResponseEntity.ok(result);
   }
@@ -183,28 +189,28 @@ class CourseAttemptController implements ProgressApi {
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<CourseAttempt> updateCourseAttempt(
-      String xXsrfToken,
-      UUID attemptId,
-      CourseAttemptUpdateRequest courseAttemptUpdateRequest) {
+      String xXsrfToken, UUID attemptId, CourseAttemptUpdateRequest courseAttemptUpdateRequest) {
 
     UUID callerId = resolveCallerId();
     Long versionLong = courseAttemptUpdateRequest.getVersion();
     long version = versionLong != null ? versionLong : 0L;
 
-    String updateStatusName = courseAttemptUpdateRequest.getStatus() != null
-        ? courseAttemptUpdateRequest.getStatus().getValue()
-        : null;
+    String updateStatusName =
+        courseAttemptUpdateRequest.getStatus() != null
+            ? courseAttemptUpdateRequest.getStatus().getValue()
+            : null;
 
-    UpdateCourseAttemptCommand command = new UpdateCourseAttemptCommand(
-        attemptId,
-        callerId,
-        updateStatusName,
-        courseAttemptUpdateRequest.getFinalGrade() != null
-            ? BigDecimal.valueOf(courseAttemptUpdateRequest.getFinalGrade())
-            : null,
-        courseAttemptUpdateRequest.getPeriodId(),
-        courseAttemptUpdateRequest.getJourneyCode(),
-        version);
+    UpdateCourseAttemptCommand command =
+        new UpdateCourseAttemptCommand(
+            attemptId,
+            callerId,
+            updateStatusName,
+            courseAttemptUpdateRequest.getFinalGrade() != null
+                ? BigDecimal.valueOf(courseAttemptUpdateRequest.getFinalGrade())
+                : null,
+            courseAttemptUpdateRequest.getPeriodId(),
+            courseAttemptUpdateRequest.getJourneyCode(),
+            version);
 
     CourseAttemptView view = updateCourseAttemptUseCase.updateCourseAttempt(command);
     return ResponseEntity.ok(toDto(view));
@@ -230,7 +236,8 @@ class CourseAttemptController implements ProgressApi {
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<CurriculumView> getSubscriptionCurriculum(UUID subscriptionId) {
     UUID callerId = resolveCallerId();
-    CurriculumViewData data = getSubscriptionCurriculumQuery.getSubscriptionCurriculum(subscriptionId, callerId);
+    CurriculumViewData data =
+        getSubscriptionCurriculumQuery.getSubscriptionCurriculum(subscriptionId, callerId);
     CurriculumView response = toCurriculumViewDto(data);
     return ResponseEntity.ok(response);
   }
@@ -243,7 +250,8 @@ class CourseAttemptController implements ProgressApi {
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<ProgressSummary> getSubscriptionProgress(UUID subscriptionId) {
     UUID callerId = resolveCallerId();
-    ProgressSummaryView view = getSubscriptionProgressQuery.getSubscriptionProgress(subscriptionId, callerId);
+    ProgressSummaryView view =
+        getSubscriptionProgressQuery.getSubscriptionProgress(subscriptionId, callerId);
     ProgressSummary response = toProgressSummaryDto(subscriptionId, view);
     return ResponseEntity.ok(response);
   }
@@ -274,21 +282,18 @@ class CourseAttemptController implements ProgressApi {
   // -------------------------------------------------------------------------
 
   private CurriculumView toCurriculumViewDto(CurriculumViewData data) {
-    JourneyRef journeyRef = new JourneyRef(
-        data.referenceJourneyCode(),
-        data.referenceJourneyName());
+    JourneyRef journeyRef =
+        new JourneyRef(data.referenceJourneyCode(), data.referenceJourneyName());
 
-    List<CurriculumViewSemestersInner> semesters = data.semesters().stream()
-        .map(this::toSemesterDto)
-        .toList();
+    List<CurriculumViewSemestersInner> semesters =
+        data.semesters().stream().map(this::toSemesterDto).toList();
 
     return new CurriculumView(data.subscriptionId(), journeyRef, semesters);
   }
 
   private CurriculumViewSemestersInner toSemesterDto(CurriculumSemesterData semesterData) {
-    List<CurriculumCourse> courses = semesterData.courses().stream()
-        .map(this::toCurriculumCourseDto)
-        .toList();
+    List<CurriculumCourse> courses =
+        semesterData.courses().stream().map(this::toCurriculumCourseDto).toList();
     return new CurriculumViewSemestersInner(semesterData.recommendedSemester(), courses);
   }
 
@@ -296,14 +301,15 @@ class CourseAttemptController implements ProgressApi {
     // Map String type to generated enum (ARQ-001: no domain enums in REST layer)
     CourseType courseType = CourseType.fromValue(courseData.type());
     // Map String progressStatus to generated enum
-    CourseProgressStatus progressStatus = CourseProgressStatus.fromValue(courseData.progressStatus());
+    CourseProgressStatus progressStatus =
+        CourseProgressStatus.fromValue(courseData.progressStatus());
 
     return new CurriculumCourse(
-        courseData.courseId(),
-        courseData.name(),
-        courseData.credits(),
-        courseType,
-        progressStatus)
+            courseData.courseId(),
+            courseData.name(),
+            courseData.credits(),
+            courseType,
+            progressStatus)
         .officialCode(courseData.officialCode())
         .unmetRequirements(courseData.unmetRequirements());
   }
@@ -312,33 +318,34 @@ class CourseAttemptController implements ProgressApi {
    * Maps {@link ProgressSummaryView} to the generated {@link ProgressSummary} contract model.
    *
    * <p>FIX-W2: {@code programName} is now resolved from the application view (programcatalog port).
-   * <p>CONTRACT GAP (W-3-doc): {@code PeriodAverage.periodName} uses {@code periodId.toString()}
-   * as placeholder until a period catalog lookup port is implemented (known debt; TODO below).
+   *
+   * <p>CONTRACT GAP (W-3-doc): {@code PeriodAverage.periodName} uses {@code periodId.toString()} as
+   * placeholder until a period catalog lookup port is implemented (known debt; TODO below).
    */
   private ProgressSummary toProgressSummaryDto(UUID subscriptionId, ProgressSummaryView view) {
     // FIX-W2: programName is now the human-readable name resolved from programcatalog
     String programName = view.programName();
 
-    Double estimatedAvg = view.estimatedHistoricalAverage() != null
-        ? view.estimatedHistoricalAverage().doubleValue()
-        : null;
+    Double estimatedAvg =
+        view.estimatedHistoricalAverage() != null
+            ? view.estimatedHistoricalAverage().doubleValue()
+            : null;
 
-    List<PeriodAverage> periodAverages = view.averagesByPeriod() != null
-        ? view.averagesByPeriod().stream()
-            .map(this::toPeriodAverageDto)
-            .toList()
-        : List.of();
+    List<PeriodAverage> periodAverages =
+        view.averagesByPeriod() != null
+            ? view.averagesByPeriod().stream().map(this::toPeriodAverageDto).toList()
+            : List.of();
 
     return new ProgressSummary(
-        subscriptionId,
-        programName,
-        view.totalPlanCredits(),
-        view.approvedCredits(),
-        view.pendingCredits(),
-        view.progressPercentage().doubleValue(),
-        view.passedCourses(),
-        view.pendingFailedCourses(),
-        view.disclaimer())
+            subscriptionId,
+            programName,
+            view.totalPlanCredits(),
+            view.approvedCredits(),
+            view.pendingCredits(),
+            view.progressPercentage().doubleValue(),
+            view.passedCourses(),
+            view.pendingFailedCourses(),
+            view.disclaimer())
         .estimatedHistoricalAverage(estimatedAvg)
         .averagesByPeriod(periodAverages);
   }
@@ -348,9 +355,7 @@ class CourseAttemptController implements ProgressApi {
     // Requires a period catalog lookup port (out of WU4 scope; ADR-F3 deferred).
     String periodName = periodView.periodId().toString();
     return new PeriodAverage(
-        periodView.periodId(),
-        periodName,
-        periodView.estimatedAverage().doubleValue());
+        periodView.periodId(), periodName, periodView.estimatedAverage().doubleValue());
   }
 
   // -------------------------------------------------------------------------
@@ -360,11 +365,13 @@ class CourseAttemptController implements ProgressApi {
   private CourseAttempt toDto(CourseAttemptView view) {
     String courseName = view.courseName() != null ? view.courseName() : "N/A";
 
-    OffsetDateTime registeredAt = view.registeredAt() != null
-        ? view.registeredAt().atOffset(ZoneOffset.UTC)
-        : OffsetDateTime.now(ZoneOffset.UTC);
+    OffsetDateTime registeredAt =
+        view.registeredAt() != null
+            ? view.registeredAt().atOffset(ZoneOffset.UTC)
+            : OffsetDateTime.now(ZoneOffset.UTC);
 
-    // FIX-W4: periodId is contract-REQUIRED (non-null since domain enforces it). Pass through directly.
+    // FIX-W4: periodId is contract-REQUIRED (non-null since domain enforces it). Pass through
+    // directly.
     UUID periodId = view.periodId();
 
     co.edu.uniquindio.brujula.generated.model.AttemptStatus contractStatus =
@@ -373,15 +380,15 @@ class CourseAttemptController implements ProgressApi {
     Double finalGrade = view.finalGrade() != null ? view.finalGrade().doubleValue() : null;
 
     return new CourseAttempt(
-        view.id(),
-        view.subscriptionId(),
-        view.courseId(),
-        courseName,
-        periodId,
-        view.journeyCode(),
-        contractStatus,
-        registeredAt,
-        view.version())
+            view.id(),
+            view.subscriptionId(),
+            view.courseId(),
+            courseName,
+            periodId,
+            view.journeyCode(),
+            contractStatus,
+            registeredAt,
+            view.version())
         .finalGrade(finalGrade);
   }
 
@@ -391,9 +398,18 @@ class CourseAttemptController implements ProgressApi {
 
   private String computeHash(CourseAttemptCreateRequest req) {
     try {
-      String input = req.getSubscriptionId() + "|" + req.getCourseId()
-          + "|" + req.getPeriodId() + "|" + req.getJourneyCode()
-          + "|" + req.getStatus() + "|" + req.getFinalGrade();
+      String input =
+          req.getSubscriptionId()
+              + "|"
+              + req.getCourseId()
+              + "|"
+              + req.getPeriodId()
+              + "|"
+              + req.getJourneyCode()
+              + "|"
+              + req.getStatus()
+              + "|"
+              + req.getFinalGrade();
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       byte[] hash = digest.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
       return HexFormat.of().formatHex(hash);

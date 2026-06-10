@@ -16,7 +16,6 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportBatch;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportBatchId;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportIssue;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
-import co.edu.uniquindio.brujula.imports.domain.model.ImportRow;
 import co.edu.uniquindio.brujula.imports.domain.model.Severity;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
@@ -26,12 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Use case implementation: upload and validate an import file (IMP-001, IMP-002, IMP-011).
  *
  * <p>Pipeline:
+ *
  * <ol>
  *   <li>Idempotency check (same key + same hash → replay; same key + different hash → 409)
  *   <li>File type guard (415 for unsupported)
@@ -46,8 +45,9 @@ import java.util.stream.Collectors;
  *   <li>Return ImportSummary
  * </ol>
  *
- * <p>Framework-free — wired by {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
- * Mirrors {@link co.edu.uniquindio.brujula.offering.application.service.CreateOfferingService} for
+ * <p>Framework-free — wired by {@link
+ * co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}. Mirrors
+ * {@link co.edu.uniquindio.brujula.offering.application.service.CreateOfferingService} for
  * idempotency + audit patterns.
  */
 public class UploadImportService implements UploadImportUseCase {
@@ -191,15 +191,13 @@ public class UploadImportService implements UploadImportUseCase {
       case COURSES, REQUIREMENTS -> {
         if (command.planId() == null) {
           throw new MissingImportParameterException(
-              "planId",
-              "planId is required when kind is %s".formatted(kind));
+              "planId", "planId is required when kind is %s".formatted(kind));
         }
       }
       case OFFERINGS -> {
         if (command.periodId() == null) {
           throw new MissingImportParameterException(
-              "periodId",
-              "periodId is required when kind is OFFERINGS");
+              "periodId", "periodId is required when kind is OFFERINGS");
         }
       }
     }
@@ -208,11 +206,11 @@ public class UploadImportService implements UploadImportUseCase {
   /**
    * Enforces the assignment guard for STAFF actors (IMP-010, INV-06, WARNING-1 closure).
    *
-   * <p>ADMIN actors bypass this check entirely.
-   * STAFF actors must: (1) have an ACTIVE StaffAccount, (2) be assigned to the target program.
+   * <p>ADMIN actors bypass this check entirely. STAFF actors must: (1) have an ACTIVE StaffAccount,
+   * (2) be assigned to the target program.
    *
-   * <p>Uses {@link StaffAssignmentPort#resolveActiveStaffId(String)} — INACTIVE accounts
-   * return empty → 403, closing WARNING-1.
+   * <p>Uses {@link StaffAssignmentPort#resolveActiveStaffId(String)} — INACTIVE accounts return
+   * empty → 403, closing WARNING-1.
    *
    * @throws ImportAccessDeniedException if access is denied (→ 403 in WU4)
    */
@@ -241,11 +239,7 @@ public class UploadImportService implements UploadImportUseCase {
     for (ImportIssue issue : batch.getIssues()) {
       ImportSummary.ImportIssueDto dto =
           new ImportSummary.ImportIssueDto(
-              issue.row(),
-              issue.column(),
-              issue.code(),
-              issue.message(),
-              issue.severity().name());
+              issue.row(), issue.column(), issue.code(), issue.message(), issue.severity().name());
       if (issue.severity() == Severity.ERROR) {
         errors.add(dto);
       } else {

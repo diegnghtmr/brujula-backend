@@ -65,19 +65,21 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
 
     studentSubject = "student-" + UUID.randomUUID();
-    AppUser student = AppUser.provision(
-        studentSubject,
-        "student-avl-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Test Student",
-        Role.STUDENT);
+    AppUser student =
+        AppUser.provision(
+            studentSubject,
+            "student-avl-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Test Student",
+            Role.STUDENT);
     saveAppUserPort.save(student);
 
     staffSubject = "staff-" + UUID.randomUUID();
-    AppUser staff = AppUser.provision(
-        staffSubject,
-        "staff-avl-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Test Staff",
-        Role.STAFF);
+    AppUser staff =
+        AppUser.provision(
+            staffSubject,
+            "staff-avl-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Test Staff",
+            Role.STAFF);
     saveAppUserPort.save(staff);
   }
 
@@ -87,13 +89,15 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void unauthenticated_curriculum_returns_4xx() throws Exception {
-    mockMvc.perform(get("/me/subscriptions/{id}/curriculum", SUBSCRIPTION_ID))
-        .andExpect(result -> {
-          int s = result.getResponse().getStatus();
-          if (s >= 200 && s < 300) {
-            throw new AssertionError("Expected 4xx but was " + s);
-          }
-        });
+    mockMvc
+        .perform(get("/me/subscriptions/{id}/curriculum", SUBSCRIPTION_ID))
+        .andExpect(
+            result -> {
+              int s = result.getResponse().getStatus();
+              if (s >= 200 && s < 300) {
+                throw new AssertionError("Expected 4xx but was " + s);
+              }
+            });
   }
 
   // -----------------------------------------------------------------------
@@ -102,19 +106,25 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void staff_role_on_curriculum_returns_403() throws Exception {
-    mockMvc.perform(get("/me/subscriptions/{id}/curriculum", SUBSCRIPTION_ID)
-            .with(oidcLogin()
-                .idToken(t -> t.subject(staffSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+    mockMvc
+        .perform(
+            get("/me/subscriptions/{id}/curriculum", SUBSCRIPTION_ID)
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(staffSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void staff_role_on_progress_returns_403() throws Exception {
-    mockMvc.perform(get("/me/subscriptions/{id}/progress", SUBSCRIPTION_ID)
-            .with(oidcLogin()
-                .idToken(t -> t.subject(staffSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+    mockMvc
+        .perform(
+            get("/me/subscriptions/{id}/progress", SUBSCRIPTION_ID)
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(staffSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isForbidden());
   }
 
@@ -127,10 +137,13 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
     when(getSubscriptionCurriculumQuery.getSubscriptionCurriculum(any(), any()))
         .thenThrow(new SubscriptionNotFoundException(SUBSCRIPTION_ID));
 
-    mockMvc.perform(get("/me/subscriptions/{id}/curriculum", SUBSCRIPTION_ID)
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject))))
+    mockMvc
+        .perform(
+            get("/me/subscriptions/{id}/curriculum", SUBSCRIPTION_ID)
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject))))
         .andExpect(status().isNotFound());
   }
 
@@ -139,10 +152,13 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
     when(getSubscriptionProgressQuery.getSubscriptionProgress(any(), any()))
         .thenThrow(new SubscriptionNotFoundException(SUBSCRIPTION_ID));
 
-    mockMvc.perform(get("/me/subscriptions/{id}/progress", SUBSCRIPTION_ID)
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject))))
+    mockMvc
+        .perform(
+            get("/me/subscriptions/{id}/progress", SUBSCRIPTION_ID)
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject))))
         .andExpect(status().isNotFound());
   }
 
@@ -153,19 +169,23 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
   @Test
   void student_curriculum_returns_200_with_semester_and_status() throws Exception {
     UUID courseId = UUID.randomUUID();
-    CurriculumCourseData course = new CurriculumCourseData(
-        courseId, "ISC-001", "Prog 1", 3.0, "REQUIRED", "AVAILABLE", List.of(), false);
+    CurriculumCourseData course =
+        new CurriculumCourseData(
+            courseId, "ISC-001", "Prog 1", 3.0, "REQUIRED", "AVAILABLE", List.of(), false);
     CurriculumSemesterData semester = new CurriculumSemesterData(1, List.of(course));
-    CurriculumViewData viewData = new CurriculumViewData(
-        SUBSCRIPTION_ID, "DIURNA", "Jornada Diurna", List.of(semester));
+    CurriculumViewData viewData =
+        new CurriculumViewData(SUBSCRIPTION_ID, "DIURNA", "Jornada Diurna", List.of(semester));
 
     when(getSubscriptionCurriculumQuery.getSubscriptionCurriculum(any(), any()))
         .thenReturn(viewData);
 
-    mockMvc.perform(get("/me/subscriptions/{id}/curriculum", SUBSCRIPTION_ID)
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject))))
+    mockMvc
+        .perform(
+            get("/me/subscriptions/{id}/curriculum", SUBSCRIPTION_ID)
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.subscriptionId").value(SUBSCRIPTION_ID.toString()))
         .andExpect(jsonPath("$.semesters").isArray())
@@ -179,23 +199,29 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void student_progress_returns_200_with_summary_and_disclaimer() throws Exception {
-    ProgressSummaryView summary = new ProgressSummaryView(
-        SUBSCRIPTION_ID,
-        "Ingeniería de Sistemas y Computación", // FIX-W2: programName is now a real field
-        120.0, 30.0, 90.0,
-        new BigDecimal("25.00"),
-        3, 1,
-        new BigDecimal("3.5"),
-        List.of(new PeriodAverageView(UUID.randomUUID(), new BigDecimal("3.5"))),
-        "Los datos son autodeclarados y no son oficiales.");
+    ProgressSummaryView summary =
+        new ProgressSummaryView(
+            SUBSCRIPTION_ID,
+            "Ingeniería de Sistemas y Computación", // FIX-W2: programName is now a real field
+            120.0,
+            30.0,
+            90.0,
+            new BigDecimal("25.00"),
+            3,
+            1,
+            new BigDecimal("3.5"),
+            List.of(new PeriodAverageView(UUID.randomUUID(), new BigDecimal("3.5"))),
+            "Los datos son autodeclarados y no son oficiales.");
 
-    when(getSubscriptionProgressQuery.getSubscriptionProgress(any(), any()))
-        .thenReturn(summary);
+    when(getSubscriptionProgressQuery.getSubscriptionProgress(any(), any())).thenReturn(summary);
 
-    mockMvc.perform(get("/me/subscriptions/{id}/progress", SUBSCRIPTION_ID)
-            .with(oidcLogin()
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
-                .idToken(t -> t.subject(studentSubject))))
+    mockMvc
+        .perform(
+            get("/me/subscriptions/{id}/progress", SUBSCRIPTION_ID)
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.subscriptionId").value(SUBSCRIPTION_ID.toString()))
         .andExpect(jsonPath("$.approvedCredits").value(30.0))

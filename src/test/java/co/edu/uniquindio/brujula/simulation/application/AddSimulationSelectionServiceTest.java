@@ -20,12 +20,12 @@ import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadP
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort;
-import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.ProgramNameReadPort;
+import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.service.AddSimulationSelectionService;
-import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SequentialPredecessor;
+import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationLifecycle;
@@ -33,10 +33,11 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationNotFoundException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationBlockedException;
-import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
 import java.time.Instant;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -46,8 +47,8 @@ import org.junit.jupiter.api.Test;
 /**
  * WU4a application unit tests for {@link AddSimulationSelectionService}.
  *
- * <p>Covers: happy path (201), idempotency replay, hash conflict → 409, non-owner → 403,
- * simulation not found → 404, blocking validation → SimulationValidationBlockedException.
+ * <p>Covers: happy path (201), idempotency replay, hash conflict → 409, non-owner → 403, simulation
+ * not found → 404, blocking validation → SimulationValidationBlockedException.
  */
 class AddSimulationSelectionServiceTest {
 
@@ -83,17 +84,18 @@ class AddSimulationSelectionServiceTest {
     idempotencyStorePort = mock(IdempotencyStorePort.class);
     jsonCodecPort = mock(JsonCodecPort.class);
 
-    sut = new AddSimulationSelectionService(
-        loadSimulationPort,
-        loadSimulationSelectionPort,
-        saveSimulationSelectionPort,
-        offeringReadPort,
-        creditLimitPort,
-        progressReadPort,
-        curriculumReadPort,
-        programNameReadPort,
-        idempotencyStorePort,
-        jsonCodecPort);
+    sut =
+        new AddSimulationSelectionService(
+            loadSimulationPort,
+            loadSimulationSelectionPort,
+            saveSimulationSelectionPort,
+            offeringReadPort,
+            creditLimitPort,
+            progressReadPort,
+            curriculumReadPort,
+            programNameReadPort,
+            idempotencyStorePort,
+            jsonCodecPort);
   }
 
   // -------------------------------------------------------------------------
@@ -104,8 +106,9 @@ class AddSimulationSelectionServiceTest {
   void addSelection_clean_returnsView() {
     UUID idempotencyKey = UUID.randomUUID();
     String requestHash = "hash123";
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, requestHash);
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, requestHash);
 
     Simulation simulation = buildSimulation();
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
@@ -114,8 +117,7 @@ class AddSimulationSelectionServiceTest {
     when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
         .thenReturn(buildResolutionView());
     when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
-    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
-        .thenReturn(List.of());
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
     when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(Set.of());
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of());
     when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
@@ -127,9 +129,13 @@ class AddSimulationSelectionServiceTest {
     assertThat(view).isNotNull();
     assertThat(view.courseId()).isEqualTo(courseId);
     verify(saveSimulationSelectionPort).save(any(SimulationSelection.class));
-    verify(idempotencyStorePort).save(
-        eq(idempotencyKey), eq(AddSimulationSelectionService.OPERATION),
-        eq(requestHash), eq(201), any());
+    verify(idempotencyStorePort)
+        .save(
+            eq(idempotencyKey),
+            eq(AddSimulationSelectionService.OPERATION),
+            eq(requestHash),
+            eq(201),
+            any());
   }
 
   // -------------------------------------------------------------------------
@@ -140,8 +146,9 @@ class AddSimulationSelectionServiceTest {
   void addSelection_sameKeyAndHash_replaysStoredResult() {
     UUID idempotencyKey = UUID.randomUUID();
     String requestHash = "same-hash";
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, requestHash);
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, requestHash);
 
     SimulationSelectionView storedView = buildMinimalView();
     IdempotencyStorePort.StoredRecord stored =
@@ -161,8 +168,9 @@ class AddSimulationSelectionServiceTest {
   @Test
   void addSelection_sameKeyDifferentHash_throwsConflict() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "new-hash");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "new-hash");
 
     IdempotencyStorePort.StoredRecord stored =
         new IdempotencyStorePort.StoredRecord("original-hash", 201, "{}");
@@ -181,8 +189,9 @@ class AddSimulationSelectionServiceTest {
   void addSelection_nonOwner_throws403() {
     UUID idempotencyKey = UUID.randomUUID();
     UUID intruder = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, intruder, scheduleOptionId, false, "h");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, intruder, scheduleOptionId, false, "h");
 
     Simulation simulation = buildSimulation(); // ownerId is the real owner, not intruder
     when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
@@ -198,8 +207,9 @@ class AddSimulationSelectionServiceTest {
   @Test
   void addSelection_simulationNotFound_throws404() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h");
 
     when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
         .thenReturn(Optional.empty());
@@ -216,8 +226,9 @@ class AddSimulationSelectionServiceTest {
   @Test
   void addSelection_alreadyPassed_throwsBlockedException() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h");
 
     Simulation simulation = buildSimulation();
     when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
@@ -226,8 +237,7 @@ class AddSimulationSelectionServiceTest {
     when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
         .thenReturn(buildResolutionView());
     when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
-    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
-        .thenReturn(List.of());
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
     // Student has already passed the course
     when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(Set.of(courseId));
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of());
@@ -236,10 +246,13 @@ class AddSimulationSelectionServiceTest {
 
     assertThatThrownBy(() -> sut.addSelection(command))
         .isInstanceOf(SimulationValidationBlockedException.class)
-        .satisfies(ex -> {
-          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
-          assertThat(blocked.primaryNotice().code()).isEqualTo("SIMULATION_COURSE_ALREADY_PASSED");
-        });
+        .satisfies(
+            ex -> {
+              SimulationValidationBlockedException blocked =
+                  (SimulationValidationBlockedException) ex;
+              assertThat(blocked.primaryNotice().code())
+                  .isEqualTo("SIMULATION_COURSE_ALREADY_PASSED");
+            });
 
     verify(saveSimulationSelectionPort, never()).save(any());
   }
@@ -249,18 +262,19 @@ class AddSimulationSelectionServiceTest {
   // -------------------------------------------------------------------------
 
   /**
-   * RED→GREEN proof: candidate course has 3 credits; existing selections already sum to 21
-   * for the same program; credit limit is 23. Attempting to add 3 more (21+3=24) exceeds
-   * the limit → SIMULATION_CREDIT_LIMIT_EXCEEDED must be thrown.
+   * RED→GREEN proof: candidate course has 3 credits; existing selections already sum to 21 for the
+   * same program; credit limit is 23. Attempting to add 3 more (21+3=24) exceeds the limit →
+   * SIMULATION_CREDIT_LIMIT_EXCEEDED must be thrown.
    *
-   * <p>Before CRITICAL-1 fix this test would FAIL (credits=0 → 21+0=21 ≤ 23 → no block).
-   * After fix it PASSES because real credits (3) are used.
+   * <p>Before CRITICAL-1 fix this test would FAIL (credits=0 → 21+0=21 ≤ 23 → no block). After fix
+   * it PASSES because real credits (3) are used.
    */
   @Test
   void addSelection_creditLimitExceeded_throwsBlockedException() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h");
 
     // Existing selections: two courses of 10 and 11 credits = 21 total for the same program
     UUID existingCourseId1 = UUID.randomUUID();
@@ -286,28 +300,33 @@ class AddSimulationSelectionServiceTest {
 
     assertThatThrownBy(() -> sut.addSelection(command))
         .isInstanceOf(SimulationValidationBlockedException.class)
-        .satisfies(ex -> {
-          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
-          assertThat(blocked.primaryNotice().code()).isEqualTo("SIMULATION_CREDIT_LIMIT_EXCEEDED");
-          assertThat(blocked.primaryNotice().metadata()).containsEntry("programName",
-              "Ingeniería de Sistemas");
-          assertThat((Integer) blocked.primaryNotice().metadata().get("creditLimit")).isEqualTo(23);
-          assertThat((Double) blocked.primaryNotice().metadata().get("attemptedCredits"))
-              .isEqualTo(24.0);
-        });
+        .satisfies(
+            ex -> {
+              SimulationValidationBlockedException blocked =
+                  (SimulationValidationBlockedException) ex;
+              assertThat(blocked.primaryNotice().code())
+                  .isEqualTo("SIMULATION_CREDIT_LIMIT_EXCEEDED");
+              assertThat(blocked.primaryNotice().metadata())
+                  .containsEntry("programName", "Ingeniería de Sistemas");
+              assertThat((Integer) blocked.primaryNotice().metadata().get("creditLimit"))
+                  .isEqualTo(23);
+              assertThat((Double) blocked.primaryNotice().metadata().get("attemptedCredits"))
+                  .isEqualTo(24.0);
+            });
 
     verify(saveSimulationSelectionPort, never()).save(any());
   }
 
   /**
-   * Boundary case: existing credits = 20, candidate = 3, limit = 23. Exactly at limit → ALLOWED
-   * (no exception). Spec rule: exactly-at-limit is not exceeded.
+   * Boundary case: existing credits = 20, candidate = 3, limit = 23. Exactly at limit → ALLOWED (no
+   * exception). Spec rule: exactly-at-limit is not exceeded.
    */
   @Test
   void addSelection_creditLimitExactlyAtLimit_allowed() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h2");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h2");
 
     SimulationSelection sel1 = buildPersistedSelection(UUID.randomUUID(), programId, 20.0);
 
@@ -344,8 +363,9 @@ class AddSimulationSelectionServiceTest {
   @Test
   void addSelection_duplicateCourse_throwsBlockedException() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "dup-hash");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "dup-hash");
 
     // Existing selection with the SAME courseId that the candidate resolves to
     SimulationSelection existingSel = buildPersistedSelection(courseId, programId, 3.0);
@@ -366,10 +386,13 @@ class AddSimulationSelectionServiceTest {
 
     assertThatThrownBy(() -> sut.addSelection(command))
         .isInstanceOf(SimulationValidationBlockedException.class)
-        .satisfies(ex -> {
-          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
-          assertThat(blocked.primaryNotice().code()).isEqualTo("SIMULATION_DUPLICATE_SELECTION");
-        });
+        .satisfies(
+            ex -> {
+              SimulationValidationBlockedException blocked =
+                  (SimulationValidationBlockedException) ex;
+              assertThat(blocked.primaryNotice().code())
+                  .isEqualTo("SIMULATION_DUPLICATE_SELECTION");
+            });
 
     verify(saveSimulationSelectionPort, never()).save(any());
   }
@@ -379,15 +402,16 @@ class AddSimulationSelectionServiceTest {
   // -------------------------------------------------------------------------
 
   /**
-   * WU4b: When a soft (inferred MEDIUM) prerequisite is unmet, addSelection returns 201
-   * (no blocking exception) and the view contains the SIMULATION_SOFT_PREREQ_WARNING notice.
+   * WU4b: When a soft (inferred MEDIUM) prerequisite is unmet, addSelection returns 201 (no
+   * blocking exception) and the view contains the SIMULATION_SOFT_PREREQ_WARNING notice.
    */
   @Test
   void addSelection_softPrereqUnmet_returnsViewWithWarning() {
     UUID idempotencyKey = UUID.randomUUID();
     UUID softPrereqId = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "soft-hash");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "soft-hash");
 
     // Soft (inferred=true, MEDIUM) prerequisite — unmet
     co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement softReq =
@@ -401,8 +425,7 @@ class AddSimulationSelectionServiceTest {
     when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
         .thenReturn(buildResolutionView());
     when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
-    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
-        .thenReturn(List.of());
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
     // Student has NOT passed the soft prereq
     when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(Set.of());
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of(softReq));
@@ -420,8 +443,7 @@ class AddSimulationSelectionServiceTest {
     assertThat(view).isNotNull();
     // The view must include the soft warning
     assertThat(view.warnings()).isNotEmpty();
-    assertThat(view.warnings()).anyMatch(
-        n -> "SIMULATION_SOFT_PREREQ_WARNING".equals(n.code()));
+    assertThat(view.warnings()).anyMatch(n -> "SIMULATION_SOFT_PREREQ_WARNING".equals(n.code()));
     verify(saveSimulationSelectionPort).save(any(SimulationSelection.class));
   }
 
@@ -432,21 +454,22 @@ class AddSimulationSelectionServiceTest {
   /**
    * RED→GREEN proof for FIX F1 (fix-batch WU4b).
    *
-   * <p>Scenario: student has passed 10 courses of 5 credits each = 50 actual credits.
-   * The candidate course has a MINIMUM_CREDITS requirement of 60.
-   * With the old size()-proxy: accumulatedCredits = 10 (count) → rule compares 10 < 60 → BLOCKS.
-   * With the new sum: accumulatedCredits = 50 (sum) → rule compares 50 < 60 → BLOCKS.
-   * Both produce the same blocking result here — the GREEN case below proves the sum is used.
+   * <p>Scenario: student has passed 10 courses of 5 credits each = 50 actual credits. The candidate
+   * course has a MINIMUM_CREDITS requirement of 60. With the old size()-proxy: accumulatedCredits =
+   * 10 (count) → rule compares 10 < 60 → BLOCKS. With the new sum: accumulatedCredits = 50 (sum) →
+   * rule compares 50 < 60 → BLOCKS. Both produce the same blocking result here — the GREEN case
+   * below proves the sum is used.
    *
-   * <p>Green case: 12 courses × 5 credits = 60 = exactly the minimum → ALLOWED (no throw).
-   * With size(): 12 < 60 → would BLOCK (wrong). With sum(): 60 ≥ 60 → ALLOWED (correct).
-   * This test WOULD HAVE FAILED (red) with the old size() proxy; now it's GREEN with the fix.
+   * <p>Green case: 12 courses × 5 credits = 60 = exactly the minimum → ALLOWED (no throw). With
+   * size(): 12 < 60 → would BLOCK (wrong). With sum(): 60 ≥ 60 → ALLOWED (correct). This test WOULD
+   * HAVE FAILED (red) with the old size() proxy; now it's GREEN with the fix.
    */
   @Test
   void addSelection_minCreditsNotMet_insufficientCreditSum_throwsBlockedException() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "min-cred-hash");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "min-cred-hash");
 
     // 10 passed courses, each worth 5 credits → real sum = 50; count = 10
     UUID passedCourse1 = UUID.randomUUID();
@@ -459,9 +482,18 @@ class AddSimulationSelectionServiceTest {
     UUID passedCourse8 = UUID.randomUUID();
     UUID passedCourse9 = UUID.randomUUID();
     UUID passedCourse10 = UUID.randomUUID();
-    Set<UUID> passedIds = Set.of(passedCourse1, passedCourse2, passedCourse3,
-        passedCourse4, passedCourse5, passedCourse6, passedCourse7,
-        passedCourse8, passedCourse9, passedCourse10);
+    Set<UUID> passedIds =
+        Set.of(
+            passedCourse1,
+            passedCourse2,
+            passedCourse3,
+            passedCourse4,
+            passedCourse5,
+            passedCourse6,
+            passedCourse7,
+            passedCourse8,
+            passedCourse9,
+            passedCourse10);
 
     // MINIMUM_CREDITS requirement: student needs 60 accumulated credits to take this course
     co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement minCredReq =
@@ -475,13 +507,18 @@ class AddSimulationSelectionServiceTest {
     when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
         .thenReturn(buildResolutionView());
     when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
-    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
-        .thenReturn(List.of());
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
     when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(passedIds);
     // Each passed course is worth 5 credits → sum = 50, but count = 10
     for (UUID pid : passedIds) {
       when(curriculumReadPort.courseCredits(pid)).thenReturn(5);
     }
+    // DEBT-F7-001 fix: stub the batch method used after refactor
+    Map<UUID, Integer> passedCreditsMap50 = new HashMap<>();
+    for (UUID pid : passedIds) {
+      passedCreditsMap50.put(pid, 5);
+    }
+    when(curriculumReadPort.coursesCredits(passedIds)).thenReturn(passedCreditsMap50);
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of(minCredReq));
     when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
     when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
@@ -489,10 +526,13 @@ class AddSimulationSelectionServiceTest {
     // Real sum = 50 < 60 → must block
     assertThatThrownBy(() -> sut.addSelection(command))
         .isInstanceOf(SimulationValidationBlockedException.class)
-        .satisfies(ex -> {
-          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
-          assertThat(blocked.primaryNotice().code()).isEqualTo("SIMULATION_MIN_CREDITS_NOT_MET");
-        });
+        .satisfies(
+            ex -> {
+              SimulationValidationBlockedException blocked =
+                  (SimulationValidationBlockedException) ex;
+              assertThat(blocked.primaryNotice().code())
+                  .isEqualTo("SIMULATION_MIN_CREDITS_NOT_MET");
+            });
 
     verify(saveSimulationSelectionPort, never()).save(any());
   }
@@ -507,8 +547,9 @@ class AddSimulationSelectionServiceTest {
   @Test
   void addSelection_minCreditsMet_exactCreditSum_allowed() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "min-cred-ok-hash");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "min-cred-ok-hash");
 
     // 12 passed courses × 5 credits each = 60 (exactly meets minimum)
     Set<UUID> passedIds = new java.util.HashSet<>();
@@ -528,13 +569,18 @@ class AddSimulationSelectionServiceTest {
     when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
         .thenReturn(buildResolutionView());
     when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
-    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
-        .thenReturn(List.of());
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
     when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(passedIds);
     // Each passed course is worth 5 credits → sum = 60 = exactly the minimum
     for (UUID pid : passedIds) {
       when(curriculumReadPort.courseCredits(pid)).thenReturn(5);
     }
+    // DEBT-F7-001 fix: stub the batch method used after refactor
+    Map<UUID, Integer> passedCreditsMap60 = new HashMap<>();
+    for (UUID pid : passedIds) {
+      passedCreditsMap60.put(pid, 5);
+    }
+    when(curriculumReadPort.coursesCredits(passedIds)).thenReturn(passedCreditsMap60);
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of(minCredReq));
     when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
     when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
@@ -552,18 +598,20 @@ class AddSimulationSelectionServiceTest {
   // -------------------------------------------------------------------------
 
   /**
-   * FIX F3: Asserts that a BLOCKING validation notice is never bypassed by acknowledgeWarnings=true.
+   * FIX F3: Asserts that a BLOCKING validation notice is never bypassed by
+   * acknowledgeWarnings=true.
    *
-   * <p>Per spec VAL-009: warnings are never blocking — they always ride in warnings[].
-   * The acknowledgeWarnings flag is RESERVED / no-op. A BLOCKING notice (e.g. already-passed)
-   * always produces SimulationValidationBlockedException regardless of the flag value.
+   * <p>Per spec VAL-009: warnings are never blocking — they always ride in warnings[]. The
+   * acknowledgeWarnings flag is RESERVED / no-op. A BLOCKING notice (e.g. already-passed) always
+   * produces SimulationValidationBlockedException regardless of the flag value.
    */
   @Test
   void addSelection_blockingPresent_acknowledgeWarningsTrue_stillThrows() {
     UUID idempotencyKey = UUID.randomUUID();
     // acknowledgeWarnings = true — must NOT bypass blocking
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, true, "ack-block-hash");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, true, "ack-block-hash");
 
     Simulation simulation = buildSimulation();
     when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
@@ -572,8 +620,7 @@ class AddSimulationSelectionServiceTest {
     when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
         .thenReturn(buildResolutionView());
     when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
-    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
-        .thenReturn(List.of());
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
     // Student has already passed the course → BLOCKING notice
     when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(Set.of(courseId));
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of());
@@ -583,23 +630,27 @@ class AddSimulationSelectionServiceTest {
     // Even with acknowledgeWarnings=true, BLOCKING must still throw 409
     assertThatThrownBy(() -> sut.addSelection(command))
         .isInstanceOf(SimulationValidationBlockedException.class)
-        .satisfies(ex -> {
-          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
-          assertThat(blocked.primaryNotice().code()).isEqualTo("SIMULATION_COURSE_ALREADY_PASSED");
-        });
+        .satisfies(
+            ex -> {
+              SimulationValidationBlockedException blocked =
+                  (SimulationValidationBlockedException) ex;
+              assertThat(blocked.primaryNotice().code())
+                  .isEqualTo("SIMULATION_COURSE_ALREADY_PASSED");
+            });
 
     verify(saveSimulationSelectionPort, never()).save(any());
   }
 
   /**
-   * Asserts that when the credit limit is exceeded, the metadata.programName contains
-   * the real program name resolved via ProgramNameReadPort (CRITICAL-2 fix).
+   * Asserts that when the credit limit is exceeded, the metadata.programName contains the real
+   * program name resolved via ProgramNameReadPort (CRITICAL-2 fix).
    */
   @Test
   void addSelection_creditLimitExceeded_metadataContainsRealProgramName() {
     UUID idempotencyKey = UUID.randomUUID();
-    AddSelectionCommand command = new AddSelectionCommand(
-        idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h3");
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "h3");
 
     SimulationSelection sel1 = buildPersistedSelection(UUID.randomUUID(), programId, 21.0);
 
@@ -620,19 +671,21 @@ class AddSimulationSelectionServiceTest {
 
     assertThatThrownBy(() -> sut.addSelection(command))
         .isInstanceOf(SimulationValidationBlockedException.class)
-        .satisfies(ex -> {
-          SimulationValidationBlockedException blocked = (SimulationValidationBlockedException) ex;
-          assertThat(blocked.primaryNotice().metadata())
-              .containsEntry("programName", "Industrial Engineering");
-        });
+        .satisfies(
+            ex -> {
+              SimulationValidationBlockedException blocked =
+                  (SimulationValidationBlockedException) ex;
+              assertThat(blocked.primaryNotice().metadata())
+                  .containsEntry("programName", "Industrial Engineering");
+            });
   }
 
   // -------------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------------
 
-  private SimulationSelection buildPersistedSelection(UUID existingCourseId,
-      UUID programIdForSelection, double credits) {
+  private SimulationSelection buildPersistedSelection(
+      UUID existingCourseId, UUID programIdForSelection, double credits) {
     return SimulationSelection.reconstitute(
         SimulationSelectionId.generate(),
         simulationId,

@@ -1,15 +1,14 @@
 package co.edu.uniquindio.brujula.simulation.application.port.out;
 
 import co.edu.uniquindio.brujula.simulation.application.dto.ScheduleOptionResolutionView;
-
 import java.util.UUID;
 
 /**
  * Output port: read offering data from the offering module (ADR-F4-005).
  *
- * <p>WU3: {@link #resolvePeriodName(UUID)} — returns human-readable period name.
- * WU4a: {@link #resolveScheduleOption(UUID)} — resolves full schedule option context.
- *        {@link #currentOfferingVersion(UUID)} — returns current offering version for staleness.
+ * <p>WU3: {@link #resolvePeriodName(UUID)} — returns human-readable period name. WU4a: {@link
+ * #resolveScheduleOption(UUID)} — resolves full schedule option context. {@link
+ * #currentOfferingVersion(UUID)} — returns current offering version for staleness.
  */
 public interface OfferingReadPort {
 

@@ -9,11 +9,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Use case service: resend the email verification message (S2-C).
  *
- * <p>Security invariant — NO USER ENUMERATION:
- * This service completes silently for BOTH known and unknown emails. The caller (controller)
- * always returns 202 Accepted, making it impossible to determine account existence.
+ * <p>Security invariant — NO USER ENUMERATION: This service completes silently for BOTH known and
+ * unknown emails. The caller (controller) always returns 202 Accepted, making it impossible to
+ * determine account existence.
  *
  * <p>Orchestration:
+ *
  * <ol>
  *   <li>Look up AppUser by email in the local database.
  *   <li>If found, call {@link KeycloakUserProvisioningPort#resendEmailVerification} to re-trigger
@@ -21,8 +22,8 @@ import org.slf4j.LoggerFactory;
  *   <li>If NOT found, return silently (no Keycloak call, no exception).
  * </ol>
  *
- * <p>Framework-free (ARQ-002). Wired by
- * {@link co.edu.uniquindio.brujula.identity.infrastructure.configuration.IdentityConfiguration}.
+ * <p>Framework-free (ARQ-002). Wired by {@link
+ * co.edu.uniquindio.brujula.identity.infrastructure.configuration.IdentityConfiguration}.
  */
 public class ResendEmailVerificationService implements ResendEmailVerificationUseCase {
 
@@ -47,7 +48,8 @@ public class ResendEmailVerificationService implements ResendEmailVerificationUs
     var maybeUser = loadAppUserPort.findByEmail(email);
     if (maybeUser.isEmpty()) {
       // Do NOT log at INFO — logging would create a timing/log side-channel.
-      log.debug("resendEmailVerification: email not found locally, returning silently (no enumeration)");
+      log.debug(
+          "resendEmailVerification: email not found locally, returning silently (no enumeration)");
       return;
     }
 

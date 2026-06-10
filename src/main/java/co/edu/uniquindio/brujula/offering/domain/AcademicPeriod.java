@@ -6,8 +6,8 @@ import java.util.Objects;
 /**
  * Domain entity representing an academic period (e.g., "2026-2").
  *
- * <p>Instances are reconstituted from persistence by the mapper via the package-private
- * {@link #reconstitute} factory method.
+ * <p>Instances are reconstituted from persistence by the mapper via the package-private {@link
+ * #reconstitute} factory method.
  */
 public class AcademicPeriod {
 
@@ -36,11 +36,11 @@ public class AcademicPeriod {
   /**
    * Write factory: creates a brand-new {@link AcademicPeriod} with version 0.
    *
-   * <p>Null {@code status} defaults to {@link PeriodStatus#UPCOMING}.
-   * No PeriodStatus transition guard is enforced in Slice 1 — status is set directly.
+   * <p>Null {@code status} defaults to {@link PeriodStatus#UPCOMING}. No PeriodStatus transition
+   * guard is enforced in Slice 1 — status is set directly.
    *
-   * @param id     must not be null
-   * @param name   must not be null
+   * @param id must not be null
+   * @param name must not be null
    * @param status defaults to UPCOMING when null
    */
   public static AcademicPeriod create(
@@ -56,19 +56,18 @@ public class AcademicPeriod {
   }
 
   /**
-   * Returns a new {@link AcademicPeriod} applying the non-null fields from the parameters.
-   * Null parameters keep the existing value. Version carries over (bumped at JPA flush).
+   * Returns a new {@link AcademicPeriod} applying the non-null fields from the parameters. Null
+   * parameters keep the existing value. Version carries over (bumped at JPA flush).
    */
   public AcademicPeriod update(LocalDate startDate, LocalDate endDate, PeriodStatus status) {
     LocalDate effectiveStart = startDate != null ? startDate : this.startDate;
     LocalDate effectiveEnd = endDate != null ? endDate : this.endDate;
     PeriodStatus effectiveStatus = status != null ? status : this.status;
-    return new AcademicPeriod(this.id, this.name, effectiveStart, effectiveEnd, effectiveStatus, this.version);
+    return new AcademicPeriod(
+        this.id, this.name, effectiveStart, effectiveEnd, effectiveStatus, this.version);
   }
 
-  /**
-   * Public factory for mapper reconstitution — mirrors progress Subscription.reconstitute().
-   */
+  /** Public factory for mapper reconstitution — mirrors progress Subscription.reconstitute(). */
   public static AcademicPeriod reconstitute(
       AcademicPeriodId id,
       String name,

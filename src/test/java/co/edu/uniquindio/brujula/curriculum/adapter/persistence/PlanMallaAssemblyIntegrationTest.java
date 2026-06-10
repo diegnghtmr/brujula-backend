@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Testcontainers integration test for the PlanMalla assembly pipeline.
  *
  * <p>Validates:
+ *
  * <ul>
  *   <li>Assembly over the seeded Sistemas DIURNA plan returns ≥ 1 semester bucket
  *   <li>Performance: assembly completes in &lt;500ms (ADR-F2-001)
@@ -97,9 +98,7 @@ class PlanMallaAssemblyIntegrationTest extends AbstractPostgresIntegrationTest {
 
     PlanMallaView result = assemblePlanMallaQuery.assemblePlanMalla(planId, "DIURNA");
 
-    long totalCourses = result.semesterBuckets().stream()
-        .mapToLong(b -> b.courses().size())
-        .sum();
+    long totalCourses = result.semesterBuckets().stream().mapToLong(b -> b.courses().size()).sum();
 
     assertThat(totalCourses)
         .as("Sistemas DIURNA malla should contain all 57 active courses")
@@ -120,7 +119,8 @@ class PlanMallaAssemblyIntegrationTest extends AbstractPostgresIntegrationTest {
 
     assertThat(result.semesterBuckets()).isNotEmpty();
     assertThat(elapsed.toMillis())
-        .as("Malla assembly for Sistemas DIURNA must complete in <500ms (ADR-F2-001), was %dms",
+        .as(
+            "Malla assembly for Sistemas DIURNA must complete in <500ms (ADR-F2-001), was %dms",
             elapsed.toMillis())
         .isLessThan(500L);
   }

@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
  * REST adapter implementing the generated {@link CatalogApi} interface (contract-first, ARQ-001).
  *
  * <p>Implements the read-only catalog endpoints for Phase 3 WU4:
+ *
  * <ul>
  *   <li>GET /programs — listPrograms (CAT-001)
  *   <li>GET /programs/{programId} — getProgram (CAT-001)
@@ -69,10 +70,7 @@ class CatalogController implements CatalogApi {
   /** CAT-001: list programs with optional status filter and pagination. */
   @Override
   public ResponseEntity<ProgramPage> listPrograms(
-      @Nullable ProgramStatus status,
-      Integer page,
-      Integer size,
-      @Nullable List<String> sort) {
+      @Nullable ProgramStatus status, Integer page, Integer size, @Nullable List<String> sort) {
     String statusFilter = status != null ? status.getValue() : null;
     PagedResult<ProgramView> result = listProgramsQuery.listPrograms(statusFilter, page, size);
     ProgramPage programPage = toProgramPage(result);
@@ -88,7 +86,8 @@ class CatalogController implements CatalogApi {
 
   /** CAT-002: list study plans for a program (with role-based visibility). */
   @Override
-  public ResponseEntity<List<StudyPlan>> listProgramPlans(UUID programId, @Nullable PlanStatus status) {
+  public ResponseEntity<List<StudyPlan>> listProgramPlans(
+      UUID programId, @Nullable PlanStatus status) {
     String callerRole = resolveCallerRole();
     List<StudyPlanView> views = listProgramPlansQuery.listProgramPlans(programId, callerRole);
     List<StudyPlan> result = views.stream().map(this::toStudyPlanDto).toList();
@@ -116,9 +115,7 @@ class CatalogController implements CatalogApi {
   // ---------------------------------------------------------------------------
 
   private ProgramPage toProgramPage(PagedResult<ProgramView> result) {
-    List<Program> programs = result.content().stream()
-        .map(this::toProgramDto)
-        .toList();
+    List<Program> programs = result.content().stream().map(this::toProgramDto).toList();
     ProgramPage page = new ProgramPage();
     page.setPage(result.page());
     page.setSize(result.size());
@@ -170,9 +167,9 @@ class CatalogController implements CatalogApi {
   /**
    * Extract the caller's highest-privilege role from the Spring Security context.
    *
-   * <p>Role strings follow the {@code ROLE_} prefix convention. Returns the role without the
-   * prefix (e.g. "STAFF" for {@code ROLE_STAFF}). Defaults to {@code null} (student-level
-   * visibility) if no principal or no recognized role is found.
+   * <p>Role strings follow the {@code ROLE_} prefix convention. Returns the role without the prefix
+   * (e.g. "STAFF" for {@code ROLE_STAFF}). Defaults to {@code null} (student-level visibility) if
+   * no principal or no recognized role is found.
    */
   private String resolveCallerRole() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();

@@ -14,8 +14,8 @@ import java.util.UUID;
 /**
  * Application service: soft-delete a simulation selection (spec VAL-010).
  *
- * <p>Validates ownership of the simulation. Returns void (HTTP 204).
- * Framework-free — wired by {@code SimulationConfiguration}.
+ * <p>Validates ownership of the simulation. Returns void (HTTP 204). Framework-free — wired by
+ * {@code SimulationConfiguration}.
  */
 public class RemoveSimulationSelectionService implements RemoveSimulationSelectionUseCase {
 
@@ -35,16 +35,20 @@ public class RemoveSimulationSelectionService implements RemoveSimulationSelecti
   @Override
   public void removeSelection(UUID simulationId, UUID selectionId, UUID ownerId) {
     // 1. Load simulation + ownership check
-    Simulation simulation = loadSimulationPort.loadById(simulationId)
-        .orElseThrow(() -> new SimulationNotFoundException(simulationId));
+    Simulation simulation =
+        loadSimulationPort
+            .loadById(simulationId)
+            .orElseThrow(() -> new SimulationNotFoundException(simulationId));
     if (!simulation.getOwnerId().equals(ownerId)) {
       throw new SimulationAccessDeniedException(simulationId);
     }
 
     // 2. Load selection (also validates it belongs to this simulation)
-    SimulationSelection selection = loadSimulationSelectionPort.loadById(selectionId)
-        .filter(s -> simulationId.equals(s.getSimulationId()))
-        .orElseThrow(() -> new SimulationSelectionNotFoundException(selectionId));
+    SimulationSelection selection =
+        loadSimulationSelectionPort
+            .loadById(selectionId)
+            .filter(s -> simulationId.equals(s.getSimulationId()))
+            .orElseThrow(() -> new SimulationSelectionNotFoundException(selectionId));
 
     // 3. Soft delete
     selection.markDeleted();

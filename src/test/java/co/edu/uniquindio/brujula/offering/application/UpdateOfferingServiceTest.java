@@ -17,14 +17,12 @@ import co.edu.uniquindio.brujula.offering.domain.CourseOffering;
 import co.edu.uniquindio.brujula.offering.domain.CourseOfferingId;
 import co.edu.uniquindio.brujula.offering.domain.OfferingNotFoundException;
 import co.edu.uniquindio.brujula.offering.domain.OfferingStatus;
-import org.springframework.dao.OptimisticLockingFailureException;
-
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 /**
  * TDD unit tests for {@link UpdateOfferingService}.
@@ -33,9 +31,9 @@ import org.junit.jupiter.api.Test;
  * returned view version &gt; input expectedVersion (version-bump test — staleness keystone).
  *
  * <p>The version-bump test is the staleness keystone: the simulation StalenessEvaluator reads
- * course_offering.version at query time; the only way OUTDATED fires is if updateOffering
- * genuinely increments @Version. This test proves the service propagates the bumped version
- * from the persistence layer back to the caller. Zero Spring.
+ * course_offering.version at query time; the only way OUTDATED fires is if updateOffering genuinely
+ * increments @Version. This test proves the service propagates the bumped version from the
+ * persistence layer back to the caller. Zero Spring.
  */
 class UpdateOfferingServiceTest {
 
@@ -60,8 +58,8 @@ class UpdateOfferingServiceTest {
   void offering_not_found_throws_OfferingNotFoundException() {
     when(saveOfferingPort.findCurrentById(offeringId)).thenReturn(Optional.empty());
 
-    UpdateOfferingCommand command = new UpdateOfferingCommand(
-        offeringIdValue, UUID.randomUUID(), "notes", 0L);
+    UpdateOfferingCommand command =
+        new UpdateOfferingCommand(offeringIdValue, UUID.randomUUID(), "notes", 0L);
 
     assertThatThrownBy(() -> service.updateOffering(command))
         .isInstanceOf(OfferingNotFoundException.class);
@@ -69,14 +67,22 @@ class UpdateOfferingServiceTest {
 
   @Test
   void optimistic_lock_conflict_propagates() {
-    CourseOffering existing = CourseOffering.reconstitute(
-        offeringId, courseId, "Course", programId, periodId,
-        OfferingStatus.DRAFT, "Old notes", Collections.emptyList(), 2L);
+    CourseOffering existing =
+        CourseOffering.reconstitute(
+            offeringId,
+            courseId,
+            "Course",
+            programId,
+            periodId,
+            OfferingStatus.DRAFT,
+            "Old notes",
+            Collections.emptyList(),
+            2L);
     when(saveOfferingPort.findCurrentById(offeringId)).thenReturn(Optional.of(existing));
     when(saveOfferingPort.save(any())).thenThrow(new OptimisticLockingFailureException("stale"));
 
-    UpdateOfferingCommand command = new UpdateOfferingCommand(
-        offeringIdValue, UUID.randomUUID(), "New notes", 1L);
+    UpdateOfferingCommand command =
+        new UpdateOfferingCommand(offeringIdValue, UUID.randomUUID(), "New notes", 1L);
 
     assertThatThrownBy(() -> service.updateOffering(command))
         .isInstanceOf(OptimisticLockingFailureException.class);
@@ -85,29 +91,45 @@ class UpdateOfferingServiceTest {
   /**
    * Staleness keystone test: returned view version MUST be greater than expectedVersion.
    *
-   * <p>The fake SaveOfferingPort simulates the @Version increment (JPA bumps version on flush).
-   * If UpdateOfferingService fails to use the returned saved object's version, this test
-   * catches the bug — same bug that made the prior staleness path dead/fake-green.
+   * <p>The fake SaveOfferingPort simulates the @Version increment (JPA bumps version on flush). If
+   * UpdateOfferingService fails to use the returned saved object's version, this test catches the
+   * bug — same bug that made the prior staleness path dead/fake-green.
    */
   @Test
   void success_returns_view_with_bumped_version_staleness_keystone() {
     long expectedVersion = 3L;
     long bumpedVersion = 4L; // @Version auto-incremented by JPA on flush
 
-    CourseOffering existing = CourseOffering.reconstitute(
-        offeringId, courseId, "Course", programId, periodId,
-        OfferingStatus.DRAFT, "Old notes", Collections.emptyList(), expectedVersion);
+    CourseOffering existing =
+        CourseOffering.reconstitute(
+            offeringId,
+            courseId,
+            "Course",
+            programId,
+            periodId,
+            OfferingStatus.DRAFT,
+            "Old notes",
+            Collections.emptyList(),
+            expectedVersion);
 
     // Simulate adapter returning managed entity with bumped version (JPA @Version increment)
-    CourseOffering savedWithBumpedVersion = CourseOffering.reconstitute(
-        offeringId, courseId, "Course", programId, periodId,
-        OfferingStatus.DRAFT, "New notes", Collections.emptyList(), bumpedVersion);
+    CourseOffering savedWithBumpedVersion =
+        CourseOffering.reconstitute(
+            offeringId,
+            courseId,
+            "Course",
+            programId,
+            periodId,
+            OfferingStatus.DRAFT,
+            "New notes",
+            Collections.emptyList(),
+            bumpedVersion);
 
     when(saveOfferingPort.findCurrentById(offeringId)).thenReturn(Optional.of(existing));
     when(saveOfferingPort.save(any())).thenReturn(savedWithBumpedVersion);
 
-    UpdateOfferingCommand command = new UpdateOfferingCommand(
-        offeringIdValue, UUID.randomUUID(), "New notes", expectedVersion);
+    UpdateOfferingCommand command =
+        new UpdateOfferingCommand(offeringIdValue, UUID.randomUUID(), "New notes", expectedVersion);
 
     OfferingDetailView result = service.updateOffering(command);
 
@@ -121,22 +143,40 @@ class UpdateOfferingServiceTest {
   @Test
   void success_records_audit_event() {
     UUID actorId = UUID.randomUUID();
-    CourseOffering existing = CourseOffering.reconstitute(
-        offeringId, courseId, "Course", programId, periodId,
-        OfferingStatus.DRAFT, "Old notes", Collections.emptyList(), 0L);
-    CourseOffering saved = CourseOffering.reconstitute(
-        offeringId, courseId, "Course", programId, periodId,
-        OfferingStatus.DRAFT, "New notes", Collections.emptyList(), 1L);
+    CourseOffering existing =
+        CourseOffering.reconstitute(
+            offeringId,
+            courseId,
+            "Course",
+            programId,
+            periodId,
+            OfferingStatus.DRAFT,
+            "Old notes",
+            Collections.emptyList(),
+            0L);
+    CourseOffering saved =
+        CourseOffering.reconstitute(
+            offeringId,
+            courseId,
+            "Course",
+            programId,
+            periodId,
+            OfferingStatus.DRAFT,
+            "New notes",
+            Collections.emptyList(),
+            1L);
 
     when(saveOfferingPort.findCurrentById(offeringId)).thenReturn(Optional.of(existing));
     when(saveOfferingPort.save(any())).thenReturn(saved);
 
-    UpdateOfferingCommand command = new UpdateOfferingCommand(
-        offeringIdValue, actorId, "New notes", 0L);
+    UpdateOfferingCommand command =
+        new UpdateOfferingCommand(offeringIdValue, actorId, "New notes", 0L);
 
     service.updateOffering(command);
 
-    verify(auditRecorder).record(argThat(cmd ->
-        "OFFERING_UPDATED".equals(cmd.action()) && actorId.equals(cmd.actorId())));
+    verify(auditRecorder)
+        .record(
+            argThat(
+                cmd -> "OFFERING_UPDATED".equals(cmd.action()) && actorId.equals(cmd.actorId())));
   }
 }

@@ -7,8 +7,8 @@ package co.edu.uniquindio.brujula.identity.application.port.in;
  * email is registered or not. The caller always receives a 202 Accepted response — the existence
  * (or absence) of an account is never revealed.
  *
- * <p>Architecture note (OPTION A / DT-011): Keycloak handles the password reset natively on its
- * own pages. The backend triggers {@code execute-actions-email [UPDATE_PASSWORD]} via the Keycloak
+ * <p>Architecture note (OPTION A / DT-011): Keycloak handles the password reset natively on its own
+ * pages. The backend triggers {@code execute-actions-email [UPDATE_PASSWORD]} via the Keycloak
  * Admin API; Keycloak sends the reset link. The backend NEVER receives or stores passwords.
  *
  * <p>Framework-free (ARQ-002, ARQ-003).

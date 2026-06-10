@@ -19,9 +19,7 @@ import com.tngtech.archunit.lang.ArchRule;
     importOptions = {ImportOption.DoNotIncludeTests.class})
 class PrerequisiteAcyclicityServicePurityTest {
 
-  /**
-   * ADR-F2-006 — PrerequisiteAcyclicityService must not import Spring or Jakarta Persistence.
-   */
+  /** ADR-F2-006 — PrerequisiteAcyclicityService must not import Spring or Jakarta Persistence. */
   @ArchTest
   static final ArchRule prerequisiteAcyclicityServiceIsFrameworkFree =
       noClasses()

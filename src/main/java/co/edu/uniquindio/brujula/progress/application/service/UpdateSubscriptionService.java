@@ -13,8 +13,8 @@ import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
 /**
  * Use case: update a subscription's plan and/or journey.
  *
- * <p>Enforces: BOLA ownership guard, acknowledgeHistoryImpact gate (ADR-F3-007), optimistic
- * locking (handled by JPA @Version → OptimisticLockingFailureException → 409 in handler).
+ * <p>Enforces: BOLA ownership guard, acknowledgeHistoryImpact gate (ADR-F3-007), optimistic locking
+ * (handled by JPA @Version → OptimisticLockingFailureException → 409 in handler).
  *
  * <p>WU3-SEAM: attempt reclassification (PlanChangeReclassifier) is wired in WU3 when
  * CourseAttemptPersistenceAdapter and the full attempt domain are available. For WU2, the
@@ -51,8 +51,7 @@ public class UpdateSubscriptionService implements UpdateSubscriptionUseCase {
 
     // Determine if a plan change is requested
     boolean isPlanChange =
-        command.newPlanId() != null
-            && !command.newPlanId().equals(subscription.getPlanId());
+        command.newPlanId() != null && !command.newPlanId().equals(subscription.getPlanId());
 
     if (isPlanChange) {
       // Check for existing attempts to determine ack requirement
@@ -62,7 +61,8 @@ public class UpdateSubscriptionService implements UpdateSubscriptionUseCase {
               ? command.newReferenceJourneyCode()
               : subscription.getReferenceJourneyCode();
 
-      subscription.changePlan(command.newPlanId(), newJourney, hasAttempts, command.acknowledgeHistoryImpact());
+      subscription.changePlan(
+          command.newPlanId(), newJourney, hasAttempts, command.acknowledgeHistoryImpact());
 
       // WU3-SEAM: invoke PlanChangeReclassifier here once WU3 is merged.
       // The reclassifier will load all attempts for this subscription, determine which courseIds

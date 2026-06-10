@@ -14,9 +14,10 @@ import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadP
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort;
-import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.ProgramNameReadPort;
+import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.service.GetSimulationService;
+import co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement;
 import co.edu.uniquindio.brujula.simulation.domain.SimScheduleSession;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
@@ -25,7 +26,6 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationLifecycle;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationNotFoundException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
-import co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.util.List;
@@ -66,10 +66,15 @@ class GetSimulationServiceTest {
     progressReadPort = mock(ProgressReadPort.class);
     curriculumReadPort = mock(CurriculumReadPort.class);
     programNameReadPort = mock(ProgramNameReadPort.class);
-    sut = new GetSimulationService(
-        loadSimulationPort, loadSimulationSelectionPort,
-        offeringReadPort, creditLimitPort, progressReadPort,
-        curriculumReadPort, programNameReadPort);
+    sut =
+        new GetSimulationService(
+            loadSimulationPort,
+            loadSimulationSelectionPort,
+            offeringReadPort,
+            creditLimitPort,
+            progressReadPort,
+            curriculumReadPort,
+            programNameReadPort);
   }
 
   // -------------------------------------------------------------------------
@@ -78,18 +83,41 @@ class GetSimulationServiceTest {
 
   private Simulation makeSimulation(UUID simId, List<UUID> programIds) {
     return Simulation.reconstitute(
-        new SimulationId(simId), OWNER_ID, "Test Sim", PERIOD_ID,
-        programIds, SimulationLifecycle.ACTIVE,
-        Instant.now(), Instant.now(), 0L);
+        new SimulationId(simId),
+        OWNER_ID,
+        "Test Sim",
+        PERIOD_ID,
+        programIds,
+        SimulationLifecycle.ACTIVE,
+        Instant.now(),
+        Instant.now(),
+        0L);
   }
 
-  private SimulationSelection makeSelection(UUID selId, UUID simId, UUID offeringId,
-      UUID courseId, UUID programId, double credits, long selectedVersion,
+  private SimulationSelection makeSelection(
+      UUID selId,
+      UUID simId,
+      UUID offeringId,
+      UUID courseId,
+      UUID programId,
+      double credits,
+      long selectedVersion,
       List<SimScheduleSession> sessions) {
     return SimulationSelection.reconstitute(
-        new SimulationSelectionId(selId), simId, offeringId, UUID.randomUUID(),
-        courseId, "Test Course " + courseId, programId, credits,
-        "DIURNA", "PRELIMINARY", selectedVersion, sessions, "ACTIVE", 0L);
+        new SimulationSelectionId(selId),
+        simId,
+        offeringId,
+        UUID.randomUUID(),
+        courseId,
+        "Test Course " + courseId,
+        programId,
+        credits,
+        "DIURNA",
+        "PRELIMINARY",
+        selectedVersion,
+        sessions,
+        "ACTIVE",
+        0L);
   }
 
   // -------------------------------------------------------------------------
@@ -116,15 +144,21 @@ class GetSimulationServiceTest {
     assertThat(result.weeklySchedule()).isEmpty();
     assertThat(result.creditSummary()).hasSize(2);
 
-    ProgramCreditSummaryView csA = result.creditSummary().stream()
-        .filter(cs -> PROGRAM_A.equals(cs.programId())).findFirst().orElseThrow();
+    ProgramCreditSummaryView csA =
+        result.creditSummary().stream()
+            .filter(cs -> PROGRAM_A.equals(cs.programId()))
+            .findFirst()
+            .orElseThrow();
     assertThat(csA.selectedCredits()).isEqualTo(0.0);
     assertThat(csA.creditLimit()).isEqualTo(23);
     assertThat(csA.programName()).isEqualTo("Systems Engineering");
     assertThat(csA.withinLimit()).isTrue();
 
-    ProgramCreditSummaryView csB = result.creditSummary().stream()
-        .filter(cs -> PROGRAM_B.equals(cs.programId())).findFirst().orElseThrow();
+    ProgramCreditSummaryView csB =
+        result.creditSummary().stream()
+            .filter(cs -> PROGRAM_B.equals(cs.programId()))
+            .findFirst()
+            .orElseThrow();
     assertThat(csB.selectedCredits()).isEqualTo(0.0);
     assertThat(csB.creditLimit()).isEqualTo(18);
   }
@@ -144,8 +178,10 @@ class GetSimulationServiceTest {
     UUID selId2 = UUID.randomUUID();
     Simulation simulation = makeSimulation(simId, List.of(PROGRAM_A));
 
-    SimulationSelection sel1 = makeSelection(selId1, simId, offeringId1, courseId1, PROGRAM_A, 3.0, 1L, List.of());
-    SimulationSelection sel2 = makeSelection(selId2, simId, offeringId2, courseId2, PROGRAM_A, 5.0, 1L, List.of());
+    SimulationSelection sel1 =
+        makeSelection(selId1, simId, offeringId1, courseId1, PROGRAM_A, 3.0, 1L, List.of());
+    SimulationSelection sel2 =
+        makeSelection(selId2, simId, offeringId2, courseId2, PROGRAM_A, 5.0, 1L, List.of());
 
     when(loadSimulationPort.loadById(simId)).thenReturn(Optional.of(simulation));
     when(loadSimulationSelectionPort.loadActiveBySimulationId(simId))
@@ -181,8 +217,8 @@ class GetSimulationServiceTest {
     UUID selId = UUID.randomUUID();
     Simulation simulation = makeSimulation(simId, List.of(PROGRAM_A));
     // Selection snapshot version = 1, but current = 2
-    SimulationSelection sel = makeSelection(selId, simId, offeringId, UUID.randomUUID(),
-        PROGRAM_A, 3.0, 1L, List.of());
+    SimulationSelection sel =
+        makeSelection(selId, simId, offeringId, UUID.randomUUID(), PROGRAM_A, 3.0, 1L, List.of());
 
     when(loadSimulationPort.loadById(simId)).thenReturn(Optional.of(simulation));
     when(loadSimulationSelectionPort.loadActiveBySimulationId(simId)).thenReturn(List.of(sel));
@@ -243,13 +279,15 @@ class GetSimulationServiceTest {
     Simulation simulation = makeSimulation(simId, List.of(PROGRAM_A));
 
     // Both on WEDNESDAY 18:00-20:00 → clash
-    SimScheduleSession clashSession = new SimScheduleSession("WEDNESDAY",
-        LocalTime.of(18, 0), LocalTime.of(20, 0));
+    SimScheduleSession clashSession =
+        new SimScheduleSession("WEDNESDAY", LocalTime.of(18, 0), LocalTime.of(20, 0));
 
-    SimulationSelection sel1 = makeSelection(selId1, simId, offeringId1, courseId1, PROGRAM_A,
-        3.0, 1L, List.of(clashSession));
-    SimulationSelection sel2 = makeSelection(selId2, simId, offeringId2, courseId2, PROGRAM_A,
-        3.0, 1L, List.of(clashSession));
+    SimulationSelection sel1 =
+        makeSelection(
+            selId1, simId, offeringId1, courseId1, PROGRAM_A, 3.0, 1L, List.of(clashSession));
+    SimulationSelection sel2 =
+        makeSelection(
+            selId2, simId, offeringId2, courseId2, PROGRAM_A, 3.0, 1L, List.of(clashSession));
 
     when(loadSimulationPort.loadById(simId)).thenReturn(Optional.of(simulation));
     when(loadSimulationSelectionPort.loadActiveBySimulationId(simId))
@@ -304,12 +342,13 @@ class GetSimulationServiceTest {
     UUID selId = UUID.randomUUID();
     Simulation simulation = makeSimulation(simId, List.of(PROGRAM_A));
 
-    SimulationSelection sel = makeSelection(
-        selId, simId, offeringId, courseId, PROGRAM_A, 3.0, 1L, List.of());
+    SimulationSelection sel =
+        makeSelection(selId, simId, offeringId, courseId, PROGRAM_A, 3.0, 1L, List.of());
 
     // Prereq: courseId requires prereqCourseId with HIGH confidence (isHard() == true)
-    PrereqRequirement hardPrereq = new PrereqRequirement(
-        courseId, prereqCourseId, "COURSE_PASSED", "HIGH", false, "Required Course");
+    PrereqRequirement hardPrereq =
+        new PrereqRequirement(
+            courseId, prereqCourseId, "COURSE_PASSED", "HIGH", false, "Required Course");
 
     when(loadSimulationPort.loadById(simId)).thenReturn(Optional.of(simulation));
     when(loadSimulationSelectionPort.loadActiveBySimulationId(simId)).thenReturn(List.of(sel));
@@ -343,8 +382,8 @@ class GetSimulationServiceTest {
     UUID selId = UUID.randomUUID();
     Simulation simulation = makeSimulation(simId, List.of(PROGRAM_A));
     // Selection with snapshot version 1
-    SimulationSelection sel = makeSelection(
-        selId, simId, offeringId, UUID.randomUUID(), PROGRAM_A, 3.0, 1L, List.of());
+    SimulationSelection sel =
+        makeSelection(selId, simId, offeringId, UUID.randomUUID(), PROGRAM_A, 3.0, 1L, List.of());
 
     when(loadSimulationPort.loadById(simId)).thenReturn(Optional.of(simulation));
     when(loadSimulationSelectionPort.loadActiveBySimulationId(simId)).thenReturn(List.of(sel));

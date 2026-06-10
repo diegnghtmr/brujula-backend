@@ -26,7 +26,6 @@ import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationValidationView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
-import co.edu.uniquindio.brujula.simulation.application.dto.ValidationNoticeView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.AddSimulationSelectionUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.CreateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.in.DeleteSimulationUseCase;
@@ -110,21 +109,23 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
 
     // Provision a STUDENT user in DB (needed for resolveCallerId → getCurrentUserQuery)
     studentSub = "sub-sim-student-" + UUID.randomUUID();
-    AppUser student = AppUser.provision(
-        studentSub,
-        "sim-student-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Sim Student",
-        Role.STUDENT);
+    AppUser student =
+        AppUser.provision(
+            studentSub,
+            "sim-student-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Sim Student",
+            Role.STUDENT);
     saveAppUserPort.save(student);
     studentUserId = student.id();
 
     // Provision a STAFF user (should be blocked by @PreAuthorize)
     staffSub = "sub-sim-staff-" + UUID.randomUUID();
-    AppUser staff = AppUser.provision(
-        staffSub,
-        "sim-staff-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Sim Staff",
-        Role.STAFF);
+    AppUser staff =
+        AppUser.provision(
+            staffSub,
+            "sim-staff-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Sim Staff",
+            Role.STAFF);
     saveAppUserPort.save(staff);
   }
 
@@ -138,9 +139,17 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID periodId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    SimulationView view = new SimulationView(
-        simId, "Mi Sim 2026", periodId, "2026-2",
-        List.of(programId), "CURRENT", Instant.now(), Instant.now(), 0L);
+    SimulationView view =
+        new SimulationView(
+            simId,
+            "Mi Sim 2026",
+            periodId,
+            "2026-2",
+            List.of(programId),
+            "CURRENT",
+            Instant.now(),
+            Instant.now(),
+            0L);
 
     when(createSimulationUseCase.createSimulation(any())).thenReturn(view);
 
@@ -148,15 +157,18 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations")
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("Idempotency-Key", UUID.randomUUID().toString())
                 .header("X-XSRF-TOKEN", "csrf-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     {"name":"Mi Sim 2026","periodId":"%s","programIds":["%s"]}
-                    """.formatted(periodId, programId)))
+                    """
+                        .formatted(periodId, programId)))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", "/me/simulations/" + simId))
         .andExpect(jsonPath("$.id").value(simId.toString()))
@@ -176,14 +188,17 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations")
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 // No Idempotency-Key header
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     {"name":"Test","periodId":"%s","programIds":["%s"]}
-                    """.formatted(periodId, programId)))
+                    """
+                        .formatted(periodId, programId)))
         .andExpect(status().isBadRequest());
   }
 
@@ -197,9 +212,17 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID periodId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    SimulationView view = new SimulationView(
-        simId, "Sim A", periodId, "2026-2",
-        List.of(programId), "CURRENT", Instant.now(), Instant.now(), 0L);
+    SimulationView view =
+        new SimulationView(
+            simId,
+            "Sim A",
+            periodId,
+            "2026-2",
+            List.of(programId),
+            "CURRENT",
+            Instant.now(),
+            Instant.now(),
+            0L);
 
     SimulationPageView pageView = new SimulationPageView(List.of(view), 0, 20, 1L, 1);
 
@@ -208,9 +231,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/me/simulations")
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content[0].id").value(simId.toString()))
@@ -228,26 +252,35 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID programId = UUID.randomUUID();
 
     // Full detail view with all WU5 sub-objects populated
-    ProgramCreditSummaryView cs = new ProgramCreditSummaryView(
-        programId, "Systems Engineering", 12.0, 23, true);
+    ProgramCreditSummaryView cs =
+        new ProgramCreditSummaryView(programId, "Systems Engineering", 12.0, 23, true);
 
-    SimulationDetailView detailView = new SimulationDetailView(
-        simId, "Sim Detail", periodId, "2026-2",
-        List.of(programId), "CURRENT", Instant.now(), Instant.now(), 0L,
-        List.of(),              // selections empty
-        List.of(cs),            // creditSummary with real data
-        List.of(),              // weeklySchedule empty
-        0.0,                    // totalWeeklyHours
-        new SimulationValidationView(List.of(), List.of())); // validation clean
+    SimulationDetailView detailView =
+        new SimulationDetailView(
+            simId,
+            "Sim Detail",
+            periodId,
+            "2026-2",
+            List.of(programId),
+            "CURRENT",
+            Instant.now(),
+            Instant.now(),
+            0L,
+            List.of(), // selections empty
+            List.of(cs), // creditSummary with real data
+            List.of(), // weeklySchedule empty
+            0.0, // totalWeeklyHours
+            new SimulationValidationView(List.of(), List.of())); // validation clean
 
     when(getSimulationQuery.getSimulation(eq(simId), any())).thenReturn(detailView);
 
     mockMvc
         .perform(
             get("/me/simulations/{id}", simId)
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(simId.toString()))
         .andExpect(jsonPath("$.name").value("Sim Detail"))
@@ -277,9 +310,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/me/simulations/{id}", simId)
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isForbidden());
   }
 
@@ -297,9 +331,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/me/simulations/{id}", unknownId)
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isNotFound());
   }
 
@@ -318,12 +353,14 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             patch("/me/simulations/{id}", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     {"name":"Updated","version":0}
                     """))
         .andExpect(status().isConflict());
@@ -344,12 +381,14 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             patch("/me/simulations/{id}", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     {"name":"Hijack","version":0}
                     """))
         .andExpect(status().isForbidden());
@@ -369,9 +408,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             delete("/me/simulations/{id}", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token"))
         .andExpect(status().isNoContent());
   }
@@ -385,15 +425,17 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID simId = UUID.randomUUID();
 
     doThrow(new SimulationAccessDeniedException(simId))
-        .when(deleteSimulationUseCase).deleteSimulation(eq(simId), any());
+        .when(deleteSimulationUseCase)
+        .deleteSimulation(eq(simId), any());
 
     mockMvc
         .perform(
             delete("/me/simulations/{id}", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token"))
         .andExpect(status().isForbidden());
   }
@@ -407,9 +449,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/me/simulations")
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(staffSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(staffSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isForbidden());
   }
 
@@ -425,9 +468,20 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID courseId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    SimulationSelectionView view = new SimulationSelectionView(
-        selectionId, UUID.randomUUID(), scheduleOptionId, courseId,
-        "Algorithms", programId, 3.0, "A", "PUBLISHED", 1L, List.of(), List.of());
+    SimulationSelectionView view =
+        new SimulationSelectionView(
+            selectionId,
+            UUID.randomUUID(),
+            scheduleOptionId,
+            courseId,
+            "Algorithms",
+            programId,
+            3.0,
+            "A",
+            "PUBLISHED",
+            1L,
+            List.of(),
+            List.of());
 
     when(addSimulationSelectionUseCase.addSelection(any())).thenReturn(view);
 
@@ -435,17 +489,21 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations/{id}/selections", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("Idempotency-Key", UUID.randomUUID().toString())
                 .header("X-XSRF-TOKEN", "csrf-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     {"scheduleOptionId":"%s"}
-                    """.formatted(scheduleOptionId)))
+                    """
+                        .formatted(scheduleOptionId)))
         .andExpect(status().isCreated())
-        .andExpect(header().string("Location", "/me/simulations/" + simId + "/selections/" + selectionId))
+        .andExpect(
+            header().string("Location", "/me/simulations/" + simId + "/selections/" + selectionId))
         .andExpect(jsonPath("$.id").value(selectionId.toString()));
   }
 
@@ -458,15 +516,18 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID simId = UUID.randomUUID();
     UUID selectionId = UUID.randomUUID();
 
-    doNothing().when(removeSimulationSelectionUseCase).removeSelection(eq(simId), eq(selectionId), any());
+    doNothing()
+        .when(removeSimulationSelectionUseCase)
+        .removeSelection(eq(simId), eq(selectionId), any());
 
     mockMvc
         .perform(
             delete("/me/simulations/{id}/selections/{selId}", simId, selectionId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token"))
         .andExpect(status().isNoContent());
   }
@@ -484,9 +545,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/me/simulations/{id}/selections", simId)
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk());
   }
 
@@ -495,9 +557,9 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   // -------------------------------------------------------------------------
 
   /**
-   * Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json
-   * with the expected code, title, status, detail, and metadata.conflictingCourseName fields
-   * when the selection service throws SimulationValidationBlockedException.
+   * Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json with the
+   * expected code, title, status, detail, and metadata.conflictingCourseName fields when the
+   * selection service throws SimulationValidationBlockedException.
    *
    * <p>This test exercises the REAL exception handler (SimulationExceptionHandler) end-to-end
    * through the HTTP stack, closing the gap that the masked unit-level tests left (WARNING-1).
@@ -507,11 +569,19 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID simId = UUID.randomUUID();
     UUID scheduleOptionId = UUID.randomUUID();
 
-    ValidationNotice clashNotice = new ValidationNotice(
-        "SIMULATION_SCHEDULE_CLASH",
-        "Schedule clash detected with: Algorithms",
-        Map.of("conflictingCourseName", "Algorithms", "day", "MONDAY",
-               "startsAt", "08:00", "endsAt", "10:00"));
+    ValidationNotice clashNotice =
+        new ValidationNotice(
+            "SIMULATION_SCHEDULE_CLASH",
+            "Schedule clash detected with: Algorithms",
+            Map.of(
+                "conflictingCourseName",
+                "Algorithms",
+                "day",
+                "MONDAY",
+                "startsAt",
+                "08:00",
+                "endsAt",
+                "10:00"));
 
     when(addSimulationSelectionUseCase.addSelection(any()))
         .thenThrow(new SimulationValidationBlockedException(List.of(clashNotice)));
@@ -520,15 +590,18 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations/{id}/selections", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("Idempotency-Key", UUID.randomUUID().toString())
                 .header("X-XSRF-TOKEN", "csrf-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     {"scheduleOptionId":"%s"}
-                    """.formatted(scheduleOptionId)))
+                    """
+                        .formatted(scheduleOptionId)))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("SIMULATION_SCHEDULE_CLASH"))
         .andExpect(jsonPath("$.metadata.conflictingCourseName").value("Algorithms"))
@@ -536,19 +609,20 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   /**
-   * Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json
-   * with code SIMULATION_CREDIT_LIMIT_EXCEEDED and metadata.programName present.
+   * Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json with
+   * code SIMULATION_CREDIT_LIMIT_EXCEEDED and metadata.programName present.
    */
   @Test
   void add_selection_creditLimitExceeded_returns_409_problem_json() throws Exception {
     UUID simId = UUID.randomUUID();
     UUID scheduleOptionId = UUID.randomUUID();
 
-    ValidationNotice creditNotice = new ValidationNotice(
-        "SIMULATION_CREDIT_LIMIT_EXCEEDED",
-        "Adding this course would exceed the credit limit for program: Systems Engineering",
-        Map.of("programName", "Systems Engineering", "attemptedCredits", 24.0,
-               "creditLimit", 23));
+    ValidationNotice creditNotice =
+        new ValidationNotice(
+            "SIMULATION_CREDIT_LIMIT_EXCEEDED",
+            "Adding this course would exceed the credit limit for program: Systems Engineering",
+            Map.of(
+                "programName", "Systems Engineering", "attemptedCredits", 24.0, "creditLimit", 23));
 
     when(addSimulationSelectionUseCase.addSelection(any()))
         .thenThrow(new SimulationValidationBlockedException(List.of(creditNotice)));
@@ -557,15 +631,18 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations/{id}/selections", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("Idempotency-Key", UUID.randomUUID().toString())
                 .header("X-XSRF-TOKEN", "csrf-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     {"scheduleOptionId":"%s"}
-                    """.formatted(scheduleOptionId)))
+                    """
+                        .formatted(scheduleOptionId)))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("SIMULATION_CREDIT_LIMIT_EXCEEDED"))
         .andExpect(jsonPath("$.metadata.programName").value("Systems Engineering"))
@@ -581,18 +658,19 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
    * with code SIMULATION_DUPLICATE_SELECTION when the use case throws
    * SimulationValidationBlockedException carrying that code (WU4b duplicate rule).
    *
-   * <p>Mirrors the add_selection_scheduleClash_returns_409_problem_json pattern (WU4a),
-   * confirming the exception handler maps WU4b codes correctly through the HTTP stack.
+   * <p>Mirrors the add_selection_scheduleClash_returns_409_problem_json pattern (WU4a), confirming
+   * the exception handler maps WU4b codes correctly through the HTTP stack.
    */
   @Test
   void add_selection_duplicateSelection_returns_409_problem_json() throws Exception {
     UUID simId = UUID.randomUUID();
     UUID scheduleOptionId = UUID.randomUUID();
 
-    ValidationNotice duplicateNotice = new ValidationNotice(
-        "SIMULATION_DUPLICATE_SELECTION",
-        "This course is already in the simulation",
-        Map.of("courseId", UUID.randomUUID().toString(), "courseName", "Data Structures"));
+    ValidationNotice duplicateNotice =
+        new ValidationNotice(
+            "SIMULATION_DUPLICATE_SELECTION",
+            "This course is already in the simulation",
+            Map.of("courseId", UUID.randomUUID().toString(), "courseName", "Data Structures"));
 
     when(addSimulationSelectionUseCase.addSelection(any()))
         .thenThrow(new SimulationValidationBlockedException(List.of(duplicateNotice)));
@@ -601,15 +679,18 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations/{id}/selections", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("Idempotency-Key", UUID.randomUUID().toString())
                 .header("X-XSRF-TOKEN", "csrf-token")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     {"scheduleOptionId":"%s"}
-                    """.formatted(scheduleOptionId)))
+                    """
+                        .formatted(scheduleOptionId)))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("SIMULATION_DUPLICATE_SELECTION"))
         .andExpect(jsonPath("$.status").value(409))
@@ -626,11 +707,22 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID periodId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    SimulationDetailView detailView = new SimulationDetailView(
-        simId, "Reviewed Sim", periodId, "2026-2",
-        List.of(programId), "CURRENT", Instant.now(), Instant.now(), 0L,
-        List.of(), List.of(), List.of(), 0.0,
-        new SimulationValidationView(List.of(), List.of()));
+    SimulationDetailView detailView =
+        new SimulationDetailView(
+            simId,
+            "Reviewed Sim",
+            periodId,
+            "2026-2",
+            List.of(programId),
+            "CURRENT",
+            Instant.now(),
+            Instant.now(),
+            0L,
+            List.of(),
+            List.of(),
+            List.of(),
+            0.0,
+            new SimulationValidationView(List.of(), List.of()));
 
     when(reviewSimulationUseCase.reviewSimulation(eq(simId), any())).thenReturn(detailView);
 
@@ -638,9 +730,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations/{id}/review", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(simId.toString()))
@@ -656,10 +749,11 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   void review_simulation_with_persistent_blocker_returns_409() throws Exception {
     UUID simId = UUID.randomUUID();
 
-    ValidationNotice clashNotice = new ValidationNotice(
-        "SIMULATION_SCHEDULE_CLASH",
-        "Clash still exists after review",
-        Map.of("day", "WEDNESDAY", "conflictingCourseName", "Databases"));
+    ValidationNotice clashNotice =
+        new ValidationNotice(
+            "SIMULATION_SCHEDULE_CLASH",
+            "Clash still exists after review",
+            Map.of("day", "WEDNESDAY", "conflictingCourseName", "Databases"));
 
     when(reviewSimulationUseCase.reviewSimulation(eq(simId), any()))
         .thenThrow(new SimulationStillBlockedException(List.of(clashNotice)));
@@ -668,9 +762,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations/{id}/review", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token"))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("SIMULATION_SCHEDULE_CLASH"))
@@ -692,9 +787,10 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             post("/me/simulations/{id}/review", simId)
                 .with(csrf())
-                .with(oidcLogin()
-                    .idToken(t -> t.subject(studentSub))
-                    .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
                 .header("X-XSRF-TOKEN", "csrf-token"))
         .andExpect(status().isForbidden());
   }

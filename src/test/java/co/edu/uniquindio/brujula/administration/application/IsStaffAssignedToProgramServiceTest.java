@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 import co.edu.uniquindio.brujula.administration.application.port.in.spi.IsStaffAssignedToProgramQuery;
 import co.edu.uniquindio.brujula.administration.application.port.out.LoadStaffProgramAssignmentsPort;
 import co.edu.uniquindio.brujula.administration.application.service.IsStaffAssignedToProgramService;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +15,8 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link IsStaffAssignedToProgramService}.
  *
- * <p>Covers: SC-010-A (active assignment → true), SC-010-B (no assignment → false),
- * SC-010-C (inactive assignment → false).
+ * <p>Covers: SC-010-A (active assignment → true), SC-010-B (no assignment → false), SC-010-C
+ * (inactive assignment → false).
  */
 class IsStaffAssignedToProgramServiceTest {
 
@@ -36,8 +35,7 @@ class IsStaffAssignedToProgramServiceTest {
     UUID staffId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    when(loadAssignmentsPort.findActiveAssignmentsByStaffId(staffId))
-        .thenReturn(Set.of(programId));
+    when(loadAssignmentsPort.findActiveAssignmentsByStaffId(staffId)).thenReturn(Set.of(programId));
 
     assertThat(service.isAssigned(staffId, programId)).isTrue();
   }
@@ -48,8 +46,7 @@ class IsStaffAssignedToProgramServiceTest {
     UUID staffId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    when(loadAssignmentsPort.findActiveAssignmentsByStaffId(staffId))
-        .thenReturn(Set.of());
+    when(loadAssignmentsPort.findActiveAssignmentsByStaffId(staffId)).thenReturn(Set.of());
 
     assertThat(service.isAssigned(staffId, programId)).isFalse();
   }
@@ -76,8 +73,7 @@ class IsStaffAssignedToProgramServiceTest {
     UUID p1 = UUID.randomUUID();
     UUID p2 = UUID.randomUUID();
 
-    when(loadAssignmentsPort.findActiveAssignmentsByStaffId(staffId))
-        .thenReturn(Set.of(p1, p2));
+    when(loadAssignmentsPort.findActiveAssignmentsByStaffId(staffId)).thenReturn(Set.of(p1, p2));
 
     assertThat(service.assignedPrograms(staffId)).containsExactlyInAnyOrder(p1, p2);
   }

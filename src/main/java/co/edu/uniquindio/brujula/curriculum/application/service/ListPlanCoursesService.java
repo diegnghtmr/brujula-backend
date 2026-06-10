@@ -13,9 +13,9 @@ import java.util.UUID;
  * Use case implementation: list courses for a plan.
  *
  * <p>Filters ARCHIVED and INACTIVE courses when the caller is a STUDENT (CUR-001 / CourseStatus
- * Javadoc: INACTIVE is "temporarily disabled; hidden from student views"; ARCHIVED is "soft-deleted;
- * hidden from all non-admin views"). No Spring annotations — wiring is handled in the
- * infrastructure configuration layer (ARQ-002).
+ * Javadoc: INACTIVE is "temporarily disabled; hidden from student views"; ARCHIVED is
+ * "soft-deleted; hidden from all non-admin views"). No Spring annotations — wiring is handled in
+ * the infrastructure configuration layer (ARQ-002).
  */
 public class ListPlanCoursesService implements ListPlanCoursesQuery {
 
@@ -43,16 +43,15 @@ public class ListPlanCoursesService implements ListPlanCoursesQuery {
       return true; // STAFF and ADMIN see all statuses
     }
     // STUDENT, null, or any unknown role: only ACTIVE courses visible (allowlist; W2 fix)
-    return course.status() != CourseStatus.ARCHIVED
-        && course.status() != CourseStatus.INACTIVE;
+    return course.status() != CourseStatus.ARCHIVED && course.status() != CourseStatus.INACTIVE;
   }
 
   /**
    * Returns {@code true} only for explicitly privileged roles.
    *
    * <p>Allowlist: {@code "STAFF"} and {@code "ADMIN"}. {@code null} and any other value returns
-   * {@code false}, defaulting to the most restrictive visibility — consistent with
-   * {@code ListProgramPlansService.isPrivilegedRole()} (FIX-4 / W2 allowlist alignment).
+   * {@code false}, defaulting to the most restrictive visibility — consistent with {@code
+   * ListProgramPlansService.isPrivilegedRole()} (FIX-4 / W2 allowlist alignment).
    */
   private boolean isPrivilegedRole(String callerRole) {
     return "STAFF".equalsIgnoreCase(callerRole) || "ADMIN".equalsIgnoreCase(callerRole);
@@ -63,9 +62,8 @@ public class ListPlanCoursesService implements ListPlanCoursesQuery {
   // ---------------------------------------------------------------------------
 
   private CourseView toView(Course course) {
-    List<CourseView.RecommendedSemesterView> semesterViews = course.recommendedSemesters().stream()
-        .map(this::toSemesterView)
-        .toList();
+    List<CourseView.RecommendedSemesterView> semesterViews =
+        course.recommendedSemesters().stream().map(this::toSemesterView).toList();
     return new CourseView(
         course.id().value(),
         course.planId(),

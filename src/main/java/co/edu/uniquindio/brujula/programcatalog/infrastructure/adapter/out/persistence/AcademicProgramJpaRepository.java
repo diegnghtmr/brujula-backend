@@ -8,5 +8,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * <p>Package-private per ARQ-006. Only the persistence adapter layer accesses this directly.
  */
-interface AcademicProgramJpaRepository extends JpaRepository<AcademicProgramJpaEntity, UUID> {
-}
+interface AcademicProgramJpaRepository extends JpaRepository<AcademicProgramJpaEntity, UUID> {}

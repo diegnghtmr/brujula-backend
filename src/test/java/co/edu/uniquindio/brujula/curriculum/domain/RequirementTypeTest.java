@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-/**
- * WU1-1.3 RED: Verifies all 4 RequirementType enum values exist.
- */
+/** WU1-1.3 RED: Verifies all 4 RequirementType enum values exist. */
 class RequirementTypeTest {
 
   @Test
@@ -26,7 +24,8 @@ class RequirementTypeTest {
 
   @Test
   void minimumCreditsExists() {
-    assertThat(RequirementType.valueOf("MINIMUM_CREDITS")).isEqualTo(RequirementType.MINIMUM_CREDITS);
+    assertThat(RequirementType.valueOf("MINIMUM_CREDITS"))
+        .isEqualTo(RequirementType.MINIMUM_CREDITS);
   }
 
   @Test

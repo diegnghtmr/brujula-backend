@@ -16,14 +16,13 @@ import com.tngtech.archunit.lang.ArchRule;
  * <p>This mirrors the {@code package-info.java} {@code allowedDependencies} declaration, which
  * Spring Modulith enforces at runtime; here ArchUnit enforces at test time.
  *
- * <p><strong>Supplementary denylist — NOT the authoritative CROSS-002 enforcement.</strong>
- * These three rules check that known sibling modules are not imported, but they do NOT form a
- * positive allowlist: a new module (e.g. {@code enrollment}) added in the future would pass
- * silently. The authoritative positive constraint is
- * {@code ModularityTest.verifyModularStructure()}, which uses Spring Modulith's
- * {@code allowedDependencies = {"sharedkernel", "audit"}} declaration in
- * {@code package-info.java} to reject ANY dependency not explicitly permitted.
- * Run {@code ModularityTest} alongside these rules for complete CROSS-002 coverage.
+ * <p><strong>Supplementary denylist — NOT the authoritative CROSS-002 enforcement.</strong> These
+ * three rules check that known sibling modules are not imported, but they do NOT form a positive
+ * allowlist: a new module (e.g. {@code enrollment}) added in the future would pass silently. The
+ * authoritative positive constraint is {@code ModularityTest.verifyModularStructure()}, which uses
+ * Spring Modulith's {@code allowedDependencies = {"sharedkernel", "audit"}} declaration in {@code
+ * package-info.java} to reject ANY dependency not explicitly permitted. Run {@code ModularityTest}
+ * alongside these rules for complete CROSS-002 coverage.
  */
 @AnalyzeClasses(
     packages = "co.edu.uniquindio.brujula.programcatalog",
@@ -37,8 +36,8 @@ class ProgramCatalogBoundaryTest {
   /**
    * CROSS-002 / ARQ-007 — programcatalog must not import curriculum classes directly.
    *
-   * <p>The module boundary ensures no coupling from catalog to curriculum
-   * (curriculum READS from catalog, not the other way around).
+   * <p>The module boundary ensures no coupling from catalog to curriculum (curriculum READS from
+   * catalog, not the other way around).
    */
   @ArchTest
   static final ArchRule programcatalog_does_not_depend_on_curriculum =
@@ -52,9 +51,7 @@ class ProgramCatalogBoundaryTest {
               "CROSS-002: programcatalog depends only on sharedkernel and audit; "
                   + "curriculum depends on programcatalog, not vice versa");
 
-  /**
-   * CROSS-002 — programcatalog must not import identity module classes directly.
-   */
+  /** CROSS-002 — programcatalog must not import identity module classes directly. */
   @ArchTest
   static final ArchRule programcatalog_does_not_depend_on_identity =
       noClasses()
@@ -65,9 +62,7 @@ class ProgramCatalogBoundaryTest {
           .resideInAPackage(IDENTITY_PKG)
           .because("CROSS-002: programcatalog must only depend on sharedkernel and audit");
 
-  /**
-   * CROSS-002 — programcatalog must not import administration module classes directly.
-   */
+  /** CROSS-002 — programcatalog must not import administration module classes directly. */
   @ArchTest
   static final ArchRule programcatalog_does_not_depend_on_administration =
       noClasses()

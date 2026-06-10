@@ -11,7 +11,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -53,21 +52,51 @@ class ScheduleOptionJpaEntity {
 
   protected ScheduleOptionJpaEntity() {}
 
-  UUID getId() { return id; }
-  void setId(UUID id) { this.id = id; }
+  UUID getId() {
+    return id;
+  }
 
-  CourseOfferingJpaEntity getOffering() { return offering; }
-  void setOffering(CourseOfferingJpaEntity offering) { this.offering = offering; }
+  void setId(UUID id) {
+    this.id = id;
+  }
 
-  String getLabel() { return label; }
-  void setLabel(String label) { this.label = label; }
+  CourseOfferingJpaEntity getOffering() {
+    return offering;
+  }
 
-  String getJourneyCode() { return journeyCode; }
-  void setJourneyCode(String journeyCode) { this.journeyCode = journeyCode; }
+  void setOffering(CourseOfferingJpaEntity offering) {
+    this.offering = offering;
+  }
 
-  long getVersion() { return version; }
-  void setVersion(long version) { this.version = version; }
+  String getLabel() {
+    return label;
+  }
 
-  Set<ScheduleSessionJpaEntity> getSessions() { return sessions; }
-  void setSessions(Set<ScheduleSessionJpaEntity> sessions) { this.sessions = sessions; }
+  void setLabel(String label) {
+    this.label = label;
+  }
+
+  String getJourneyCode() {
+    return journeyCode;
+  }
+
+  void setJourneyCode(String journeyCode) {
+    this.journeyCode = journeyCode;
+  }
+
+  long getVersion() {
+    return version;
+  }
+
+  void setVersion(long version) {
+    this.version = version;
+  }
+
+  Set<ScheduleSessionJpaEntity> getSessions() {
+    return sessions;
+  }
+
+  void setSessions(Set<ScheduleSessionJpaEntity> sessions) {
+    this.sessions = sessions;
+  }
 }

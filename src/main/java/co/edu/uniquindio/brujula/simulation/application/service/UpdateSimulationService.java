@@ -15,9 +15,9 @@ import org.springframework.dao.OptimisticLockingFailureException;
 /**
  * Use case: rename a simulation with optimistic locking (SIM-004, X-002, X-003).
  *
- * <p>Mirrors {@code UpdateSubscriptionService}: uses the RETURNED entity after
- * {@link SaveSimulationPort#save(Simulation)} to capture the DB-incremented version.
- * JPA {@code @Version} collision surfaces as {@link OptimisticLockingFailureException} → 409.
+ * <p>Mirrors {@code UpdateSubscriptionService}: uses the RETURNED entity after {@link
+ * SaveSimulationPort#save(Simulation)} to capture the DB-incremented version. JPA {@code @Version}
+ * collision surfaces as {@link OptimisticLockingFailureException} → 409.
  *
  * <p>Ownership enforced per X-003: non-owner gets 403.
  *
@@ -40,9 +40,11 @@ public class UpdateSimulationService implements UpdateSimulationUseCase {
 
   @Override
   public SimulationView updateSimulation(UpdateSimulationCommand command) {
-    Simulation simulation = loadSimulationPort.loadById(command.simulationId())
-        .filter(s -> s.getLifecycleStatus() == SimulationLifecycle.ACTIVE)
-        .orElseThrow(() -> new SimulationNotFoundException(command.simulationId()));
+    Simulation simulation =
+        loadSimulationPort
+            .loadById(command.simulationId())
+            .filter(s -> s.getLifecycleStatus() == SimulationLifecycle.ACTIVE)
+            .orElseThrow(() -> new SimulationNotFoundException(command.simulationId()));
 
     // BOLA ownership guard (X-003)
     if (!simulation.getOwnerId().equals(command.ownerId())) {

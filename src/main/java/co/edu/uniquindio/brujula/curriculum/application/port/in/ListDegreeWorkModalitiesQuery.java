@@ -7,7 +7,8 @@ import java.util.UUID;
 /**
  * Input port: list degree work modalities for a study plan.
  *
- * <p>Backs {@code GET /plans/{planId}/degree-work-modalities} (CUR-006). No Spring/framework imports.
+ * <p>Backs {@code GET /plans/{planId}/degree-work-modalities} (CUR-006). No Spring/framework
+ * imports.
  */
 public interface ListDegreeWorkModalitiesQuery {
 

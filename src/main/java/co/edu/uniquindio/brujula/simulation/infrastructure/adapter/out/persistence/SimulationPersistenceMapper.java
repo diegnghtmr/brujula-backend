@@ -8,14 +8,15 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
-/** Maps between {@link Simulation} domain objects and {@link SimulationJpaEntity}. Package-private. */
+/**
+ * Maps between {@link Simulation} domain objects and {@link SimulationJpaEntity}. Package-private.
+ */
 @Component
 class SimulationPersistenceMapper {
 
   Simulation toDomain(SimulationJpaEntity entity) {
-    List<UUID> programIds = entity.getProgramIds() != null
-        ? Arrays.asList(entity.getProgramIds())
-        : List.of();
+    List<UUID> programIds =
+        entity.getProgramIds() != null ? Arrays.asList(entity.getProgramIds()) : List.of();
     return Simulation.reconstitute(
         SimulationId.of(entity.getId()),
         entity.getOwnerId(),

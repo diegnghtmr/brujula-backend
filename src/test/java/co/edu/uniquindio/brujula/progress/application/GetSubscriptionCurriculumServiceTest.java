@@ -11,12 +11,12 @@ import static org.mockito.Mockito.when;
 
 import co.edu.uniquindio.brujula.curriculum.application.dto.PlanMallaView;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMallaQuery;
+import co.edu.uniquindio.brujula.programcatalog.application.dto.JourneyRef;
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.ListJourneysQuery;
 import co.edu.uniquindio.brujula.progress.application.dto.CurriculumViewData;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionCurriculumService;
-import co.edu.uniquindio.brujula.programcatalog.application.dto.JourneyRef;
-import co.edu.uniquindio.brujula.programcatalog.application.port.in.ListJourneysQuery;
 import co.edu.uniquindio.brujula.progress.domain.AttemptId;
 import co.edu.uniquindio.brujula.progress.domain.AttemptStatus;
 import co.edu.uniquindio.brujula.progress.domain.CourseAttempt;
@@ -72,12 +72,15 @@ class GetSubscriptionCurriculumServiceTest {
     listJourneysQuery = mock(ListJourneysQuery.class);
 
     // FIX-S1: stub journey name resolution (DIURNA → "Jornada Diurna")
-    when(listJourneysQuery.listJourneys()).thenReturn(List.of(
-        new JourneyRef(JOURNEY_ID, "DIURNA", "Jornada Diurna"),
-        new JourneyRef(UUID.randomUUID(), "NOCTURNA", "Jornada Nocturna")));
+    when(listJourneysQuery.listJourneys())
+        .thenReturn(
+            List.of(
+                new JourneyRef(JOURNEY_ID, "DIURNA", "Jornada Diurna"),
+                new JourneyRef(UUID.randomUUID(), "NOCTURNA", "Jornada Nocturna")));
 
-    sut = new GetSubscriptionCurriculumService(
-        loadSubscriptionPort, loadCourseAttemptPort, assemblePlanMallaQuery, listJourneysQuery);
+    sut =
+        new GetSubscriptionCurriculumService(
+            loadSubscriptionPort, loadCourseAttemptPort, assemblePlanMallaQuery, listJourneysQuery);
   }
 
   // -----------------------------------------------------------------------
@@ -115,10 +118,17 @@ class GetSubscriptionCurriculumServiceTest {
     when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any())).thenReturn(malla);
 
     // Student has PASSED attempt for COURSE_1
-    CourseAttempt attempt = CourseAttempt.reconstitute(
-        AttemptId.generate(), new SubscriptionId(SUBSCRIPTION_ID), COURSE_1,
-        AttemptStatus.PASSED, new Grade(new BigDecimal("4.0")), UUID.randomUUID(),
-        "DIURNA", Instant.now(), 0L);
+    CourseAttempt attempt =
+        CourseAttempt.reconstitute(
+            AttemptId.generate(),
+            new SubscriptionId(SUBSCRIPTION_ID),
+            COURSE_1,
+            AttemptStatus.PASSED,
+            new Grade(new BigDecimal("4.0")),
+            UUID.randomUUID(),
+            "DIURNA",
+            Instant.now(),
+            0L);
     when(loadCourseAttemptPort.loadBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(List.of(attempt));
 
     CurriculumViewData result = sut.getSubscriptionCurriculum(SUBSCRIPTION_ID, STUDENT_ID);
@@ -132,15 +142,19 @@ class GetSubscriptionCurriculumServiceTest {
     assertThat(result.semesters().get(0).courses()).hasSize(2);
 
     // COURSE_1 is PASSED
-    var course1Data = result.semesters().get(0).courses().stream()
-        .filter(c -> c.courseId().equals(COURSE_1))
-        .findFirst().orElseThrow();
+    var course1Data =
+        result.semesters().get(0).courses().stream()
+            .filter(c -> c.courseId().equals(COURSE_1))
+            .findFirst()
+            .orElseThrow();
     assertThat(course1Data.progressStatus()).isEqualTo("PASSED");
 
     // COURSE_2 is AVAILABLE (no prereqs, no attempts)
-    var course2Data = result.semesters().get(0).courses().stream()
-        .filter(c -> c.courseId().equals(COURSE_2))
-        .findFirst().orElseThrow();
+    var course2Data =
+        result.semesters().get(0).courses().stream()
+            .filter(c -> c.courseId().equals(COURSE_2))
+            .findFirst()
+            .orElseThrow();
     assertThat(course2Data.progressStatus()).isEqualTo("AVAILABLE");
   }
 
@@ -180,8 +194,10 @@ class GetSubscriptionCurriculumServiceTest {
 
   private PlanMallaView buildMalla() {
     var req1 = new PlanMallaView.RequirementSummary("COURSE_PASSED", null, "HIGH", false, null);
-    var course1 = new PlanMallaView.CourseSummary(COURSE_1, "ISC-001", "Course 1", "REQUIRED", 3, List.of());
-    var course2 = new PlanMallaView.CourseSummary(COURSE_2, "ISC-002", "Course 2", "REQUIRED", 3, List.of());
+    var course1 =
+        new PlanMallaView.CourseSummary(COURSE_1, "ISC-001", "Course 1", "REQUIRED", 3, List.of());
+    var course2 =
+        new PlanMallaView.CourseSummary(COURSE_2, "ISC-002", "Course 2", "REQUIRED", 3, List.of());
     var bucket = new PlanMallaView.SemesterBucket(1, List.of(course1, course2));
     return new PlanMallaView(PLAN_ID, "DIURNA", List.of(bucket), "Graduation requirements.");
   }

@@ -16,7 +16,6 @@ import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencySt
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * Use case: create a staff account, idempotent via Idempotency-Key header.

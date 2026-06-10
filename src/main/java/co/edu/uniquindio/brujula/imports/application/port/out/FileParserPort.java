@@ -10,11 +10,11 @@ import java.util.List;
  *
  * <p>Implementations live in infrastructure (XlsxParserAdapter, JsonParserAdapter). The service
  * layer selects the implementation by content-type / file extension. Structural errors (bad
- * headers, macros, unparseable JSON) are returned as a non-empty {@link ParseResult#structuralIssues()}
- * list; callers treat this as a file-level rejection.
+ * headers, macros, unparseable JSON) are returned as a non-empty {@link
+ * ParseResult#structuralIssues()} list; callers treat this as a file-level rejection.
  *
- * <p>Framework-free interface (ARQ-002/003). Parser adapters are {@code @Component}-annotated
- * in infrastructure and selected at runtime by the service.
+ * <p>Framework-free interface (ARQ-002/003). Parser adapters are {@code @Component}-annotated in
+ * infrastructure and selected at runtime by the service.
  */
 public interface FileParserPort {
 
@@ -40,8 +40,8 @@ public interface FileParserPort {
    * Result of a file parse operation.
    *
    * @param rows the parsed data rows (empty if structural issues exist)
-   * @param structuralIssues global file-level issues (e.g. MACROS_NOT_ALLOWED, EMPTY_FILE);
-   *     row = 0 by convention for all structural issues
+   * @param structuralIssues global file-level issues (e.g. MACROS_NOT_ALLOWED, EMPTY_FILE); row = 0
+   *     by convention for all structural issues
    */
   record ParseResult(List<ImportRow> rows, List<ImportIssue> structuralIssues) {
 
@@ -50,7 +50,9 @@ public interface FileParserPort {
       structuralIssues = structuralIssues != null ? List.copyOf(structuralIssues) : List.of();
     }
 
-    /** Returns {@code true} if structural issues were detected (file cannot be safely processed). */
+    /**
+     * Returns {@code true} if structural issues were detected (file cannot be safely processed).
+     */
     public boolean hasStructuralIssues() {
       return !structuralIssues.isEmpty();
     }

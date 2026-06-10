@@ -39,8 +39,19 @@ class JourneyJpaEntity {
     this.active = active;
   }
 
-  UUID getId() { return id; }
-  String getCode() { return code; }
-  String getName() { return name; }
-  boolean isActive() { return active; }
+  UUID getId() {
+    return id;
+  }
+
+  String getCode() {
+    return code;
+  }
+
+  String getName() {
+    return name;
+  }
+
+  boolean isActive() {
+    return active;
+  }
 }

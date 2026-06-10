@@ -8,8 +8,8 @@ import java.util.UUID;
 /**
  * Value object representing one ordered level within a {@link SequentialTrack}.
  *
- * <p>Corresponds to {@code curriculum.sequential_track_level} rows plus their
- * child option rows in {@code curriculum.sequential_track_level_option}.
+ * <p>Corresponds to {@code curriculum.sequential_track_level} rows plus their child option rows in
+ * {@code curriculum.sequential_track_level_option}.
  *
  * <p>No Spring/JPA imports (ARQ-002).
  *

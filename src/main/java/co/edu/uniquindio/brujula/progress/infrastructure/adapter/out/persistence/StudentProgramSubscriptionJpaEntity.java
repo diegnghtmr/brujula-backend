@@ -47,29 +47,67 @@ class StudentProgramSubscriptionJpaEntity {
   // JPA requires no-arg constructor
   protected StudentProgramSubscriptionJpaEntity() {}
 
-  UUID getId() { return id; }
-  void setId(UUID id) { this.id = id; }
+  UUID getId() {
+    return id;
+  }
 
-  UUID getUserId() { return userId; }
-  void setUserId(UUID userId) { this.userId = userId; }
+  void setId(UUID id) {
+    this.id = id;
+  }
 
-  UUID getProgramId() { return programId; }
-  void setProgramId(UUID programId) { this.programId = programId; }
+  UUID getUserId() {
+    return userId;
+  }
 
-  UUID getPlanId() { return planId; }
-  void setPlanId(UUID planId) { this.planId = planId; }
+  void setUserId(UUID userId) {
+    this.userId = userId;
+  }
 
-  String getReferenceJourneyCode() { return referenceJourneyCode; }
+  UUID getProgramId() {
+    return programId;
+  }
+
+  void setProgramId(UUID programId) {
+    this.programId = programId;
+  }
+
+  UUID getPlanId() {
+    return planId;
+  }
+
+  void setPlanId(UUID planId) {
+    this.planId = planId;
+  }
+
+  String getReferenceJourneyCode() {
+    return referenceJourneyCode;
+  }
+
   void setReferenceJourneyCode(String referenceJourneyCode) {
     this.referenceJourneyCode = referenceJourneyCode;
   }
 
-  String getStatus() { return status; }
-  void setStatus(String status) { this.status = status; }
+  String getStatus() {
+    return status;
+  }
 
-  Instant getCreatedAt() { return createdAt; }
-  void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+  void setStatus(String status) {
+    this.status = status;
+  }
 
-  long getVersion() { return version; }
-  void setVersion(long version) { this.version = version; }
+  Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  void setCreatedAt(Instant createdAt) {
+    this.createdAt = createdAt;
+  }
+
+  long getVersion() {
+    return version;
+  }
+
+  void setVersion(long version) {
+    this.version = version;
+  }
 }

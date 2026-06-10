@@ -25,7 +25,11 @@ import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.PublishOfferingUseCase;
 import co.edu.uniquindio.brujula.offering.application.port.in.UpdateOfferingUseCase;
-
+import java.net.URI;
+import java.security.MessageDigest;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,12 +37,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.ObjectMapper;
-
-import java.net.URI;
-import java.security.MessageDigest;
-import java.util.HexFormat;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * REST adapter: offering catalogue endpoints ({@code /periods}, {@code /offerings/**}).
@@ -88,13 +86,11 @@ class OfferingController implements OfferingsApi {
 
   @Override
   @PreAuthorize("hasAnyRole('STUDENT', 'STAFF', 'ADMIN')")
-  public ResponseEntity<List<AcademicPeriod>> listPeriods(
-      @Nullable PeriodStatus status) {
+  public ResponseEntity<List<AcademicPeriod>> listPeriods(@Nullable PeriodStatus status) {
     // status filter mapped from generated PeriodStatus enum (null = all non-archived)
     String statusFilter = status != null ? status.name() : null;
-    List<AcademicPeriod> periods = listPeriodsQuery.listPeriods(statusFilter).stream()
-        .map(restMapper::toContract)
-        .toList();
+    List<AcademicPeriod> periods =
+        listPeriodsQuery.listPeriods(statusFilter).stream().map(restMapper::toContract).toList();
     return ResponseEntity.ok(periods);
   }
 
@@ -114,14 +110,15 @@ class OfferingController implements OfferingsApi {
       @Nullable List<String> sort) {
     // OFFW-007: pass caller role so the service routes to the correct persistence query
     String callerRole = resolveCallerRole();
-    ListOfferingsCriteria criteria = new ListOfferingsCriteria(
-        periodId,
-        programId,
-        null,   // courseId filter — reserved for future use
-        status != null ? status.name() : null,
-        page == null ? 0 : page,
-        size == null ? 20 : size,
-        callerRole);
+    ListOfferingsCriteria criteria =
+        new ListOfferingsCriteria(
+            periodId,
+            programId,
+            null, // courseId filter — reserved for future use
+            status != null ? status.name() : null,
+            page == null ? 0 : page,
+            size == null ? 20 : size,
+            callerRole);
     OfferingPageView pageView = listOfferingsQuery.listOfferings(criteria);
     return ResponseEntity.ok(restMapper.toContractPage(pageView));
   }
@@ -144,12 +141,15 @@ class OfferingController implements OfferingsApi {
   @Override
   @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
   public ResponseEntity<OfferingDetail> createOffering(
-      UUID idempotencyKey, String X_XSRF_TOKEN, UUID programId,
+      UUID idempotencyKey,
+      String X_XSRF_TOKEN,
+      UUID programId,
       OfferingCreateRequest offeringCreateRequest) {
     UUID actorId = resolveActorId();
     String requestHash = hashRequest(offeringCreateRequest);
-    CreateOfferingCommand command = restMapper.fromRequest(
-        idempotencyKey, programId, offeringCreateRequest, requestHash, actorId);
+    CreateOfferingCommand command =
+        restMapper.fromRequest(
+            idempotencyKey, programId, offeringCreateRequest, requestHash, actorId);
     OfferingDetailView view = createOfferingUseCase.createOffering(command);
     URI location = URI.create("/staff/programs/" + programId + "/offerings/" + view.id());
     return ResponseEntity.status(org.springframework.http.HttpStatus.CREATED)
@@ -159,7 +159,8 @@ class OfferingController implements OfferingsApi {
 
   @Override
   public ResponseEntity<ScheduleOption> createScheduleOption(
-      String X_XSRF_TOKEN, UUID offeringId,
+      String X_XSRF_TOKEN,
+      UUID offeringId,
       ScheduleOptionCreateRequest scheduleOptionCreateRequest) {
     throw new UnsupportedOperationException("createScheduleOption not implemented in WU1");
   }
@@ -172,12 +173,15 @@ class OfferingController implements OfferingsApi {
   @Override
   @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
   public ResponseEntity<OfferingDetail> publishOffering(
-      UUID idempotencyKey, String X_XSRF_TOKEN, UUID offeringId,
+      UUID idempotencyKey,
+      String X_XSRF_TOKEN,
+      UUID offeringId,
       PublishOfferingRequest publishOfferingRequest) {
     UUID actorId = resolveActorId();
     String requestHash = hashRequest(publishOfferingRequest);
-    PublishOfferingCommand command = restMapper.fromPublishRequest(
-        idempotencyKey, offeringId, publishOfferingRequest, requestHash, actorId);
+    PublishOfferingCommand command =
+        restMapper.fromPublishRequest(
+            idempotencyKey, offeringId, publishOfferingRequest, requestHash, actorId);
     OfferingDetailView view = publishOfferingUseCase.publishOffering(command);
     return ResponseEntity.ok(restMapper.toContractDetail(view));
   }
@@ -185,19 +189,17 @@ class OfferingController implements OfferingsApi {
   @Override
   @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
   public ResponseEntity<OfferingDetail> updateOffering(
-      String X_XSRF_TOKEN, UUID offeringId,
-      OfferingUpdateRequest offeringUpdateRequest) {
+      String X_XSRF_TOKEN, UUID offeringId, OfferingUpdateRequest offeringUpdateRequest) {
     UUID actorId = resolveActorId();
-    UpdateOfferingCommand command = restMapper.fromUpdateRequest(
-        offeringId, offeringUpdateRequest, actorId);
+    UpdateOfferingCommand command =
+        restMapper.fromUpdateRequest(offeringId, offeringUpdateRequest, actorId);
     OfferingDetailView view = updateOfferingUseCase.updateOffering(command);
     return ResponseEntity.ok(restMapper.toContractDetail(view));
   }
 
   @Override
   public ResponseEntity<ScheduleOption> updateScheduleOption(
-      String X_XSRF_TOKEN, UUID optionId,
-      ScheduleOptionUpdateRequest scheduleOptionUpdateRequest) {
+      String X_XSRF_TOKEN, UUID optionId, ScheduleOptionUpdateRequest scheduleOptionUpdateRequest) {
     throw new UnsupportedOperationException("updateScheduleOption not implemented in WU1");
   }
 
@@ -206,8 +208,8 @@ class OfferingController implements OfferingsApi {
   // -------------------------------------------------------------------------
 
   /**
-   * Resolve the caller's role from the Spring Security context for OFFW-007 routing.
-   * Returns the first ROLE_ authority (STAFF/ADMIN/STUDENT) or null if not determinable.
+   * Resolve the caller's role from the Spring Security context for OFFW-007 routing. Returns the
+   * first ROLE_ authority (STAFF/ADMIN/STUDENT) or null if not determinable.
    */
   private String resolveCallerRole() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();

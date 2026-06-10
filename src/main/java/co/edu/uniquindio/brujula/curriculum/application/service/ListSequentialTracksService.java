@@ -12,8 +12,8 @@ import java.util.UUID;
 /**
  * Use case implementation: list sequential tracks for a study plan.
  *
- * <p>Delegates to {@link LoadSequentialTrackPort#loadByPlanId} with optional kind filter.
- * No Spring annotations — wired via infrastructure configuration (ARQ-002).
+ * <p>Delegates to {@link LoadSequentialTrackPort#loadByPlanId} with optional kind filter. No Spring
+ * annotations — wired via infrastructure configuration (ARQ-002).
  */
 public class ListSequentialTracksService implements ListSequentialTracksQuery {
 
@@ -27,9 +27,7 @@ public class ListSequentialTracksService implements ListSequentialTracksQuery {
   public List<SequentialTrackView> listSequentialTracks(UUID planId, String kindFilter) {
     TrackKind kind = parseKind(kindFilter);
     List<SequentialTrack> tracks = loadSequentialTrackPort.loadByPlanId(planId, kind);
-    return tracks.stream()
-        .map(this::toView)
-        .toList();
+    return tracks.stream().map(this::toView).toList();
   }
 
   // ---------------------------------------------------------------------------
@@ -48,9 +46,8 @@ public class ListSequentialTracksService implements ListSequentialTracksQuery {
   // ---------------------------------------------------------------------------
 
   private SequentialTrackView toView(SequentialTrack track) {
-    List<SequentialTrackView.LevelView> levelViews = track.levels().stream()
-        .map(this::toLevelView)
-        .toList();
+    List<SequentialTrackView.LevelView> levelViews =
+        track.levels().stream().map(this::toLevelView).toList();
     return new SequentialTrackView(
         track.id().value(),
         track.planId(),
@@ -64,8 +61,6 @@ public class ListSequentialTracksService implements ListSequentialTracksQuery {
 
   private SequentialTrackView.LevelView toLevelView(SequentialTrackLevel level) {
     return new SequentialTrackView.LevelView(
-        level.id(),
-        level.level(),
-        List.copyOf(level.optionCourseIds()));
+        level.id(), level.level(), List.copyOf(level.optionCourseIds()));
   }
 }

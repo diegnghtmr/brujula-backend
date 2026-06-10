@@ -6,8 +6,8 @@ import co.edu.uniquindio.brujula.offering.application.dto.UpdatePeriodCommand;
 /**
  * Input port: update an academic period (optimistic lock, ADMIN-only).
  *
- * <p>Part of {@code offering::api} named interface (package-info annotates the package).
- * Satisfies: OFFW-002.
+ * <p>Part of {@code offering::api} named interface (package-info annotates the package). Satisfies:
+ * OFFW-002.
  */
 public interface UpdatePeriodUseCase {
 

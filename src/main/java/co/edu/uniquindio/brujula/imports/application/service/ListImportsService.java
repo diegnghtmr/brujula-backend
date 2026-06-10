@@ -11,8 +11,7 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportIssue;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportKind;
 import co.edu.uniquindio.brujula.imports.domain.model.ImportStatus;
 import co.edu.uniquindio.brujula.imports.domain.model.Severity;
-
-import java.util.ArrayList;
+import java.util.ArrayList; // still used in toSummary
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,10 +19,11 @@ import java.util.UUID;
 /**
  * Application service: list imports scoped to the actor's assigned programs (IMP-003).
  *
- * <p>STAFF actors see only batches belonging to programs they are actively assigned to.
- * ADMIN actors see all batches (no assignment filter).
+ * <p>STAFF actors see only batches belonging to programs they are actively assigned to. ADMIN
+ * actors see all batches (no assignment filter).
  *
- * <p>Framework-free — wired by {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
+ * <p>Framework-free — wired by {@link
+ * co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
  */
 public class ListImportsService implements ListImportsUseCase {
 
@@ -31,8 +31,7 @@ public class ListImportsService implements ListImportsUseCase {
   private final StaffAssignmentPort staffAssignmentPort;
 
   public ListImportsService(
-      LoadImportBatchPort loadImportBatchPort,
-      StaffAssignmentPort staffAssignmentPort) {
+      LoadImportBatchPort loadImportBatchPort, StaffAssignmentPort staffAssignmentPort) {
     this.loadImportBatchPort = loadImportBatchPort;
     this.staffAssignmentPort = staffAssignmentPort;
   }
@@ -60,9 +59,7 @@ public class ListImportsService implements ListImportsUseCase {
     }
 
     // Apply pagination in-memory (the persistence adapter returns full lists per-program)
-    List<ImportSummary> summaries = batches.stream()
-        .map(this::toSummary)
-        .toList();
+    List<ImportSummary> summaries = batches.stream().map(this::toSummary).toList();
 
     int total = summaries.size();
     int fromIndex = Math.min(query.page() * query.size(), total);
@@ -74,15 +71,16 @@ public class ListImportsService implements ListImportsUseCase {
     return new ImportPageView(paginated, query.page(), query.size(), total, totalPages);
   }
 
-  /**
-   * Load all batches across all programs for ADMIN access.
-   */
+  /** Load all batches across all programs for ADMIN access. */
   private List<ImportBatch> loadAllBatches(ImportKind kindFilter, ImportStatus statusFilter) {
     return loadImportBatchPort.findAll(kindFilter, statusFilter);
   }
 
   /**
    * Load batches for all programs assigned to the given staff member.
+   *
+   * <p>QAL-PERF-001: replaced the per-program O(N) loop with a single IN-clause batch query,
+   * issuing exactly 1 SQL statement regardless of how many programs are assigned.
    */
   private List<ImportBatch> loadBatchesForStaff(
       UUID staffId, ImportKind kindFilter, ImportStatus statusFilter) {
@@ -92,11 +90,8 @@ public class ListImportsService implements ListImportsUseCase {
       return List.of();
     }
 
-    List<ImportBatch> result = new ArrayList<>();
-    for (UUID programId : assignedPrograms) {
-      result.addAll(loadImportBatchPort.findByProgram(programId, kindFilter, statusFilter));
-    }
-    return result;
+    // Single IN-clause query — O(1) round-trips instead of O(N)
+    return loadImportBatchPort.findByProgramIds(assignedPrograms, kindFilter, statusFilter);
   }
 
   private ImportPageView emptyPage(int page, int size) {
@@ -110,11 +105,7 @@ public class ListImportsService implements ListImportsUseCase {
     for (ImportIssue issue : batch.getIssues()) {
       ImportSummary.ImportIssueDto dto =
           new ImportSummary.ImportIssueDto(
-              issue.row(),
-              issue.column(),
-              issue.code(),
-              issue.message(),
-              issue.severity().name());
+              issue.row(), issue.column(), issue.code(), issue.message(), issue.severity().name());
       if (issue.severity() == Severity.ERROR) {
         errors.add(dto);
       } else {

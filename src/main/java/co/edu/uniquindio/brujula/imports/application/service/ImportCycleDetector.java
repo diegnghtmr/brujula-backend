@@ -84,8 +84,8 @@ class ImportCycleDetector {
   }
 
   private enum Color {
-    WHITE,  // not yet visited
-    GRAY,   // currently in the DFS stack (ancestor)
-    BLACK   // fully processed
+    WHITE, // not yet visited
+    GRAY, // currently in the DFS stack (ancestor)
+    BLACK // fully processed
   }
 }

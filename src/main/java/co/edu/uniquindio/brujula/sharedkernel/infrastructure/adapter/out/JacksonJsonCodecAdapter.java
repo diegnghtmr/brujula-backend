@@ -18,16 +18,15 @@ import org.springframework.stereotype.Component;
  * <p>Jackson handles all RFC 8259 §7 escaping (backslash, double-quote, control characters
  * U+0000–U+001F) correctly by default.
  *
- * <p><strong>Dual-ObjectMapper notice (W-002):</strong> This adapter intentionally uses the
- * {@code com.fasterxml.jackson} (Jackson 2) {@code ObjectMapper} for the internal
- * idempotency-store JSON roundtrip. It is entirely independent of the HTTP-layer
- * {@code tools.jackson} (Jackson 3) {@code ObjectMapper} that Spring Boot 4 auto-configures
- * for {@code OfferingController} and other REST endpoints. The two instances never interact:
- * this adapter serializes internal domain views to the {@code sharedkernel.idempotency} table
- * only and is never involved in HTTP request/response serialization.
- * {@link JavaTimeModule} is registered explicitly so that {@code java.time} types present in
- * serialized views (e.g. {@code LocalTime} in schedule sessions) roundtrip correctly through
- * the Jackson 2 codec without throwing {@code InvalidDefinitionException}.
+ * <p><strong>Dual-ObjectMapper notice (W-002):</strong> This adapter intentionally uses the {@code
+ * com.fasterxml.jackson} (Jackson 2) {@code ObjectMapper} for the internal idempotency-store JSON
+ * roundtrip. It is entirely independent of the HTTP-layer {@code tools.jackson} (Jackson 3) {@code
+ * ObjectMapper} that Spring Boot 4 auto-configures for {@code OfferingController} and other REST
+ * endpoints. The two instances never interact: this adapter serializes internal domain views to the
+ * {@code sharedkernel.idempotency} table only and is never involved in HTTP request/response
+ * serialization. {@link JavaTimeModule} is registered explicitly so that {@code java.time} types
+ * present in serialized views (e.g. {@code LocalTime} in schedule sessions) roundtrip correctly
+ * through the Jackson 2 codec without throwing {@code InvalidDefinitionException}.
  *
  * <p>Package-private (ARQ-006b — infrastructure adapter internals are not public). Registered as a
  * Spring {@code @Component} for auto-detection. Design: ADR-F3-001.
@@ -55,7 +54,8 @@ class JacksonJsonCodecAdapter implements JsonCodecPort {
     try {
       return objectMapper.writeValueAsString(value);
     } catch (Exception e) {
-      throw new IllegalStateException("JSON serialization failed for: " + value.getClass().getName(), e);
+      throw new IllegalStateException(
+          "JSON serialization failed for: " + value.getClass().getName(), e);
     }
   }
 
@@ -64,8 +64,7 @@ class JacksonJsonCodecAdapter implements JsonCodecPort {
     try {
       return objectMapper.readValue(json, type);
     } catch (Exception e) {
-      throw new IllegalStateException(
-          "JSON deserialization failed for type: " + type.getName(), e);
+      throw new IllegalStateException("JSON deserialization failed for type: " + type.getName(), e);
     }
   }
 }

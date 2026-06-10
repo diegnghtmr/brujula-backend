@@ -6,8 +6,8 @@ import java.util.UUID;
 /**
  * Command DTO for creating a subscription.
  *
- * <p>Self-validating (compact constructor). Passed from the REST adapter to
- * {@link co.edu.uniquindio.brujula.progress.application.port.in.CreateSubscriptionUseCase}.
+ * <p>Self-validating (compact constructor). Passed from the REST adapter to {@link
+ * co.edu.uniquindio.brujula.progress.application.port.in.CreateSubscriptionUseCase}.
  */
 public record CreateSubscriptionCommand(
     UUID idempotencyKey,

@@ -12,12 +12,13 @@ import java.util.UUID;
  * <ul>
  *   <li>{@link RequirementType#COURSE_PASSED}: requires non-null {@code requiredCourseId}.
  *   <li>{@link RequirementType#SEQUENCE}: requires non-null {@code requiredCourseId}.
- *   <li>{@link RequirementType#MINIMUM_CREDITS}: requires non-null, non-negative {@code requiredCredits}.
+ *   <li>{@link RequirementType#MINIMUM_CREDITS}: requires non-null, non-negative {@code
+ *       requiredCredits}.
  *   <li>{@link RequirementType#CONFIGURABLE}: no specific required field (evaluated externally).
  * </ul>
  *
- * <p>Confidence and inferred are metadata fields stored for the simulator (ADR-F2-004); they do
- * NOT affect graph topology or validation in Fase 2.
+ * <p>Confidence and inferred are metadata fields stored for the simulator (ADR-F2-004); they do NOT
+ * affect graph topology or validation in Fase 2.
  *
  * <p>Status defaults to {@link CourseRequirementStatus#ACTIVE}. Version initializes to {@code 0}.
  * No Spring/JPA imports (ARQ-002).
@@ -27,11 +28,11 @@ public final class CourseRequirement {
   private final CourseRequirementId id;
   private final UUID targetCourseId;
   private final RequirementType type;
-  private final UUID requiredCourseId;     // nullable for MINIMUM_CREDITS / CONFIGURABLE
-  private final Integer requiredCredits;   // nullable; only for MINIMUM_CREDITS
+  private final UUID requiredCourseId; // nullable for MINIMUM_CREDITS / CONFIGURABLE
+  private final Integer requiredCredits; // nullable; only for MINIMUM_CREDITS
   private final Boolean simultaneityAllowed; // nullable
-  private final Confidence confidence;     // nullable; metadata for simulator
-  private final Boolean inferred;          // nullable; metadata flag
+  private final Confidence confidence; // nullable; metadata for simulator
+  private final Boolean inferred; // nullable; metadata flag
   private final CourseRequirementStatus status;
   private final long version;
 
@@ -76,12 +77,20 @@ public final class CourseRequirement {
       Boolean inferred) {
     requireNotNull(id, targetCourseId);
     if (requiredCourseId == null) {
-      throw new IllegalArgumentException("requiredCourseId must not be null for COURSE_PASSED requirement");
+      throw new IllegalArgumentException(
+          "requiredCourseId must not be null for COURSE_PASSED requirement");
     }
     return new CourseRequirement(
-        id, targetCourseId, RequirementType.COURSE_PASSED,
-        requiredCourseId, null, simultaneityAllowed, confidence, inferred,
-        CourseRequirementStatus.ACTIVE, 0L);
+        id,
+        targetCourseId,
+        RequirementType.COURSE_PASSED,
+        requiredCourseId,
+        null,
+        simultaneityAllowed,
+        confidence,
+        inferred,
+        CourseRequirementStatus.ACTIVE,
+        0L);
   }
 
   /**
@@ -96,12 +105,20 @@ public final class CourseRequirement {
       boolean simultaneityAllowed) {
     requireNotNull(id, targetCourseId);
     if (requiredCourseId == null) {
-      throw new IllegalArgumentException("requiredCourseId must not be null for SEQUENCE requirement");
+      throw new IllegalArgumentException(
+          "requiredCourseId must not be null for SEQUENCE requirement");
     }
     return new CourseRequirement(
-        id, targetCourseId, RequirementType.SEQUENCE,
-        requiredCourseId, null, simultaneityAllowed, null, null,
-        CourseRequirementStatus.ACTIVE, 0L);
+        id,
+        targetCourseId,
+        RequirementType.SEQUENCE,
+        requiredCourseId,
+        null,
+        simultaneityAllowed,
+        null,
+        null,
+        CourseRequirementStatus.ACTIVE,
+        0L);
   }
 
   /**
@@ -110,33 +127,44 @@ public final class CourseRequirement {
    * @param requiredCredits must not be null and must be ≥ 0
    */
   public static CourseRequirement minimumCredits(
-      CourseRequirementId id,
-      UUID targetCourseId,
-      Integer requiredCredits) {
+      CourseRequirementId id, UUID targetCourseId, Integer requiredCredits) {
     requireNotNull(id, targetCourseId);
     if (requiredCredits == null) {
-      throw new IllegalArgumentException("requiredCredits must not be null for MINIMUM_CREDITS requirement");
+      throw new IllegalArgumentException(
+          "requiredCredits must not be null for MINIMUM_CREDITS requirement");
     }
     if (requiredCredits < 0) {
       throw new IllegalArgumentException("requiredCredits must be >= 0, got: " + requiredCredits);
     }
     return new CourseRequirement(
-        id, targetCourseId, RequirementType.MINIMUM_CREDITS,
-        null, requiredCredits, null, null, null,
-        CourseRequirementStatus.ACTIVE, 0L);
+        id,
+        targetCourseId,
+        RequirementType.MINIMUM_CREDITS,
+        null,
+        requiredCredits,
+        null,
+        null,
+        null,
+        CourseRequirementStatus.ACTIVE,
+        0L);
   }
 
   /**
    * Create a CONFIGURABLE requirement: custom rule evaluated externally (future simulator logic).
    */
-  public static CourseRequirement configurable(
-      CourseRequirementId id,
-      UUID targetCourseId) {
+  public static CourseRequirement configurable(CourseRequirementId id, UUID targetCourseId) {
     requireNotNull(id, targetCourseId);
     return new CourseRequirement(
-        id, targetCourseId, RequirementType.CONFIGURABLE,
-        null, null, null, null, null,
-        CourseRequirementStatus.ACTIVE, 0L);
+        id,
+        targetCourseId,
+        RequirementType.CONFIGURABLE,
+        null,
+        null,
+        null,
+        null,
+        null,
+        CourseRequirementStatus.ACTIVE,
+        0L);
   }
 
   /**
@@ -157,19 +185,28 @@ public final class CourseRequirement {
       CourseRequirementStatus status,
       long version) {
     Objects.requireNonNull(id, "id must not be null");
-    if (targetCourseId == null) throw new IllegalArgumentException("targetCourseId must not be null");
+    if (targetCourseId == null)
+      throw new IllegalArgumentException("targetCourseId must not be null");
     validatePerType(type, requiredCourseId, requiredCredits);
     return new CourseRequirement(
-        id, targetCourseId, type,
-        requiredCourseId, requiredCredits, simultaneityAllowed, confidence, inferred,
-        status, version);
+        id,
+        targetCourseId,
+        type,
+        requiredCourseId,
+        requiredCredits,
+        simultaneityAllowed,
+        confidence,
+        inferred,
+        status,
+        version);
   }
 
   /**
-   * Shared per-type validation used by both factory methods and reconstitute.
-   * Ensures that the type-specific required fields are always present.
+   * Shared per-type validation used by both factory methods and reconstitute. Ensures that the
+   * type-specific required fields are always present.
    */
-  private static void validatePerType(RequirementType type, UUID requiredCourseId, Integer requiredCredits) {
+  private static void validatePerType(
+      RequirementType type, UUID requiredCourseId, Integer requiredCredits) {
     switch (type) {
       case COURSE_PASSED, SEQUENCE -> {
         if (requiredCourseId == null) {
@@ -179,13 +216,17 @@ public final class CourseRequirement {
       }
       case MINIMUM_CREDITS -> {
         if (requiredCredits == null) {
-          throw new IllegalArgumentException("requiredCredits must not be null for MINIMUM_CREDITS requirement");
+          throw new IllegalArgumentException(
+              "requiredCredits must not be null for MINIMUM_CREDITS requirement");
         }
         if (requiredCredits < 0) {
-          throw new IllegalArgumentException("requiredCredits must be >= 0, got: " + requiredCredits);
+          throw new IllegalArgumentException(
+              "requiredCredits must be >= 0, got: " + requiredCredits);
         }
       }
-      case CONFIGURABLE -> { /* no specific required field */ }
+      case CONFIGURABLE -> {
+        /* no specific required field */
+      }
     }
   }
 
@@ -204,16 +245,45 @@ public final class CourseRequirement {
   // Accessors
   // ---------------------------------------------------------------------------
 
-  public CourseRequirementId id() { return id; }
-  public UUID targetCourseId() { return targetCourseId; }
-  public RequirementType type() { return type; }
-  public UUID requiredCourseId() { return requiredCourseId; }
-  public Integer requiredCredits() { return requiredCredits; }
-  public Boolean simultaneityAllowed() { return simultaneityAllowed; }
-  public Confidence confidence() { return confidence; }
-  public Boolean inferred() { return inferred; }
-  public CourseRequirementStatus status() { return status; }
-  public long version() { return version; }
+  public CourseRequirementId id() {
+    return id;
+  }
+
+  public UUID targetCourseId() {
+    return targetCourseId;
+  }
+
+  public RequirementType type() {
+    return type;
+  }
+
+  public UUID requiredCourseId() {
+    return requiredCourseId;
+  }
+
+  public Integer requiredCredits() {
+    return requiredCredits;
+  }
+
+  public Boolean simultaneityAllowed() {
+    return simultaneityAllowed;
+  }
+
+  public Confidence confidence() {
+    return confidence;
+  }
+
+  public Boolean inferred() {
+    return inferred;
+  }
+
+  public CourseRequirementStatus status() {
+    return status;
+  }
+
+  public long version() {
+    return version;
+  }
 
   // ---------------------------------------------------------------------------
   // Equality (identity-based)

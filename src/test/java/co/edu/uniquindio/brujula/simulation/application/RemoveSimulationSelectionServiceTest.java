@@ -30,8 +30,8 @@ import org.junit.jupiter.api.Test;
 /**
  * WU4a application unit tests for {@link RemoveSimulationSelectionService}.
  *
- * <p>Covers: happy path (soft delete), simulation not found → 404, non-owner → 403,
- * selection not found → 404, selection belongs to different simulation → 404.
+ * <p>Covers: happy path (soft delete), simulation not found → 404, non-owner → 403, selection not
+ * found → 404, selection belongs to different simulation → 404.
  */
 class RemoveSimulationSelectionServiceTest {
 
@@ -52,8 +52,9 @@ class RemoveSimulationSelectionServiceTest {
     loadSimulationPort = mock(LoadSimulationPort.class);
     loadSimulationSelectionPort = mock(LoadSimulationSelectionPort.class);
     saveSimulationSelectionPort = mock(SaveSimulationSelectionPort.class);
-    sut = new RemoveSimulationSelectionService(
-        loadSimulationPort, loadSimulationSelectionPort, saveSimulationSelectionPort);
+    sut =
+        new RemoveSimulationSelectionService(
+            loadSimulationPort, loadSimulationSelectionPort, saveSimulationSelectionPort);
   }
 
   // -------------------------------------------------------------------------
@@ -143,17 +144,18 @@ class RemoveSimulationSelectionServiceTest {
   }
 
   private SimulationSelection buildSelection(UUID ownerSimulationId) {
-    CandidateSelection candidate = new CandidateSelection(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        courseId,
-        "Algorithms",
-        programId,
-        0.0,
-        "A",
-        "PUBLISHED",
-        1L,
-        List.of());
+    CandidateSelection candidate =
+        new CandidateSelection(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            courseId,
+            "Algorithms",
+            programId,
+            0.0,
+            "A",
+            "PUBLISHED",
+            1L,
+            List.of());
     return SimulationSelection.create(
         SimulationSelectionId.of(selectionId), ownerSimulationId, candidate);
   }

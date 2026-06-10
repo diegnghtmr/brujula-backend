@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Test;
 /**
  * WU4a application unit tests for {@link ListSimulationSelectionsService}.
  *
- * <p>Covers: owner gets empty list, owner gets list with 2 items, non-owner → 403,
- * simulation not found → 404.
+ * <p>Covers: owner gets empty list, owner gets list with 2 items, non-owner → 403, simulation not
+ * found → 404.
  */
 class ListSimulationSelectionsServiceTest {
 
@@ -56,8 +56,7 @@ class ListSimulationSelectionsServiceTest {
   void listSelections_ownerEmptyList_returnsEmptyList() {
     Simulation simulation = buildSimulation(ownerId);
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
-    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
-        .thenReturn(List.of());
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
 
     List<SimulationSelectionView> views = sut.listSelections(simulationId, ownerId);
 
@@ -121,17 +120,18 @@ class ListSimulationSelectionsServiceTest {
   }
 
   private SimulationSelection buildSelection(UUID ownerSimulationId, UUID courseId) {
-    CandidateSelection candidate = new CandidateSelection(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        courseId,
-        "Course " + courseId,
-        programId,
-        3.0,
-        "A",
-        "PUBLISHED",
-        1L,
-        List.of());
+    CandidateSelection candidate =
+        new CandidateSelection(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            courseId,
+            "Course " + courseId,
+            programId,
+            3.0,
+            "A",
+            "PUBLISHED",
+            1L,
+            List.of());
     return SimulationSelection.create(
         SimulationSelectionId.generate(), ownerSimulationId, candidate);
   }

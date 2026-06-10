@@ -8,8 +8,8 @@ package co.edu.uniquindio.brujula.progress.domain;
  * case, diverging from the OpenAPI contract. The resolver now returns {@code Optional.empty()}
  * instead.
  *
- * <p>PASSED — student passed with a grade ≥ 3.0. FAILED — student failed with a grade ≥ 0.0 and &lt;
- * 3.0. CANCELLED — student withdrew; no grade.
+ * <p>PASSED — student passed with a grade ≥ 3.0. FAILED — student failed with a grade ≥ 0.0 and
+ * &lt; 3.0. CANCELLED — student withdrew; no grade.
  */
 public enum AttemptStatus {
   PASSED,

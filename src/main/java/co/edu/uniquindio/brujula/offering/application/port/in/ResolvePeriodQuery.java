@@ -1,7 +1,6 @@
 package co.edu.uniquindio.brujula.offering.application.port.in;
 
 import co.edu.uniquindio.brujula.offering.application.dto.AcademicPeriodView;
-
 import java.util.UUID;
 
 /** Primary port: resolve an academic period by ID (used by simulator). */

@@ -1,6 +1,5 @@
 package co.edu.uniquindio.brujula.progress.application.service;
 
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand;
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.progress.application.dto.CourseAttemptView;
@@ -16,6 +15,7 @@ import co.edu.uniquindio.brujula.progress.domain.Grade;
 import co.edu.uniquindio.brujula.progress.domain.Subscription;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import java.math.BigDecimal;
@@ -25,8 +25,8 @@ import java.util.Optional;
  * Use case: register a new course attempt for the authenticated student.
  *
  * <p>Enforces: BOLA ownership guard (subscription must belong to actorId), grade-status coherence
- * (delegated to {@link CourseAttempt} domain), idempotency via sharedkernel
- * {@link IdempotencyStorePort}, audit via {@link AuditRecorder}.
+ * (delegated to {@link CourseAttempt} domain), idempotency via sharedkernel {@link
+ * IdempotencyStorePort}, audit via {@link AuditRecorder}.
  *
  * <p>Framework-free — wired by {@code ProgressConfiguration}. Satisfies: PRG-1, CROSS-1, CROSS-4.
  */
@@ -86,14 +86,15 @@ public class CreateCourseAttemptService implements CreateCourseAttemptUseCase {
     // 4. Register the attempt (domain enforces grade-status coherence)
     AttemptStatus status = AttemptStatus.valueOf(command.statusName());
     AttemptId attemptId = AttemptId.generate();
-    CourseAttempt attempt = CourseAttempt.register(
-        attemptId,
-        SubscriptionId.of(command.subscriptionId()),
-        command.courseId(),
-        status,
-        grade,
-        command.periodId(),
-        command.journeyCode());
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            attemptId,
+            SubscriptionId.of(command.subscriptionId()),
+            command.courseId(),
+            status,
+            grade,
+            command.periodId(),
+            command.journeyCode());
 
     // 5. Persist
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
@@ -120,15 +121,14 @@ public class CreateCourseAttemptService implements CreateCourseAttemptUseCase {
   }
 
   private CourseAttemptView toView(CourseAttempt attempt) {
-    BigDecimal gradeValue =
-        attempt.getGrade() != null ? attempt.getGrade().value() : null;
+    BigDecimal gradeValue = attempt.getGrade() != null ? attempt.getGrade().value() : null;
     return new CourseAttemptView(
         attempt.getId().value(),
         attempt.getSubscriptionId().value(),
         attempt.getCourseId(),
         "N/A", // courseName resolved by query service (WU4)
         attempt.getPeriodId(),
-        null,   // periodName resolved by query service (WU4)
+        null, // periodName resolved by query service (WU4)
         attempt.getJourneyCode(),
         attempt.getStatus().name(), // FIX-S1: plain String, no domain type in application DTO
         gradeValue,

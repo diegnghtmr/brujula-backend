@@ -12,20 +12,20 @@ import java.util.UUID;
  *
  * <p>ARQ-001: plain String/UUID/primitive types only. No domain entities.
  *
- * @param id              simulation UUID
- * @param name            simulation name
- * @param periodId        period UUID
- * @param periodName      human-readable period name (from offering::api)
- * @param programIds      list of program UUIDs
- * @param statusName      "CURRENT" or "OUTDATED" (computed at read, INV-004)
- * @param createdAt       creation timestamp
- * @param updatedAt       last-updated timestamp
- * @param version         optimistic lock version
- * @param selections      list of active selections (full SimulationSelectionView)
- * @param creditSummary   one entry per program (DET-002 — includes 0-credit programs)
- * @param weeklySchedule  session entries with inClash (DET-001)
+ * @param id simulation UUID
+ * @param name simulation name
+ * @param periodId period UUID
+ * @param periodName human-readable period name (from offering::api)
+ * @param programIds list of program UUIDs
+ * @param statusName "CURRENT" or "OUTDATED" (computed at read, INV-004)
+ * @param createdAt creation timestamp
+ * @param updatedAt last-updated timestamp
+ * @param version optimistic lock version
+ * @param selections list of active selections (full SimulationSelectionView)
+ * @param creditSummary one entry per program (DET-002 — includes 0-credit programs)
+ * @param weeklySchedule session entries with inClash (DET-001)
  * @param totalWeeklyHours sum of all session durations in weekly hours
- * @param validation      blocking + warning notices re-computed at read time (DET-003)
+ * @param validation blocking + warning notices re-computed at read time (DET-003)
  */
 public record SimulationDetailView(
     UUID id,

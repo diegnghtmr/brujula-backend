@@ -10,6 +10,7 @@ import java.util.UUID;
  * Simulation aggregate root.
  *
  * <p>Invariants:
+ *
  * <ul>
  *   <li>programIds must have 1 or 2 elements (INV-002).
  *   <li>programIds must be unique (contract {@code uniqueItems}).
@@ -59,19 +60,15 @@ public class Simulation {
    * <p>Validates invariants: name non-blank, 1..2 unique programIds.
    */
   public static Simulation create(
-      SimulationId id,
-      UUID ownerId,
-      String name,
-      UUID periodId,
-      List<UUID> programIds) {
+      SimulationId id, UUID ownerId, String name, UUID periodId, List<UUID> programIds) {
     Objects.requireNonNull(id, "id required");
     Objects.requireNonNull(ownerId, "ownerId required");
     Objects.requireNonNull(periodId, "periodId required");
     validateName(name);
     validateProgramIds(programIds);
     Instant now = Instant.now();
-    return new Simulation(id, ownerId, name, periodId, programIds,
-        SimulationLifecycle.ACTIVE, now, now, 0L);
+    return new Simulation(
+        id, ownerId, name, periodId, programIds, SimulationLifecycle.ACTIVE, now, now, 0L);
   }
 
   /**
@@ -88,8 +85,8 @@ public class Simulation {
       Instant createdAt,
       Instant updatedAt,
       long version) {
-    return new Simulation(id, ownerId, name, periodId, programIds,
-        lifecycleStatus, createdAt, updatedAt, version);
+    return new Simulation(
+        id, ownerId, name, periodId, programIds, lifecycleStatus, createdAt, updatedAt, version);
   }
 
   // -------------------------------------------------------------------------
@@ -107,9 +104,7 @@ public class Simulation {
     this.updatedAt = Instant.now();
   }
 
-  /**
-   * Soft-delete the simulation.
-   */
+  /** Soft-delete the simulation. */
   public void markDeleted() {
     this.lifecycleStatus = SimulationLifecycle.DELETED;
     this.updatedAt = Instant.now();
@@ -146,15 +141,41 @@ public class Simulation {
   // Accessors
   // -------------------------------------------------------------------------
 
-  public SimulationId getId() { return id; }
-  public UUID getOwnerId() { return ownerId; }
-  public String getName() { return name; }
-  public UUID getPeriodId() { return periodId; }
-  public List<UUID> getProgramIds() { return List.copyOf(programIds); }
-  public SimulationLifecycle getLifecycleStatus() { return lifecycleStatus; }
-  public Instant getCreatedAt() { return createdAt; }
-  public Instant getUpdatedAt() { return updatedAt; }
-  public long getVersion() { return version; }
+  public SimulationId getId() {
+    return id;
+  }
+
+  public UUID getOwnerId() {
+    return ownerId;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public UUID getPeriodId() {
+    return periodId;
+  }
+
+  public List<UUID> getProgramIds() {
+    return List.copyOf(programIds);
+  }
+
+  public SimulationLifecycle getLifecycleStatus() {
+    return lifecycleStatus;
+  }
+
+  public Instant getCreatedAt() {
+    return createdAt;
+  }
+
+  public Instant getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public long getVersion() {
+    return version;
+  }
 
   public void setVersion(long version) {
     this.version = version;

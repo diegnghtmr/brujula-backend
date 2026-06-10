@@ -82,8 +82,8 @@ class SyncOnLoginTest {
     when(saveAppUserPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     var command =
-        new ProvisionCommand("sub-pending", "pending@uniquindio.edu.co", "Pending Student",
-            Set.of("STUDENT"), true);
+        new ProvisionCommand(
+            "sub-pending", "pending@uniquindio.edu.co", "Pending Student", Set.of("STUDENT"), true);
 
     AppUser result = service.provision(command);
 
@@ -92,8 +92,7 @@ class SyncOnLoginTest {
         .isEqualTo(OnboardingState.ACTIVE);
 
     // Verify save was called with ACTIVE state
-    verify(saveAppUserPort)
-        .save(argThat(u -> u.onboardingState() == OnboardingState.ACTIVE));
+    verify(saveAppUserPort).save(argThat(u -> u.onboardingState() == OnboardingState.ACTIVE));
   }
 
   // -------------------------------------------------------------------------
@@ -121,8 +120,8 @@ class SyncOnLoginTest {
     when(loadAppUserPort.findByOidcSubject("sub-pending2")).thenReturn(Optional.of(existing));
 
     var command =
-        new ProvisionCommand("sub-pending2", "pending2@uniquindio.edu.co", "Pending2",
-            Set.of("STUDENT"), false);
+        new ProvisionCommand(
+            "sub-pending2", "pending2@uniquindio.edu.co", "Pending2", Set.of("STUDENT"), false);
 
     AppUser result = service.provision(command);
 
@@ -156,8 +155,8 @@ class SyncOnLoginTest {
     when(loadAppUserPort.findByOidcSubject("sub-active")).thenReturn(Optional.of(existing));
 
     var command =
-        new ProvisionCommand("sub-active", "active@uniquindio.edu.co", "Active User",
-            Set.of("STUDENT"), true);
+        new ProvisionCommand(
+            "sub-active", "active@uniquindio.edu.co", "Active User", Set.of("STUDENT"), true);
 
     AppUser result = service.provision(command);
 
@@ -192,8 +191,8 @@ class SyncOnLoginTest {
 
     // null emailVerified — treated as false
     var command =
-        new ProvisionCommand("sub-pending3", "pending3@uniquindio.edu.co", "Pending3",
-            Set.of("STUDENT"), null);
+        new ProvisionCommand(
+            "sub-pending3", "pending3@uniquindio.edu.co", "Pending3", Set.of("STUDENT"), null);
 
     AppUser result = service.provision(command);
 

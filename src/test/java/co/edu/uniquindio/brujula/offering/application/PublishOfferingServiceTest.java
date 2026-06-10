@@ -29,21 +29,20 @@ import co.edu.uniquindio.brujula.offering.domain.Weekday;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-import org.springframework.dao.OptimisticLockingFailureException;
-
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 /**
  * TDD unit tests for {@link PublishOfferingService}.
  *
  * <p>Covers:
+ *
  * <ul>
  *   <li>Idempotency replay: same key + same hash returns stored view
  *   <li>Idempotency conflict: same key + different hash throws IdempotencyKeyConflictException
@@ -82,8 +81,9 @@ class PublishOfferingServiceTest {
     jsonCodecPort = mock(JsonCodecPort.class);
     auditRecorder = mock(AuditRecorder.class);
     getCourseQuery = mock(GetCourseQuery.class);
-    service = new PublishOfferingService(
-        saveOfferingPort, idempotencyStorePort, jsonCodecPort, auditRecorder, getCourseQuery);
+    service =
+        new PublishOfferingService(
+            saveOfferingPort, idempotencyStorePort, jsonCodecPort, auditRecorder, getCourseQuery);
   }
 
   // -------------------------------------------------------------------------
@@ -192,7 +192,8 @@ class PublishOfferingServiceTest {
     // Schedule option has 0 weeklyHours (empty sessions) vs curriculum 4 hrs — MISMATCH
     CourseOffering draft = offeringWith(OfferingStatus.DRAFT, List.of(oneOption()), 0L);
     long bumpedVersion = 1L;
-    CourseOffering saved = offeringWith(OfferingStatus.PRELIMINARY, List.of(oneOption()), bumpedVersion);
+    CourseOffering saved =
+        offeringWith(OfferingStatus.PRELIMINARY, List.of(oneOption()), bumpedVersion);
 
     when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
     when(saveOfferingPort.findCurrentById(offeringId)).thenReturn(Optional.of(draft));
@@ -212,9 +213,12 @@ class PublishOfferingServiceTest {
   @Test
   void intensity_match_returns_200_with_warning_false() {
     // Option with 4 hrs/week (2 sessions × 2 hrs = 4 hrs), curriculum = 4 → NO mismatch
-    ScheduleOption matchingOption = optionWithSessions(
-        new ScheduleSession(UUID.randomUUID(), Weekday.MONDAY, LocalTime.of(8, 0), LocalTime.of(10, 0)),
-        new ScheduleSession(UUID.randomUUID(), Weekday.WEDNESDAY, LocalTime.of(8, 0), LocalTime.of(10, 0)));
+    ScheduleOption matchingOption =
+        optionWithSessions(
+            new ScheduleSession(
+                UUID.randomUUID(), Weekday.MONDAY, LocalTime.of(8, 0), LocalTime.of(10, 0)),
+            new ScheduleSession(
+                UUID.randomUUID(), Weekday.WEDNESDAY, LocalTime.of(8, 0), LocalTime.of(10, 0)));
 
     CourseOffering draft = offeringWith(OfferingStatus.DRAFT, List.of(matchingOption), 0L);
     CourseOffering saved = offeringWith(OfferingStatus.PRELIMINARY, List.of(matchingOption), 1L);
@@ -241,8 +245,10 @@ class PublishOfferingServiceTest {
     long expectedVersion = 2L;
     long bumpedVersion = 3L;
 
-    CourseOffering draft = offeringWith(OfferingStatus.DRAFT, List.of(oneOption()), expectedVersion);
-    CourseOffering saved = offeringWith(OfferingStatus.PRELIMINARY, List.of(oneOption()), bumpedVersion);
+    CourseOffering draft =
+        offeringWith(OfferingStatus.DRAFT, List.of(oneOption()), expectedVersion);
+    CourseOffering saved =
+        offeringWith(OfferingStatus.PRELIMINARY, List.of(oneOption()), bumpedVersion);
 
     when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
     when(saveOfferingPort.findCurrentById(offeringId)).thenReturn(Optional.of(draft));
@@ -250,7 +256,8 @@ class PublishOfferingServiceTest {
     when(getCourseQuery.getCourse(courseId)).thenReturn(courseViewWithHours(4));
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
 
-    PublishOfferingCommand command = publishCommand(UUID.randomUUID(), "PRELIMINARY", expectedVersion, "h");
+    PublishOfferingCommand command =
+        publishCommand(UUID.randomUUID(), "PRELIMINARY", expectedVersion, "h");
     OfferingDetailView result = service.publishOffering(command);
 
     assertThat(result.version()).isGreaterThan(expectedVersion);
@@ -275,8 +282,10 @@ class PublishOfferingServiceTest {
     PublishOfferingCommand command = publishCommand(UUID.randomUUID(), "PRELIMINARY", 0L, "h");
     service.publishOffering(command);
 
-    verify(auditRecorder).record(argThat(cmd ->
-        "OFFERING_PUBLISHED".equals(cmd.action()) && actorId.equals(cmd.actorId())));
+    verify(auditRecorder)
+        .record(
+            argThat(
+                cmd -> "OFFERING_PUBLISHED".equals(cmd.action()) && actorId.equals(cmd.actorId())));
   }
 
   // -------------------------------------------------------------------------
@@ -289,32 +298,48 @@ class PublishOfferingServiceTest {
         iKey, offeringIdValue, actorId, targetStatus, version, false, hash);
   }
 
-  private CourseOffering offeringWith(OfferingStatus status, List<ScheduleOption> options, long version) {
+  private CourseOffering offeringWith(
+      OfferingStatus status, List<ScheduleOption> options, long version) {
     return CourseOffering.reconstitute(
         offeringId, courseId, "Course", programId, periodId, status, null, options, version);
   }
 
   private ScheduleOption oneOption() {
     return ScheduleOption.reconstitute(
-        ScheduleOptionId.generate(), offeringIdValue, "A", "DIURNA",
-        Collections.emptyList(), 0L);
+        ScheduleOptionId.generate(), offeringIdValue, "A", "DIURNA", Collections.emptyList(), 0L);
   }
 
   private ScheduleOption optionWithSessions(ScheduleSession... sessions) {
     return ScheduleOption.reconstitute(
-        ScheduleOptionId.generate(), offeringIdValue, "A", "DIURNA",
-        List.of(sessions), 0L);
+        ScheduleOptionId.generate(), offeringIdValue, "A", "DIURNA", List.of(sessions), 0L);
   }
 
   private CourseView courseViewWithHours(int curricularWeeklyHours) {
     return new CourseView(
-        courseId, UUID.randomUUID(), programId, "PROG-001", "Course",
-        "REQUIRED", 3, curricularWeeklyHours, Collections.emptyList(), "ACTIVE", 0L);
+        courseId,
+        UUID.randomUUID(),
+        programId,
+        "PROG-001",
+        "Course",
+        "REQUIRED",
+        3,
+        curricularWeeklyHours,
+        Collections.emptyList(),
+        "ACTIVE",
+        0L);
   }
 
   private OfferingDetailView sampleView(String status, long version, Boolean intensityWarning) {
     return new OfferingDetailView(
-        offeringIdValue, courseId, "Course", programId, periodId,
-        status, null, version, Collections.emptyList(), intensityWarning);
+        offeringIdValue,
+        courseId,
+        "Course",
+        programId,
+        periodId,
+        status,
+        null,
+        version,
+        Collections.emptyList(),
+        intensityWarning);
   }
 }

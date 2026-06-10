@@ -35,7 +35,8 @@ class SubscriptionTest {
 
   @Test
   void soft_delete_transitions_status_to_deleted() {
-    Subscription sub = Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
+    Subscription sub =
+        Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
 
     sub.softDelete();
 
@@ -44,7 +45,8 @@ class SubscriptionTest {
 
   @Test
   void soft_delete_is_idempotent() {
-    Subscription sub = Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
+    Subscription sub =
+        Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
     sub.softDelete();
 
     // Second call must not throw
@@ -55,7 +57,8 @@ class SubscriptionTest {
 
   @Test
   void update_reference_journey_changes_journey_code() {
-    Subscription sub = Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
+    Subscription sub =
+        Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
 
     sub.updateReferenceJourney("NOCTURNA");
 
@@ -64,7 +67,8 @@ class SubscriptionTest {
 
   @Test
   void update_reference_journey_rejects_blank_code() {
-    Subscription sub = Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
+    Subscription sub =
+        Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
 
     assertThatThrownBy(() -> sub.updateReferenceJourney(""))
         .isInstanceOf(IllegalArgumentException.class);
@@ -72,7 +76,8 @@ class SubscriptionTest {
 
   @Test
   void change_plan_without_ack_throws_when_has_attempts() {
-    Subscription sub = Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
+    Subscription sub =
+        Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
 
     // hasAttempts=true, acknowledgeHistoryImpact=false → must throw
     assertThatThrownBy(() -> sub.changePlan(UUID.randomUUID(), "NOCTURNA", true, false))
@@ -81,7 +86,8 @@ class SubscriptionTest {
 
   @Test
   void change_plan_with_ack_succeeds_when_has_attempts() {
-    Subscription sub = Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
+    Subscription sub =
+        Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
     UUID newPlanId = UUID.randomUUID();
 
     // acknowledgeHistoryImpact=true → allowed
@@ -93,7 +99,8 @@ class SubscriptionTest {
 
   @Test
   void change_plan_without_ack_succeeds_when_no_attempts() {
-    Subscription sub = Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
+    Subscription sub =
+        Subscription.create(SubscriptionId.generate(), userId, programId, planId, journeyCode);
     UUID newPlanId = UUID.randomUUID();
 
     // hasAttempts=false → no ack needed
@@ -105,7 +112,9 @@ class SubscriptionTest {
   @Test
   void create_rejects_null_userId() {
     assertThatThrownBy(
-            () -> Subscription.create(SubscriptionId.generate(), null, programId, planId, journeyCode))
+            () ->
+                Subscription.create(
+                    SubscriptionId.generate(), null, programId, planId, journeyCode))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

@@ -31,8 +31,6 @@ class SequentialTrackPersistenceAdapter implements LoadSequentialTrackPort {
     } else {
       entities = repository.findByPlanId(planId);
     }
-    return entities.stream()
-        .map(CurriculumPersistenceMapper::toDomain)
-        .toList();
+    return entities.stream().map(CurriculumPersistenceMapper::toDomain).toList();
   }
 }

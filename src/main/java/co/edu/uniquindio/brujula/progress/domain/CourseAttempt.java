@@ -1,6 +1,5 @@
 package co.edu.uniquindio.brujula.progress.domain;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -60,9 +59,9 @@ public final class CourseAttempt {
   /**
    * Register a new course attempt.
    *
-   * <p>FIX-W4: {@code periodId} is contract-REQUIRED (non-null). The OpenAPI schema
-   * {@code CourseAttempt} and {@code CourseAttemptCreateRequest} both list {@code periodId} in
-   * {@code required}. The domain now enforces this — null is rejected.
+   * <p>FIX-W4: {@code periodId} is contract-REQUIRED (non-null). The OpenAPI schema {@code
+   * CourseAttempt} and {@code CourseAttemptCreateRequest} both list {@code periodId} in {@code
+   * required}. The domain now enforces this — null is rejected.
    *
    * @param id generated attempt ID
    * @param subscriptionId owning subscription
@@ -87,7 +86,8 @@ public final class CourseAttempt {
     Objects.requireNonNull(subscriptionId, "subscriptionId must not be null");
     Objects.requireNonNull(courseId, "courseId must not be null");
     Objects.requireNonNull(status, "status must not be null");
-    Objects.requireNonNull(periodId, "periodId must not be null (contract-required; ADR-F3-009 deferred)");
+    Objects.requireNonNull(
+        periodId, "periodId must not be null (contract-required; ADR-F3-009 deferred)");
     requireNonBlankJourney(journeyCode);
     validateGradeStatusCoherence(status, grade);
 
@@ -99,9 +99,7 @@ public final class CourseAttempt {
   // Reconstitution — from persistence
   // ---------------------------------------------------------------------------
 
-  /**
-   * Reconstitute a CourseAttempt from persistence (all fields explicit, no default logic).
-   */
+  /** Reconstitute a CourseAttempt from persistence (all fields explicit, no default logic). */
   public static CourseAttempt reconstitute(
       AttemptId id,
       SubscriptionId subscriptionId,
@@ -154,15 +152,41 @@ public final class CourseAttempt {
   // Accessors
   // ---------------------------------------------------------------------------
 
-  public AttemptId getId() { return id; }
-  public SubscriptionId getSubscriptionId() { return subscriptionId; }
-  public UUID getCourseId() { return courseId; }
-  public AttemptStatus getStatus() { return status; }
-  public Grade getGrade() { return grade; }
-  public UUID getPeriodId() { return periodId; }
-  public String getJourneyCode() { return journeyCode; }
-  public Instant getRegisteredAt() { return registeredAt; }
-  public long getVersion() { return version; }
+  public AttemptId getId() {
+    return id;
+  }
+
+  public SubscriptionId getSubscriptionId() {
+    return subscriptionId;
+  }
+
+  public UUID getCourseId() {
+    return courseId;
+  }
+
+  public AttemptStatus getStatus() {
+    return status;
+  }
+
+  public Grade getGrade() {
+    return grade;
+  }
+
+  public UUID getPeriodId() {
+    return periodId;
+  }
+
+  public String getJourneyCode() {
+    return journeyCode;
+  }
+
+  public Instant getRegisteredAt() {
+    return registeredAt;
+  }
+
+  public long getVersion() {
+    return version;
+  }
 
   // ---------------------------------------------------------------------------
   // Private helpers
@@ -177,8 +201,7 @@ public final class CourseAttempt {
         }
         if (!grade.passing()) {
           throw new GradeStatusMismatchException(
-              status,
-              "PASSED requires grade >= 3.0 but was " + grade.value());
+              status, "PASSED requires grade >= 3.0 but was " + grade.value());
         }
       }
       case FAILED -> {
@@ -188,8 +211,7 @@ public final class CourseAttempt {
         }
         if (grade.passing()) {
           throw new GradeStatusMismatchException(
-              status,
-              "FAILED requires grade < 3.0 but was " + grade.value());
+              status, "FAILED requires grade < 3.0 but was " + grade.value());
         }
       }
       case CANCELLED -> {
@@ -198,7 +220,7 @@ public final class CourseAttempt {
               status, "CANCELLED must not have a grade but received " + grade.value());
         }
       }
-      // Exhaustive: PASSED, FAILED, CANCELLED are all contract values (FIX-W2: PENDING removed)
+        // Exhaustive: PASSED, FAILED, CANCELLED are all contract values (FIX-W2: PENDING removed)
     }
   }
 

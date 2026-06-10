@@ -59,9 +59,7 @@ class UploadImportServiceTest {
     xlsxParser = mock(FileParserPort.class);
     importValidator =
         new ImportValidator(
-            new CoursesValidator(),
-            new RequirementsValidator(),
-            new OfferingsValidator());
+            new CoursesValidator(), new RequirementsValidator(), new OfferingsValidator());
     saveImportBatchPort = mock(SaveImportBatchPort.class);
     staffAssignmentPort = mock(StaffAssignmentPort.class);
     idempotencyStorePort = mock(IdempotencyStorePort.class);
@@ -84,9 +82,7 @@ class UploadImportServiceTest {
             MAX_FILE_SIZE);
   }
 
-  /**
-   * T3.3 SC-001-A: happy path — STAFF assigned to program → returns VALIDATED summary.
-   */
+  /** T3.3 SC-001-A: happy path — STAFF assigned to program → returns VALIDATED summary. */
   @Test
   void happy_path_staff_assigned_returns_validated_summary() {
     UUID staffId = UUID.randomUUID();
@@ -99,19 +95,47 @@ class UploadImportServiceTest {
     when(staffAssignmentPort.isAssigned(staffId, programId)).thenReturn(true);
 
     // Parser returns 2 valid courses rows
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of("course_name", "Cálculo I", "credits", "3", "weekly_hours", "4",
-            "recommended_semester", "1", "type", "OBLIGATORIA", "journey", "J1")),
-        new ImportRow(1, Map.of("course_name", "Álgebra", "credits", "3", "weekly_hours", "4",
-            "recommended_semester", "2", "type", "OBLIGATORIA", "journey", "J1")));
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "course_name",
+                    "Cálculo I",
+                    "credits",
+                    "3",
+                    "weekly_hours",
+                    "4",
+                    "recommended_semester",
+                    "1",
+                    "type",
+                    "OBLIGATORIA",
+                    "journey",
+                    "J1")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "course_name",
+                    "Álgebra",
+                    "credits",
+                    "3",
+                    "weekly_hours",
+                    "4",
+                    "recommended_semester",
+                    "2",
+                    "type",
+                    "OBLIGATORIA",
+                    "journey",
+                    "J1")));
     when(xlsxParser.parse(any(), any()))
         .thenReturn(new FileParserPort.ParseResult(rows, List.of()));
 
     String summaryJson = "{\"id\":\"abc\"}";
     when(jsonCodecPort.toJson(any())).thenReturn(summaryJson);
 
-    UploadImportCommand cmd = buildCommand("staff@uniquindio.edu.co", "STAFF", programId, planId, null,
-        "COURSES", new byte[100]);
+    UploadImportCommand cmd =
+        buildCommand(
+            "staff@uniquindio.edu.co", "STAFF", programId, planId, null, "COURSES", new byte[100]);
 
     ImportSummary summary = service.upload(cmd);
 
@@ -125,46 +149,53 @@ class UploadImportServiceTest {
     verify(idempotencyStorePort).save(any(), anyString(), anyString(), eq(201), anyString());
   }
 
-  /**
-   * T3.3 SC-001-B: unsupported file format → UnsupportedFileTypeException (→ 415).
-   */
+  /** T3.3 SC-001-B: unsupported file format → UnsupportedFileTypeException (→ 415). */
   @Test
   void wrong_mime_raises_415_exception() {
-    UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
-        UUID.randomUUID(), UUID.randomUUID(), null,
-        "COURSES", new byte[100],
-        "text/csv", "data.csv");
+    UploadImportCommand cmd =
+        buildCommand(
+            "admin@uniquindio.edu.co",
+            "ADMIN",
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            null,
+            "COURSES",
+            new byte[100],
+            "text/csv",
+            "data.csv");
 
     // No parser supports text/csv
     when(xlsxParser.supports("text/csv", "data.csv")).thenReturn(false);
 
-    assertThatThrownBy(() -> service.upload(cmd))
-        .isInstanceOf(UnsupportedFileTypeException.class);
+    assertThatThrownBy(() -> service.upload(cmd)).isInstanceOf(UnsupportedFileTypeException.class);
 
     // Ensure no batch was saved, no audit
     verify(saveImportBatchPort, never()).save(any());
     verify(auditRecorder, never()).record(any());
   }
 
-  /**
-   * T3.3 SC-001-C: file exceeds size limit → FileSizeExceededException (→ 413).
-   */
+  /** T3.3 SC-001-C: file exceeds size limit → FileSizeExceededException (→ 413). */
   @Test
   void file_exceeds_size_limit_raises_413_exception() {
     byte[] largeFile = new byte[(int) MAX_FILE_SIZE + 1];
-    UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
-        UUID.randomUUID(), UUID.randomUUID(), null,
-        "COURSES", largeFile);
+    UploadImportCommand cmd =
+        buildCommand(
+            "admin@uniquindio.edu.co",
+            "ADMIN",
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            null,
+            "COURSES",
+            largeFile);
 
-    assertThatThrownBy(() -> service.upload(cmd))
-        .isInstanceOf(FileSizeExceededException.class);
+    assertThatThrownBy(() -> service.upload(cmd)).isInstanceOf(FileSizeExceededException.class);
 
     verify(saveImportBatchPort, never()).save(any());
   }
 
   /**
-   * T3.3 SC-001-D / INV-06: STAFF not assigned to program → ImportAccessDeniedException (→ 403).
-   * No batch persisted, no audit.
+   * T3.3 SC-001-D / INV-06: STAFF not assigned to program → ImportAccessDeniedException (→ 403). No
+   * batch persisted, no audit.
    */
   @Test
   void staff_not_assigned_raises_403_exception_before_batch_persisted() {
@@ -175,11 +206,17 @@ class UploadImportServiceTest {
         .thenReturn(Optional.of(staffId));
     when(staffAssignmentPort.isAssigned(staffId, programId)).thenReturn(false);
 
-    UploadImportCommand cmd = buildCommand("staff@uniquindio.edu.co", "STAFF",
-        programId, UUID.randomUUID(), null, "COURSES", new byte[100]);
+    UploadImportCommand cmd =
+        buildCommand(
+            "staff@uniquindio.edu.co",
+            "STAFF",
+            programId,
+            UUID.randomUUID(),
+            null,
+            "COURSES",
+            new byte[100]);
 
-    assertThatThrownBy(() -> service.upload(cmd))
-        .isInstanceOf(ImportAccessDeniedException.class);
+    assertThatThrownBy(() -> service.upload(cmd)).isInstanceOf(ImportAccessDeniedException.class);
 
     // SC-011-C: no audit on 403 rejection
     verify(auditRecorder, never()).record(any());
@@ -189,10 +226,10 @@ class UploadImportServiceTest {
   /**
    * T3.3 WARNING-1 (LOAD-BEARING): inactive staff account → ImportAccessDeniedException (→ 403).
    *
-   * <p>This test is load-bearing: if {@link UploadImportService#enforceAssignmentGuard} is
-   * changed to call {@link StaffAssignmentPort#resolveStaffId} instead of
-   * {@link StaffAssignmentPort#resolveActiveStaffId}, this test WILL FAIL because
-   * resolveStaffId returns a UUID for INACTIVE accounts.
+   * <p>This test is load-bearing: if {@link UploadImportService#enforceAssignmentGuard} is changed
+   * to call {@link StaffAssignmentPort#resolveStaffId} instead of {@link
+   * StaffAssignmentPort#resolveActiveStaffId}, this test WILL FAIL because resolveStaffId returns a
+   * UUID for INACTIVE accounts.
    *
    * <p>Scenario: an INACTIVE staff member has an ACTIVE assignment row but MUST be denied.
    */
@@ -209,11 +246,17 @@ class UploadImportServiceTest {
     when(staffAssignmentPort.resolveStaffId("inactive@uniquindio.edu.co"))
         .thenReturn(Optional.of(UUID.randomUUID())); // would return UUID if inactive
 
-    UploadImportCommand cmd = buildCommand("inactive@uniquindio.edu.co", "STAFF",
-        programId, UUID.randomUUID(), null, "COURSES", new byte[100]);
+    UploadImportCommand cmd =
+        buildCommand(
+            "inactive@uniquindio.edu.co",
+            "STAFF",
+            programId,
+            UUID.randomUUID(),
+            null,
+            "COURSES",
+            new byte[100]);
 
-    assertThatThrownBy(() -> service.upload(cmd))
-        .isInstanceOf(ImportAccessDeniedException.class);
+    assertThatThrownBy(() -> service.upload(cmd)).isInstanceOf(ImportAccessDeniedException.class);
 
     // The denial must come from resolveActiveStaffId, NOT from isAssigned
     // i.e., isAssigned must NEVER be called if resolveActiveStaffId returns empty
@@ -222,25 +265,46 @@ class UploadImportServiceTest {
     verify(auditRecorder, never()).record(any());
   }
 
-  /**
-   * T3.3 SC-001-E: idempotent retry — same key, same hash → returns stored summary.
-   */
+  /** T3.3 SC-001-E: idempotent retry — same key, same hash → returns stored summary. */
   @Test
   void idempotent_retry_same_key_same_hash_returns_stored_summary() {
     UUID idempotencyKey = UUID.randomUUID();
     String requestHash = "abc123";
     String storedJson = "{\"id\":\"stored\"}";
-    ImportSummary storedSummary = new ImportSummary(UUID.randomUUID(), "COURSES",
-        UUID.randomUUID(), null, null, "VALIDATED", 5, 5, List.of(), List.of(), null, 0);
+    ImportSummary storedSummary =
+        new ImportSummary(
+            UUID.randomUUID(),
+            "COURSES",
+            UUID.randomUUID(),
+            null,
+            null,
+            "VALIDATED",
+            5,
+            5,
+            List.of(),
+            List.of(),
+            null,
+            0);
 
     when(idempotencyStorePort.find(idempotencyKey, UploadImportService.OPERATION))
-        .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord(requestHash, 201, storedJson)));
+        .thenReturn(
+            Optional.of(new IdempotencyStorePort.StoredRecord(requestHash, 201, storedJson)));
     when(jsonCodecPort.fromJson(storedJson, ImportSummary.class)).thenReturn(storedSummary);
 
-    UploadImportCommand cmd = new UploadImportCommand(
-        idempotencyKey, requestHash, "staff@uniquindio.edu.co", "STAFF", null,
-        "COURSES", UUID.randomUUID(), UUID.randomUUID(), null,
-        new byte[100], "data.xlsx", XLSX_CONTENT_TYPE);
+    UploadImportCommand cmd =
+        new UploadImportCommand(
+            idempotencyKey,
+            requestHash,
+            "staff@uniquindio.edu.co",
+            "STAFF",
+            null,
+            "COURSES",
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            null,
+            new byte[100],
+            "data.xlsx",
+            XLSX_CONTENT_TYPE);
 
     ImportSummary result = service.upload(cmd);
 
@@ -251,7 +315,8 @@ class UploadImportServiceTest {
   }
 
   /**
-   * T3.3 SC-001-F: idempotent retry — same key, different hash → IdempotencyKeyConflictException (→ 409).
+   * T3.3 SC-001-F: idempotent retry — same key, different hash → IdempotencyKeyConflictException (→
+   * 409).
    */
   @Test
   void idempotent_retry_same_key_different_hash_raises_409() {
@@ -260,26 +325,39 @@ class UploadImportServiceTest {
     String newHash = "hash2";
 
     when(idempotencyStorePort.find(idempotencyKey, UploadImportService.OPERATION))
-        .thenReturn(
-            Optional.of(new IdempotencyStorePort.StoredRecord(originalHash, 201, "{}")));
+        .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord(originalHash, 201, "{}")));
 
-    UploadImportCommand cmd = new UploadImportCommand(
-        idempotencyKey, newHash, "staff@uniquindio.edu.co", "STAFF", null,
-        "COURSES", UUID.randomUUID(), UUID.randomUUID(), null,
-        new byte[100], "data.xlsx", XLSX_CONTENT_TYPE);
+    UploadImportCommand cmd =
+        new UploadImportCommand(
+            idempotencyKey,
+            newHash,
+            "staff@uniquindio.edu.co",
+            "STAFF",
+            null,
+            "COURSES",
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            null,
+            new byte[100],
+            "data.xlsx",
+            XLSX_CONTENT_TYPE);
 
     assertThatThrownBy(() -> service.upload(cmd))
         .isInstanceOf(IdempotencyKeyConflictException.class);
   }
 
-  /**
-   * T3.3 SC-001-G: missing planId for COURSES kind → MissingImportParameterException (→ 400).
-   */
+  /** T3.3 SC-001-G: missing planId for COURSES kind → MissingImportParameterException (→ 400). */
   @Test
   void missing_plan_id_for_courses_raises_400() {
-    UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
-        UUID.randomUUID(), null, null, // no planId
-        "COURSES", new byte[100]);
+    UploadImportCommand cmd =
+        buildCommand(
+            "admin@uniquindio.edu.co",
+            "ADMIN",
+            UUID.randomUUID(),
+            null,
+            null, // no planId
+            "COURSES",
+            new byte[100]);
 
     assertThatThrownBy(() -> service.upload(cmd))
         .isInstanceOf(MissingImportParameterException.class)
@@ -291,32 +369,51 @@ class UploadImportServiceTest {
    */
   @Test
   void missing_period_id_for_offerings_raises_400() {
-    UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
-        UUID.randomUUID(), null, null, // no periodId
-        "OFFERINGS", new byte[100]);
+    UploadImportCommand cmd =
+        buildCommand(
+            "admin@uniquindio.edu.co",
+            "ADMIN",
+            UUID.randomUUID(),
+            null,
+            null, // no periodId
+            "OFFERINGS",
+            new byte[100]);
 
     assertThatThrownBy(() -> service.upload(cmd))
         .isInstanceOf(MissingImportParameterException.class)
         .hasMessageContaining("periodId");
   }
 
-  /**
-   * T3.3 SC-001-J: ADMIN bypasses assignment check.
-   */
+  /** T3.3 SC-001-J: ADMIN bypasses assignment check. */
   @Test
   void admin_bypasses_assignment_check() {
     UUID programId = UUID.randomUUID();
     UUID planId = UUID.randomUUID();
 
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of("course_name", "Cálculo I", "credits", "3", "weekly_hours", "4",
-            "recommended_semester", "1", "type", "OBLIGATORIA", "journey", "J1")));
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "course_name",
+                    "Cálculo I",
+                    "credits",
+                    "3",
+                    "weekly_hours",
+                    "4",
+                    "recommended_semester",
+                    "1",
+                    "type",
+                    "OBLIGATORIA",
+                    "journey",
+                    "J1")));
     when(xlsxParser.parse(any(), any()))
         .thenReturn(new FileParserPort.ParseResult(rows, List.of()));
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
 
-    UploadImportCommand cmd = buildCommand("admin@uniquindio.edu.co", "ADMIN",
-        programId, planId, null, "COURSES", new byte[100]);
+    UploadImportCommand cmd =
+        buildCommand(
+            "admin@uniquindio.edu.co", "ADMIN", programId, planId, null, "COURSES", new byte[100]);
 
     service.upload(cmd);
 
@@ -327,9 +424,7 @@ class UploadImportServiceTest {
     verify(saveImportBatchPort).save(any());
   }
 
-  /**
-   * T3.3 SC-011-A: audit recorded on successful upload.
-   */
+  /** T3.3 SC-011-A: audit recorded on successful upload. */
   @Test
   void audit_recorded_on_successful_upload() {
     UUID programId = UUID.randomUUID();
@@ -339,27 +434,41 @@ class UploadImportServiceTest {
         .thenReturn(Optional.of(UUID.randomUUID()));
     when(staffAssignmentPort.isAssigned(any(), any())).thenReturn(true);
 
-    List<ImportRow> rows = List.of(
-        new ImportRow(0, Map.of("course_name", "Cálculo I", "credits", "3", "weekly_hours", "4",
-            "recommended_semester", "1", "type", "OBLIGATORIA", "journey", "J1")));
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "course_name",
+                    "Cálculo I",
+                    "credits",
+                    "3",
+                    "weekly_hours",
+                    "4",
+                    "recommended_semester",
+                    "1",
+                    "type",
+                    "OBLIGATORIA",
+                    "journey",
+                    "J1")));
     when(xlsxParser.parse(any(), any()))
         .thenReturn(new FileParserPort.ParseResult(rows, List.of()));
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
 
-    UploadImportCommand cmd = buildCommand("staff@uniquindio.edu.co", "STAFF",
-        programId, planId, null, "COURSES", new byte[100]);
+    UploadImportCommand cmd =
+        buildCommand(
+            "staff@uniquindio.edu.co", "STAFF", programId, planId, null, "COURSES", new byte[100]);
 
     service.upload(cmd);
 
     ArgumentCaptor<co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand> captor =
-        ArgumentCaptor.forClass(co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand.class);
+        ArgumentCaptor.forClass(
+            co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand.class);
     verify(auditRecorder).record(captor.capture());
     assertThat(captor.getValue().action()).isEqualTo("IMPORT_UPLOADED");
   }
 
-  /**
-   * T3.3 SC-011-C: no audit on 403 rejection (staff not assigned).
-   */
+  /** T3.3 SC-011-C: no audit on 403 rejection (staff not assigned). */
   @Test
   void no_audit_on_403_rejection() {
     UUID staffId = UUID.randomUUID();
@@ -369,8 +478,15 @@ class UploadImportServiceTest {
         .thenReturn(Optional.of(staffId));
     when(staffAssignmentPort.isAssigned(staffId, programId)).thenReturn(false);
 
-    UploadImportCommand cmd = buildCommand("staff@uniquindio.edu.co", "STAFF",
-        programId, UUID.randomUUID(), null, "COURSES", new byte[100]);
+    UploadImportCommand cmd =
+        buildCommand(
+            "staff@uniquindio.edu.co",
+            "STAFF",
+            programId,
+            UUID.randomUUID(),
+            null,
+            "COURSES",
+            new byte[100]);
 
     assertThatThrownBy(() -> service.upload(cmd)).isInstanceOf(ImportAccessDeniedException.class);
 
@@ -387,8 +503,16 @@ class UploadImportServiceTest {
       UUID periodId,
       String kind,
       byte[] fileBytes) {
-    return buildCommand(actorEmail, actorRole, programId, planId, periodId, kind, fileBytes,
-        XLSX_CONTENT_TYPE, "data.xlsx");
+    return buildCommand(
+        actorEmail,
+        actorRole,
+        programId,
+        planId,
+        periodId,
+        kind,
+        fileBytes,
+        XLSX_CONTENT_TYPE,
+        "data.xlsx");
   }
 
   private UploadImportCommand buildCommand(

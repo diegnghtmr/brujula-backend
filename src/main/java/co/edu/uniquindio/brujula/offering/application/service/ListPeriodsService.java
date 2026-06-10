@@ -4,7 +4,6 @@ import co.edu.uniquindio.brujula.offering.application.dto.AcademicPeriodView;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.out.LoadPeriodPort;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriod;
-
 import java.util.List;
 
 /**

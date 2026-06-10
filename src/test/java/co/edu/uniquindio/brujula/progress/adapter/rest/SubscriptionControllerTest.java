@@ -23,13 +23,12 @@ import co.edu.uniquindio.brujula.progress.application.port.in.DeleteSubscription
 import co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.ListMySubscriptionsQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.UpdateSubscriptionUseCase;
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.progress.domain.HistoryImpactNotAcknowledgedException;
 import co.edu.uniquindio.brujula.progress.domain.LastActiveSubscriptionException;
 import co.edu.uniquindio.brujula.progress.domain.MaxSubscriptionsExceededException;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
-import org.springframework.dao.OptimisticLockingFailureException;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -37,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -208,7 +208,14 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
 
     SubscriptionView view =
         new SubscriptionView(
-            subId, programId, "Engineering", planId, "Plan 2020", "DIURNA", "Diurna", 0L,
+            subId,
+            programId,
+            "Engineering",
+            planId,
+            "Plan 2020",
+            "DIURNA",
+            "Diurna",
+            0L,
             Instant.now());
 
     when(createSubscriptionUseCase.createSubscription(any())).thenReturn(view);
@@ -227,7 +234,8 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
                 .content(
                     """
                     {"programId":"%s","planId":"%s","referenceJourneyCode":"DIURNA"}
-                    """.formatted(programId, planId)))
+                    """
+                        .formatted(programId, planId)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(subId.toString()));
   }
@@ -347,7 +355,8 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   // -------------------------------------------------------------------------
 
   /**
-   * FIX-S2 + FIX-W4: successful PATCH returns 200 with incremented version in response (SUB-3-JOURNEY).
+   * FIX-S2 + FIX-W4: successful PATCH returns 200 with incremented version in response
+   * (SUB-3-JOURNEY).
    */
   @Test
   void patch_subscription_journey_change_returns_200_with_incremented_version() throws Exception {
@@ -358,7 +367,14 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
     // View returned by service carries version=1 (incremented — FIX-W4)
     SubscriptionView updatedView =
         new SubscriptionView(
-            subId, programId, "Engineering", planId, "Plan 2020", "NOCTURNA", "Nocturna", 1L,
+            subId,
+            programId,
+            "Engineering",
+            planId,
+            "Plan 2020",
+            "NOCTURNA",
+            "Nocturna",
+            1L,
             java.time.Instant.now());
 
     when(updateSubscriptionUseCase.updateSubscription(any())).thenReturn(updatedView);
@@ -404,13 +420,12 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
                 .content(
                     """
                     {"planId":"%s","version":0}
-                    """.formatted(UUID.randomUUID())))
+                    """
+                        .formatted(UUID.randomUUID())))
         .andExpect(status().isUnprocessableEntity());
   }
 
-  /**
-   * FIX-S2 + CROSS-3: PATCH with stale version → 409 (SUB-3-VERSION-CONFLICT).
-   */
+  /** FIX-S2 + CROSS-3: PATCH with stale version → 409 (SUB-3-VERSION-CONFLICT). */
   @Test
   void patch_subscription_stale_version_returns_409() throws Exception {
     UUID subId = UUID.randomUUID();
@@ -441,6 +456,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   private String createRequestBody() {
     return """
         {"programId":"%s","planId":"%s","referenceJourneyCode":"DIURNA"}
-        """.formatted(UUID.randomUUID(), UUID.randomUUID());
+        """
+        .formatted(UUID.randomUUID(), UUID.randomUUID());
   }
 }

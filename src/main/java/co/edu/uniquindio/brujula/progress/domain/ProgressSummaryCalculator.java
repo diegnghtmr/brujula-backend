@@ -1,7 +1,6 @@
 package co.edu.uniquindio.brujula.progress.domain;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,8 +12,8 @@ import java.util.UUID;
  * Domain service: computes the {@link ProgressSummaryData} from plan courses, effective statuses,
  * and raw attempt summaries.
  *
- * <p>Pure function — no Spring beans, no ports, no I/O. Enforced by
- * {@code ProgressDomainPurityTest} (ARQ-002, ADR-F3-004).
+ * <p>Pure function — no Spring beans, no ports, no I/O. Enforced by {@code
+ * ProgressDomainPurityTest} (ARQ-002, ADR-F3-004).
  *
  * <p>Credit math:
  *
@@ -29,8 +28,8 @@ import java.util.UUID;
  * <p>Average calculation:
  *
  * <ul>
- *   <li>estimatedHistoricalAverage = arithmetic mean of all PASSED and FAILED attempt grades;
- *       null when no graded attempts exist.
+ *   <li>estimatedHistoricalAverage = arithmetic mean of all PASSED and FAILED attempt grades; null
+ *       when no graded attempts exist.
  *   <li>averagesByPeriod = per-period mean of graded attempts (only PASSED/FAILED with non-null
  *       grade); CANCELLED attempts are excluded.
  * </ul>
@@ -46,8 +45,8 @@ public class ProgressSummaryCalculator {
    * Compute the progress summary.
    *
    * @param planCourses the full set of courses in the subscription's plan
-   * @param effectiveByCourse computed effective status per courseId (from
-   *     {@link CourseAvailabilityService} or {@link EffectiveAttemptResolver})
+   * @param effectiveByCourse computed effective status per courseId (from {@link
+   *     CourseAvailabilityService} or {@link EffectiveAttemptResolver})
    * @param attempts all declared attempts for the subscription
    * @return the computed {@link ProgressSummaryData}
    */
@@ -67,9 +66,8 @@ public class ProgressSummaryCalculator {
     if (planCourses != null) {
       for (PlanCourse course : planCourses) {
         totalPlanCredits += course.credits();
-        CourseProgressStatus status = effectiveByCourse != null
-            ? effectiveByCourse.get(course.courseId())
-            : null;
+        CourseProgressStatus status =
+            effectiveByCourse != null ? effectiveByCourse.get(course.courseId()) : null;
         if (CourseProgressStatus.PASSED.equals(status)) {
           approvedCredits += course.credits();
           passedCourses++;
@@ -85,10 +83,11 @@ public class ProgressSummaryCalculator {
     if (totalPlanCredits == 0.0) {
       progressPercentage = BigDecimal.ZERO;
     } else {
-      progressPercentage = BigDecimal.valueOf(approvedCredits)
-          .divide(BigDecimal.valueOf(totalPlanCredits), 10, RoundingMode.HALF_UP)
-          .multiply(BigDecimal.valueOf(100))
-          .setScale(2, RoundingMode.HALF_UP);
+      progressPercentage =
+          BigDecimal.valueOf(approvedCredits)
+              .divide(BigDecimal.valueOf(totalPlanCredits), 10, RoundingMode.HALF_UP)
+              .multiply(BigDecimal.valueOf(100))
+              .setScale(2, RoundingMode.HALF_UP);
     }
 
     // --- Grade averages ---
@@ -116,8 +115,8 @@ public class ProgressSummaryCalculator {
     }
 
     if (gradedCount > 0) {
-      estimatedHistoricalAverage = totalGrade
-          .divide(BigDecimal.valueOf(gradedCount), 2, RoundingMode.HALF_UP);
+      estimatedHistoricalAverage =
+          totalGrade.divide(BigDecimal.valueOf(gradedCount), 2, RoundingMode.HALF_UP);
     }
 
     List<PeriodAverageData> averagesByPeriod = new ArrayList<>();

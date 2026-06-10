@@ -28,7 +28,6 @@ import co.edu.uniquindio.brujula.offering.application.service.UpdateOfferingServ
 import co.edu.uniquindio.brujula.offering.application.service.UpdatePeriodService;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -40,11 +39,14 @@ import org.springframework.context.annotation.Configuration;
  * as interfaces — never concrete adapter classes (ARQ-006).
  *
  * <p>Wires:
+ *
  * <ul>
  *   <li>{@link ListPeriodsService} — implements {@link ListPeriodsQuery} (OFF-001)
- *   <li>{@link GetOfferingService} — implements {@link ListOfferingsQuery} + {@link GetOfferingQuery} (OFF-002, OFF-003)
+ *   <li>{@link GetOfferingService} — implements {@link ListOfferingsQuery} + {@link
+ *       GetOfferingQuery} (OFF-002, OFF-003)
  *   <li>{@link ResolvePeriodService} — implements {@link ResolvePeriodQuery} (OFF-004)
- *   <li>{@link ResolveScheduleOptionService} — implements {@link ResolveScheduleOptionQuery} (OFF-004)
+ *   <li>{@link ResolveScheduleOptionService} — implements {@link ResolveScheduleOptionQuery}
+ *       (OFF-004)
  *   <li>{@link CreatePeriodService} — implements {@link CreatePeriodUseCase} (OFFW-001)
  *   <li>{@link UpdatePeriodService} — implements {@link UpdatePeriodUseCase} (OFFW-002)
  *   <li>{@link CreateOfferingService} — implements {@link CreateOfferingUseCase} (OFFW-003)
@@ -61,11 +63,11 @@ class OfferingConfiguration {
   }
 
   /**
-   * {@link GetOfferingService} implements both {@link ListOfferingsQuery} and
-   * {@link GetOfferingQuery}.
+   * {@link GetOfferingService} implements both {@link ListOfferingsQuery} and {@link
+   * GetOfferingQuery}.
    *
-   * <p>Registering the concrete class lets Spring satisfy both interface autowiring points
-   * from a single bean instance.
+   * <p>Registering the concrete class lets Spring satisfy both interface autowiring points from a
+   * single bean instance.
    */
   @Bean
   GetOfferingService getOfferingService(LoadOfferingPort loadOfferingPort) {
@@ -79,8 +81,7 @@ class OfferingConfiguration {
 
   @Bean
   ResolveScheduleOptionQuery resolveScheduleOptionService(
-      LoadScheduleOptionPort loadScheduleOptionPort,
-      LoadOfferingPort loadOfferingPort) {
+      LoadScheduleOptionPort loadScheduleOptionPort, LoadOfferingPort loadOfferingPort) {
     return new ResolveScheduleOptionService(loadScheduleOptionPort, loadOfferingPort);
   }
 
@@ -90,11 +91,13 @@ class OfferingConfiguration {
       IdempotencyStorePort idempotencyStorePort,
       JsonCodecPort jsonCodecPort,
       AuditRecorder auditRecorder) {
-    return new CreatePeriodService(savePeriodPort, idempotencyStorePort, jsonCodecPort, auditRecorder);
+    return new CreatePeriodService(
+        savePeriodPort, idempotencyStorePort, jsonCodecPort, auditRecorder);
   }
 
   @Bean
-  UpdatePeriodUseCase updatePeriodService(SavePeriodPort savePeriodPort, AuditRecorder auditRecorder) {
+  UpdatePeriodUseCase updatePeriodService(
+      SavePeriodPort savePeriodPort, AuditRecorder auditRecorder) {
     return new UpdatePeriodService(savePeriodPort, auditRecorder);
   }
 

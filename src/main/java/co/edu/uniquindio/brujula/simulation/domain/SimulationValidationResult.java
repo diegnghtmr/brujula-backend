@@ -7,12 +7,11 @@ import java.util.List;
  *
  * <p>Partitions the collected notices into blocking and warning lists. Immutable.
  *
- * @param blocking  notices that prevent the selection (SIMULATION_* codes, INV-003)
- * @param warnings  advisory notices that ride in the response body without blocking
+ * @param blocking notices that prevent the selection (SIMULATION_* codes, INV-003)
+ * @param warnings advisory notices that ride in the response body without blocking
  */
 public record SimulationValidationResult(
-    List<ValidationNotice> blocking,
-    List<ValidationNotice> warnings) {
+    List<ValidationNotice> blocking, List<ValidationNotice> warnings) {
 
   public SimulationValidationResult {
     blocking = blocking == null ? List.of() : List.copyOf(blocking);

@@ -6,6 +6,7 @@ import co.edu.uniquindio.brujula.curriculum.domain.Course;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseId;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Package-private per ARQ-006. Satisfies: CUR-001, Phase 2 WU4 (read) and WU5 (write).
  *
- * <p>Transaction strategy: class-level {@code @Transactional} (read-write default) so write
- * methods inherit a writable transaction; each read method explicitly overrides with
+ * <p>Transaction strategy: class-level {@code @Transactional} (read-write default) so write methods
+ * inherit a writable transaction; each read method explicitly overrides with
  * {@code @Transactional(readOnly=true)} for performance (mirrors OfferingPersistenceAdapter).
  */
 @Component
@@ -42,8 +43,19 @@ class CoursePersistenceAdapter implements LoadCoursePort, SaveCoursePort {
   @Override
   @Transactional(readOnly = true)
   public Optional<Course> loadById(CourseId courseId) {
-    return repository.findById(courseId.value())
-        .map(CurriculumPersistenceMapper::toDomain);
+    return repository.findById(courseId.value()).map(CurriculumPersistenceMapper::toDomain);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<Course> loadByIds(Set<UUID> courseIds) {
+    if (courseIds == null || courseIds.isEmpty()) {
+      return List.of();
+    }
+    // findAllById issues a single IN-clause query for all IDs
+    return repository.findAllById(courseIds).stream()
+        .map(CurriculumPersistenceMapper::toDomain)
+        .toList();
   }
 
   // ---- SaveCoursePort ----
@@ -59,7 +71,6 @@ class CoursePersistenceAdapter implements LoadCoursePort, SaveCoursePort {
   @Override
   @Transactional(readOnly = true)
   public Optional<Course> findCurrentById(CourseId courseId) {
-    return repository.findById(courseId.value())
-        .map(CurriculumPersistenceMapper::toDomain);
+    return repository.findById(courseId.value()).map(CurriculumPersistenceMapper::toDomain);
   }
 }

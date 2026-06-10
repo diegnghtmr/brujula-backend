@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Test;
 /**
  * WU2-1.1 RED: AcademicProgram invariant tests.
  *
- * <p>Asserts: name non-blank; faculty non-blank; status defaults to ACTIVE; version initializes to 0.
+ * <p>Asserts: name non-blank; faculty non-blank; status defaults to ACTIVE; version initializes to
+ * 0.
  */
 class AcademicProgramTest {
 
@@ -24,14 +25,16 @@ class AcademicProgramTest {
 
   @Test
   void statusDefaultsToActive() {
-    AcademicProgram program = AcademicProgram.create(ProgramId.generate(), "Ingeniería de Sistemas", "FIET");
+    AcademicProgram program =
+        AcademicProgram.create(ProgramId.generate(), "Ingeniería de Sistemas", "FIET");
 
     assertThat(program.status()).isEqualTo(ProgramStatus.ACTIVE);
   }
 
   @Test
   void versionInitializesToZero() {
-    AcademicProgram program = AcademicProgram.create(ProgramId.generate(), "Ingeniería de Sistemas", "FIET");
+    AcademicProgram program =
+        AcademicProgram.create(ProgramId.generate(), "Ingeniería de Sistemas", "FIET");
 
     assertThat(program.version()).isEqualTo(0L);
   }
@@ -67,7 +70,8 @@ class AcademicProgramTest {
   @Test
   void reconstructsFromPersistenceWithAllFields() {
     ProgramId id = ProgramId.generate();
-    AcademicProgram program = AcademicProgram.reconstitute(id, "Lenguas Modernas", "FCHSH", ProgramStatus.INACTIVE, 3L);
+    AcademicProgram program =
+        AcademicProgram.reconstitute(id, "Lenguas Modernas", "FCHSH", ProgramStatus.INACTIVE, 3L);
 
     assertThat(program.id()).isEqualTo(id);
     assertThat(program.name()).isEqualTo("Lenguas Modernas");

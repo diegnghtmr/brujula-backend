@@ -24,16 +24,16 @@ public class ListMySimulationsService implements ListMySimulationsQuery {
   private final OfferingReadPort offeringReadPort;
 
   public ListMySimulationsService(
-      LoadSimulationPort loadSimulationPort,
-      OfferingReadPort offeringReadPort) {
+      LoadSimulationPort loadSimulationPort, OfferingReadPort offeringReadPort) {
     this.loadSimulationPort = loadSimulationPort;
     this.offeringReadPort = offeringReadPort;
   }
 
   @Override
   public SimulationPageView listMySimulations(ListSimulationsCriteria criteria) {
-    List<Simulation> simulations = loadSimulationPort.loadByOwner(
-        criteria.ownerId(), criteria.periodId(), criteria.page(), criteria.size());
+    List<Simulation> simulations =
+        loadSimulationPort.loadByOwner(
+            criteria.ownerId(), criteria.periodId(), criteria.page(), criteria.size());
     long total = loadSimulationPort.countByOwner(criteria.ownerId(), criteria.periodId());
     int totalPages = criteria.size() > 0 ? (int) Math.ceil((double) total / criteria.size()) : 0;
 
@@ -42,10 +42,11 @@ public class ListMySimulationsService implements ListMySimulationsQuery {
     // WU5 adds staleness detection per STALE-001
     String statusFilter = criteria.status();
 
-    List<SimulationView> views = simulations.stream()
-        .map(sim -> toView(sim))
-        .filter(v -> statusFilter == null || statusFilter.equals(v.status()))
-        .toList();
+    List<SimulationView> views =
+        simulations.stream()
+            .map(sim -> toView(sim))
+            .filter(v -> statusFilter == null || statusFilter.equals(v.status()))
+            .toList();
 
     return new SimulationPageView(views, criteria.page(), criteria.size(), total, totalPages);
   }

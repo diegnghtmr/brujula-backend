@@ -1,7 +1,6 @@
 package co.edu.uniquindio.brujula.simulation.application.port.out;
 
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

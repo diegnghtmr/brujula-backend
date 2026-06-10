@@ -32,3 +32,9 @@ management:
     web:
       exposure:
         include: health,info,metrics
+  endpoint:
+    health:
+      # Local-only: expose full health details for developer convenience.
+      # The base application.yaml restricts this to when_authorized on all other profiles
+      # (QAL-ADV-001 / DEC-10 health hardening).
+      show-details: always

@@ -12,8 +12,8 @@ import co.edu.uniquindio.brujula.programcatalog.domain.StudyPlan;
 /**
  * Pure-translation mapper between persistence entities and domain objects for the catalog module.
  *
- * <p>Package-private (ARQ-006). Stateless — all methods are static.
- * No business logic here — pure field mapping only.
+ * <p>Package-private (ARQ-006). Stateless — all methods are static. No business logic here — pure
+ * field mapping only.
  */
 final class CatalogPersistenceMapper {
 
@@ -53,9 +53,6 @@ final class CatalogPersistenceMapper {
 
   static Journey toDomain(JourneyJpaEntity entity) {
     return Journey.reconstitute(
-        new JourneyId(entity.getId()),
-        entity.getCode(),
-        entity.getName(),
-        entity.isActive());
+        new JourneyId(entity.getId()), entity.getCode(), entity.getName(), entity.isActive());
   }
 }

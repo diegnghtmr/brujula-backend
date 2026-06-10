@@ -7,9 +7,9 @@ import java.util.UUID;
 /**
  * Immutable value object representing a single time slot within a schedule option.
  *
- * <p>The compact constructor enforces the invariant that {@code endsAt > startsAt}.
- * Two sessions overlap when they are on the same day and their time intervals intersect
- * (touching edges — one ends exactly when the other starts — do NOT count as overlap).
+ * <p>The compact constructor enforces the invariant that {@code endsAt > startsAt}. Two sessions
+ * overlap when they are on the same day and their time intervals intersect (touching edges — one
+ * ends exactly when the other starts — do NOT count as overlap).
  */
 public record ScheduleSession(UUID id, Weekday day, LocalTime startsAt, LocalTime endsAt) {
 
@@ -38,12 +38,12 @@ public record ScheduleSession(UUID id, Weekday day, LocalTime startsAt, LocalTim
    * Tests whether this session overlaps in time with {@code other}.
    *
    * <p>Two sessions overlap if and only if they are on the same day AND their time intervals
-   * strictly intersect (touching at boundary = no overlap):
-   * {@code startsAt < other.endsAt AND endsAt > other.startsAt}.
+   * strictly intersect (touching at boundary = no overlap): {@code startsAt < other.endsAt AND
+   * endsAt > other.startsAt}.
    *
    * @param other the other session to compare with
-   * @return {@code true} if and only if both sessions are on the same day and their time
-   *         intervals strictly overlap
+   * @return {@code true} if and only if both sessions are on the same day and their time intervals
+   *     strictly overlap
    */
   public boolean overlaps(ScheduleSession other) {
     Objects.requireNonNull(other, "other session must not be null");

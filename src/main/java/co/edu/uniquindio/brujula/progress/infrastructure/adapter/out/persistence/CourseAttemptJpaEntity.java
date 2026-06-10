@@ -53,30 +53,75 @@ class CourseAttemptJpaEntity {
 
   protected CourseAttemptJpaEntity() {}
 
-  UUID getId() { return id; }
-  void setId(UUID id) { this.id = id; }
+  UUID getId() {
+    return id;
+  }
 
-  UUID getSubscriptionId() { return subscriptionId; }
-  void setSubscriptionId(UUID subscriptionId) { this.subscriptionId = subscriptionId; }
+  void setId(UUID id) {
+    this.id = id;
+  }
 
-  UUID getCourseId() { return courseId; }
-  void setCourseId(UUID courseId) { this.courseId = courseId; }
+  UUID getSubscriptionId() {
+    return subscriptionId;
+  }
 
-  String getStatus() { return status; }
-  void setStatus(String status) { this.status = status; }
+  void setSubscriptionId(UUID subscriptionId) {
+    this.subscriptionId = subscriptionId;
+  }
 
-  BigDecimal getFinalGrade() { return finalGrade; }
-  void setFinalGrade(BigDecimal finalGrade) { this.finalGrade = finalGrade; }
+  UUID getCourseId() {
+    return courseId;
+  }
 
-  UUID getPeriodId() { return periodId; }
-  void setPeriodId(UUID periodId) { this.periodId = periodId; }
+  void setCourseId(UUID courseId) {
+    this.courseId = courseId;
+  }
 
-  String getJourneyCode() { return journeyCode; }
-  void setJourneyCode(String journeyCode) { this.journeyCode = journeyCode; }
+  String getStatus() {
+    return status;
+  }
 
-  Instant getRegisteredAt() { return registeredAt; }
-  void setRegisteredAt(Instant registeredAt) { this.registeredAt = registeredAt; }
+  void setStatus(String status) {
+    this.status = status;
+  }
 
-  long getVersion() { return version; }
-  void setVersion(long version) { this.version = version; }
+  BigDecimal getFinalGrade() {
+    return finalGrade;
+  }
+
+  void setFinalGrade(BigDecimal finalGrade) {
+    this.finalGrade = finalGrade;
+  }
+
+  UUID getPeriodId() {
+    return periodId;
+  }
+
+  void setPeriodId(UUID periodId) {
+    this.periodId = periodId;
+  }
+
+  String getJourneyCode() {
+    return journeyCode;
+  }
+
+  void setJourneyCode(String journeyCode) {
+    this.journeyCode = journeyCode;
+  }
+
+  Instant getRegisteredAt() {
+    return registeredAt;
+  }
+
+  void setRegisteredAt(Instant registeredAt) {
+    this.registeredAt = registeredAt;
+  }
+
+  long getVersion() {
+    return version;
+  }
+
+  void setVersion(long version) {
+    this.version = version;
+  }
 }

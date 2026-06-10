@@ -6,8 +6,8 @@ import java.util.UUID;
 /**
  * Application-layer DTO for a SequentialTrack read view.
  *
- * <p>Returned by query services to REST adapters (ARQ-001 — controllers do not touch domain).
- * No Spring/framework imports.
+ * <p>Returned by query services to REST adapters (ARQ-001 — controllers do not touch domain). No
+ * Spring/framework imports.
  *
  * @param id the track UUID
  * @param planId the study plan UUID

@@ -5,12 +5,13 @@ import java.util.List;
 /**
  * Sealed outcome of the simulation validation engine.
  *
- * <p>Compiler-enforced — either the selection is {@link Allowed} (no blocking notices) or
- * {@link Blocked} (at least one blocking notice). Both carry warnings for transparency.
+ * <p>Compiler-enforced — either the selection is {@link Allowed} (no blocking notices) or {@link
+ * Blocked} (at least one blocking notice). Both carry warnings for transparency.
  *
  * <p>Pure domain sealed interface — no Spring/JPA (ARQ-002, ADR-F4-004).
  */
-public sealed interface ValidationOutcome permits ValidationOutcome.Allowed, ValidationOutcome.Blocked {
+public sealed interface ValidationOutcome
+    permits ValidationOutcome.Allowed, ValidationOutcome.Blocked {
 
   /**
    * Selection is allowed. May carry non-blocking warnings.
@@ -26,8 +27,8 @@ public sealed interface ValidationOutcome permits ValidationOutcome.Allowed, Val
   /**
    * Selection is blocked. At least one blocking notice is present. Warnings are also carried.
    *
-   * @param blocking  blocking notices (non-empty)
-   * @param warnings  non-blocking advisory notices (may be empty)
+   * @param blocking blocking notices (non-empty)
+   * @param warnings non-blocking advisory notices (may be empty)
    */
   record Blocked(List<ValidationNotice> blocking, List<ValidationNotice> warnings)
       implements ValidationOutcome {

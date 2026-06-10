@@ -4,8 +4,8 @@ package co.edu.uniquindio.brujula.identity.application;
  * Thrown when a student attempts to register with an email address that already has an AppUser
  * record (Slice 2, S2-B-3).
  *
- * <p>The REST adapter maps this to 409 Conflict per the OpenAPI contract for {@code
- * POST /auth/registration} (status code 409: "Correo ya registrado").
+ * <p>The REST adapter maps this to 409 Conflict per the OpenAPI contract for {@code POST
+ * /auth/registration} (status code 409: "Correo ya registrado").
  *
  * <p>Framework-free (ARQ-003): no Spring imports.
  */

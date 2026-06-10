@@ -13,11 +13,11 @@ import java.util.Objects;
  */
 public record ImportRow(int index, Map<String, String> cells) {
 
-    public ImportRow {
-        Objects.requireNonNull(cells, "cells must not be null");
-        if (index < 0) {
-            throw new IllegalArgumentException("index must be >= 0");
-        }
-        cells = Map.copyOf(cells); // immutable snapshot
+  public ImportRow {
+    Objects.requireNonNull(cells, "cells must not be null");
+    if (index < 0) {
+      throw new IllegalArgumentException("index must be >= 0");
     }
+    cells = Map.copyOf(cells); // immutable snapshot
+  }
 }

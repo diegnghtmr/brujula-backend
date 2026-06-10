@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link GetCreditLimitService} — TDD RED→GREEN.
  *
  * <p>Scenarios:
+ *
  * <ul>
  *   <li>(1) no override configured → returns default 23 (ADR-013, ADR-F4-006)
  *   <li>(2) explicit override configured → returns that override

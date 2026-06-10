@@ -12,9 +12,9 @@ import java.util.UUID;
 /**
  * Use case implementation: get a single study plan by ID.
  *
- * <p>Applies role-based visibility: STUDENT sees only ACTIVE plans, STAFF/ADMIN see all.
- * Throws {@link StudyPlanNotFoundException} (maps to HTTP 404) if the plan is not found or
- * not visible to the caller.
+ * <p>Applies role-based visibility: STUDENT sees only ACTIVE plans, STAFF/ADMIN see all. Throws
+ * {@link StudyPlanNotFoundException} (maps to HTTP 404) if the plan is not found or not visible to
+ * the caller.
  *
  * <p>No Spring annotations — wired via infrastructure configuration (ARQ-002).
  */
@@ -29,8 +29,10 @@ public class GetStudyPlanService implements GetStudyPlanQuery {
   @Override
   public StudyPlanView getStudyPlan(UUID rawId, String callerRole) {
     PlanId planId = new PlanId(rawId);
-    StudyPlan plan = loadStudyPlanPort.loadById(planId)
-        .orElseThrow(() -> new StudyPlanNotFoundException(planId));
+    StudyPlan plan =
+        loadStudyPlanPort
+            .loadById(planId)
+            .orElseThrow(() -> new StudyPlanNotFoundException(planId));
 
     // Apply visibility: STUDENT (or unknown role) sees ACTIVE plans only
     if (!isPrivilegedRole(callerRole) && plan.status() != PlanStatus.ACTIVE) {

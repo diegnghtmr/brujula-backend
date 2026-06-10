@@ -42,14 +42,15 @@ import org.springframework.web.context.WebApplicationContext;
  * cannot: staleness detection, real creditSummary values, review 200/409 round-trips.
  *
  * <p>V017 fixture UUIDs used:
+ *
  * <ul>
  *   <li>Period 2026-2: {@code 00000001-0000-4000-a000-000000000001}
  *   <li>Programación III (ISC, 3 cr, FINAL): offering {@code 00000002-0000-4001-a000-000000000001},
  *       DIURNA option {@code 00000002-0000-4002-a000-000000000001}
  *   <li>Estadística (ISC, 3 cr, FINAL): offering {@code 00000003-0000-4001-a000-000000000001},
  *       DIURNA option {@code 00000003-0000-4002-a000-000000000001}
- *   <li>Programación II (ARCHIVED): offering {@code 00000007-0000-4001-a000-000000000001},
- *       option {@code 00000007-0000-4002-a000-000000000001}
+ *   <li>Programación II (ARCHIVED): offering {@code 00000007-0000-4001-a000-000000000001}, option
+ *       {@code 00000007-0000-4002-a000-000000000001}
  * </ul>
  *
  * <p>ISC program: {@code 11111111-0000-4000-a000-000000000001}
@@ -64,20 +65,16 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   @Autowired private JdbcTemplate jdbcTemplate;
 
   // V017 seed UUIDs
-  static final UUID PERIOD_ID =
-      UUID.fromString("00000001-0000-4000-a000-000000000001");
+  static final UUID PERIOD_ID = UUID.fromString("00000001-0000-4000-a000-000000000001");
 
   // ISC program
-  static final UUID ISC_PROGRAM_ID =
-      UUID.fromString("11111111-0000-4000-a000-000000000001");
+  static final UUID ISC_PROGRAM_ID = UUID.fromString("11111111-0000-4000-a000-000000000001");
 
   // Programación III (FINAL, 3 cr, DIURNA Mon 08:00-10:00 / Wed 10:00-12:00)
-  static final UUID PROG_III_OFFERING_ID =
-      UUID.fromString("00000002-0000-4001-a000-000000000001");
+  static final UUID PROG_III_OFFERING_ID = UUID.fromString("00000002-0000-4001-a000-000000000001");
   static final UUID PROG_III_OPTION_DIURNA =
       UUID.fromString("00000002-0000-4002-a000-000000000001");
-  static final UUID PROG_III_COURSE_ID =
-      UUID.fromString("c0040000-0000-4000-a000-000000000004");
+  static final UUID PROG_III_COURSE_ID = UUID.fromString("c0040000-0000-4000-a000-000000000004");
 
   // Estadística y Probabilidad (FINAL, 3 cr, DIURNA Tue 10:00-12:00 / Thu 10:00-12:00)
   // Note: requires c0030000-0000-4000-a000-000000000001 (hard prereq); use with passed prereq
@@ -85,19 +82,16 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
       UUID.fromString("00000003-0000-4001-a000-000000000001");
   static final UUID ESTADISTICA_OPTION_DIURNA =
       UUID.fromString("00000003-0000-4002-a000-000000000001");
-  static final UUID ESTADISTICA_COURSE_ID =
-      UUID.fromString("c0050000-0000-4000-a000-000000000001");
+  static final UUID ESTADISTICA_COURSE_ID = UUID.fromString("c0050000-0000-4000-a000-000000000001");
   // Estadística's prereq (Algoritmos II — V012 c0030000-...-001) — must be PASSED for clean review
   static final UUID ESTADISTICA_PREREQ_COURSE_ID =
       UUID.fromString("c0030000-0000-4000-a000-000000000001");
 
   // Programación II — ARCHIVED (V017 fixture d)
-  static final UUID PROG_II_OFFERING_ID =
-      UUID.fromString("00000007-0000-4001-a000-000000000001");
+  static final UUID PROG_II_OFFERING_ID = UUID.fromString("00000007-0000-4001-a000-000000000001");
   static final UUID PROG_II_OPTION_NOCTURNA =
       UUID.fromString("00000007-0000-4002-a000-000000000001");
-  static final UUID PROG_II_COURSE_ID =
-      UUID.fromString("c0030000-0000-4000-a000-000000000005");
+  static final UUID PROG_II_COURSE_ID = UUID.fromString("c0030000-0000-4000-a000-000000000005");
 
   private MockMvc mockMvc;
   private String studentSubject;
@@ -109,17 +103,18 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
 
     // Unique student per test run (no @Transactional — data survives across steps within a test)
     studentSubject = "student-sim-detail-it-" + UUID.randomUUID();
-    AppUser student = AppUser.provision(
-        studentSubject,
-        "student-sim-detail-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "IT Student",
-        Role.STUDENT);
+    AppUser student =
+        AppUser.provision(
+            studentSubject,
+            "student-sim-detail-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "IT Student",
+            Role.STUDENT);
     saveAppUserPort.save(student);
 
     // Resolve internal user UUID for simulation ownership
-    studentUserId = jdbcTemplate.queryForObject(
-        "SELECT id FROM identity.app_user WHERE oidc_subject = ?",
-        UUID.class, studentSubject);
+    studentUserId =
+        jdbcTemplate.queryForObject(
+            "SELECT id FROM identity.app_user WHERE oidc_subject = ?", UUID.class, studentSubject);
   }
 
   // ---------------------------------------------------------------------------
@@ -127,8 +122,8 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   // ---------------------------------------------------------------------------
 
   private Simulation createSimulation(List<UUID> programIds) {
-    Simulation sim = Simulation.create(
-        SimulationId.generate(), studentUserId, "IT Sim", PERIOD_ID, programIds);
+    Simulation sim =
+        Simulation.create(SimulationId.generate(), studentUserId, "IT Sim", PERIOD_ID, programIds);
     return saveSimulationPort.save(sim);
   }
 
@@ -147,20 +142,21 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
       long selectedOfferingVersion,
       List<SimScheduleSession> sessions) {
 
-    CandidateSelection candidate = new CandidateSelection(
-        scheduleOptionId,
-        offeringId,
-        courseId,
-        courseName,
-        ISC_PROGRAM_ID,
-        credits,
-        "DIURNA",
-        offeringStatus,
-        selectedOfferingVersion,
-        sessions);
+    CandidateSelection candidate =
+        new CandidateSelection(
+            scheduleOptionId,
+            offeringId,
+            courseId,
+            courseName,
+            ISC_PROGRAM_ID,
+            credits,
+            "DIURNA",
+            offeringStatus,
+            selectedOfferingVersion,
+            sessions);
 
-    SimulationSelection selection = SimulationSelection.create(
-        SimulationSelectionId.generate(), simulationId, candidate);
+    SimulationSelection selection =
+        SimulationSelection.create(SimulationSelectionId.generate(), simulationId, candidate);
     return saveSimulationSelectionPort.save(selection);
   }
 
@@ -174,24 +170,39 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
     // Seed two selections for ISC program: Programación III (3 cr) + Estadística (3 cr) = 6 cr
-    seedSelection(sim.getId().value(),
-        PROG_III_OFFERING_ID, PROG_III_OPTION_DIURNA, PROG_III_COURSE_ID,
-        "Programación III", 3.0, "FINAL", 0L,
+    seedSelection(
+        sim.getId().value(),
+        PROG_III_OFFERING_ID,
+        PROG_III_OPTION_DIURNA,
+        PROG_III_COURSE_ID,
+        "Programación III",
+        3.0,
+        "FINAL",
+        0L,
         List.of(
             new SimScheduleSession("MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)),
             new SimScheduleSession("WEDNESDAY", LocalTime.of(10, 0), LocalTime.of(12, 0))));
 
-    seedSelection(sim.getId().value(),
-        ESTADISTICA_OFFERING_ID, ESTADISTICA_OPTION_DIURNA, ESTADISTICA_COURSE_ID,
-        "Estadística y Probabilidad", 3.0, "FINAL", 0L,
+    seedSelection(
+        sim.getId().value(),
+        ESTADISTICA_OFFERING_ID,
+        ESTADISTICA_OPTION_DIURNA,
+        ESTADISTICA_COURSE_ID,
+        "Estadística y Probabilidad",
+        3.0,
+        "FINAL",
+        0L,
         List.of(
             new SimScheduleSession("TUESDAY", LocalTime.of(10, 0), LocalTime.of(12, 0)),
             new SimScheduleSession("THURSDAY", LocalTime.of(10, 0), LocalTime.of(12, 0))));
 
-    mockMvc.perform(get("/me/simulations/{id}", sim.getId().value())
-            .with(oidcLogin()
-                .idToken(t -> t.subject(studentSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/me/simulations/{id}", sim.getId().value())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         // creditSummary must have exactly 1 entry for ISC
         .andExpect(jsonPath("$.creditSummary").isArray())
@@ -216,31 +227,46 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
     // Seed selection with selectedOfferingVersion = current version (0, from V017 seed)
-    long initialVersion = jdbcTemplate.queryForObject(
-        "SELECT version FROM offering.course_offering WHERE id = ?",
-        Long.class, PROG_III_OFFERING_ID);
+    long initialVersion =
+        jdbcTemplate.queryForObject(
+            "SELECT version FROM offering.course_offering WHERE id = ?",
+            Long.class,
+            PROG_III_OFFERING_ID);
 
-    seedSelection(sim.getId().value(),
-        PROG_III_OFFERING_ID, PROG_III_OPTION_DIURNA, PROG_III_COURSE_ID,
-        "Programación III", 3.0, "FINAL", initialVersion,
+    seedSelection(
+        sim.getId().value(),
+        PROG_III_OFFERING_ID,
+        PROG_III_OPTION_DIURNA,
+        PROG_III_COURSE_ID,
+        "Programación III",
+        3.0,
+        "FINAL",
+        initialVersion,
         List.of(new SimScheduleSession("MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0))));
 
-    // Bump the offering version directly in DB — simulates what a future offering-edit endpoint would do
-    // (the staleness detection mechanism must fire even though the edit endpoint is deferred ADR-F4-003)
+    // Bump the offering version directly in DB — simulates what a future offering-edit endpoint
+    // would do
+    // (the staleness detection mechanism must fire even though the edit endpoint is deferred
+    // ADR-F4-003)
     jdbcTemplate.update(
         "UPDATE offering.course_offering SET version = version + 1 WHERE id = ?",
         PROG_III_OFFERING_ID);
 
     // Verify the bump was applied (defensive assertion)
-    long bumped = jdbcTemplate.queryForObject(
-        "SELECT version FROM offering.course_offering WHERE id = ?",
-        Long.class, PROG_III_OFFERING_ID);
+    long bumped =
+        jdbcTemplate.queryForObject(
+            "SELECT version FROM offering.course_offering WHERE id = ?",
+            Long.class,
+            PROG_III_OFFERING_ID);
     assertThat(bumped).isGreaterThan(initialVersion);
 
-    mockMvc.perform(get("/me/simulations/{id}", sim.getId().value())
-            .with(oidcLogin()
-                .idToken(t -> t.subject(studentSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/me/simulations/{id}", sim.getId().value())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         // CRITICAL: selection snapshot (initialVersion) < current version (bumped) → OUTDATED
         // If this asserts CURRENT, the staleness detection path is broken — fix it, do NOT weaken
@@ -248,8 +274,7 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   }
 
   // ISC plan UUID (V012)
-  static final UUID ISC_PLAN_ID =
-      UUID.fromString("33333333-0000-4000-a000-000000000001");
+  static final UUID ISC_PLAN_ID = UUID.fromString("33333333-0000-4000-a000-000000000001");
 
   // ---------------------------------------------------------------------------
   // Helper: insert a progress subscription for the student so prereq checks pass
@@ -257,23 +282,30 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
 
   private UUID insertSubscription(UUID userId, UUID planId) {
     UUID subscriptionId = UUID.randomUUID();
-    jdbcTemplate.update("""
+    jdbcTemplate.update(
+        """
         INSERT INTO progress.student_program_subscription
             (id, user_id, program_id, plan_id, reference_journey_code, status, version)
         VALUES (?, ?, ?, ?, 'DIURNA', 'ACTIVE', 0)
         """,
-        subscriptionId, userId, ISC_PROGRAM_ID, planId);
+        subscriptionId,
+        userId,
+        ISC_PROGRAM_ID,
+        planId);
     return subscriptionId;
   }
 
   private void insertPassedAttempt(UUID subscriptionId, UUID courseId) {
     UUID periodId = UUID.randomUUID();
-    jdbcTemplate.update("""
+    jdbcTemplate.update(
+        """
         INSERT INTO progress.course_attempt
             (id, subscription_id, course_id, status, final_grade, period_id, journey_code, version)
         VALUES (gen_random_uuid(), ?, ?, 'PASSED', 4.5, ?, 'DIURNA', 0)
         """,
-        subscriptionId, courseId, periodId);
+        subscriptionId,
+        courseId,
+        periodId);
   }
 
   // ---------------------------------------------------------------------------
@@ -282,41 +314,56 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   // ---------------------------------------------------------------------------
 
   @Test
-  void reviewSimulation_cleanState_returns200CurrentAndPersistsRefreshedSnapshot() throws Exception {
+  void reviewSimulation_cleanState_returns200CurrentAndPersistsRefreshedSnapshot()
+      throws Exception {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
     // Get current offering version from DB (V017 seeds version=0)
-    long currentVersion = jdbcTemplate.queryForObject(
-        "SELECT version FROM offering.course_offering WHERE id = ?",
-        Long.class, ESTADISTICA_OFFERING_ID);
+    long currentVersion =
+        jdbcTemplate.queryForObject(
+            "SELECT version FROM offering.course_offering WHERE id = ?",
+            Long.class,
+            ESTADISTICA_OFFERING_ID);
 
     // Seed a selection whose snapshot version == current version (CURRENT state)
-    SimulationSelection sel = seedSelection(sim.getId().value(),
-        ESTADISTICA_OFFERING_ID, ESTADISTICA_OPTION_DIURNA, ESTADISTICA_COURSE_ID,
-        "Estadística y Probabilidad", 3.0, "FINAL", currentVersion,
-        List.of(
-            new SimScheduleSession("TUESDAY", LocalTime.of(10, 0), LocalTime.of(12, 0)),
-            new SimScheduleSession("THURSDAY", LocalTime.of(10, 0), LocalTime.of(12, 0))));
+    SimulationSelection sel =
+        seedSelection(
+            sim.getId().value(),
+            ESTADISTICA_OFFERING_ID,
+            ESTADISTICA_OPTION_DIURNA,
+            ESTADISTICA_COURSE_ID,
+            "Estadística y Probabilidad",
+            3.0,
+            "FINAL",
+            currentVersion,
+            List.of(
+                new SimScheduleSession("TUESDAY", LocalTime.of(10, 0), LocalTime.of(12, 0)),
+                new SimScheduleSession("THURSDAY", LocalTime.of(10, 0), LocalTime.of(12, 0))));
 
     // Insert progress subscription + PASSED prereq so review validation is clean
     UUID subscriptionId = insertSubscription(studentUserId, ISC_PLAN_ID);
     insertPassedAttempt(subscriptionId, ESTADISTICA_PREREQ_COURSE_ID);
 
     // POST review → 200 CURRENT (no blockers: prereq is PASSED, no schedule clash, no archive)
-    mockMvc.perform(post("/me/simulations/{id}/review", sim.getId().value())
-            .with(csrf())
-            .with(oidcLogin()
-                .idToken(t -> t.subject(studentSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
-            .header("X-XSRF-TOKEN", "csrf-token")
-            .contentType(MediaType.APPLICATION_JSON))
+    mockMvc
+        .perform(
+            post("/me/simulations/{id}/review", sim.getId().value())
+                .with(csrf())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CURRENT"));
 
     // Verify the snapshot was persisted with the refreshed current version (STALE-002)
-    Long persistedVersion = jdbcTemplate.queryForObject(
-        "SELECT selected_offering_version FROM simulation.simulation_selection WHERE id = ?",
-        Long.class, sel.getId().value());
+    Long persistedVersion =
+        jdbcTemplate.queryForObject(
+            "SELECT selected_offering_version FROM simulation.simulation_selection WHERE id = ?",
+            Long.class,
+            sel.getId().value());
     assertThat(persistedVersion)
         .as("After review, selected_offering_version must match current offering version")
         .isEqualTo(currentVersion);
@@ -332,22 +379,30 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
 
     // Seed a selection on the ARCHIVED offering (V017 fixture d: Programación II)
     // This is a persistent blocker: ArchivedOfferingRule fires because offering.status = ARCHIVED
-    seedSelection(sim.getId().value(),
-        PROG_II_OFFERING_ID, PROG_II_OPTION_NOCTURNA, PROG_II_COURSE_ID,
-        "Programación II", 3.0, "ARCHIVED", 0L,
+    seedSelection(
+        sim.getId().value(),
+        PROG_II_OFFERING_ID,
+        PROG_II_OPTION_NOCTURNA,
+        PROG_II_COURSE_ID,
+        "Programación II",
+        3.0,
+        "ARCHIVED",
+        0L,
         List.of(new SimScheduleSession("FRIDAY", LocalTime.of(19, 0), LocalTime.of(22, 0))));
 
     // POST review → 409 application/problem+json with a SIMULATION_* code
-    mockMvc.perform(post("/me/simulations/{id}/review", sim.getId().value())
-            .with(csrf())
-            .with(oidcLogin()
-                .idToken(t -> t.subject(studentSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
-            .header("X-XSRF-TOKEN", "csrf-token")
-            .contentType(MediaType.APPLICATION_JSON))
+    mockMvc
+        .perform(
+            post("/me/simulations/{id}/review", sim.getId().value())
+                .with(csrf())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").isString())
-        .andExpect(jsonPath("$.code").value(
-            org.hamcrest.Matchers.startsWith("SIMULATION_")));
+        .andExpect(jsonPath("$.code").value(org.hamcrest.Matchers.startsWith("SIMULATION_")));
   }
 }

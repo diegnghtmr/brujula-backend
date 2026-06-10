@@ -13,7 +13,6 @@ import co.edu.uniquindio.brujula.offering.domain.CourseOfferingId;
 import co.edu.uniquindio.brujula.offering.domain.OfferingNotFoundException;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOption;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleSession;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -44,18 +43,20 @@ public class GetOfferingService implements ListOfferingsQuery, GetOfferingQuery 
 
   @Override
   public OfferingDetailView getOffering(UUID offeringId) {
-    CourseOffering offering = loadOfferingPort
-        .findById(new CourseOfferingId(offeringId))
-        .filter(CourseOffering::isPublished)
-        .orElseThrow(() -> new OfferingNotFoundException(new CourseOfferingId(offeringId)));
+    CourseOffering offering =
+        loadOfferingPort
+            .findById(new CourseOfferingId(offeringId))
+            .filter(CourseOffering::isPublished)
+            .orElseThrow(() -> new OfferingNotFoundException(new CourseOfferingId(offeringId)));
 
     return toDetailView(offering);
   }
 
   OfferingDetailView toDetailView(CourseOffering offering) {
-    List<ScheduleOptionView> optionViews = offering.getScheduleOptions().stream()
-        .map(option -> toOptionView(option, offering.getId().value()))
-        .toList();
+    List<ScheduleOptionView> optionViews =
+        offering.getScheduleOptions().stream()
+            .map(option -> toOptionView(option, offering.getId().value()))
+            .toList();
     return new OfferingDetailView(
         offering.getId().value(),
         offering.getCourseId(),
@@ -69,9 +70,8 @@ public class GetOfferingService implements ListOfferingsQuery, GetOfferingQuery 
   }
 
   private ScheduleOptionView toOptionView(ScheduleOption option, UUID offeringId) {
-    List<ScheduleSessionView> sessionViews = option.getSessions().stream()
-        .map(this::toSessionView)
-        .toList();
+    List<ScheduleSessionView> sessionViews =
+        option.getSessions().stream().map(this::toSessionView).toList();
     return new ScheduleOptionView(
         option.getId().value(),
         offeringId,
@@ -84,9 +84,6 @@ public class GetOfferingService implements ListOfferingsQuery, GetOfferingQuery 
 
   private ScheduleSessionView toSessionView(ScheduleSession session) {
     return new ScheduleSessionView(
-        session.id(),
-        session.day().name(),
-        session.startsAt(),
-        session.endsAt());
+        session.id(), session.day().name(), session.startsAt(), session.endsAt());
   }
 }

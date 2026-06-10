@@ -13,6 +13,7 @@ import java.util.Set;
  * Per-kind validator for REQUIREMENTS import rows (IMP-007, IMP-002).
  *
  * <p>Validates each row against the REQUIREMENTS column mapping (ADR-014) and detects:
+ *
  * <ul>
  *   <li>Missing or unknown destination/required course references
  *   <li>Invalid requirement_type values
@@ -20,17 +21,17 @@ import java.util.Set;
  * </ul>
  *
  * <p>NOTE: At import-validation time, course UUIDs are not yet available (we only have
- * official_code / name strings from the file). Resolution to UUIDs happens at confirm time
- * (WU6). This validator performs structural and intra-batch cycle detection on the string
- * representation. For full graph cycle detection including existing DB requirements, the
- * confirm service re-checks with real UUIDs.
+ * official_code / name strings from the file). Resolution to UUIDs happens at confirm time (WU6).
+ * This validator performs structural and intra-batch cycle detection on the string representation.
+ * For full graph cycle detection including existing DB requirements, the confirm service re-checks
+ * with real UUIDs.
  *
- * <p>Uses {@link ImportCycleDetector} (module-local) instead of
- * {@code curriculum.domain.PrerequisiteAcyclicityService} to respect the {@code imports} module
- * boundary (imports may only depend on {@code curriculum::api}, not curriculum domain classes).
+ * <p>Uses {@link ImportCycleDetector} (module-local) instead of {@code
+ * curriculum.domain.PrerequisiteAcyclicityService} to respect the {@code imports} module boundary
+ * (imports may only depend on {@code curriculum::api}, not curriculum domain classes).
  *
- * <p>Framework-free. Wired as a plain bean in
- * {@link co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
+ * <p>Framework-free. Wired as a plain bean in {@link
+ * co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
  */
 public class RequirementsValidator {
 
@@ -43,8 +44,8 @@ public class RequirementsValidator {
   /**
    * Validate all rows in a REQUIREMENTS batch.
    *
-   * <p>Uses a local {@link ImportCycleDetector} to detect intra-batch cycles (SC-007-B)
-   * without DB lookups and without coupling to the curriculum domain layer.
+   * <p>Uses a local {@link ImportCycleDetector} to detect intra-batch cycles (SC-007-B) without DB
+   * lookups and without coupling to the curriculum domain layer.
    *
    * @param rows list of import rows
    * @return map of row index → issues for that row
@@ -157,7 +158,7 @@ public class RequirementsValidator {
       // Edge: req → dest (req must be satisfied before dest)
       detector.addEdge(req, dest);
       if (detector.hasCycle()) {
-        rowsWithCycles.add(new int[]{row.index()});
+        rowsWithCycles.add(new int[] {row.index()});
         // Remove the offending edge by rebuilding without it
         detector = rebuildDetectorWithout(validRows, rowsWithCycles);
       }
@@ -165,7 +166,8 @@ public class RequirementsValidator {
 
     for (int[] cycleRow : rowsWithCycles) {
       int rowIndex = cycleRow[0];
-      result.computeIfAbsent(rowIndex, k -> new ArrayList<>())
+      result
+          .computeIfAbsent(rowIndex, k -> new ArrayList<>())
           .add(
               ImportIssue.error(
                   rowIndex + 1,
@@ -176,12 +178,11 @@ public class RequirementsValidator {
   }
 
   /**
-   * Rebuilds the cycle detector from all valid rows, excluding rows whose index is already
-   * flagged as a cycle row.
+   * Rebuilds the cycle detector from all valid rows, excluding rows whose index is already flagged
+   * as a cycle row.
    */
   private ImportCycleDetector rebuildDetectorWithout(
-      List<ImportRow> rows,
-      List<int[]> alreadyFlaggedCycleRows) {
+      List<ImportRow> rows, List<int[]> alreadyFlaggedCycleRows) {
     Set<Integer> flaggedIndices = new HashSet<>();
     for (int[] flagged : alreadyFlaggedCycleRows) {
       flaggedIndices.add(flagged[0]);

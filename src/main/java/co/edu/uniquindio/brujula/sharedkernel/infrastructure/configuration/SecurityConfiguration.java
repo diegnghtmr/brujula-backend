@@ -54,7 +54,6 @@ public class SecurityConfiguration {
   @Autowired(required = false)
   private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService;
 
-
   /**
    * Production security filter chain.
    *
@@ -154,8 +153,7 @@ public class SecurityConfiguration {
         // Modulith-safe: no identity module import; uses plain String code + path check only.
         // ----------------------------------------------------------------
         .exceptionHandling(
-            exceptions ->
-                exceptions.accessDeniedHandler(academicAccessDeniedHandler()))
+            exceptions -> exceptions.accessDeniedHandler(academicAccessDeniedHandler()))
 
         // ----------------------------------------------------------------
         // Session management — new session on login (TRD §10 rotation)
@@ -187,19 +185,18 @@ public class SecurityConfiguration {
    * <p>Behavior:
    *
    * <ul>
-   *   <li>Request path matches {@code /api/v1/academic/**}: respond with 403 +
-   *       {@code Content-Type: application/problem+json} + body containing
-   *       {@code "code": "EMAIL_VERIFICATION_REQUIRED"} (RFC 9457 ProblemDetail extension). This
-   *       satisfies the spec contract: "403 with problem detail indicating email verification
-   *       required".
+   *   <li>Request path matches {@code /api/v1/academic/**}: respond with 403 + {@code Content-Type:
+   *       application/problem+json} + body containing {@code "code": "EMAIL_VERIFICATION_REQUIRED"}
+   *       (RFC 9457 ProblemDetail extension). This satisfies the spec contract: "403 with problem
+   *       detail indicating email verification required".
    *   <li>Any other path: delegate to {@link AccessDeniedHandlerImpl} (default Spring Security
    *       behavior — generic 403, no body). This preserves existing semantics for admin/staff
    *       authorization failures and does NOT relabel them as email-verification issues.
    * </ul>
    *
    * <p>Modulith-safe: uses {@code AntPathMatcher} + plain String constants — no identity module
-   * import. The handler lives in {@code sharedkernel} and has zero domain-module dependencies.
-   * JSON is written inline to avoid an ObjectMapper dependency in sharedkernel configuration.
+   * import. The handler lives in {@code sharedkernel} and has zero domain-module dependencies. JSON
+   * is written inline to avoid an ObjectMapper dependency in sharedkernel configuration.
    */
   private AccessDeniedHandler academicAccessDeniedHandler() {
     AntPathMatcher pathMatcher = new AntPathMatcher();

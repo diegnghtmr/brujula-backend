@@ -12,8 +12,4 @@ import java.util.UUID;
  * @param size page size
  */
 public record ListCourseAttemptsQuery(
-    UUID actorId,
-    UUID subscriptionId,
-    UUID courseId,
-    int page,
-    int size) {}
+    UUID actorId, UUID subscriptionId, UUID courseId, int page, int size) {}

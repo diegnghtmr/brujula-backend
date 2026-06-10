@@ -12,7 +12,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.queryParam;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -115,7 +114,8 @@ class KeycloakAdminApiAdapterTest {
   // -------------------------------------------------------------------------
 
   @Test
-  void triggerEmailVerification_shouldPutExecuteActionsEmail_withVerifyEmailAndUpdatePasswordActions() {
+  void
+      triggerEmailVerification_shouldPutExecuteActionsEmail_withVerifyEmailAndUpdatePasswordActions() {
     stubTokenEndpoint(ACCESS_TOKEN, 300);
 
     var userId = "a2f0e8c1-1234-5678-9abc-def012345678";
@@ -124,10 +124,12 @@ class KeycloakAdminApiAdapterTest {
         // C-001 + F-002: assert both ?redirectUri= and ?clientId=brujula-frontend in the URL.
         // OPTION A requires BOTH VERIFY_EMAIL and UPDATE_PASSWORD so the user sets their password
         // on Keycloak's page after clicking the verification link (obs #1574).
-        .expect(requestTo(allOf(
-            containsString("/users/" + userId + "/execute-actions-email"),
-            containsString("redirectUri="),
-            containsString("clientId=brujula-frontend"))))
+        .expect(
+            requestTo(
+                allOf(
+                    containsString("/users/" + userId + "/execute-actions-email"),
+                    containsString("redirectUri="),
+                    containsString("clientId=brujula-frontend"))))
         .andExpect(method(PUT))
         .andExpect(header("Authorization", "Bearer " + ACCESS_TOKEN))
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -159,10 +161,12 @@ class KeycloakAdminApiAdapterTest {
     // exact=true ensures we only match the exact email address.
     // Note: Spring RestClient URL-encodes the @ in the email address (%40).
     mockServer
-        .expect(requestTo(allOf(
-            containsString("/users"),
-            containsString("email=student%40uniquindio.edu.co"),
-            containsString("exact=true"))))
+        .expect(
+            requestTo(
+                allOf(
+                    containsString("/users"),
+                    containsString("email=student%40uniquindio.edu.co"),
+                    containsString("exact=true"))))
         .andExpect(method(GET))
         .andExpect(header("Authorization", "Bearer " + ACCESS_TOKEN))
         .andRespond(
@@ -172,9 +176,11 @@ class KeycloakAdminApiAdapterTest {
     // Stub PUT execute-actions-email with UPDATE_PASSWORD + F-002 query params
     // F-002: also assert clientId=brujula-frontend on password reset action.
     mockServer
-        .expect(requestTo(allOf(
-            containsString("/users/" + userId + "/execute-actions-email"),
-            containsString("clientId=brujula-frontend"))))
+        .expect(
+            requestTo(
+                allOf(
+                    containsString("/users/" + userId + "/execute-actions-email"),
+                    containsString("clientId=brujula-frontend"))))
         .andExpect(method(PUT))
         .andExpect(header("Authorization", "Bearer " + ACCESS_TOKEN))
         .andExpect(content().string(containsString("UPDATE_PASSWORD")))

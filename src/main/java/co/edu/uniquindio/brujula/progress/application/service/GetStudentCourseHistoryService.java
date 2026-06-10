@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
  * {@link LoadSubscriptionPort} — ZERO change to progress domain behavior (ADR-F4-002).
  *
  * <p>Algorithm:
+ *
  * <ol>
  *   <li>Load all active subscriptions for the student.
  *   <li>Filter to the subscription matching the requested programId.
@@ -27,8 +28,8 @@ import java.util.stream.Collectors;
  *   <li>Group by courseId and resolve the effective status per course.
  * </ol>
  *
- * <p>Framework-free: no Spring or JPA dependencies (ARQ-002). Wired via {@code @Bean} in
- * {@link co.edu.uniquindio.brujula.progress.infrastructure.configuration.ProgressConfiguration}.
+ * <p>Framework-free: no Spring or JPA dependencies (ARQ-002). Wired via {@code @Bean} in {@link
+ * co.edu.uniquindio.brujula.progress.infrastructure.configuration.ProgressConfiguration}.
  */
 public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQuery {
 
@@ -39,8 +40,7 @@ public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQu
   private final EffectiveAttemptResolver resolver;
 
   public GetStudentCourseHistoryService(
-      LoadSubscriptionPort loadSubscriptionPort,
-      LoadCourseAttemptPort loadCourseAttemptPort) {
+      LoadSubscriptionPort loadSubscriptionPort, LoadCourseAttemptPort loadCourseAttemptPort) {
     this.loadSubscriptionPort = loadSubscriptionPort;
     this.loadCourseAttemptPort = loadCourseAttemptPort;
     this.resolver = new EffectiveAttemptResolver();
@@ -60,9 +60,8 @@ public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQu
         .collect(Collectors.groupingBy(CourseAttempt::getCourseId))
         .entrySet()
         .stream()
-        .filter(e -> resolver.resolve(e.getValue())
-            .map(s -> s == AttemptStatus.PASSED)
-            .orElse(false))
+        .filter(
+            e -> resolver.resolve(e.getValue()).map(s -> s == AttemptStatus.PASSED).orElse(false))
         .map(java.util.Map.Entry::getKey)
         .collect(Collectors.toUnmodifiableSet());
   }
@@ -78,14 +77,9 @@ public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQu
         loadCourseAttemptPort.loadBySubscriptionId(subscription.get().getId().value());
 
     List<CourseAttempt> attemptsForCourse =
-        allAttempts.stream()
-            .filter(a -> courseId.equals(a.getCourseId()))
-            .toList();
+        allAttempts.stream().filter(a -> courseId.equals(a.getCourseId())).toList();
 
-    return resolver
-        .resolve(attemptsForCourse)
-        .map(AttemptStatus::name)
-        .orElse(NONE_SENTINEL);
+    return resolver.resolve(attemptsForCourse).map(AttemptStatus::name).orElse(NONE_SENTINEL);
   }
 
   // -------------------------------------------------------------------------
@@ -93,9 +87,7 @@ public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQu
   // -------------------------------------------------------------------------
 
   private Optional<Subscription> findSubscription(UUID ownerId, UUID programId) {
-    return loadSubscriptionPort
-        .loadActiveByUserId(ownerId)
-        .stream()
+    return loadSubscriptionPort.loadActiveByUserId(ownerId).stream()
         .filter(s -> programId.equals(s.getProgramId()))
         .findFirst();
   }

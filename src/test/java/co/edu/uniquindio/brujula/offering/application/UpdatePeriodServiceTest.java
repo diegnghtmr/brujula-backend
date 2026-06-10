@@ -17,13 +17,12 @@ import co.edu.uniquindio.brujula.offering.domain.AcademicPeriod;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriodId;
 import co.edu.uniquindio.brujula.offering.domain.PeriodNotFoundException;
 import co.edu.uniquindio.brujula.offering.domain.PeriodStatus;
-import org.springframework.dao.OptimisticLockingFailureException;
-
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 /**
  * TDD unit tests for {@link UpdatePeriodService}.
@@ -52,8 +51,8 @@ class UpdatePeriodServiceTest {
   void period_not_found_throws_PeriodNotFoundException() {
     when(savePeriodPort.findCurrentById(periodId)).thenReturn(Optional.empty());
 
-    UpdatePeriodCommand command = new UpdatePeriodCommand(
-        periodId.value(), UUID.randomUUID(), null, null, "ACTIVE", 0L);
+    UpdatePeriodCommand command =
+        new UpdatePeriodCommand(periodId.value(), UUID.randomUUID(), null, null, "ACTIVE", 0L);
 
     assertThatThrownBy(() -> service.updatePeriod(command))
         .isInstanceOf(PeriodNotFoundException.class);
@@ -61,13 +60,14 @@ class UpdatePeriodServiceTest {
 
   @Test
   void optimistic_lock_conflict_propagates() {
-    AcademicPeriod existing = AcademicPeriod.reconstitute(
-        periodId, "2026-2", start, end, PeriodStatus.UPCOMING, 1L);
+    AcademicPeriod existing =
+        AcademicPeriod.reconstitute(periodId, "2026-2", start, end, PeriodStatus.UPCOMING, 1L);
     when(savePeriodPort.findCurrentById(periodId)).thenReturn(Optional.of(existing));
-    when(savePeriodPort.save(any())).thenThrow(new OptimisticLockingFailureException("stale version"));
+    when(savePeriodPort.save(any()))
+        .thenThrow(new OptimisticLockingFailureException("stale version"));
 
-    UpdatePeriodCommand command = new UpdatePeriodCommand(
-        periodId.value(), UUID.randomUUID(), null, null, "ACTIVE", 0L);
+    UpdatePeriodCommand command =
+        new UpdatePeriodCommand(periodId.value(), UUID.randomUUID(), null, null, "ACTIVE", 0L);
 
     assertThatThrownBy(() -> service.updatePeriod(command))
         .isInstanceOf(OptimisticLockingFailureException.class);
@@ -75,17 +75,17 @@ class UpdatePeriodServiceTest {
 
   @Test
   void success_returns_view_with_bumped_version() {
-    AcademicPeriod existing = AcademicPeriod.reconstitute(
-        periodId, "2026-2", start, end, PeriodStatus.UPCOMING, 2L);
+    AcademicPeriod existing =
+        AcademicPeriod.reconstitute(periodId, "2026-2", start, end, PeriodStatus.UPCOMING, 2L);
     // Fake the @Version bump: save returns version+1
-    AcademicPeriod saved = AcademicPeriod.reconstitute(
-        periodId, "2026-2", start, end, PeriodStatus.ACTIVE, 3L);
+    AcademicPeriod saved =
+        AcademicPeriod.reconstitute(periodId, "2026-2", start, end, PeriodStatus.ACTIVE, 3L);
 
     when(savePeriodPort.findCurrentById(periodId)).thenReturn(Optional.of(existing));
     when(savePeriodPort.save(any())).thenReturn(saved);
 
-    UpdatePeriodCommand command = new UpdatePeriodCommand(
-        periodId.value(), UUID.randomUUID(), null, null, "ACTIVE", 2L);
+    UpdatePeriodCommand command =
+        new UpdatePeriodCommand(periodId.value(), UUID.randomUUID(), null, null, "ACTIVE", 2L);
 
     AcademicPeriodView result = service.updatePeriod(command);
 

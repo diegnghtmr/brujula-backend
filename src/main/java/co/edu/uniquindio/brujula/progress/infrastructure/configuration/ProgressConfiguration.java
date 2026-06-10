@@ -5,7 +5,6 @@ import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMall
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.ListJourneysQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateCourseAttemptUseCase;
-import co.edu.uniquindio.brujula.progress.application.port.in.api.GetStudentCourseHistoryQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateSubscriptionUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.DeleteSubscriptionUseCase;
@@ -13,20 +12,21 @@ import co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionCur
 import co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionProgressQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.UpdateCourseAttemptUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.in.UpdateSubscriptionUseCase;
+import co.edu.uniquindio.brujula.progress.application.port.in.api.GetStudentCourseHistoryQuery;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.SaveCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.SaveSubscriptionPort;
+import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
 import co.edu.uniquindio.brujula.progress.application.service.CreateCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.CreateSubscriptionService;
 import co.edu.uniquindio.brujula.progress.application.service.DeleteCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.DeleteSubscriptionService;
 import co.edu.uniquindio.brujula.progress.application.service.GetCourseAttemptService;
+import co.edu.uniquindio.brujula.progress.application.service.GetStudentCourseHistoryService;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionCurriculumService;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionProgressService;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService;
-import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
-import co.edu.uniquindio.brujula.progress.application.service.GetStudentCourseHistoryService;
 import co.edu.uniquindio.brujula.progress.application.service.UpdateCourseAttemptService;
 import co.edu.uniquindio.brujula.progress.application.service.UpdateSubscriptionService;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
@@ -45,13 +45,13 @@ import org.springframework.context.annotation.Configuration;
  *
  * <ul>
  *   <li>{@link CreateSubscriptionService} (SUB-1, CROSS-1)
- *   <li>{@link GetSubscriptionService} — implements both {@code GetSubscriptionQuery} and
- *       {@code ListMySubscriptionsQuery} (SUB-2)
+ *   <li>{@link GetSubscriptionService} — implements both {@code GetSubscriptionQuery} and {@code
+ *       ListMySubscriptionsQuery} (SUB-2)
  *   <li>{@link UpdateSubscriptionService} (SUB-3)
  *   <li>{@link DeleteSubscriptionService} (SUB-4)
  *   <li>{@link CreateCourseAttemptService} (PRG-1, CROSS-1) [WU3]
- *   <li>{@link GetCourseAttemptService} — implements both {@code GetCourseAttemptQuery} and
- *       {@code ListMyCourseAttemptsQuery} (PRG-2) [WU3]
+ *   <li>{@link GetCourseAttemptService} — implements both {@code GetCourseAttemptQuery} and {@code
+ *       ListMyCourseAttemptsQuery} (PRG-2) [WU3]
  *   <li>{@link UpdateCourseAttemptService} (PRG-3) [WU3]
  *   <li>{@link DeleteCourseAttemptService} (PRG-4) [WU3]
  *   <li>{@link GetSubscriptionCurriculumService} (AVL-1) [WU4]
@@ -142,8 +142,7 @@ class ProgressConfiguration {
    */
   @Bean
   GetCourseAttemptService getCourseAttemptService(
-      LoadCourseAttemptPort loadCourseAttemptPort,
-      LoadSubscriptionPort loadSubscriptionPort) {
+      LoadCourseAttemptPort loadCourseAttemptPort, LoadSubscriptionPort loadSubscriptionPort) {
     return new GetCourseAttemptService(loadCourseAttemptPort, loadSubscriptionPort);
   }
 
@@ -177,8 +176,7 @@ class ProgressConfiguration {
 
   @Bean
   GetStudentCourseHistoryQuery getStudentCourseHistoryService(
-      LoadSubscriptionPort loadSubscriptionPort,
-      LoadCourseAttemptPort loadCourseAttemptPort) {
+      LoadSubscriptionPort loadSubscriptionPort, LoadCourseAttemptPort loadCourseAttemptPort) {
     return new GetStudentCourseHistoryService(loadSubscriptionPort, loadCourseAttemptPort);
   }
 

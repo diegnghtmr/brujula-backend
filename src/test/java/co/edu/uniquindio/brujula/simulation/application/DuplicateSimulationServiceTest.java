@@ -8,9 +8,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.mockito.ArgumentCaptor;
-
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import co.edu.uniquindio.brujula.simulation.application.dto.DuplicateSimulationCommand;
@@ -32,12 +29,13 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 /**
  * WU3 application unit tests for {@link DuplicateSimulationService}.
  *
- * <p>Covers: happy path, idempotency replay, hash mismatch → conflict, non-owner → 403,
- * name override applied.
+ * <p>Covers: happy path, idempotency replay, hash mismatch → conflict, non-owner → 403, name
+ * override applied.
  */
 class DuplicateSimulationServiceTest {
 
@@ -64,18 +62,24 @@ class DuplicateSimulationServiceTest {
     saveSimulationSelectionPort = mock(SaveSimulationSelectionPort.class);
     idempotencyStorePort = mock(IdempotencyStorePort.class);
     jsonCodecPort = mock(JsonCodecPort.class);
-    sut = new DuplicateSimulationService(
-        loadSimulationPort, saveSimulationPort, offeringReadPort,
-        loadSimulationSelectionPort, saveSimulationSelectionPort,
-        idempotencyStorePort, jsonCodecPort);
+    sut =
+        new DuplicateSimulationService(
+            loadSimulationPort,
+            saveSimulationPort,
+            offeringReadPort,
+            loadSimulationSelectionPort,
+            saveSimulationSelectionPort,
+            idempotencyStorePort,
+            jsonCodecPort);
   }
 
   @Test
   void duplicate_creates_new_simulation_with_default_name() {
     UUID simulationId = UUID.randomUUID();
     UUID idempotencyKey = UUID.randomUUID();
-    Simulation source = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(programId));
+    Simulation source =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(programId));
 
     when(idempotencyStorePort.find(idempotencyKey, DuplicateSimulationService.OPERATION))
         .thenReturn(Optional.empty());
@@ -85,21 +89,22 @@ class DuplicateSimulationServiceTest {
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
     when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
 
-    DuplicateSimulationCommand command = new DuplicateSimulationCommand(
-        idempotencyKey, simulationId, ownerId, null, "hash1");
+    DuplicateSimulationCommand command =
+        new DuplicateSimulationCommand(idempotencyKey, simulationId, ownerId, null, "hash1");
     SimulationView view = sut.duplicateSimulation(command);
 
     assertThat(view.name()).isEqualTo("Copy of Original");
     assertThat(view.periodName()).isEqualTo("2026-2");
-    assertThat(view.id()).isNotEqualTo(simulationId);  // new UUID
+    assertThat(view.id()).isNotEqualTo(simulationId); // new UUID
   }
 
   @Test
   void duplicate_with_name_override_uses_provided_name() {
     UUID simulationId = UUID.randomUUID();
     UUID idempotencyKey = UUID.randomUUID();
-    Simulation source = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(programId));
+    Simulation source =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(programId));
 
     when(idempotencyStorePort.find(idempotencyKey, DuplicateSimulationService.OPERATION))
         .thenReturn(Optional.empty());
@@ -109,8 +114,9 @@ class DuplicateSimulationServiceTest {
     when(jsonCodecPort.toJson(any())).thenReturn("{}");
     when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
 
-    DuplicateSimulationCommand command = new DuplicateSimulationCommand(
-        idempotencyKey, simulationId, ownerId, "My Custom Copy", "hash2");
+    DuplicateSimulationCommand command =
+        new DuplicateSimulationCommand(
+            idempotencyKey, simulationId, ownerId, "My Custom Copy", "hash2");
     SimulationView view = sut.duplicateSimulation(command);
 
     assertThat(view.name()).isEqualTo("My Custom Copy");
@@ -121,19 +127,27 @@ class DuplicateSimulationServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     UUID simulationId = UUID.randomUUID();
 
-    SimulationView stored = new SimulationView(
-        UUID.randomUUID(), "Copy of Original", periodId, "2026-2",
-        List.of(programId), "CURRENT", Instant.now(), Instant.now(), 0L);
+    SimulationView stored =
+        new SimulationView(
+            UUID.randomUUID(),
+            "Copy of Original",
+            periodId,
+            "2026-2",
+            List.of(programId),
+            "CURRENT",
+            Instant.now(),
+            Instant.now(),
+            0L);
 
-    IdempotencyStorePort.StoredRecord record = new IdempotencyStorePort.StoredRecord(
-        "hash-same", 201, "{}");
+    IdempotencyStorePort.StoredRecord record =
+        new IdempotencyStorePort.StoredRecord("hash-same", 201, "{}");
 
     when(idempotencyStorePort.find(idempotencyKey, DuplicateSimulationService.OPERATION))
         .thenReturn(Optional.of(record));
     when(jsonCodecPort.fromJson("{}", SimulationView.class)).thenReturn(stored);
 
-    DuplicateSimulationCommand command = new DuplicateSimulationCommand(
-        idempotencyKey, simulationId, ownerId, null, "hash-same");
+    DuplicateSimulationCommand command =
+        new DuplicateSimulationCommand(idempotencyKey, simulationId, ownerId, null, "hash-same");
     SimulationView view = sut.duplicateSimulation(command);
 
     assertThat(view).isEqualTo(stored);
@@ -144,15 +158,16 @@ class DuplicateSimulationServiceTest {
   void non_owner_throws_access_denied() {
     UUID simulationId = UUID.randomUUID();
     UUID idempotencyKey = UUID.randomUUID();
-    Simulation source = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "Owner's sim", periodId, List.of(programId));
+    Simulation source =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "Owner's sim", periodId, List.of(programId));
 
     when(idempotencyStorePort.find(idempotencyKey, DuplicateSimulationService.OPERATION))
         .thenReturn(Optional.empty());
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(source));
 
-    DuplicateSimulationCommand command = new DuplicateSimulationCommand(
-        idempotencyKey, simulationId, otherUserId, null, "hash");
+    DuplicateSimulationCommand command =
+        new DuplicateSimulationCommand(idempotencyKey, simulationId, otherUserId, null, "hash");
 
     assertThatThrownBy(() -> sut.duplicateSimulation(command))
         .isInstanceOf(SimulationAccessDeniedException.class);
@@ -164,12 +179,12 @@ class DuplicateSimulationServiceTest {
 
   /**
    * FIX F5 (WU4b): When a simulation with existing selections is duplicated, the new simulation
-   * must have a copy of each source selection persisted under the new simulationId, with all
-   * fields preserved (courseId, credits, offeringId, scheduleOptionId) and the simulationId
-   * pointing to the NEW simulation, not the source.
+   * must have a copy of each source selection persisted under the new simulationId, with all fields
+   * preserved (courseId, credits, offeringId, scheduleOptionId) and the simulationId pointing to
+   * the NEW simulation, not the source.
    *
-   * <p>Uses ArgumentCaptor to assert the copied selection's field values, replacing the
-   * weak verify(save).save(any()) that would pass even if credits were copied as 0.
+   * <p>Uses ArgumentCaptor to assert the copied selection's field values, replacing the weak
+   * verify(save).save(any()) that would pass even if credits were copied as 0.
    */
   @Test
   void duplicate_copies_source_selections_into_new_simulation() {
@@ -180,25 +195,27 @@ class DuplicateSimulationServiceTest {
     UUID sourceScheduleOptionId = UUID.randomUUID();
     UUID sourceProgramId = programId;
 
-    Simulation source = Simulation.create(
-        SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(sourceProgramId));
+    Simulation source =
+        Simulation.create(
+            SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(sourceProgramId));
 
     // One existing selection in the source simulation — 4.0 credits (real value, not 0)
-    SimulationSelection sourceSelection = SimulationSelection.reconstitute(
-        SimulationSelectionId.generate(),
-        simulationId,
-        sourceOfferingId,
-        sourceScheduleOptionId,
-        sourceCourseId,
-        "Data Structures",
-        sourceProgramId,
-        4.0,
-        "DIURNA",
-        "PUBLISHED",
-        2L,
-        List.of(),
-        "ACTIVE",
-        0L);
+    SimulationSelection sourceSelection =
+        SimulationSelection.reconstitute(
+            SimulationSelectionId.generate(),
+            simulationId,
+            sourceOfferingId,
+            sourceScheduleOptionId,
+            sourceCourseId,
+            "Data Structures",
+            sourceProgramId,
+            4.0,
+            "DIURNA",
+            "PUBLISHED",
+            2L,
+            List.of(),
+            "ACTIVE",
+            0L);
 
     when(idempotencyStorePort.find(idempotencyKey, DuplicateSimulationService.OPERATION))
         .thenReturn(Optional.empty());
@@ -210,16 +227,15 @@ class DuplicateSimulationServiceTest {
     when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
         .thenReturn(List.of(sourceSelection));
 
-    DuplicateSimulationCommand command = new DuplicateSimulationCommand(
-        idempotencyKey, simulationId, ownerId, null, "hash-copy");
+    DuplicateSimulationCommand command =
+        new DuplicateSimulationCommand(idempotencyKey, simulationId, ownerId, null, "hash-copy");
     SimulationView view = sut.duplicateSimulation(command);
 
     // The duplicated simulation has a new UUID
     assertThat(view.id()).isNotEqualTo(simulationId);
 
     // FIX F5: use ArgumentCaptor to assert all copied fields are preserved
-    ArgumentCaptor<SimulationSelection> captor =
-        ArgumentCaptor.forClass(SimulationSelection.class);
+    ArgumentCaptor<SimulationSelection> captor = ArgumentCaptor.forClass(SimulationSelection.class);
     verify(saveSimulationSelectionPort).save(captor.capture());
     SimulationSelection copied = captor.getValue();
 

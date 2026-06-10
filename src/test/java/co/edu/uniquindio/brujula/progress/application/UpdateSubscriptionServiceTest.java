@@ -7,8 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import co.edu.uniquindio.brujula.progress.domain.SubscriptionStatus;
-
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.progress.application.dto.SubscriptionView;
 import co.edu.uniquindio.brujula.progress.application.dto.UpdateSubscriptionCommand;
@@ -19,6 +17,7 @@ import co.edu.uniquindio.brujula.progress.domain.HistoryImpactNotAcknowledgedExc
 import co.edu.uniquindio.brujula.progress.domain.Subscription;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
+import co.edu.uniquindio.brujula.progress.domain.SubscriptionStatus;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,9 +48,12 @@ class UpdateSubscriptionServiceTest {
   @Test
   void journey_only_update_succeeds() {
     UUID subId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription sub =
+        Subscription.create(
+            SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
-    // Stub save to return the same subscription (unit test; version increment tested in persistence adapter test)
+    // Stub save to return the same subscription (unit test; version increment tested in persistence
+    // adapter test)
     when(saveSubscriptionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
     UpdateSubscriptionCommand command =
@@ -64,7 +66,8 @@ class UpdateSubscriptionServiceTest {
     verify(auditRecorder).record(any());
   }
 
-  // FIX-W3 RED: SUB-3-PLAN-WITH-ACK happy path — hasAttempts=true + ack=true → plan change succeeds,
+  // FIX-W3 RED: SUB-3-PLAN-WITH-ACK happy path — hasAttempts=true + ack=true → plan change
+  // succeeds,
   // version increments, no attempt rows deleted/mutated (DP-009 guarantee).
   @Test
   void plan_change_with_ack_and_attempts_succeeds_spec_sub3_plan_with_ack() {
@@ -72,15 +75,23 @@ class UpdateSubscriptionServiceTest {
     UUID oldPlanId = UUID.randomUUID();
     UUID newPlanId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, programId, oldPlanId, "DIURNA");
+    Subscription sub =
+        Subscription.create(SubscriptionId.of(subId), userId, programId, oldPlanId, "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
     // Mock hasAttempts=true — spec SUB-3-PLAN-WITH-ACK: subscription with 3 existing attempts
     when(loadSubscriptionPort.hasAttempts(subId)).thenReturn(true);
 
     // Simulate persistence returning subscription with incremented version (DB @Version)
-    Subscription savedWithNewPlan = Subscription.reconstitute(
-        SubscriptionId.of(subId), userId, programId, newPlanId, "DIURNA",
-        SubscriptionStatus.ACTIVE, sub.getCreatedAt(), 1L);
+    Subscription savedWithNewPlan =
+        Subscription.reconstitute(
+            SubscriptionId.of(subId),
+            userId,
+            programId,
+            newPlanId,
+            "DIURNA",
+            SubscriptionStatus.ACTIVE,
+            sub.getCreatedAt(),
+            1L);
     when(saveSubscriptionPort.save(any())).thenReturn(savedWithNewPlan);
 
     UpdateSubscriptionCommand command =
@@ -107,14 +118,21 @@ class UpdateSubscriptionServiceTest {
     UUID subId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
     UUID planId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, programId, planId, "DIURNA");
+    Subscription sub =
+        Subscription.create(SubscriptionId.of(subId), userId, programId, planId, "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
 
     // Simulate the persistence adapter returning a reconstituted subscription with version=1
     Subscription savedWithIncrementedVersion =
         Subscription.reconstitute(
-            SubscriptionId.of(subId), userId, programId, planId, "NOCTURNA",
-            SubscriptionStatus.ACTIVE, sub.getCreatedAt(), 1L);
+            SubscriptionId.of(subId),
+            userId,
+            programId,
+            planId,
+            "NOCTURNA",
+            SubscriptionStatus.ACTIVE,
+            sub.getCreatedAt(),
+            1L);
     when(saveSubscriptionPort.save(any())).thenReturn(savedWithIncrementedVersion);
 
     UpdateSubscriptionCommand command =
@@ -131,7 +149,9 @@ class UpdateSubscriptionServiceTest {
   void plan_change_without_ack_rejected_when_has_attempts() {
     UUID subId = UUID.randomUUID();
     UUID newPlanId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription sub =
+        Subscription.create(
+            SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
     when(saveSubscriptionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
     // Simulate that there are attempts for this subscription
@@ -148,7 +168,9 @@ class UpdateSubscriptionServiceTest {
   void update_throws_not_found_for_bola() {
     UUID subId = UUID.randomUUID();
     UUID otherUserId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), otherUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription sub =
+        Subscription.create(
+            SubscriptionId.of(subId), otherUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
 
     UpdateSubscriptionCommand command =
