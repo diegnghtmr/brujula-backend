@@ -34,6 +34,7 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationStillBlockedException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -177,7 +178,7 @@ class ReviewSimulationServiceTest {
     when(offeringReadPort.resolveScheduleOption(schedOptId)).thenReturn(resolved);
     when(progressReadPort.passedCourseIds(OWNER_ID, PROGRAM_A)).thenReturn(Set.of());
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of());
-    when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
+    when(curriculumReadPort.coursesCredits(any())).thenReturn(Map.of(courseId, 3));
     when(curriculumReadPort.sequentialPredecessor(eq(courseId), any())).thenReturn(null);
     when(creditLimitPort.creditLimit(PROGRAM_A, PERIOD_ID)).thenReturn(23);
     when(programNameReadPort.programName(PROGRAM_A)).thenReturn("Systems Eng");
@@ -210,7 +211,7 @@ class ReviewSimulationServiceTest {
     when(offeringReadPort.resolveScheduleOption(schedOptId)).thenReturn(resolved);
     when(progressReadPort.passedCourseIds(OWNER_ID, PROGRAM_A)).thenReturn(Set.of());
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of());
-    when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
+    when(curriculumReadPort.coursesCredits(any())).thenReturn(Map.of(courseId, 3));
     when(curriculumReadPort.sequentialPredecessor(eq(courseId), any())).thenReturn(null);
     when(creditLimitPort.creditLimit(PROGRAM_A, PERIOD_ID)).thenReturn(23);
     when(programNameReadPort.programName(PROGRAM_A)).thenReturn("Systems Eng");
@@ -248,7 +249,7 @@ class ReviewSimulationServiceTest {
             List.of(
                 new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
                     courseId, prereqCourseId, "COURSE_PASSED", "HIGH", false, "Pre-course")));
-    when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
+    when(curriculumReadPort.coursesCredits(any())).thenReturn(Map.of(courseId, 3));
     when(curriculumReadPort.sequentialPredecessor(eq(courseId), any())).thenReturn(null);
     when(creditLimitPort.creditLimit(PROGRAM_A, PERIOD_ID)).thenReturn(23);
     when(programNameReadPort.programName(PROGRAM_A)).thenReturn("Systems Eng");
