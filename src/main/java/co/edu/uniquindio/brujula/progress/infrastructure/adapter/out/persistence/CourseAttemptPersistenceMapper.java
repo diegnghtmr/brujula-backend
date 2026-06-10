@@ -5,7 +5,6 @@ import co.edu.uniquindio.brujula.progress.domain.AttemptStatus;
 import co.edu.uniquindio.brujula.progress.domain.CourseAttempt;
 import co.edu.uniquindio.brujula.progress.domain.Grade;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
-import java.math.BigDecimal;
 
 /**
  * Mapper: {@link CourseAttemptJpaEntity} ↔ {@link CourseAttempt} domain aggregate.

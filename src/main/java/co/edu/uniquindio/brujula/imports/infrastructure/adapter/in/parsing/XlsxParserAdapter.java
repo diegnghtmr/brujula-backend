@@ -26,17 +26,17 @@ import org.springframework.stereotype.Component;
  * XLSX parser adapter — reads XLSX files using Apache POI 5.4.1 (ADR-F6-004).
  *
  * <p>Security constraints (ADR-F6-004):
+ *
  * <ul>
  *   <li>NEVER calls FormulaEvaluator — formula cells are read as their cached string value or
  *       reported as an issue if no cached value exists.
- *   <li>Rejects .xlsm files (macro-enabled) by extension check + MIME type + OPCPackage vba
- *       part detection.
+ *   <li>Rejects .xlsm files (macro-enabled) by extension check + MIME type + OPCPackage vba part
+ *       detection.
  *   <li>Rejects .xls (legacy BIFF8) by FileMagic check.
  * </ul>
  *
- * <p>Performance: uses {@link XSSFWorkbook} (in-memory) which is suitable for the 5,000-row
- * target. Memory is bounded by the 5 MB file size limit configured in
- * {@link ImportValidationProperties}.
+ * <p>Performance: uses {@link XSSFWorkbook} (in-memory) which is suitable for the 5,000-row target.
+ * Memory is bounded by the 5 MB file size limit configured in {@link ImportValidationProperties}.
  *
  * <p>Infrastructure adapter — package-private class, registered via {@code @Component} in the
  * Spring container. Callers use {@link FileParserPort}.
@@ -46,12 +46,11 @@ class XlsxParserAdapter implements FileParserPort {
 
   private static final String XLSX_CONTENT_TYPE =
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-  private static final String XLSM_CONTENT_TYPE =
-      "application/vnd.ms-excel.sheet.macroEnabled.12";
+  private static final String XLSM_CONTENT_TYPE = "application/vnd.ms-excel.sheet.macroEnabled.12";
 
   /**
-   * Default column headers per kind (ADR-014 default template).
-   * These are the expected header names in the first row of the XLSX file.
+   * Default column headers per kind (ADR-014 default template). These are the expected header names
+   * in the first row of the XLSX file.
    */
   private static final Map<ImportKind, List<String>> EXPECTED_HEADERS;
 
@@ -156,8 +155,7 @@ class XlsxParserAdapter implements FileParserPort {
           return new ParseResult(
               List.of(),
               List.of(
-                  ImportIssue.error(
-                      0, null, "EMPTY_FILE", "The spreadsheet has no header row.")));
+                  ImportIssue.error(0, null, "EMPTY_FILE", "The spreadsheet has no header row.")));
         }
 
         List<String> headers = readHeaders(headerRow);
@@ -216,16 +214,13 @@ class XlsxParserAdapter implements FileParserPort {
           List.of(),
           List.of(
               ImportIssue.error(
-                  0,
-                  null,
-                  "PARSE_ERROR",
-                  "Unexpected error reading the file: " + e.getMessage())));
+                  0, null, "PARSE_ERROR", "Unexpected error reading the file: " + e.getMessage())));
     }
   }
 
   /**
-   * Checks for VBA/macro parts in the OPCPackage.
-   * A file is macro-enabled if it contains a vbaProject.bin part.
+   * Checks for VBA/macro parts in the OPCPackage. A file is macro-enabled if it contains a
+   * vbaProject.bin part.
    */
   private boolean containsMacroParts(OPCPackage pkg) {
     try {

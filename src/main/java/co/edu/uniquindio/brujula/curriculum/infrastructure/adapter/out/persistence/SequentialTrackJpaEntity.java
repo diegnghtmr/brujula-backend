@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * JPA entity mapping to {@code curriculum.sequential_track} (V011) plus
- * {@code gatekeeper_course_id} column (V014).
+ * JPA entity mapping to {@code curriculum.sequential_track} (V011) plus {@code
+ * gatekeeper_course_id} column (V014).
  *
- * <p>Package-private per ARQ-006. Levels are eagerly loaded and ordered by level number.
- * Optimistic locking via {@code @Version} (DB-006/DT-014).
+ * <p>Package-private per ARQ-006. Levels are eagerly loaded and ordered by level number. Optimistic
+ * locking via {@code @Version} (DB-006/DT-014).
  */
 @Entity
 @Table(name = "sequential_track", schema = "curriculum")
@@ -47,19 +47,46 @@ class SequentialTrackJpaEntity {
   @Column(name = "version", nullable = false)
   private long version;
 
-  @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToMany(
+      mappedBy = "track",
+      cascade = CascadeType.ALL,
+      orphanRemoval = true,
+      fetch = FetchType.EAGER)
   @OrderBy("level ASC")
   private List<SequentialTrackLevelJpaEntity> levels = new ArrayList<>();
 
   // JPA requires a no-arg constructor
   protected SequentialTrackJpaEntity() {}
 
-  UUID getId() { return id; }
-  UUID getPlanId() { return planId; }
-  String getKind() { return kind; }
-  String getLabel() { return label; }
-  boolean isConsecutiveSimultaneityAllowed() { return consecutiveSimultaneityAllowed; }
-  UUID getGatekeeperCourseId() { return gatekeeperCourseId; }
-  long getVersion() { return version; }
-  List<SequentialTrackLevelJpaEntity> getLevels() { return levels; }
+  UUID getId() {
+    return id;
+  }
+
+  UUID getPlanId() {
+    return planId;
+  }
+
+  String getKind() {
+    return kind;
+  }
+
+  String getLabel() {
+    return label;
+  }
+
+  boolean isConsecutiveSimultaneityAllowed() {
+    return consecutiveSimultaneityAllowed;
+  }
+
+  UUID getGatekeeperCourseId() {
+    return gatekeeperCourseId;
+  }
+
+  long getVersion() {
+    return version;
+  }
+
+  List<SequentialTrackLevelJpaEntity> getLevels() {
+    return levels;
+  }
 }

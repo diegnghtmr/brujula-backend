@@ -9,8 +9,8 @@ import java.util.UUID;
  * <p>Returns the set of program UUIDs to which the given staff member has an <em>active</em>
  * assignment ({@code active = true} in {@code administration.staff_program_assignment}).
  *
- * <p>Named by need (ARQ-001). Implemented by the persistence adapter in
- * {@code administration.infrastructure.adapter.out.persistence}.
+ * <p>Named by need (ARQ-001). Implemented by the persistence adapter in {@code
+ * administration.infrastructure.adapter.out.persistence}.
  */
 public interface LoadStaffProgramAssignmentsPort {
 

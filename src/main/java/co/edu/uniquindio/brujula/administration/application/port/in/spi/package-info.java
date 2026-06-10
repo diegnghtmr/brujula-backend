@@ -6,18 +6,21 @@
  * administration packages directly. Spring Modulith enforces this boundary.
  *
  * <p>Exposed interfaces:
+ *
  * <ul>
- *   <li>{@link co.edu.uniquindio.brujula.administration.application.port.in.spi.IsStaffAssignedToProgramQuery}
+ *   <li>{@link
+ *       co.edu.uniquindio.brujula.administration.application.port.in.spi.IsStaffAssignedToProgramQuery}
  *       — check whether a staff member has an active assignment to a program
- *   <li>{@link co.edu.uniquindio.brujula.administration.application.port.in.spi.ResolveStaffByEmailQuery}
+ *   <li>{@link
+ *       co.edu.uniquindio.brujula.administration.application.port.in.spi.ResolveStaffByEmailQuery}
  *       — resolve a staff UUID from an institutional email address (actor→StaffAccount seam)
  * </ul>
  *
  * <p>These interfaces use only UUID/primitive/Optional signatures (ARQ-001: no domain types
  * crossing published boundaries).
  *
- * <p>Mirrors {@code audit::spi} pattern. Consumer modules must declare
- * {@code "administration::spi"} in their {@code @ApplicationModule(allowedDependencies)}.
+ * <p>Mirrors {@code audit::spi} pattern. Consumer modules must declare {@code
+ * "administration::spi"} in their {@code @ApplicationModule(allowedDependencies)}.
  */
 @org.springframework.modulith.NamedInterface("spi")
 package co.edu.uniquindio.brujula.administration.application.port.in.spi;

@@ -2,7 +2,6 @@ package co.edu.uniquindio.brujula.offering.application.port.out;
 
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriod;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriodId;
-
 import java.util.List;
 import java.util.Optional;
 

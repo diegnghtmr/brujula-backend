@@ -13,8 +13,8 @@ import java.util.UUID;
  * <p>Edge classification per ADR-F3-004:
  *
  * <ul>
- *   <li>HARD edge = official ({@code inferred=false}) OR {@code confidence=HIGH}. An unmet HARD edge
- *       BLOCKS the target course.
+ *   <li>HARD edge = official ({@code inferred=false}) OR {@code confidence=HIGH}. An unmet HARD
+ *       edge BLOCKS the target course.
  *   <li>SOFT edge = {@code inferred=true} AND {@code confidence ∈ {MEDIUM, LOW, null}}. An unmet
  *       SOFT edge produces an advisory warning but NEVER blocks.
  * </ul>
@@ -27,11 +27,7 @@ import java.util.UUID;
  *     treated as false = official)
  */
 public record CourseRequirementEdge(
-    UUID targetCourseId,
-    UUID requiredCourseId,
-    String type,
-    String confidence,
-    Boolean inferred) {
+    UUID targetCourseId, UUID requiredCourseId, String type, String confidence, Boolean inferred) {
 
   public CourseRequirementEdge {
     Objects.requireNonNull(targetCourseId, "targetCourseId must not be null");

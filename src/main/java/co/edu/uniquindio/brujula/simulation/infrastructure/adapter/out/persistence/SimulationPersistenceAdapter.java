@@ -25,7 +25,8 @@ class SimulationPersistenceAdapter implements LoadSimulationPort, SaveSimulation
   private final SimulationJpaRepository repository;
   private final SimulationPersistenceMapper mapper;
 
-  SimulationPersistenceAdapter(SimulationJpaRepository repository, SimulationPersistenceMapper mapper) {
+  SimulationPersistenceAdapter(
+      SimulationJpaRepository repository, SimulationPersistenceMapper mapper) {
     this.repository = repository;
     this.mapper = mapper;
   }
@@ -42,11 +43,12 @@ class SimulationPersistenceAdapter implements LoadSimulationPort, SaveSimulation
     Pageable pageable = PageRequest.of(page, size);
     Page<SimulationJpaEntity> entityPage;
     if (periodId != null) {
-      entityPage = repository.findByOwnerIdAndStatusAndPeriodId(
-          ownerId, SimulationLifecycle.ACTIVE.name(), periodId, pageable);
+      entityPage =
+          repository.findByOwnerIdAndStatusAndPeriodId(
+              ownerId, SimulationLifecycle.ACTIVE.name(), periodId, pageable);
     } else {
-      entityPage = repository.findByOwnerIdAndStatus(
-          ownerId, SimulationLifecycle.ACTIVE.name(), pageable);
+      entityPage =
+          repository.findByOwnerIdAndStatus(ownerId, SimulationLifecycle.ACTIVE.name(), pageable);
     }
     return entityPage.stream().map(mapper::toDomain).toList();
   }

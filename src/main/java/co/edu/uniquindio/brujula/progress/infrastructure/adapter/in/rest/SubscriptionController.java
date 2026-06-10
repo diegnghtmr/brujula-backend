@@ -41,8 +41,8 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>Name resolution (programName, planName, journeyName): the catalog look-up is a WU3 concern.
  * For WU2, null names are passed through to the response. The generated Subscription model marks
- * them {@code @NotNull} in the OpenAPI spec, so they are rendered as a placeholder string
- * {@code "N/A"} rather than null to avoid a serialisation validation failure.
+ * them {@code @NotNull} in the OpenAPI spec, so they are rendered as a placeholder string {@code
+ * "N/A"} rather than null to avoid a serialisation validation failure.
  *
  * <p>Satisfies: SUB-1..4, CROSS-2, CROSS-3, CROSS-4. ARQ-001.
  */
@@ -78,9 +78,7 @@ class SubscriptionController implements SubscriptionsApi {
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<Subscription> createSubscription(
-      UUID idempotencyKey,
-      String xXsrfToken,
-      SubscriptionCreateRequest subscriptionCreateRequest) {
+      UUID idempotencyKey, String xXsrfToken, SubscriptionCreateRequest subscriptionCreateRequest) {
 
     UUID callerId = resolveCallerId();
     String requestHash = computeHash(subscriptionCreateRequest);
@@ -132,9 +130,7 @@ class SubscriptionController implements SubscriptionsApi {
   @Override
   @PreAuthorize("hasRole('STUDENT')")
   public ResponseEntity<Subscription> updateSubscription(
-      String xXsrfToken,
-      UUID subscriptionId,
-      SubscriptionUpdateRequest subscriptionUpdateRequest) {
+      String xXsrfToken, UUID subscriptionId, SubscriptionUpdateRequest subscriptionUpdateRequest) {
 
     UUID callerId = resolveCallerId();
 
@@ -200,9 +196,10 @@ class SubscriptionController implements SubscriptionsApi {
 
     JourneyRef journeyRef = new JourneyRef(view.referenceJourneyCode(), journeyName);
 
-    OffsetDateTime createdAt = view.createdAt() != null
-        ? view.createdAt().atOffset(ZoneOffset.UTC)
-        : OffsetDateTime.now(ZoneOffset.UTC);
+    OffsetDateTime createdAt =
+        view.createdAt() != null
+            ? view.createdAt().atOffset(ZoneOffset.UTC)
+            : OffsetDateTime.now(ZoneOffset.UTC);
 
     return new Subscription(
         view.id(),
@@ -223,8 +220,8 @@ class SubscriptionController implements SubscriptionsApi {
    * SHA-256 hex digest of the deterministic request body fields.
    *
    * <p>FIX-W5: replaces the previous {@code Objects.hash()} (32-bit int, high collision risk) with
-   * SHA-256 (256-bit), matching the approach in {@code AdministrationController.hashRequest()}.
-   * The input is a stable concatenation of programId + planId + referenceJourneyCode so that two
+   * SHA-256 (256-bit), matching the approach in {@code AdministrationController.hashRequest()}. The
+   * input is a stable concatenation of programId + planId + referenceJourneyCode so that two
    * distinct bodies always produce distinct hash values.
    */
   private String computeHash(SubscriptionCreateRequest req) {

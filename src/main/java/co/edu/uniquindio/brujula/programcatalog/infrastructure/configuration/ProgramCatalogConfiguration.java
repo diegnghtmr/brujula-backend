@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
  * explicit wiring (ARQ-002).
  *
  * <p>Wired services (read-only catalog query use cases — Phase 3 WU4):
+ *
  * <ul>
  *   <li>{@link ListProgramsService} — CAT-001 list programs with status filter + pagination
  *   <li>{@link GetProgramService} — CAT-001 get single program by ID

@@ -9,7 +9,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
-
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -62,31 +61,74 @@ class CourseOfferingJpaEntity {
 
   protected CourseOfferingJpaEntity() {}
 
-  UUID getId() { return id; }
-  void setId(UUID id) { this.id = id; }
+  UUID getId() {
+    return id;
+  }
 
-  UUID getCourseId() { return courseId; }
-  void setCourseId(UUID courseId) { this.courseId = courseId; }
+  void setId(UUID id) {
+    this.id = id;
+  }
 
-  String getCourseName() { return courseName; }
-  void setCourseName(String courseName) { this.courseName = courseName; }
+  UUID getCourseId() {
+    return courseId;
+  }
 
-  UUID getProgramId() { return programId; }
-  void setProgramId(UUID programId) { this.programId = programId; }
+  void setCourseId(UUID courseId) {
+    this.courseId = courseId;
+  }
 
-  UUID getPeriodId() { return periodId; }
-  void setPeriodId(UUID periodId) { this.periodId = periodId; }
+  String getCourseName() {
+    return courseName;
+  }
 
-  String getStatus() { return status; }
-  void setStatus(String status) { this.status = status; }
+  void setCourseName(String courseName) {
+    this.courseName = courseName;
+  }
 
-  String getNotes() { return notes; }
-  void setNotes(String notes) { this.notes = notes; }
+  UUID getProgramId() {
+    return programId;
+  }
 
-  long getVersion() { return version; }
-  void setVersion(long version) { this.version = version; }
+  void setProgramId(UUID programId) {
+    this.programId = programId;
+  }
 
-  Set<ScheduleOptionJpaEntity> getScheduleOptions() { return scheduleOptions; }
+  UUID getPeriodId() {
+    return periodId;
+  }
+
+  void setPeriodId(UUID periodId) {
+    this.periodId = periodId;
+  }
+
+  String getStatus() {
+    return status;
+  }
+
+  void setStatus(String status) {
+    this.status = status;
+  }
+
+  String getNotes() {
+    return notes;
+  }
+
+  void setNotes(String notes) {
+    this.notes = notes;
+  }
+
+  long getVersion() {
+    return version;
+  }
+
+  void setVersion(long version) {
+    this.version = version;
+  }
+
+  Set<ScheduleOptionJpaEntity> getScheduleOptions() {
+    return scheduleOptions;
+  }
+
   void setScheduleOptions(Set<ScheduleOptionJpaEntity> scheduleOptions) {
     this.scheduleOptions = scheduleOptions;
   }

@@ -8,9 +8,9 @@ import java.util.UUID;
  *
  * <p>Sourced from {@code CreditLimitPort} (→ administration::api). Pure value record (ARQ-002).
  *
- * @param programId   the program UUID
+ * @param programId the program UUID
  * @param programName human-readable program name (for metadata in notices)
- * @param limit       maximum allowed credits (from administration::api, default 23)
+ * @param limit maximum allowed credits (from administration::api, default 23)
  */
 public record ProgramCreditLimit(UUID programId, String programName, int limit) {
 

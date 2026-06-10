@@ -21,11 +21,9 @@ import co.edu.uniquindio.brujula.offering.application.port.in.GetOfferingQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListOfferingsQuery;
 import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.offering.domain.OfferingNotFoundException;
-
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +38,7 @@ import org.springframework.web.context.WebApplicationContext;
  * WU1-TDD: REST slice tests for offering endpoints.
  *
  * <p>Tests:
+ *
  * <ul>
  *   <li>GET /periods returns 200 with array
  *   <li>GET /offerings missing periodId returns 400
@@ -67,16 +66,12 @@ class OfferingControllerSliceTest extends AbstractPostgresIntegrationTest {
   void getPeriodsReturns200WithArray() throws Exception {
     when(listPeriodsQuery.listPeriods(isNull()))
         .thenReturn(
-            List.of(
-                new AcademicPeriodView(
-                    UUID.randomUUID(), "2026-2", null, null, "ACTIVE", 0L)));
+            List.of(new AcademicPeriodView(UUID.randomUUID(), "2026-2", null, null, "ACTIVE", 0L)));
 
     mockMvc
         .perform(
             get("/periods")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].name").value("2026-2"));
@@ -87,9 +82,7 @@ class OfferingControllerSliceTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/offerings")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isBadRequest());
   }
 
@@ -102,9 +95,7 @@ class OfferingControllerSliceTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/offerings/{id}", unknownId)
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isNotFound());
   }
 
@@ -133,9 +124,7 @@ class OfferingControllerSliceTest extends AbstractPostgresIntegrationTest {
         .perform(
             get("/offerings")
                 .param("periodId", periodId.toString())
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].status").value("PRELIMINARY"));
   }
@@ -154,24 +143,27 @@ class OfferingControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID periodId = UUID.randomUUID();
 
     when(getOfferingQuery.getOffering(offeringId))
-        .thenReturn(new OfferingDetailView(
-            offeringId,
-            courseId,
-            "Cálculo Diferencial",
-            programId,
-            periodId,
-            "FINAL",
-            null,
-            0L,
-            List.of(new ScheduleOptionView(
-                optionId,
+        .thenReturn(
+            new OfferingDetailView(
                 offeringId,
-                "Grupo A",
-                "DIURNA",
-                6.0,
+                courseId,
+                "Cálculo Diferencial",
+                programId,
+                periodId,
+                "FINAL",
+                null,
                 0L,
-                List.of(new ScheduleSessionView(
-                    sessionId, "MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)))))));
+                List.of(
+                    new ScheduleOptionView(
+                        optionId,
+                        offeringId,
+                        "Grupo A",
+                        "DIURNA",
+                        6.0,
+                        0L,
+                        List.of(
+                            new ScheduleSessionView(
+                                sessionId, "MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)))))));
 
     mockMvc
         .perform(
@@ -197,24 +189,27 @@ class OfferingControllerSliceTest extends AbstractPostgresIntegrationTest {
 
     // version=3 simulates an entity that has been updated 3 times
     when(getOfferingQuery.getOffering(offeringId))
-        .thenReturn(new OfferingDetailView(
-            offeringId,
-            courseId,
-            "Programación III",
-            programId,
-            periodId,
-            "FINAL",
-            null,
-            3L,  // non-zero version
-            List.of(new ScheduleOptionView(
-                optionId,
+        .thenReturn(
+            new OfferingDetailView(
                 offeringId,
-                "Grupo A",
-                "DIURNA",
-                4.0,
-                2L,  // non-zero schedule option version
-                List.of(new ScheduleSessionView(
-                    sessionId, "MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)))))));
+                courseId,
+                "Programación III",
+                programId,
+                periodId,
+                "FINAL",
+                null,
+                3L, // non-zero version
+                List.of(
+                    new ScheduleOptionView(
+                        optionId,
+                        offeringId,
+                        "Grupo A",
+                        "DIURNA",
+                        4.0,
+                        2L, // non-zero schedule option version
+                        List.of(
+                            new ScheduleSessionView(
+                                sessionId, "MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)))))));
 
     mockMvc
         .perform(
@@ -239,24 +234,30 @@ class OfferingControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID periodId = UUID.randomUUID();
 
     when(getOfferingQuery.getOffering(offeringId))
-        .thenReturn(new OfferingDetailView(
-            offeringId,
-            courseId,
-            "Estructuras de Datos",
-            programId,
-            periodId,
-            "FINAL",
-            null,
-            0L,
-            List.of(new ScheduleOptionView(
-                optionId,
-                offeringId,   // offeringId populated
-                "Grupo A",
-                "NOCTURNA",
-                3.0,
+        .thenReturn(
+            new OfferingDetailView(
+                offeringId,
+                courseId,
+                "Estructuras de Datos",
+                programId,
+                periodId,
+                "FINAL",
+                null,
                 0L,
-                List.of(new ScheduleSessionView(
-                    sessionId, "TUESDAY", LocalTime.of(18, 0), LocalTime.of(19, 30)))))));
+                List.of(
+                    new ScheduleOptionView(
+                        optionId,
+                        offeringId, // offeringId populated
+                        "Grupo A",
+                        "NOCTURNA",
+                        3.0,
+                        0L,
+                        List.of(
+                            new ScheduleSessionView(
+                                sessionId,
+                                "TUESDAY",
+                                LocalTime.of(18, 0),
+                                LocalTime.of(19, 30)))))));
 
     mockMvc
         .perform(

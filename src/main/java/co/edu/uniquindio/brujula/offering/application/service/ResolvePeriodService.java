@@ -6,7 +6,6 @@ import co.edu.uniquindio.brujula.offering.application.port.out.LoadPeriodPort;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriod;
 import co.edu.uniquindio.brujula.offering.domain.AcademicPeriodId;
 import co.edu.uniquindio.brujula.offering.domain.PeriodNotFoundException;
-
 import java.util.UUID;
 
 /**
@@ -24,9 +23,10 @@ public class ResolvePeriodService implements ResolvePeriodQuery {
 
   @Override
   public AcademicPeriodView resolvePeriod(UUID periodId) {
-    AcademicPeriod period = loadPeriodPort
-        .findById(new AcademicPeriodId(periodId))
-        .orElseThrow(() -> new PeriodNotFoundException(new AcademicPeriodId(periodId)));
+    AcademicPeriod period =
+        loadPeriodPort
+            .findById(new AcademicPeriodId(periodId))
+            .orElseThrow(() -> new PeriodNotFoundException(new AcademicPeriodId(periodId)));
     return new AcademicPeriodView(
         period.getId().value(),
         period.getName(),

@@ -63,8 +63,7 @@ class GradeTest {
 
   @Test
   void null_grade_value_is_rejected() {
-    assertThatThrownBy(() -> new Grade(null))
-        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> new Grade(null)).isInstanceOf(NullPointerException.class);
   }
 
   @Test

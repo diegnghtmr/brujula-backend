@@ -51,8 +51,9 @@ class DeleteCourseAttemptServiceTest {
     loadSubscriptionPort = mock(LoadSubscriptionPort.class);
     saveCourseAttemptPort = mock(SaveCourseAttemptPort.class);
     auditRecorder = mock(AuditRecorder.class);
-    sut = new DeleteCourseAttemptService(
-        loadCourseAttemptPort, loadSubscriptionPort, saveCourseAttemptPort, auditRecorder);
+    sut =
+        new DeleteCourseAttemptService(
+            loadCourseAttemptPort, loadSubscriptionPort, saveCourseAttemptPort, auditRecorder);
   }
 
   @Test

@@ -18,7 +18,6 @@ import co.edu.uniquindio.brujula.curriculum.domain.CourseId;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseNotFoundException;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseStatus;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseType;
-
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,9 +28,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 /**
  * TDD RED → GREEN: unit tests for {@link ArchiveCourseService}.
  *
- * <p>Covers: successful archive transitions status, audit recorded; not found throws;
- * stale version propagates OptimisticLockingFailureException.
- * WU5 – T5.1 (CUR-002, SC-009-D).
+ * <p>Covers: successful archive transitions status, audit recorded; not found throws; stale version
+ * propagates OptimisticLockingFailureException. WU5 – T5.1 (CUR-002, SC-009-D).
  */
 class ArchiveCourseServiceTest {
 
@@ -53,16 +51,34 @@ class ArchiveCourseServiceTest {
 
   @Test
   void archives_course_and_records_audit() {
-    Course existing = Course.reconstitute(
-        courseId, planId, programId, null,
-        "Cálculo I", CourseType.REQUIRED, 4, 4, Collections.emptyList(),
-        CourseStatus.ACTIVE, 1L);
+    Course existing =
+        Course.reconstitute(
+            courseId,
+            planId,
+            programId,
+            null,
+            "Cálculo I",
+            CourseType.REQUIRED,
+            4,
+            4,
+            Collections.emptyList(),
+            CourseStatus.ACTIVE,
+            1L);
     when(saveCoursePort.findCurrentById(courseId)).thenReturn(Optional.of(existing));
 
-    Course archived = Course.reconstitute(
-        courseId, planId, programId, null,
-        "Cálculo I", CourseType.REQUIRED, 4, 4, Collections.emptyList(),
-        CourseStatus.ARCHIVED, 2L);
+    Course archived =
+        Course.reconstitute(
+            courseId,
+            planId,
+            programId,
+            null,
+            "Cálculo I",
+            CourseType.REQUIRED,
+            4,
+            4,
+            Collections.emptyList(),
+            CourseStatus.ARCHIVED,
+            2L);
     when(saveCoursePort.save(any(Course.class))).thenReturn(archived);
 
     ArchiveCourseCommand command = new ArchiveCourseCommand(actorId, courseId.value(), 1L);
@@ -84,10 +100,19 @@ class ArchiveCourseServiceTest {
 
   @Test
   void stale_version_propagates_optimistic_lock_exception() {
-    Course existing = Course.reconstitute(
-        courseId, planId, programId, null,
-        "Cálculo I", CourseType.REQUIRED, 4, 4, Collections.emptyList(),
-        CourseStatus.ACTIVE, 3L);
+    Course existing =
+        Course.reconstitute(
+            courseId,
+            planId,
+            programId,
+            null,
+            "Cálculo I",
+            CourseType.REQUIRED,
+            4,
+            4,
+            Collections.emptyList(),
+            CourseStatus.ACTIVE,
+            3L);
     when(saveCoursePort.findCurrentById(courseId)).thenReturn(Optional.of(existing));
     when(saveCoursePort.save(any(Course.class)))
         .thenThrow(new OptimisticLockingFailureException("Version conflict"));

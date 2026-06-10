@@ -6,12 +6,12 @@ import java.util.UUID;
 /**
  * Filter and pagination criteria for listing offerings.
  *
- * @param periodId   required — filter offerings by period
- * @param programId  optional — filter by program
- * @param courseId   optional — filter by course (reserved for future use)
- * @param status     optional — filter by status string
- * @param page       zero-based page number (≥ 0)
- * @param size       page size (1–100)
+ * @param periodId required — filter offerings by period
+ * @param programId optional — filter by program
+ * @param courseId optional — filter by course (reserved for future use)
+ * @param status optional — filter by status string
+ * @param page zero-based page number (≥ 0)
+ * @param size page size (1–100)
  * @param callerRole optional — role of the caller (STAFF/ADMIN see DRAFT; STUDENT does not)
  */
 public record ListOfferingsCriteria(
@@ -24,8 +24,8 @@ public record ListOfferingsCriteria(
     String callerRole) {
 
   /** Backward-compatible constructor without callerRole (defaults to null = student-visible). */
-  public ListOfferingsCriteria(UUID periodId, UUID programId, UUID courseId, String status,
-      int page, int size) {
+  public ListOfferingsCriteria(
+      UUID periodId, UUID programId, UUID courseId, String status, int page, int size) {
     this(periodId, programId, courseId, status, page, size, null);
   }
 

@@ -68,8 +68,10 @@ class SubscriptionPersistenceAdapterTest extends AbstractPostgresIntegrationTest
     SubscriptionId id1 = SubscriptionId.generate();
     SubscriptionId id2 = SubscriptionId.generate();
 
-    Subscription active = Subscription.create(id1, uniqueUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
-    Subscription deleted = Subscription.create(id2, uniqueUserId, UUID.randomUUID(), UUID.randomUUID(), "NOCTURNA");
+    Subscription active =
+        Subscription.create(id1, uniqueUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription deleted =
+        Subscription.create(id2, uniqueUserId, UUID.randomUUID(), UUID.randomUUID(), "NOCTURNA");
     deleted.softDelete();
 
     saveSubscriptionPort.save(active);
@@ -88,8 +90,10 @@ class SubscriptionPersistenceAdapterTest extends AbstractPostgresIntegrationTest
     SubscriptionId id1 = SubscriptionId.generate();
     SubscriptionId id2 = SubscriptionId.generate();
 
-    saveSubscriptionPort.save(Subscription.create(id1, uniqueUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA"));
-    saveSubscriptionPort.save(Subscription.create(id2, uniqueUserId, UUID.randomUUID(), UUID.randomUUID(), "NOCTURNA"));
+    saveSubscriptionPort.save(
+        Subscription.create(id1, uniqueUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA"));
+    saveSubscriptionPort.save(
+        Subscription.create(id2, uniqueUserId, UUID.randomUUID(), UUID.randomUUID(), "NOCTURNA"));
 
     int count = loadSubscriptionPort.countActiveByUserId(uniqueUserId);
 

@@ -10,8 +10,8 @@ import java.util.UUID;
  *
  * @param requiredCourseId the prerequisite course UUID
  * @param type the requirement type (e.g. COURSE_PASSED, SEQUENCE)
- * @param advisory true if this is a soft/advisory warning (inferred + MEDIUM/LOW confidence);
- *     false if this is a blocking requirement (HARD edge)
+ * @param advisory true if this is a soft/advisory warning (inferred + MEDIUM/LOW confidence); false
+ *     if this is a blocking requirement (HARD edge)
  */
 public record UnmetRequirement(UUID requiredCourseId, String type, boolean advisory) {
 

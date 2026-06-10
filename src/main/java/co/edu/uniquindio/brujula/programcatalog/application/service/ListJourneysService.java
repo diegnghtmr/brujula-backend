@@ -9,9 +9,8 @@ import java.util.List;
 /**
  * Use case implementation: list all active journeys.
  *
- * <p>Delegates to {@link LoadJourneyPort#loadAllActive()} — the port is responsible for
- * returning only active journeys. No Spring annotations — wired via infrastructure configuration
- * (ARQ-002).
+ * <p>Delegates to {@link LoadJourneyPort#loadAllActive()} — the port is responsible for returning
+ * only active journeys. No Spring annotations — wired via infrastructure configuration (ARQ-002).
  */
 public class ListJourneysService implements ListJourneysQuery {
 
@@ -24,9 +23,7 @@ public class ListJourneysService implements ListJourneysQuery {
   @Override
   public List<JourneyRef> listJourneys() {
     List<Journey> journeys = loadJourneyPort.loadAllActive();
-    return journeys.stream()
-        .map(this::toRef)
-        .toList();
+    return journeys.stream().map(this::toRef).toList();
   }
 
   // ---------------------------------------------------------------------------
@@ -34,9 +31,6 @@ public class ListJourneysService implements ListJourneysQuery {
   // ---------------------------------------------------------------------------
 
   private JourneyRef toRef(Journey journey) {
-    return new JourneyRef(
-        journey.id().value(),
-        journey.code(),
-        journey.name());
+    return new JourneyRef(journey.id().value(), journey.code(), journey.name());
   }
 }

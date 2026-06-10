@@ -54,14 +54,17 @@ class ResolveStaffByEmailServiceTest {
     assertThat(result).isEmpty();
   }
 
-  /** Inactive staff account is still resolved (resolution is ID lookup; authorization is caller's
-   * responsibility to check status if needed). */
+  /**
+   * Inactive staff account is still resolved (resolution is ID lookup; authorization is caller's
+   * responsibility to check status if needed).
+   */
   @Test
   void inactive_staff_account_still_resolves() {
     String email = "inactive@uniquindio.edu.co";
     UUID staffId = UUID.randomUUID();
     StaffAccount account =
-        StaffAccount.reconstitute(staffId, email, "Inactive Staff", StaffAccountStatus.INACTIVE, 1L);
+        StaffAccount.reconstitute(
+            staffId, email, "Inactive Staff", StaffAccountStatus.INACTIVE, 1L);
 
     when(loadStaffPort.findByEmail(email)).thenReturn(Optional.of(account));
 
@@ -69,9 +72,7 @@ class ResolveStaffByEmailServiceTest {
     assertThat(result).isPresent().contains(staffId);
   }
 
-  /**
-   * WARNING-1 closure: resolveActiveStaffId returns the UUID for an ACTIVE account.
-   */
+  /** WARNING-1 closure: resolveActiveStaffId returns the UUID for an ACTIVE account. */
   @Test
   void resolve_active_staff_id_returns_uuid_for_active_account() {
     String email = "active@uniquindio.edu.co";
@@ -95,7 +96,8 @@ class ResolveStaffByEmailServiceTest {
     String email = "inactive@uniquindio.edu.co";
     UUID staffId = UUID.randomUUID();
     StaffAccount account =
-        StaffAccount.reconstitute(staffId, email, "Inactive Staff", StaffAccountStatus.INACTIVE, 1L);
+        StaffAccount.reconstitute(
+            staffId, email, "Inactive Staff", StaffAccountStatus.INACTIVE, 1L);
 
     when(loadStaffPort.findByEmail(email)).thenReturn(Optional.of(account));
 

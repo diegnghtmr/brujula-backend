@@ -4,11 +4,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * DegreeWorkModality — aggregate representing a degree work (trabajo de grado) modality
- * option for a study plan.
+ * DegreeWorkModality — aggregate representing a degree work (trabajo de grado) modality option for
+ * a study plan.
  *
- * <p>Examples: Aplicación, Investigación, Pasantía. Each is a distinct modality row
- * associated with a study plan ({@code plan_id}).
+ * <p>Examples: Aplicación, Investigación, Pasantía. Each is a distinct modality row associated with
+ * a study plan ({@code plan_id}).
  *
  * <p>Credits and curricularWeeklyHours are nullable (some modalities are credit-free).
  *
@@ -19,7 +19,7 @@ public final class DegreeWorkModality {
   private final DegreeWorkModalityId id;
   private final UUID planId;
   private final String name;
-  private final Integer credits;              // nullable
+  private final Integer credits; // nullable
   private final Integer curricularWeeklyHours; // nullable
   private final DegreeWorkModalityStatus status;
   private final long version;
@@ -41,9 +41,7 @@ public final class DegreeWorkModality {
     this.version = version;
   }
 
-  /**
-   * Reconstitute a DegreeWorkModality from persistence (all fields explicit; no default logic).
-   */
+  /** Reconstitute a DegreeWorkModality from persistence (all fields explicit; no default logic). */
   public static DegreeWorkModality reconstitute(
       DegreeWorkModalityId id,
       UUID planId,
@@ -58,25 +56,43 @@ public final class DegreeWorkModality {
       throw new IllegalArgumentException("name must not be null or blank");
     }
     Objects.requireNonNull(status, "status must not be null");
-    return new DegreeWorkModality(id, planId, name, credits, curricularWeeklyHours, status, version);
+    return new DegreeWorkModality(
+        id, planId, name, credits, curricularWeeklyHours, status, version);
   }
 
   // ---------------------------------------------------------------------------
   // Accessors
   // ---------------------------------------------------------------------------
 
-  public DegreeWorkModalityId id() { return id; }
-  public UUID planId() { return planId; }
-  public String name() { return name; }
+  public DegreeWorkModalityId id() {
+    return id;
+  }
+
+  public UUID planId() {
+    return planId;
+  }
+
+  public String name() {
+    return name;
+  }
 
   /** Nullable: credits for this modality (null means not defined). */
-  public Integer credits() { return credits; }
+  public Integer credits() {
+    return credits;
+  }
 
   /** Nullable: weekly curricular hours (null means not defined). */
-  public Integer curricularWeeklyHours() { return curricularWeeklyHours; }
+  public Integer curricularWeeklyHours() {
+    return curricularWeeklyHours;
+  }
 
-  public DegreeWorkModalityStatus status() { return status; }
-  public long version() { return version; }
+  public DegreeWorkModalityStatus status() {
+    return status;
+  }
+
+  public long version() {
+    return version;
+  }
 
   // ---------------------------------------------------------------------------
   // Equality (identity-based)

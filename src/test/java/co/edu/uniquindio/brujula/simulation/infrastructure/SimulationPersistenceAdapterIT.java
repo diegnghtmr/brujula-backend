@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * WU3 integration tests for SimulationPersistenceAdapter.
  *
- * <p>Verifies against Flyway V016+V017+V018 migrated PostgreSQL (Testcontainers).
- * Tests: save/load, soft-delete, list-by-owner, uuid[] program_ids round-trip.
+ * <p>Verifies against Flyway V016+V017+V018 migrated PostgreSQL (Testcontainers). Tests: save/load,
+ * soft-delete, list-by-owner, uuid[] program_ids round-trip.
  */
 @SpringBootTest
 @Transactional
@@ -36,8 +36,9 @@ class SimulationPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void save_and_load_by_id() {
-    Simulation sim = Simulation.create(
-        SimulationId.generate(), ownerId, "IT Simulation", periodId, List.of(programId1));
+    Simulation sim =
+        Simulation.create(
+            SimulationId.generate(), ownerId, "IT Simulation", periodId, List.of(programId1));
     Simulation saved = saveSimulationPort.save(sim);
 
     Optional<Simulation> loaded = loadSimulationPort.loadById(saved.getId().value());
@@ -51,9 +52,13 @@ class SimulationPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void save_with_two_program_ids_round_trips() {
-    Simulation sim = Simulation.create(
-        SimulationId.generate(), ownerId, "Two Programs", periodId,
-        List.of(programId1, programId2));
+    Simulation sim =
+        Simulation.create(
+            SimulationId.generate(),
+            ownerId,
+            "Two Programs",
+            periodId,
+            List.of(programId1, programId2));
     Simulation saved = saveSimulationPort.save(sim);
 
     Optional<Simulation> loaded = loadSimulationPort.loadById(saved.getId().value());
@@ -64,12 +69,17 @@ class SimulationPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
   @Test
   void list_by_owner_returns_only_active() {
     // Create two simulations for owner
-    Simulation s1 = Simulation.create(
-        SimulationId.generate(), ownerId, "Sim A", periodId, List.of(programId1));
-    Simulation s2 = Simulation.create(
-        SimulationId.generate(), ownerId, "Sim B", periodId, List.of(programId2));
-    Simulation s3 = Simulation.create(
-        SimulationId.generate(), UUID.randomUUID(), "Other owner", periodId, List.of(programId1));
+    Simulation s1 =
+        Simulation.create(SimulationId.generate(), ownerId, "Sim A", periodId, List.of(programId1));
+    Simulation s2 =
+        Simulation.create(SimulationId.generate(), ownerId, "Sim B", periodId, List.of(programId2));
+    Simulation s3 =
+        Simulation.create(
+            SimulationId.generate(),
+            UUID.randomUUID(),
+            "Other owner",
+            periodId,
+            List.of(programId1));
     saveSimulationPort.save(s1);
     saveSimulationPort.save(s2);
     saveSimulationPort.save(s3);
@@ -81,8 +91,9 @@ class SimulationPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void soft_delete_hides_simulation_from_list() {
-    Simulation sim = Simulation.create(
-        SimulationId.generate(), ownerId, "To Delete", periodId, List.of(programId1));
+    Simulation sim =
+        Simulation.create(
+            SimulationId.generate(), ownerId, "To Delete", periodId, List.of(programId1));
     Simulation saved = saveSimulationPort.save(sim);
 
     // Soft-delete
@@ -97,10 +108,12 @@ class SimulationPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
   @Test
   void list_by_owner_with_period_filter() {
     UUID otherPeriodId = UUID.randomUUID();
-    Simulation s1 = Simulation.create(
-        SimulationId.generate(), ownerId, "Period Match", periodId, List.of(programId1));
-    Simulation s2 = Simulation.create(
-        SimulationId.generate(), ownerId, "Other Period", otherPeriodId, List.of(programId1));
+    Simulation s1 =
+        Simulation.create(
+            SimulationId.generate(), ownerId, "Period Match", periodId, List.of(programId1));
+    Simulation s2 =
+        Simulation.create(
+            SimulationId.generate(), ownerId, "Other Period", otherPeriodId, List.of(programId1));
     saveSimulationPort.save(s1);
     saveSimulationPort.save(s2);
 
@@ -111,10 +124,12 @@ class SimulationPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void count_by_owner() {
-    saveSimulationPort.save(Simulation.create(
-        SimulationId.generate(), ownerId, "Sim 1", periodId, List.of(programId1)));
-    saveSimulationPort.save(Simulation.create(
-        SimulationId.generate(), ownerId, "Sim 2", periodId, List.of(programId1)));
+    saveSimulationPort.save(
+        Simulation.create(
+            SimulationId.generate(), ownerId, "Sim 1", periodId, List.of(programId1)));
+    saveSimulationPort.save(
+        Simulation.create(
+            SimulationId.generate(), ownerId, "Sim 2", periodId, List.of(programId1)));
 
     long count = loadSimulationPort.countByOwner(ownerId, null);
     assertThat(count).isEqualTo(2);

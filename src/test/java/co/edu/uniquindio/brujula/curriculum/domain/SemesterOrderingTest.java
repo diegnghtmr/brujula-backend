@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
  * WU1-3.3 RED: Semester ordering invariant tests.
  *
  * <p>CUR-004 scenarios:
+ *
  * <ul>
  *   <li>Forward dependency (prereq in later semester) → SemesterOrderingViolationException.
  *   <li>Backward (prereq in earlier semester) → accepted.
@@ -39,13 +40,35 @@ class SemesterOrderingTest {
     CourseId idA = CourseId.generate();
     CourseId idB = CourseId.generate();
 
-    Course courseA = Course.create(idA, planId, programId, "Programación I", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 3)));
-    Course courseB = Course.create(idB, planId, programId, "Programación II", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 5)));
+    Course courseA =
+        Course.create(
+            idA,
+            planId,
+            programId,
+            "Programación I",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 3)));
+    Course courseB =
+        Course.create(
+            idB,
+            planId,
+            programId,
+            "Programación II",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 5)));
 
-    CourseRequirement req = CourseRequirement.coursePassed(
-        CourseRequirementId.generate(), idB.value(), idA.value(), false, Confidence.HIGH, false);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            CourseRequirementId.generate(),
+            idB.value(),
+            idA.value(),
+            false,
+            Confidence.HIGH,
+            false);
 
     assertThatCode(() -> service.validateSemesterOrdering(List.of(req), List.of(courseA, courseB)))
         .doesNotThrowAnyException();
@@ -57,13 +80,29 @@ class SemesterOrderingTest {
     CourseId idA = CourseId.generate();
     CourseId idB = CourseId.generate();
 
-    Course courseA = Course.create(idA, planId, programId, "Álgebra Lineal", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 4)));
-    Course courseB = Course.create(idB, planId, programId, "Cálculo III", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 4)));
+    Course courseA =
+        Course.create(
+            idA,
+            planId,
+            programId,
+            "Álgebra Lineal",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 4)));
+    Course courseB =
+        Course.create(
+            idB,
+            planId,
+            programId,
+            "Cálculo III",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 4)));
 
-    CourseRequirement req = CourseRequirement.sequence(
-        CourseRequirementId.generate(), idB.value(), idA.value(), true);
+    CourseRequirement req =
+        CourseRequirement.sequence(CourseRequirementId.generate(), idB.value(), idA.value(), true);
 
     assertThatCode(() -> service.validateSemesterOrdering(List.of(req), List.of(courseA, courseB)))
         .doesNotThrowAnyException();
@@ -78,16 +117,39 @@ class SemesterOrderingTest {
     CourseId idC = CourseId.generate();
     CourseId idD = CourseId.generate();
 
-    Course courseC = Course.create(idC, planId, programId, "Ingeniería Económica", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 7)));
-    Course courseD = Course.create(idD, planId, programId, "Formulación de Proyectos", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 5)));
+    Course courseC =
+        Course.create(
+            idC,
+            planId,
+            programId,
+            "Ingeniería Económica",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 7)));
+    Course courseD =
+        Course.create(
+            idD,
+            planId,
+            programId,
+            "Formulación de Proyectos",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 5)));
 
     // D (sem 5) requires C (sem 7): C is in semester 7 > D's semester 5 → forward dependency!
-    CourseRequirement req = CourseRequirement.coursePassed(
-        CourseRequirementId.generate(), idD.value(), idC.value(), false, Confidence.MEDIUM, true);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            CourseRequirementId.generate(),
+            idD.value(),
+            idC.value(),
+            false,
+            Confidence.MEDIUM,
+            true);
 
-    assertThatThrownBy(() -> service.validateSemesterOrdering(List.of(req), List.of(courseC, courseD)))
+    assertThatThrownBy(
+            () -> service.validateSemesterOrdering(List.of(req), List.of(courseC, courseD)))
         .isInstanceOf(SemesterOrderingViolationException.class);
   }
 
@@ -98,14 +160,31 @@ class SemesterOrderingTest {
     CourseId idA = CourseId.generate();
     CourseId idB = CourseId.generate();
 
-    Course courseA = Course.create(idA, planId, programId, "Matemáticas I", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 3)));
-    Course courseB = Course.create(idB, planId, programId, "Física I", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("NOCTURNA", 2)));
+    Course courseA =
+        Course.create(
+            idA,
+            planId,
+            programId,
+            "Matemáticas I",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 3)));
+    Course courseB =
+        Course.create(
+            idB,
+            planId,
+            programId,
+            "Física I",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("NOCTURNA", 2)));
 
     // B requires A, but different journeys → NOT enforced
-    CourseRequirement req = CourseRequirement.coursePassed(
-        CourseRequirementId.generate(), idB.value(), idA.value(), false, Confidence.LOW, true);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            CourseRequirementId.generate(), idB.value(), idA.value(), false, Confidence.LOW, true);
 
     assertThatCode(() -> service.validateSemesterOrdering(List.of(req), List.of(courseA, courseB)))
         .doesNotThrowAnyException();
@@ -119,18 +198,41 @@ class SemesterOrderingTest {
     // Target course B has ONLY NOCTURNA entry (NO DIURNA entry).
     // Per CUR-004: cross-journey / missing-journey comparisons are NOT enforced.
     // The check silently skips → NO SemesterOrderingViolationException is thrown.
-    // This test LOCKS IN the silent-skip contract so a future change that accidentally throws fails.
+    // This test LOCKS IN the silent-skip contract so a future change that accidentally throws
+    // fails.
     CourseId idA = CourseId.generate();
     CourseId idB = CourseId.generate();
 
-    Course courseA = Course.create(idA, planId, programId, "Ingeniería Económica", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 7)));
-    Course courseB = Course.create(idB, planId, programId, "Formulación de Proyectos", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("NOCTURNA", 2))); // NO DIURNA entry
+    Course courseA =
+        Course.create(
+            idA,
+            planId,
+            programId,
+            "Ingeniería Económica",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 7)));
+    Course courseB =
+        Course.create(
+            idB,
+            planId,
+            programId,
+            "Formulación de Proyectos",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("NOCTURNA", 2))); // NO DIURNA entry
 
     // B requires A (A sem 7 DIURNA, B has no DIURNA entry) → silently skips, no violation
-    CourseRequirement req = CourseRequirement.coursePassed(
-        CourseRequirementId.generate(), idB.value(), idA.value(), false, Confidence.HIGH, false);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            CourseRequirementId.generate(),
+            idB.value(),
+            idA.value(),
+            false,
+            Confidence.HIGH,
+            false);
 
     assertThatCode(() -> service.validateSemesterOrdering(List.of(req), List.of(courseA, courseB)))
         .doesNotThrowAnyException();
@@ -141,13 +243,35 @@ class SemesterOrderingTest {
     CourseId idA = CourseId.generate();
     CourseId idB = CourseId.generate();
 
-    Course courseA = Course.create(idA, planId, programId, "Lógica", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 1)));
-    Course courseB = Course.create(idB, planId, programId, "Programación I", CourseType.REQUIRED, 3, 4,
-        List.of(new RecommendedSemester("DIURNA", 2)));
+    Course courseA =
+        Course.create(
+            idA,
+            planId,
+            programId,
+            "Lógica",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 1)));
+    Course courseB =
+        Course.create(
+            idB,
+            planId,
+            programId,
+            "Programación I",
+            CourseType.REQUIRED,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 2)));
 
-    CourseRequirement req = CourseRequirement.coursePassed(
-        CourseRequirementId.generate(), idB.value(), idA.value(), false, Confidence.HIGH, false);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            CourseRequirementId.generate(),
+            idB.value(),
+            idA.value(),
+            false,
+            Confidence.HIGH,
+            false);
 
     PrerequisiteGraph graph = new PrerequisiteGraph();
     graph.addEdge(idA.value(), idB.value());

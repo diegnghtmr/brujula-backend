@@ -2,6 +2,7 @@
  * Curriculum module — courses, prerequisites, electives, and degree requirements.
  *
  * <p>Allowed outbound dependencies:
+ *
  * <ul>
  *   <li>{@code sharedkernel} — shared kernel interfaces
  *   <li>{@code audit::spi} — AuditRecorder SPI interface (write services)
@@ -13,5 +14,15 @@
  * </ul>
  */
 @org.springframework.modulith.ApplicationModule(
-    allowedDependencies = {"sharedkernel", "audit::spi", "audit::spi-dto", "programcatalog", "programcatalog::api", "programcatalog::api-dto", "identity::api", "identity::api-dto", "generated"})
+    allowedDependencies = {
+      "sharedkernel",
+      "audit::spi",
+      "audit::spi-dto",
+      "programcatalog",
+      "programcatalog::api",
+      "programcatalog::api-dto",
+      "identity::api",
+      "identity::api-dto",
+      "generated"
+    })
 package co.edu.uniquindio.brujula.curriculum;

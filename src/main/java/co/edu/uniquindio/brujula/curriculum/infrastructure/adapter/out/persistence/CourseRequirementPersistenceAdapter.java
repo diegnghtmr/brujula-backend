@@ -11,13 +11,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * JPA-backed adapter implementing {@link LoadCourseRequirementPort} and
- * {@link SaveCourseRequirementPort}.
+ * JPA-backed adapter implementing {@link LoadCourseRequirementPort} and {@link
+ * SaveCourseRequirementPort}.
  *
  * <p>Package-private per ARQ-006. Satisfies: CUR-003, Phase 2 WU4 (read) and WU5 (write).
  *
- * <p>Transaction strategy: class-level {@code @Transactional} (read-write default) so write
- * methods inherit a writable transaction; each read method explicitly overrides with
+ * <p>Transaction strategy: class-level {@code @Transactional} (read-write default) so write methods
+ * inherit a writable transaction; each read method explicitly overrides with
  * {@code @Transactional(readOnly=true)} (mirrors OfferingPersistenceAdapter).
  */
 @Component
@@ -65,8 +65,7 @@ class CourseRequirementPersistenceAdapter
   @Override
   @Transactional(readOnly = true)
   public Optional<CourseRequirement> findCurrentById(CourseRequirementId requirementId) {
-    return repository.findById(requirementId.value())
-        .map(CurriculumPersistenceMapper::toDomain);
+    return repository.findById(requirementId.value()).map(CurriculumPersistenceMapper::toDomain);
   }
 
   @Override

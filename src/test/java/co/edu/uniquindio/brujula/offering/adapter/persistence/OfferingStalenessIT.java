@@ -30,11 +30,9 @@ import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
-
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,39 +44,41 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * DEBT-F4-003 closure: end-to-end staleness tests that drive a {@code course_offering.version}
- * bump through REAL application services — NOT manual JDBC UPDATEs.
+ * DEBT-F4-003 closure: end-to-end staleness tests that drive a {@code course_offering.version} bump
+ * through REAL application services — NOT manual JDBC UPDATEs.
  *
  * <p>Three scenarios:
+ *
  * <ol>
- *   <li>Version bump via {@link UpdateOfferingUseCase} → selection becomes OUTDATED via the
- *       pure version-comparison chain ({@code StalenessEvaluator} compares snapshot vs current).</li>
+ *   <li>Version bump via {@link UpdateOfferingUseCase} → selection becomes OUTDATED via the pure
+ *       version-comparison chain ({@code StalenessEvaluator} compares snapshot vs current).
  *   <li>Version bump via {@link PublishOfferingUseCase} (DRAFT→ARCHIVED on a fresh offering) →
- *       selection becomes OUTDATED via the <em>exception-sentinel</em> path: ARCHIVED fails
- *       {@code CourseOffering#isPublished()}, so {@code GetOfferingQuery.getOffering()} throws
- *       {@code OfferingNotFoundException}, and {@code GetSimulationService} injects sentinel
- *       {@code selectedVersion - 1} → OUTDATED. This proves the sentinel path is wired correctly
- *       but does NOT exercise the pure version-comparison chain for the publish use case.</li>
- *   <li>Version bump via {@link PublishOfferingUseCase} (DRAFT→PRELIMINARY on a fresh offering
- *       with a schedule option) → selection becomes OUTDATED via the <em>pure version-comparison</em>
+ *       selection becomes OUTDATED via the <em>exception-sentinel</em> path: ARCHIVED fails {@code
+ *       CourseOffering#isPublished()}, so {@code GetOfferingQuery.getOffering()} throws {@code
+ *       OfferingNotFoundException}, and {@code GetSimulationService} injects sentinel {@code
+ *       selectedVersion - 1} → OUTDATED. This proves the sentinel path is wired correctly but does
+ *       NOT exercise the pure version-comparison chain for the publish use case.
+ *   <li>Version bump via {@link PublishOfferingUseCase} (DRAFT→PRELIMINARY on a fresh offering with
+ *       a schedule option) → selection becomes OUTDATED via the <em>pure version-comparison</em>
  *       chain. PRELIMINARY passes {@code CourseOffering#isPublished()}, so the offering stays
  *       resolvable after publish; {@code GetOfferingQuery.getOffering()} returns it, and staleness
- *       is decided by real version comparison — the sentinel branch is NOT taken. This scenario
- *       is the keystone proof that {@link PublishOfferingUseCase} activates the DEBT-F4-003
- *       mechanism through the same chain as scenario 1.</li>
+ *       is decided by real version comparison — the sentinel branch is NOT taken. This scenario is
+ *       the keystone proof that {@link PublishOfferingUseCase} activates the DEBT-F4-003 mechanism
+ *       through the same chain as scenario 1.
  * </ol>
  *
- * <p>All three assertions prove that the staleness detection path ({@code StalenessEvaluator}
- * → {@code OfferingReadAdapter.currentOfferingVersion}) is wired correctly against a real
- * Postgres container. A fake-green implementation that keeps version=0 in the DB would fail
- * all three tests because the {@code assertThat(version).isGreaterThan(initialVersion)} guard
- * fires BEFORE the MockMvc assertion.
+ * <p>All three assertions prove that the staleness detection path ({@code StalenessEvaluator} →
+ * {@code OfferingReadAdapter.currentOfferingVersion}) is wired correctly against a real Postgres
+ * container. A fake-green implementation that keeps version=0 in the DB would fail all three tests
+ * because the {@code assertThat(version).isGreaterThan(initialVersion)} guard fires BEFORE the
+ * MockMvc assertion.
  *
  * <p>Test isolation: Scenario 1 uses V017 fixture {@code PROG_III_OFFERING_ID} (FINAL) and only
- * updates its notes — the offering stays FINAL. Scenarios 2 and 3 each create a BRAND-NEW
- * offering (random UUID) that is NOT a V017 fixture, so no shared state is corrupted.
+ * updates its notes — the offering stays FINAL. Scenarios 2 and 3 each create a BRAND-NEW offering
+ * (random UUID) that is NOT a V017 fixture, so no shared state is corrupted.
  *
  * <p>V017 fixture UUIDs used:
+ *
  * <ul>
  *   <li>Programación III (FINAL, 3 cr): offering {@code 00000002-0000-4001-a000-000000000001},
  *       DIURNA option {@code 00000002-0000-4002-a000-000000000001}
@@ -101,18 +101,14 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   @Autowired private JdbcTemplate jdbcTemplate;
 
   // V017 seed UUIDs
-  static final UUID PERIOD_ID =
-      UUID.fromString("00000001-0000-4000-a000-000000000001");
-  static final UUID ISC_PROGRAM_ID =
-      UUID.fromString("11111111-0000-4000-a000-000000000001");
+  static final UUID PERIOD_ID = UUID.fromString("00000001-0000-4000-a000-000000000001");
+  static final UUID ISC_PROGRAM_ID = UUID.fromString("11111111-0000-4000-a000-000000000001");
 
   // Programación III (FINAL, 3 cr, DIURNA Mon 08:00-10:00 / Wed 10:00-12:00) — used ONLY for update
-  static final UUID PROG_III_OFFERING_ID =
-      UUID.fromString("00000002-0000-4001-a000-000000000001");
+  static final UUID PROG_III_OFFERING_ID = UUID.fromString("00000002-0000-4001-a000-000000000001");
   static final UUID PROG_III_OPTION_DIURNA =
       UUID.fromString("00000002-0000-4002-a000-000000000001");
-  static final UUID PROG_III_COURSE_ID =
-      UUID.fromString("c0040000-0000-4000-a000-000000000004");
+  static final UUID PROG_III_COURSE_ID = UUID.fromString("c0040000-0000-4000-a000-000000000004");
 
   private MockMvc mockMvc;
   private String studentSubject;
@@ -125,29 +121,31 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
 
     // Unique student per test run (no @Transactional — data survives across steps)
     studentSubject = "student-staleness-it-" + UUID.randomUUID();
-    AppUser student = AppUser.provision(
-        studentSubject,
-        "student-staleness-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Staleness IT Student",
-        Role.STUDENT);
+    AppUser student =
+        AppUser.provision(
+            studentSubject,
+            "student-staleness-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Staleness IT Student",
+            Role.STUDENT);
     saveAppUserPort.save(student);
 
-    studentUserId = jdbcTemplate.queryForObject(
-        "SELECT id FROM identity.app_user WHERE oidc_subject = ?",
-        UUID.class, studentSubject);
+    studentUserId =
+        jdbcTemplate.queryForObject(
+            "SELECT id FROM identity.app_user WHERE oidc_subject = ?", UUID.class, studentSubject);
 
     // Unique staff actor for use-case calls (actorId must resolve to a real user row)
     String staffSubject = "staff-staleness-it-" + UUID.randomUUID();
-    AppUser staff = AppUser.provision(
-        staffSubject,
-        "staff-staleness-" + UUID.randomUUID() + "@uniquindio.edu.co",
-        "Staleness IT Staff",
-        Role.STAFF);
+    AppUser staff =
+        AppUser.provision(
+            staffSubject,
+            "staff-staleness-" + UUID.randomUUID() + "@uniquindio.edu.co",
+            "Staleness IT Staff",
+            Role.STAFF);
     saveAppUserPort.save(staff);
 
-    staffActorId = jdbcTemplate.queryForObject(
-        "SELECT id FROM identity.app_user WHERE oidc_subject = ?",
-        UUID.class, staffSubject);
+    staffActorId =
+        jdbcTemplate.queryForObject(
+            "SELECT id FROM identity.app_user WHERE oidc_subject = ?", UUID.class, staffSubject);
   }
 
   // ---------------------------------------------------------------------------
@@ -155,8 +153,9 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   // ---------------------------------------------------------------------------
 
   private Simulation createSimulation(List<UUID> programIds) {
-    Simulation sim = Simulation.create(
-        SimulationId.generate(), studentUserId, "Staleness IT Sim", PERIOD_ID, programIds);
+    Simulation sim =
+        Simulation.create(
+            SimulationId.generate(), studentUserId, "Staleness IT Sim", PERIOD_ID, programIds);
     return saveSimulationPort.save(sim);
   }
 
@@ -175,20 +174,21 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
       long selectedOfferingVersion,
       List<SimScheduleSession> sessions) {
 
-    CandidateSelection candidate = new CandidateSelection(
-        scheduleOptionId,
-        offeringId,
-        courseId,
-        courseName,
-        ISC_PROGRAM_ID,
-        credits,
-        "DIURNA",
-        offeringStatus,
-        selectedOfferingVersion,
-        sessions);
+    CandidateSelection candidate =
+        new CandidateSelection(
+            scheduleOptionId,
+            offeringId,
+            courseId,
+            courseName,
+            ISC_PROGRAM_ID,
+            credits,
+            "DIURNA",
+            offeringStatus,
+            selectedOfferingVersion,
+            sessions);
 
-    SimulationSelection selection = SimulationSelection.create(
-        SimulationSelectionId.generate(), simulationId, candidate);
+    SimulationSelection selection =
+        SimulationSelection.create(SimulationSelectionId.generate(), simulationId, candidate);
     return saveSimulationSelectionPort.save(selection);
   }
 
@@ -207,14 +207,22 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
     // Read current DB version before any modification
-    long initialVersion = jdbcTemplate.queryForObject(
-        "SELECT version FROM offering.course_offering WHERE id = ?",
-        Long.class, PROG_III_OFFERING_ID);
+    long initialVersion =
+        jdbcTemplate.queryForObject(
+            "SELECT version FROM offering.course_offering WHERE id = ?",
+            Long.class,
+            PROG_III_OFFERING_ID);
 
     // Seed a selection whose snapshot version == current version (CURRENT state before bump)
-    seedSelection(sim.getId().value(),
-        PROG_III_OFFERING_ID, PROG_III_OPTION_DIURNA, PROG_III_COURSE_ID,
-        "Programación III", 3.0, "FINAL", initialVersion,
+    seedSelection(
+        sim.getId().value(),
+        PROG_III_OFFERING_ID,
+        PROG_III_OPTION_DIURNA,
+        PROG_III_COURSE_ID,
+        "Programación III",
+        3.0,
+        "FINAL",
+        initialVersion,
         List.of(
             new SimScheduleSession("MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0)),
             new SimScheduleSession("WEDNESDAY", LocalTime.of(10, 0), LocalTime.of(12, 0))));
@@ -222,17 +230,20 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
     // Bump offering version through the REAL UpdateOfferingService — NOT a direct JDBC UPDATE.
     // This is the keystone assertion of DEBT-F4-003: the staleness chain must work when
     // the version increment is triggered by a real application service call, not a test hack.
-    UpdateOfferingCommand updateCmd = new UpdateOfferingCommand(
-        PROG_III_OFFERING_ID,
-        staffActorId,
-        "Updated notes — staleness IT bump via REAL service",
-        initialVersion);
+    UpdateOfferingCommand updateCmd =
+        new UpdateOfferingCommand(
+            PROG_III_OFFERING_ID,
+            staffActorId,
+            "Updated notes — staleness IT bump via REAL service",
+            initialVersion);
     updateOfferingUseCase.updateOffering(updateCmd);
 
     // Guard: verify the DB version was actually incremented by the service
-    long bumpedVersion = jdbcTemplate.queryForObject(
-        "SELECT version FROM offering.course_offering WHERE id = ?",
-        Long.class, PROG_III_OFFERING_ID);
+    long bumpedVersion =
+        jdbcTemplate.queryForObject(
+            "SELECT version FROM offering.course_offering WHERE id = ?",
+            Long.class,
+            PROG_III_OFFERING_ID);
     assertThat(bumpedVersion)
         .as("UpdateOfferingService MUST increment course_offering.version (OFFW-006)")
         .isGreaterThan(initialVersion);
@@ -240,10 +251,13 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
     // CRITICAL: now the selection's selectedOfferingVersion (initialVersion) < bumpedVersion
     // → StalenessEvaluator.evaluate() must return OUTDATED → GET simulation must return OUTDATED.
     // If this asserts CURRENT, the real-service staleness activation path is broken.
-    mockMvc.perform(get("/me/simulations/{id}", sim.getId().value())
-            .with(oidcLogin()
-                .idToken(t -> t.subject(studentSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/me/simulations/{id}", sim.getId().value())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OUTDATED"));
   }
@@ -269,7 +283,8 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   void offeringVersionBumpedViaPublishService_simulationStatusIsOutdated() throws Exception {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
-    // Create a fresh DRAFT offering with a schedule option (needed for DRAFT→ARCHIVED via real service)
+    // Create a fresh DRAFT offering with a schedule option (needed for DRAFT→ARCHIVED via real
+    // service)
     // UUID for the fresh offering and its option — random, never conflicts with V017
     UUID freshOfferingId = UUID.randomUUID();
     UUID freshOptionId = UUID.randomUUID();
@@ -277,61 +292,77 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
     // Build a schedule option so the offering has at least one real option in the DB.
     // DRAFT→ARCHIVED does NOT require options (requireSchedulableForPublish only fires for
     // PRELIMINARY/FINAL targets), but we include one so the selection snapshot is realistic.
-    ScheduleSession session = new ScheduleSession(
-        UUID.randomUUID(), Weekday.FRIDAY, LocalTime.of(7, 0), LocalTime.of(9, 0));
-    ScheduleOption option = ScheduleOption.reconstitute(
-        ScheduleOptionId.of(freshOptionId),
-        freshOfferingId,
-        "Grupo IT",
-        "DIURNA",
-        List.of(session),
-        0L);
+    ScheduleSession session =
+        new ScheduleSession(
+            UUID.randomUUID(), Weekday.FRIDAY, LocalTime.of(7, 0), LocalTime.of(9, 0));
+    ScheduleOption option =
+        ScheduleOption.reconstitute(
+            ScheduleOptionId.of(freshOptionId),
+            freshOfferingId,
+            "Grupo IT",
+            "DIURNA",
+            List.of(session),
+            0L);
 
-    CourseOffering freshOffering = CourseOffering.create(
-        CourseOfferingId.of(freshOfferingId),
-        PROG_III_COURSE_ID,
-        "IT Test Offering",
-        ISC_PROGRAM_ID,
-        PERIOD_ID,
-        "Staleness IT offering",
-        List.of(option));
+    CourseOffering freshOffering =
+        CourseOffering.create(
+            CourseOfferingId.of(freshOfferingId),
+            PROG_III_COURSE_ID,
+            "IT Test Offering",
+            ISC_PROGRAM_ID,
+            PERIOD_ID,
+            "Staleness IT offering",
+            List.of(option));
 
     // Persist the fresh offering — SaveOfferingPort cascades the option
     CourseOffering saved = saveOfferingPort.save(freshOffering);
     long initialVersion = saved.getVersion();
 
     // Seed a selection snapshot at initialVersion
-    seedSelection(sim.getId().value(),
-        freshOfferingId, freshOptionId, PROG_III_COURSE_ID,
-        "IT Test Offering", 3.0, "DRAFT", initialVersion,
+    seedSelection(
+        sim.getId().value(),
+        freshOfferingId,
+        freshOptionId,
+        PROG_III_COURSE_ID,
+        "IT Test Offering",
+        3.0,
+        "DRAFT",
+        initialVersion,
         List.of(new SimScheduleSession("FRIDAY", LocalTime.of(7, 0), LocalTime.of(9, 0))));
 
     // Transition DRAFT→ARCHIVED through the REAL PublishOfferingService.
     // DRAFT→ARCHIVED is legal (OfferingStatus.canTransitionTo) and does NOT require options.
-    PublishOfferingCommand publishCmd = new PublishOfferingCommand(
-        UUID.randomUUID(),           // fresh idempotencyKey — no replay
-        freshOfferingId,
-        staffActorId,
-        "ARCHIVED",
-        initialVersion,
-        false,
-        "staleness-it-publish-hash-" + UUID.randomUUID()); // unique hash prevents idempotency replay
+    PublishOfferingCommand publishCmd =
+        new PublishOfferingCommand(
+            UUID.randomUUID(), // fresh idempotencyKey — no replay
+            freshOfferingId,
+            staffActorId,
+            "ARCHIVED",
+            initialVersion,
+            false,
+            "staleness-it-publish-hash-"
+                + UUID.randomUUID()); // unique hash prevents idempotency replay
 
     publishOfferingUseCase.publishOffering(publishCmd);
 
     // Guard: verify the DB version was actually incremented by the service
-    long bumpedVersion = jdbcTemplate.queryForObject(
-        "SELECT version FROM offering.course_offering WHERE id = ?",
-        Long.class, freshOfferingId);
+    long bumpedVersion =
+        jdbcTemplate.queryForObject(
+            "SELECT version FROM offering.course_offering WHERE id = ?",
+            Long.class,
+            freshOfferingId);
     assertThat(bumpedVersion)
         .as("PublishOfferingService MUST increment course_offering.version (OFFW-006)")
         .isGreaterThan(initialVersion);
 
     // CRITICAL: staleness chain must fire — publish bumped the version, selection is OUTDATED.
-    mockMvc.perform(get("/me/simulations/{id}", sim.getId().value())
-            .with(oidcLogin()
-                .idToken(t -> t.subject(studentSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/me/simulations/{id}", sim.getId().value())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OUTDATED"));
   }
@@ -340,7 +371,8 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   // DEBT-F4-003 / scenario 3 (keystone proof for publish path, pure version-comparison):
   //   Create a BRAND-NEW DRAFT offering (random UUID, not from V017) with a schedule option.
   //   Seed selection snapshot at version 0.
-  //   Transition offering DRAFT→PRELIMINARY through PublishOfferingUseCase (REAL service, NOT JDBC).
+  //   Transition offering DRAFT→PRELIMINARY through PublishOfferingUseCase (REAL service, NOT
+  // JDBC).
   //
   //   PRELIMINARY passes CourseOffering#isPublished() → the offering STAYS RESOLVABLE after
   //   publish. GetOfferingQuery.getOffering() returns the offering (filter does NOT exclude it),
@@ -360,8 +392,9 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   // ---------------------------------------------------------------------------
 
   @Test
-  void offeringVersionBumpedViaPublishServiceToPreliminary_simulationStatusIsOutdated_viaVersionComparison()
-      throws Exception {
+  void
+      offeringVersionBumpedViaPublishServiceToPreliminary_simulationStatusIsOutdated_viaVersionComparison()
+          throws Exception {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
     // Create a fresh DRAFT offering with a schedule option.
@@ -370,72 +403,92 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
     UUID freshOfferingId = UUID.randomUUID();
     UUID freshOptionId = UUID.randomUUID();
 
-    ScheduleSession session = new ScheduleSession(
-        UUID.randomUUID(), Weekday.TUESDAY, LocalTime.of(14, 0), LocalTime.of(16, 0));
-    ScheduleOption option = ScheduleOption.reconstitute(
-        ScheduleOptionId.of(freshOptionId),
-        freshOfferingId,
-        "Grupo Prelim IT",
-        "DIURNA",
-        List.of(session),
-        0L);
+    ScheduleSession session =
+        new ScheduleSession(
+            UUID.randomUUID(), Weekday.TUESDAY, LocalTime.of(14, 0), LocalTime.of(16, 0));
+    ScheduleOption option =
+        ScheduleOption.reconstitute(
+            ScheduleOptionId.of(freshOptionId),
+            freshOfferingId,
+            "Grupo Prelim IT",
+            "DIURNA",
+            List.of(session),
+            0L);
 
-    CourseOffering freshOffering = CourseOffering.create(
-        CourseOfferingId.of(freshOfferingId),
-        PROG_III_COURSE_ID,
-        "IT Preliminary Test Offering",
-        ISC_PROGRAM_ID,
-        PERIOD_ID,
-        "Staleness IT offering — PRELIMINARY path",
-        List.of(option));
+    CourseOffering freshOffering =
+        CourseOffering.create(
+            CourseOfferingId.of(freshOfferingId),
+            PROG_III_COURSE_ID,
+            "IT Preliminary Test Offering",
+            ISC_PROGRAM_ID,
+            PERIOD_ID,
+            "Staleness IT offering — PRELIMINARY path",
+            List.of(option));
 
     CourseOffering saved = saveOfferingPort.save(freshOffering);
     long initialVersion = saved.getVersion();
 
     // Seed a selection snapshot at initialVersion (before the publish bump)
-    seedSelection(sim.getId().value(),
-        freshOfferingId, freshOptionId, PROG_III_COURSE_ID,
-        "IT Preliminary Test Offering", 3.0, "DRAFT", initialVersion,
+    seedSelection(
+        sim.getId().value(),
+        freshOfferingId,
+        freshOptionId,
+        PROG_III_COURSE_ID,
+        "IT Preliminary Test Offering",
+        3.0,
+        "DRAFT",
+        initialVersion,
         List.of(new SimScheduleSession("TUESDAY", LocalTime.of(14, 0), LocalTime.of(16, 0))));
 
     // Transition DRAFT→PRELIMINARY through the REAL PublishOfferingService.
     // PRELIMINARY requires at least one schedule option — satisfied above.
     // This is the keystone call: the real service must bump course_offering.version.
-    PublishOfferingCommand publishCmd = new PublishOfferingCommand(
-        UUID.randomUUID(),           // fresh idempotencyKey — no replay
-        freshOfferingId,
-        staffActorId,
-        "PRELIMINARY",
-        initialVersion,
-        false,
-        "staleness-it-prelim-hash-" + UUID.randomUUID()); // unique hash prevents idempotency replay
+    PublishOfferingCommand publishCmd =
+        new PublishOfferingCommand(
+            UUID.randomUUID(), // fresh idempotencyKey — no replay
+            freshOfferingId,
+            staffActorId,
+            "PRELIMINARY",
+            initialVersion,
+            false,
+            "staleness-it-prelim-hash-"
+                + UUID.randomUUID()); // unique hash prevents idempotency replay
 
     publishOfferingUseCase.publishOffering(publishCmd);
 
     // Guard: version was actually bumped by the service (would catch a no-op implementation)
-    long bumpedVersion = jdbcTemplate.queryForObject(
-        "SELECT version FROM offering.course_offering WHERE id = ?",
-        Long.class, freshOfferingId);
+    long bumpedVersion =
+        jdbcTemplate.queryForObject(
+            "SELECT version FROM offering.course_offering WHERE id = ?",
+            Long.class,
+            freshOfferingId);
     assertThat(bumpedVersion)
-        .as("PublishOfferingService MUST increment course_offering.version for PRELIMINARY (OFFW-006)")
+        .as(
+            "PublishOfferingService MUST increment course_offering.version for PRELIMINARY (OFFW-006)")
         .isGreaterThan(initialVersion);
 
     // Guard: offering must still be resolvable — isPublished() must return true for PRELIMINARY.
     // This confirms the sentinel branch will NOT be taken in GetSimulationService.
-    String persistedStatus = jdbcTemplate.queryForObject(
-        "SELECT status FROM offering.course_offering WHERE id = ?",
-        String.class, freshOfferingId);
+    String persistedStatus =
+        jdbcTemplate.queryForObject(
+            "SELECT status FROM offering.course_offering WHERE id = ?",
+            String.class,
+            freshOfferingId);
     assertThat(persistedStatus)
-        .as("Offering published to PRELIMINARY must have status PRELIMINARY (isPublished() == true)")
+        .as(
+            "Offering published to PRELIMINARY must have status PRELIMINARY (isPublished() == true)")
         .isEqualTo("PRELIMINARY");
 
     // CRITICAL: staleness is decided by real version comparison, NOT the exception-sentinel.
     // snapshot (initialVersion) < bumpedVersion → StalenessEvaluator returns OUTDATED.
     // If this asserts CURRENT, either the version was not bumped or the staleness chain is broken.
-    mockMvc.perform(get("/me/simulations/{id}", sim.getId().value())
-            .with(oidcLogin()
-                .idToken(t -> t.subject(studentSubject))
-                .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/me/simulations/{id}", sim.getId().value())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OUTDATED"));
   }

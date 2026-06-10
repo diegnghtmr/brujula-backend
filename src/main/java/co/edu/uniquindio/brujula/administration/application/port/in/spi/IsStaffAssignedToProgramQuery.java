@@ -7,11 +7,11 @@ import java.util.UUID;
  * Published SPI input port — checks whether a staff member is assigned to a program.
  *
  * <p>Published via {@code @NamedInterface("spi")} in this package's {@code package-info.java}.
- * Cross-module consumers (e.g. {@code imports}) must access this port ONLY through
- * {@code administration::spi}.
+ * Cross-module consumers (e.g. {@code imports}) must access this port ONLY through {@code
+ * administration::spi}.
  *
- * <p>ARQ-001: method signatures use only UUID/primitive types — no domain entities cross the
- * module boundary.
+ * <p>ARQ-001: method signatures use only UUID/primitive types — no domain entities cross the module
+ * boundary.
  *
  * <p>Only <em>active</em> assignments ({@code active = true}) are considered for the check.
  */

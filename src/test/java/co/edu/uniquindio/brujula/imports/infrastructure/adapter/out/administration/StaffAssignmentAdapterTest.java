@@ -17,13 +17,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link StaffAssignmentAdapter} — anti-corruption adapter bridging
- * imports' {@link StaffAssignmentPort} to {@code administration::spi} queries.
+ * Unit tests for {@link StaffAssignmentAdapter} — anti-corruption adapter bridging imports' {@link
+ * StaffAssignmentPort} to {@code administration::spi} queries.
  *
- * <p>Covers T2.3:
- * - SC-001-D / INV-06: unassigned STAFF → port correctly returns false
- * - SC-001-J: admin bypass is the caller's responsibility (adapter itself does not know role)
- * - resolveStaffId delegates to ResolveStaffByEmailQuery
+ * <p>Covers T2.3: - SC-001-D / INV-06: unassigned STAFF → port correctly returns false - SC-001-J:
+ * admin bypass is the caller's responsibility (adapter itself does not know role) - resolveStaffId
+ * delegates to ResolveStaffByEmailQuery
  */
 class StaffAssignmentAdapterTest {
 
@@ -85,12 +84,12 @@ class StaffAssignmentAdapterTest {
   }
 
   /**
-   * SC-001-J: admin bypass is enforced by the calling service (UploadImportService),
-   * NOT by this adapter. Adapter never calls isAssigned when role is ADMIN — this test
-   * verifies the adapter's behavior is purely a pass-through (no role logic inside).
+   * SC-001-J: admin bypass is enforced by the calling service (UploadImportService), NOT by this
+   * adapter. Adapter never calls isAssigned when role is ADMIN — this test verifies the adapter's
+   * behavior is purely a pass-through (no role logic inside).
    *
-   * <p>We verify that if the caller chooses NOT to invoke the adapter (ADMIN path),
-   * the underlying queries are not called.
+   * <p>We verify that if the caller chooses NOT to invoke the adapter (ADMIN path), the underlying
+   * queries are not called.
    */
   @Test
   void adapter_has_no_role_awareness() {
@@ -123,8 +122,8 @@ class StaffAssignmentAdapterTest {
   }
 
   /**
-   * WARNING-1 closure: resolveActiveStaffId returns empty for INACTIVE accounts.
-   * The underlying query handles the filtering; adapter passes through.
+   * WARNING-1 closure: resolveActiveStaffId returns empty for INACTIVE accounts. The underlying
+   * query handles the filtering; adapter passes through.
    */
   @Test
   void resolve_active_staff_id_returns_empty_for_inactive_account() {

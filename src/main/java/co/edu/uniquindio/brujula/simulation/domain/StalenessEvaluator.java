@@ -17,7 +17,7 @@ public class StalenessEvaluator {
    * Version pair for one selection: snapshot vs current.
    *
    * @param selectedOfferingVersion the version captured at selection time
-   * @param currentOfferingVersion  the live version from the offering module
+   * @param currentOfferingVersion the live version from the offering module
    */
   public record VersionPair(long selectedOfferingVersion, long currentOfferingVersion) {}
 

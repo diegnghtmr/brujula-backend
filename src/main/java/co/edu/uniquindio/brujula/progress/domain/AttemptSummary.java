@@ -14,11 +14,7 @@ import java.util.UUID;
  * @param grade the grade (nullable; null for CANCELLED)
  * @param periodId opaque period UUID (nullable)
  */
-public record AttemptSummary(
-    UUID courseId,
-    AttemptStatus status,
-    BigDecimal grade,
-    UUID periodId) {
+public record AttemptSummary(UUID courseId, AttemptStatus status, BigDecimal grade, UUID periodId) {
 
   public AttemptSummary {
     Objects.requireNonNull(courseId, "courseId must not be null");

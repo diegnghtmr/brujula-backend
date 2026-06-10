@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
  * RED→GREEN unit tests for {@link SequentialTrackEvaluator} (spec VAL-008).
  *
  * <p>Firing evidence:
+ *
  * <ul>
  *   <li>DEEPENING course with unmet gatekeeper → BLOCKED (rule genuinely fires).
  *   <li>PERSONAL_ELECTIVE course with unmet gatekeeper → BLOCKED.
@@ -42,8 +43,9 @@ class SequentialTrackEvaluatorTest {
   @Test
   void deepeningCourse_gatekeeperNotPassed_returnsBlockingNotice() {
     // ARRANGE: DEEPENING course, gatekeeper NOT passed
-    SequentialPredecessor predecessor = new SequentialPredecessor(
-        courseId, "DEEPENING", gatekeeperCourseId, "Ingeniería de Software I");
+    SequentialPredecessor predecessor =
+        new SequentialPredecessor(
+            courseId, "DEEPENING", gatekeeperCourseId, "Ingeniería de Software I");
     CandidateSelection candidate = buildCandidate(courseId, "FINAL");
     PassedCourseSet passed = PassedCourseSet.empty(); // gatekeeper NOT passed
 
@@ -60,8 +62,9 @@ class SequentialTrackEvaluatorTest {
   void personalElectiveCourse_gatekeeperNotPassed_returnsBlockingNotice() {
     // ARRANGE: PERSONAL_ELECTIVE course, gatekeeper NOT passed
     UUID electiveGatekeeperId = UUID.randomUUID();
-    SequentialPredecessor predecessor = new SequentialPredecessor(
-        courseId, "PERSONAL_ELECTIVE", electiveGatekeeperId, "Electiva Prereq I");
+    SequentialPredecessor predecessor =
+        new SequentialPredecessor(
+            courseId, "PERSONAL_ELECTIVE", electiveGatekeeperId, "Electiva Prereq I");
     CandidateSelection candidate = buildCandidate(courseId, "FINAL");
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -79,8 +82,9 @@ class SequentialTrackEvaluatorTest {
   @Test
   void deepeningCourse_gatekeeperPassed_returnsEmpty() {
     // ARRANGE: DEEPENING course, gatekeeper HAS been passed
-    SequentialPredecessor predecessor = new SequentialPredecessor(
-        courseId, "DEEPENING", gatekeeperCourseId, "Ingeniería de Software I");
+    SequentialPredecessor predecessor =
+        new SequentialPredecessor(
+            courseId, "DEEPENING", gatekeeperCourseId, "Ingeniería de Software I");
     CandidateSelection candidate = buildCandidate(courseId, "FINAL");
     PassedCourseSet passed = new PassedCourseSet(Set.of(gatekeeperCourseId)); // gatekeeper PASSED
 
@@ -92,8 +96,8 @@ class SequentialTrackEvaluatorTest {
   @Test
   void deepeningCourse_noGatekeeperDefined_returnsEmpty() {
     // ARRANGE: DEEPENING course but track has no gatekeeper (predecessorCourseId = null)
-    SequentialPredecessor predecessor = new SequentialPredecessor(
-        courseId, "DEEPENING", null, null);
+    SequentialPredecessor predecessor =
+        new SequentialPredecessor(courseId, "DEEPENING", null, null);
     CandidateSelection candidate = buildCandidate(courseId, "FINAL");
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -105,8 +109,8 @@ class SequentialTrackEvaluatorTest {
   @Test
   void requiredCourse_notEvaluated_returnsEmpty() {
     // ARRANGE: REQUIRED course — sequential rule does not apply
-    SequentialPredecessor predecessor = new SequentialPredecessor(
-        courseId, "REQUIRED", gatekeeperCourseId, "Some Prereq");
+    SequentialPredecessor predecessor =
+        new SequentialPredecessor(courseId, "REQUIRED", gatekeeperCourseId, "Some Prereq");
     CandidateSelection candidate = buildCandidate(courseId, "FINAL");
     PassedCourseSet passed = PassedCourseSet.empty(); // gatekeeper not passed, but irrelevant
 
@@ -118,8 +122,8 @@ class SequentialTrackEvaluatorTest {
 
   @Test
   void institutionalCourse_notEvaluated_returnsEmpty() {
-    SequentialPredecessor predecessor = new SequentialPredecessor(
-        courseId, "INSTITUTIONAL", gatekeeperCourseId, "Some Course");
+    SequentialPredecessor predecessor =
+        new SequentialPredecessor(courseId, "INSTITUTIONAL", gatekeeperCourseId, "Some Course");
     CandidateSelection candidate = buildCandidate(courseId, "FINAL");
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -131,8 +135,8 @@ class SequentialTrackEvaluatorTest {
   @Test
   void deepeningCourse_noNameForGatekeeper_usesUuidInMessage() {
     // Predecessor name null → UUID shown in message
-    SequentialPredecessor predecessor = new SequentialPredecessor(
-        courseId, "DEEPENING", gatekeeperCourseId, null);
+    SequentialPredecessor predecessor =
+        new SequentialPredecessor(courseId, "DEEPENING", gatekeeperCourseId, null);
     CandidateSelection candidate = buildCandidate(courseId, "FINAL");
     PassedCourseSet passed = PassedCourseSet.empty();
 
@@ -147,11 +151,18 @@ class SequentialTrackEvaluatorTest {
   // -------------------------------------------------------------------------
 
   private CandidateSelection buildCandidate(UUID cId, String offeringStatus) {
-    SimScheduleSession session = new SimScheduleSession(
-        "TUESDAY", LocalTime.of(14, 0), LocalTime.of(16, 0));
+    SimScheduleSession session =
+        new SimScheduleSession("TUESDAY", LocalTime.of(14, 0), LocalTime.of(16, 0));
     return new CandidateSelection(
-        UUID.randomUUID(), UUID.randomUUID(), cId,
-        "Profundización en Ingeniería de Software I", programId,
-        3.0, "DIURNA", offeringStatus, 1L, List.of(session));
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        cId,
+        "Profundización en Ingeniería de Software I",
+        programId,
+        3.0,
+        "DIURNA",
+        offeringStatus,
+        1L,
+        List.of(session));
   }
 }

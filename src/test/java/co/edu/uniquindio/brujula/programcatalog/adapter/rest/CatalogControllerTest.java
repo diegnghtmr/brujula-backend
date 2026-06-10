@@ -23,11 +23,11 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * REST adapter integration tests for CatalogController (Phase 3, WU4).
  *
- * <p>Tests: GET /programs → 200, GET /programs/{id} → 200/404, GET /programs/{id}/plans → 200,
- * GET /plans/{planId} → 200/404, GET /journeys → 200.
+ * <p>Tests: GET /programs → 200, GET /programs/{id} → 200/404, GET /programs/{id}/plans → 200, GET
+ * /plans/{planId} → 200/404, GET /journeys → 200.
  *
- * <p>Uses Testcontainers PostgreSQL + Flyway + spring-security-test (oidcLogin).
- * Satisfies: CAT-001/CAT-002/CAT-003 REST adapters.
+ * <p>Uses Testcontainers PostgreSQL + Flyway + spring-security-test (oidcLogin). Satisfies:
+ * CAT-001/CAT-002/CAT-003 REST adapters.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class CatalogControllerTest extends AbstractPostgresIntegrationTest {
@@ -49,8 +49,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
   @Test
   @Transactional
   void list_programs_as_student_returns_200() throws Exception {
-    mockMvc.perform(get("/programs")
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/programs")
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
   }
@@ -59,13 +61,15 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
   @Transactional
   void list_programs_unauthenticated_returns_401_or_redirect() throws Exception {
     // OIDC login uses redirect (302) rather than Bearer 401 — both indicate auth is required
-    mockMvc.perform(get("/programs"))
-        .andExpect(result -> {
-          int status = result.getResponse().getStatus();
-          assertThat(status)
-              .as("Unauthenticated access to /programs must not return 200")
-              .isGreaterThanOrEqualTo(300);
-        });
+    mockMvc
+        .perform(get("/programs"))
+        .andExpect(
+            result -> {
+              int status = result.getResponse().getStatus();
+              assertThat(status)
+                  .as("Unauthenticated access to /programs must not return 200")
+                  .isGreaterThanOrEqualTo(300);
+            });
   }
 
   // ---------------------------------------------------------------------------
@@ -77,8 +81,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
   void get_program_existing_returns_200() throws Exception {
     UUID programId = insertProgram("Ingeniería de Sistemas y Computación", "Ingeniería", "ACTIVE");
 
-    mockMvc.perform(get("/programs/{id}", programId)
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/programs/{id}", programId)
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(programId.toString()))
         .andExpect(jsonPath("$.name").value("Ingeniería de Sistemas y Computación"));
@@ -87,8 +93,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
   @Test
   @Transactional
   void get_program_nonexistent_returns_404() throws Exception {
-    mockMvc.perform(get("/programs/{id}", UUID.randomUUID())
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/programs/{id}", UUID.randomUUID())
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isNotFound());
   }
 
@@ -103,8 +111,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
     insertStudyPlan(programId, "Plan DRAFT", "DRAFT", 160);
     UUID activePlanId = insertStudyPlan(programId, "Plan ACTIVE", "ACTIVE", 168);
 
-    mockMvc.perform(get("/programs/{id}/plans", programId)
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/programs/{id}/plans", programId)
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + activePlanId + "')]").exists())
         .andExpect(jsonPath("$[?(@.status == 'DRAFT')]").doesNotExist());
@@ -117,8 +127,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
     insertStudyPlan(programId, "Plan DRAFT", "DRAFT", 240);
     insertStudyPlan(programId, "Plan ACTIVE", "ACTIVE", 250);
 
-    mockMvc.perform(get("/programs/{id}/plans", programId)
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
+    mockMvc
+        .perform(
+            get("/programs/{id}/plans", programId)
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2));
   }
@@ -133,8 +145,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
     UUID programId = insertProgram("Química", "Ciencias Exactas", "ACTIVE");
     UUID planId = insertStudyPlan(programId, "Plan 2020", "ACTIVE", 160);
 
-    mockMvc.perform(get("/plans/{id}", planId)
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/plans/{id}", planId)
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(planId.toString()));
   }
@@ -145,16 +159,20 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
     UUID programId = insertProgram("Física", "Ciencias Exactas", "ACTIVE");
     UUID planId = insertStudyPlan(programId, "Plan DRAFT", "DRAFT", 155);
 
-    mockMvc.perform(get("/plans/{id}", planId)
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/plans/{id}", planId)
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isNotFound());
   }
 
   @Test
   @Transactional
   void get_study_plan_nonexistent_returns_404() throws Exception {
-    mockMvc.perform(get("/plans/{id}", UUID.randomUUID())
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/plans/{id}", UUID.randomUUID())
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isNotFound());
   }
 
@@ -169,8 +187,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
     UUID activeId = insertJourney(code, "Jornada Especial", true);
     insertJourney("INACTIVA-" + UUID.randomUUID(), "Jornada Inactiva", false);
 
-    mockMvc.perform(get("/journeys")
-            .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+    mockMvc
+        .perform(
+            get("/journeys")
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + activeId + "')]").exists());
   }
@@ -183,7 +203,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO catalog.academic_program (id, name, faculty, status, version) VALUES (?, ?, ?, ?, 0)",
-        id, name, faculty, status);
+        id,
+        name,
+        faculty,
+        status);
     return id;
   }
 
@@ -191,7 +214,11 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO catalog.study_plan (id, program_id, name, status, total_credits, version) VALUES (?, ?, ?, ?, ?, 0)",
-        id, programId, name, status, credits);
+        id,
+        programId,
+        name,
+        status,
+        credits);
     return id;
   }
 
@@ -199,7 +226,10 @@ class CatalogControllerTest extends AbstractPostgresIntegrationTest {
     UUID id = UUID.randomUUID();
     jdbcTemplate.update(
         "INSERT INTO catalog.journey (id, code, name, active) VALUES (?, ?, ?, ?)",
-        id, code, name, active);
+        id,
+        code,
+        name,
+        active);
     return id;
   }
 }

@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import co.edu.uniquindio.brujula.progress.application.dto.SubscriptionView;
-import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
+import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService;
 import co.edu.uniquindio.brujula.progress.domain.Subscription;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
@@ -39,8 +39,12 @@ class GetSubscriptionServiceTest {
   void list_my_subscriptions_returns_active_subscriptions_for_user() {
     UUID planId1 = UUID.randomUUID();
     UUID planId2 = UUID.randomUUID();
-    Subscription s1 = Subscription.create(SubscriptionId.generate(), userId, UUID.randomUUID(), planId1, "DIURNA");
-    Subscription s2 = Subscription.create(SubscriptionId.generate(), userId, UUID.randomUUID(), planId2, "NOCTURNA");
+    Subscription s1 =
+        Subscription.create(
+            SubscriptionId.generate(), userId, UUID.randomUUID(), planId1, "DIURNA");
+    Subscription s2 =
+        Subscription.create(
+            SubscriptionId.generate(), userId, UUID.randomUUID(), planId2, "NOCTURNA");
 
     when(loadSubscriptionPort.loadActiveByUserId(userId)).thenReturn(List.of(s1, s2));
 
@@ -53,7 +57,9 @@ class GetSubscriptionServiceTest {
   @Test
   void get_subscription_returns_view_for_owner() {
     UUID subId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription sub =
+        Subscription.create(
+            SubscriptionId.of(subId), userId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
 
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
 
@@ -75,7 +81,9 @@ class GetSubscriptionServiceTest {
   void get_subscription_throws_not_found_for_different_owner_bola() {
     UUID subId = UUID.randomUUID();
     UUID otherUserId = UUID.randomUUID();
-    Subscription sub = Subscription.create(SubscriptionId.of(subId), otherUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
+    Subscription sub =
+        Subscription.create(
+            SubscriptionId.of(subId), otherUserId, UUID.randomUUID(), UUID.randomUUID(), "DIURNA");
 
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
 

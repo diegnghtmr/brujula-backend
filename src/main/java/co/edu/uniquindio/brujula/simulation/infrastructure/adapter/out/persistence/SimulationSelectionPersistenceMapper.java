@@ -15,16 +15,16 @@ import org.springframework.stereotype.Component;
 /**
  * Maps between {@link SimulationSelection} domain objects and {@link SimulationSelectionJpaEntity}.
  *
- * <p>Sessions are serialized as JSONB: a JSON array of objects with keys
- * {@code day}, {@code startsAt}, {@code endsAt}.
+ * <p>Sessions are serialized as JSONB: a JSON array of objects with keys {@code day}, {@code
+ * startsAt}, {@code endsAt}.
  *
  * <p>Package-private per ARQ-006b.
  */
 @Component
 class SimulationSelectionPersistenceMapper {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper()
-      .registerModule(new JavaTimeModule());
+  private static final ObjectMapper MAPPER =
+      new ObjectMapper().registerModule(new JavaTimeModule());
 
   SimulationSelection toDomain(SimulationSelectionJpaEntity entity) {
     List<SimScheduleSession> sessions = deserializeSessions(entity.getSessions());
@@ -70,12 +70,15 @@ class SimulationSelectionPersistenceMapper {
 
   private String serializeSessions(List<SimScheduleSession> sessions) {
     try {
-      List<Map<String, String>> list = sessions.stream()
-          .map(s -> Map.of(
-              "day", s.day(),
-              "startsAt", s.startsAt().toString(),
-              "endsAt", s.endsAt().toString()))
-          .toList();
+      List<Map<String, String>> list =
+          sessions.stream()
+              .map(
+                  s ->
+                      Map.of(
+                          "day", s.day(),
+                          "startsAt", s.startsAt().toString(),
+                          "endsAt", s.endsAt().toString()))
+              .toList();
       return MAPPER.writeValueAsString(list);
     } catch (Exception e) {
       throw new IllegalStateException("Failed to serialize sessions to JSON", e);
@@ -87,13 +90,15 @@ class SimulationSelectionPersistenceMapper {
       return List.of();
     }
     try {
-      List<Map<String, String>> list = MAPPER.readValue(json,
-          new TypeReference<List<Map<String, String>>>() {});
+      List<Map<String, String>> list =
+          MAPPER.readValue(json, new TypeReference<List<Map<String, String>>>() {});
       return list.stream()
-          .map(m -> new SimScheduleSession(
-              m.get("day"),
-              LocalTime.parse(m.get("startsAt")),
-              LocalTime.parse(m.get("endsAt"))))
+          .map(
+              m ->
+                  new SimScheduleSession(
+                      m.get("day"),
+                      LocalTime.parse(m.get("startsAt")),
+                      LocalTime.parse(m.get("endsAt"))))
           .toList();
     } catch (Exception e) {
       throw new IllegalStateException("Failed to deserialize sessions from JSON: " + json, e);

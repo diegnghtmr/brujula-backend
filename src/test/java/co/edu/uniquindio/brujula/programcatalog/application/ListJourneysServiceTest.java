@@ -14,9 +14,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * WU2-2.5 RED: Verifies ListJourneysService returns only active journeys (CAT-003).
- */
+/** WU2-2.5 RED: Verifies ListJourneysService returns only active journeys (CAT-003). */
 class ListJourneysServiceTest {
 
   private LoadJourneyPort loadJourneyPort;
@@ -31,7 +29,8 @@ class ListJourneysServiceTest {
   @Test
   void returnsAllActiveJourneys() {
     Journey diurna = Journey.reconstitute(JourneyId.generate(), "DIURNA", "Jornada Diurna", true);
-    Journey nocturna = Journey.reconstitute(JourneyId.generate(), "NOCTURNA", "Jornada Nocturna", true);
+    Journey nocturna =
+        Journey.reconstitute(JourneyId.generate(), "NOCTURNA", "Jornada Nocturna", true);
 
     when(loadJourneyPort.loadAllActive()).thenReturn(List.of(diurna, nocturna));
 

@@ -11,11 +11,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * G1 RESOLVE + RED test for V006__create_spring_session_tables.sql.
  *
- * <p>Verifies that {@code platform.SPRING_SESSION} and {@code platform.SPRING_SESSION_ATTRIBUTES}
+ * <p>Verifies that {@code platform.spring_session} and {@code platform.spring_session_attributes}
  * tables exist after Flyway migration, and that {@code spring.session.jdbc.initialize-schema} is
  * set to {@code never} (tables come from Flyway, not Spring Session DDL). Also probes the exact
  * {@code spring.session.jdbc.table-name} effective property key used by Spring Session 4 to reach
  * the schema-qualified table.
+ *
+ * <p>V006 originally created these tables as quoted uppercase identifiers. V020 renamed them to
+ * lowercase (unquoted), so {@code information_schema} now reflects lowercase names. The {@code
+ * spring.session.jdbc.table-name} config property retains the value {@code platform.SPRING_SESSION}
+ * — Spring Session emits unquoted SQL, and PostgreSQL folds unquoted identifiers to lowercase at
+ * runtime, matching V020's renamed tables.
  *
  * <p>Satisfies: S1-A-1 (G1), S1-A-6, Spec §Session Persistence (ADR-007, RNF-SEG-003/004), Design
  * §3 V006.
@@ -35,12 +41,12 @@ class FlywayV006SpringSessionTablesTest extends AbstractPostgresIntegrationTest 
             SELECT COUNT(*)
             FROM information_schema.tables
             WHERE table_schema = 'platform'
-              AND table_name = 'SPRING_SESSION'
+              AND table_name = 'spring_session'
             """,
             Integer.class);
 
     assertThat(count)
-        .as("platform.SPRING_SESSION table must exist after V006 migration")
+        .as("platform.spring_session table must exist after V006+V020 migration")
         .isEqualTo(1);
   }
 
@@ -52,12 +58,12 @@ class FlywayV006SpringSessionTablesTest extends AbstractPostgresIntegrationTest 
             SELECT COUNT(*)
             FROM information_schema.tables
             WHERE table_schema = 'platform'
-              AND table_name = 'SPRING_SESSION_ATTRIBUTES'
+              AND table_name = 'spring_session_attributes'
             """,
             Integer.class);
 
     assertThat(count)
-        .as("platform.SPRING_SESSION_ATTRIBUTES table must exist after V006 migration")
+        .as("platform.spring_session_attributes table must exist after V006+V020 migration")
         .isEqualTo(1);
   }
 
@@ -99,13 +105,15 @@ class FlywayV006SpringSessionTablesTest extends AbstractPostgresIntegrationTest 
             SELECT COUNT(*)
             FROM information_schema.columns
             WHERE table_schema = 'platform'
-              AND table_name = 'SPRING_SESSION'
-              AND column_name = 'PRIMARY_ID'
+              AND table_name = 'spring_session'
+              AND column_name = 'primary_id'
             """,
             Integer.class);
 
     assertThat(count)
-        .as("platform.SPRING_SESSION must have PRIMARY_ID column (canonical Spring Session DDL)")
+        .as(
+            "platform.spring_session must have primary_id column after V006+V020 migration"
+                + " (V020 renamed column to lowercase)")
         .isEqualTo(1);
   }
 }

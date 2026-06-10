@@ -10,7 +10,4 @@ import java.util.UUID;
  * <p>Satisfies: OFFW-004.
  */
 public record UpdateOfferingCommand(
-    UUID offeringId,
-    UUID actorId,
-    String notes,
-    long expectedVersion) {}
+    UUID offeringId, UUID actorId, String notes, long expectedVersion) {}

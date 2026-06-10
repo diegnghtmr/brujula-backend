@@ -15,12 +15,10 @@ import co.edu.uniquindio.brujula.offering.domain.CourseOfferingId;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOption;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOptionId;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleSession;
-import co.edu.uniquindio.brujula.offering.domain.ScheduleSessionId;
 import co.edu.uniquindio.brujula.offering.domain.Weekday;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,19 +28,19 @@ import java.util.UUID;
  * Use case: create a course offering (idempotent via Idempotency-Key, STAFF/ADMIN).
  *
  * <p>Idempotency rules (mirrors CreateStaffService / CreatePeriodService verbatim):
+ *
  * <ul>
  *   <li>Same key + same hash → return the stored result (replay, no new insert)
  *   <li>Same key + different hash → throw {@link IdempotencyKeyConflictException} (409)
  *   <li>New key → execute, persist idempotency record, record audit event
  * </ul>
  *
- * <p>Inline schedule options are mapped to domain objects and persisted atomically
- * in the same transaction via CascadeType.ALL on the offering aggregate.
+ * <p>Inline schedule options are mapped to domain objects and persisted atomically in the same
+ * transaction via CascadeType.ALL on the offering aggregate.
  *
  * <p>{@code courseName} is denormalized at create time from {@code curriculum::api GetCourseQuery}.
  *
- * <p>Framework-free — wired by {@code OfferingConfiguration}.
- * Satisfies: OFFW-003.
+ * <p>Framework-free — wired by {@code OfferingConfiguration}. Satisfies: OFFW-003.
  */
 public class CreateOfferingService implements CreateOfferingUseCase {
 
@@ -88,14 +86,15 @@ public class CreateOfferingService implements CreateOfferingUseCase {
     List<ScheduleOption> options = mapDraftOptions(command.scheduleOptions(), command.courseId());
 
     // 4. Create domain aggregate (starts DRAFT, version 0)
-    CourseOffering offering = CourseOffering.create(
-        CourseOfferingId.generate(),
-        command.courseId(),
-        courseName,
-        command.programId(),
-        command.periodId(),
-        command.notes(),
-        options);
+    CourseOffering offering =
+        CourseOffering.create(
+            CourseOfferingId.generate(),
+            command.courseId(),
+            courseName,
+            command.programId(),
+            command.periodId(),
+            command.notes(),
+            options);
 
     // 5. Persist (cascade saves options + sessions in same tx)
     CourseOffering saved = saveOfferingPort.save(offering);
@@ -109,15 +108,16 @@ public class CreateOfferingService implements CreateOfferingUseCase {
         command.idempotencyKey(), OPERATION, command.requestHash(), 201, responseBodyJson);
 
     // 8. Record audit event (RNF-SEG-007 synchronous, same transaction)
-    auditRecorder.record(new RecordAuditEventCommand(
-        command.actorId(),
-        "STAFF",
-        "OFFERING_CREATED",
-        "course_offering",
-        saved.getId().value(),
-        null,
-        null,
-        null));
+    auditRecorder.record(
+        new RecordAuditEventCommand(
+            command.actorId(),
+            "STAFF",
+            "OFFERING_CREATED",
+            "course_offering",
+            saved.getId().value(),
+            null,
+            null,
+            null));
 
     return view;
   }
@@ -128,33 +128,36 @@ public class CreateOfferingService implements CreateOfferingUseCase {
       return Collections.emptyList();
     }
     return drafts.stream()
-        .map(draft -> {
-          ScheduleOptionId optionId = ScheduleOptionId.generate();
-          List<ScheduleSession> sessions = mapDraftSessions(draft.sessions());
-          return ScheduleOption.reconstitute(
-              optionId, parentOfferingId, draft.label(), draft.journeyCode(), sessions, 0L);
-        })
+        .map(
+            draft -> {
+              ScheduleOptionId optionId = ScheduleOptionId.generate();
+              List<ScheduleSession> sessions = mapDraftSessions(draft.sessions());
+              return ScheduleOption.reconstitute(
+                  optionId, parentOfferingId, draft.label(), draft.journeyCode(), sessions, 0L);
+            })
         .toList();
   }
 
-  private List<ScheduleSession> mapDraftSessions(
-      List<CreateOfferingCommand.SessionDraft> drafts) {
+  private List<ScheduleSession> mapDraftSessions(List<CreateOfferingCommand.SessionDraft> drafts) {
     if (drafts == null || drafts.isEmpty()) {
       return Collections.emptyList();
     }
     return drafts.stream()
-        .map(draft -> new ScheduleSession(
-            UUID.randomUUID(),
-            Weekday.valueOf(draft.day()),
-            draft.startsAt(),
-            draft.endsAt()))
+        .map(
+            draft ->
+                new ScheduleSession(
+                    UUID.randomUUID(),
+                    Weekday.valueOf(draft.day()),
+                    draft.startsAt(),
+                    draft.endsAt()))
         .toList();
   }
 
   OfferingDetailView toDetailView(CourseOffering offering) {
-    List<ScheduleOptionView> optionViews = offering.getScheduleOptions().stream()
-        .map(option -> toOptionView(option, offering.getId().value()))
-        .toList();
+    List<ScheduleOptionView> optionViews =
+        offering.getScheduleOptions().stream()
+            .map(option -> toOptionView(option, offering.getId().value()))
+            .toList();
     return new OfferingDetailView(
         offering.getId().value(),
         offering.getCourseId(),
@@ -168,9 +171,10 @@ public class CreateOfferingService implements CreateOfferingUseCase {
   }
 
   private ScheduleOptionView toOptionView(ScheduleOption option, UUID offeringId) {
-    List<ScheduleSessionView> sessionViews = option.getSessions().stream()
-        .map(s -> new ScheduleSessionView(s.id(), s.day().name(), s.startsAt(), s.endsAt()))
-        .toList();
+    List<ScheduleSessionView> sessionViews =
+        option.getSessions().stream()
+            .map(s -> new ScheduleSessionView(s.id(), s.day().name(), s.startsAt(), s.endsAt()))
+            .toList();
     return new ScheduleOptionView(
         option.getId().value(),
         offeringId,

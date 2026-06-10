@@ -1,7 +1,6 @@
 package co.edu.uniquindio.brujula.progress.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +25,7 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link GetStudentCourseHistoryService} — TDD RED→GREEN.
  *
  * <p>Scenarios:
+ *
  * <ul>
  *   <li>PASSED attempt → courseId included in passedCourseIds
  *   <li>FAILED attempt only → courseId NOT in passedCourseIds
@@ -114,8 +114,7 @@ class GetStudentCourseHistoryServiceTest {
     CourseAttempt passedInOther = passedAttempt(otherSubId, courseId2);
     when(loadCourseAttemptPort.loadBySubscriptionId(subscriptionId))
         .thenReturn(List.of(passedInMatching));
-    when(loadCourseAttemptPort.loadBySubscriptionId(otherSubId))
-        .thenReturn(List.of(passedInOther));
+    when(loadCourseAttemptPort.loadBySubscriptionId(otherSubId)).thenReturn(List.of(passedInOther));
 
     Set<UUID> result = service.passedCourseIds(ownerId, programId);
 

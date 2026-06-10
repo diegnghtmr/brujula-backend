@@ -6,16 +6,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 
 /**
  * TDD unit tests for {@link CourseOffering#publishTo(OfferingStatus)}.
  *
- * <p>Covers: every legal transition produces new status; every illegal transition throws
- * {@link IllegalOfferingTransitionException}; PRELIMINARY/FINAL with zero options throws
- * {@link OfferingNotPublishableException}; ARCHIVED with zero options is OK; publishTo returns
- * new instance (immutability check). Zero Spring — pure domain.
+ * <p>Covers: every legal transition produces new status; every illegal transition throws {@link
+ * IllegalOfferingTransitionException}; PRELIMINARY/FINAL with zero options throws {@link
+ * OfferingNotPublishableException}; ARCHIVED with zero options is OK; publishTo returns new
+ * instance (immutability check). Zero Spring — pure domain.
  *
  * <p>Satisfies: OFFW-005, WU3 Phase 1.
  */
@@ -28,19 +27,20 @@ class CourseOfferingPublishTest {
   // A minimal schedule option for offers that require one
   private static ScheduleOption oneOption() {
     return ScheduleOption.reconstitute(
-        ScheduleOptionId.generate(),
-        UUID.randomUUID(),
-        "A",
-        "DIURNA",
-        Collections.emptyList(),
-        0L);
+        ScheduleOptionId.generate(), UUID.randomUUID(), "A", "DIURNA", Collections.emptyList(), 0L);
   }
 
   private CourseOffering offeringWithStatus(OfferingStatus status, List<ScheduleOption> options) {
     return CourseOffering.reconstitute(
         CourseOfferingId.generate(),
-        COURSE_ID, "Course", PROGRAM_ID, PERIOD_ID,
-        status, null, options, 0L);
+        COURSE_ID,
+        "Course",
+        PROGRAM_ID,
+        PERIOD_ID,
+        status,
+        null,
+        options,
+        0L);
   }
 
   // -------------------------------------------------------------------------
@@ -155,7 +155,8 @@ class CourseOfferingPublishTest {
 
   @Test
   void preliminary_to_final_without_options_throws_not_publishable() {
-    CourseOffering offering = offeringWithStatus(OfferingStatus.PRELIMINARY, Collections.emptyList());
+    CourseOffering offering =
+        offeringWithStatus(OfferingStatus.PRELIMINARY, Collections.emptyList());
     assertThatThrownBy(() -> offering.publishTo(OfferingStatus.FINAL))
         .isInstanceOf(OfferingNotPublishableException.class);
   }
@@ -175,9 +176,17 @@ class CourseOfferingPublishTest {
   void publishTo_preserves_all_other_fields() {
     CourseOfferingId id = CourseOfferingId.generate();
     String notes = "Keep me";
-    CourseOffering offering = CourseOffering.reconstitute(
-        id, COURSE_ID, "CourseName", PROGRAM_ID, PERIOD_ID,
-        OfferingStatus.DRAFT, notes, List.of(oneOption()), 5L);
+    CourseOffering offering =
+        CourseOffering.reconstitute(
+            id,
+            COURSE_ID,
+            "CourseName",
+            PROGRAM_ID,
+            PERIOD_ID,
+            OfferingStatus.DRAFT,
+            notes,
+            List.of(oneOption()),
+            5L);
 
     CourseOffering result = offering.publishTo(OfferingStatus.PRELIMINARY);
 

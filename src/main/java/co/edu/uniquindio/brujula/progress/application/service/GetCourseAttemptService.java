@@ -29,8 +29,7 @@ public class GetCourseAttemptService implements GetCourseAttemptQuery, ListMyCou
   private final LoadSubscriptionPort loadSubscriptionPort;
 
   public GetCourseAttemptService(
-      LoadCourseAttemptPort loadCourseAttemptPort,
-      LoadSubscriptionPort loadSubscriptionPort) {
+      LoadCourseAttemptPort loadCourseAttemptPort, LoadSubscriptionPort loadSubscriptionPort) {
     this.loadCourseAttemptPort = loadCourseAttemptPort;
     this.loadSubscriptionPort = loadSubscriptionPort;
   }
@@ -62,10 +61,12 @@ public class GetCourseAttemptService implements GetCourseAttemptQuery, ListMyCou
       }
     }
 
-    List<CourseAttempt> attempts = loadCourseAttemptPort.loadBySubscriptionIdAndCourseId(
-        query.subscriptionId(), query.courseId(), query.page(), query.size());
-    long total = loadCourseAttemptPort.countBySubscriptionIdAndCourseId(
-        query.subscriptionId(), query.courseId());
+    List<CourseAttempt> attempts =
+        loadCourseAttemptPort.loadBySubscriptionIdAndCourseId(
+            query.subscriptionId(), query.courseId(), query.page(), query.size());
+    long total =
+        loadCourseAttemptPort.countBySubscriptionIdAndCourseId(
+            query.subscriptionId(), query.courseId());
 
     List<CourseAttemptView> views = attempts.stream().map(this::toView).toList();
     int totalPages = query.size() > 0 ? (int) Math.ceil((double) total / query.size()) : 0;
@@ -92,7 +93,7 @@ public class GetCourseAttemptService implements GetCourseAttemptQuery, ListMyCou
         attempt.getCourseId(),
         "N/A", // courseName resolved by WU4
         attempt.getPeriodId(),
-        null,   // periodName resolved by WU4
+        null, // periodName resolved by WU4
         attempt.getJourneyCode(),
         attempt.getStatus().name(), // FIX-S1: plain String, no domain type in application DTO
         gradeValue,

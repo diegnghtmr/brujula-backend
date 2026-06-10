@@ -48,14 +48,15 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
   void save_and_load_attempt_round_trip() {
     Subscription sub = createSubscription();
     Grade grade = new Grade(new BigDecimal("4.0"));
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(),
-        sub.getId(),
-        courseId,
-        AttemptStatus.PASSED,
-        grade,
-        testPeriodId,
-        "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            sub.getId(),
+            courseId,
+            AttemptStatus.PASSED,
+            grade,
+            testPeriodId,
+            "DIURNA");
 
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
     Optional<CourseAttempt> loaded = loadCourseAttemptPort.loadById(saved.getId().value());
@@ -73,12 +74,24 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
     Subscription sub = createSubscription();
     UUID courseId2 = UUID.randomUUID();
 
-    CourseAttempt a1 = CourseAttempt.register(
-        AttemptId.generate(), sub.getId(), courseId, AttemptStatus.PASSED,
-        new Grade(new BigDecimal("4.0")), testPeriodId, "DIURNA");
-    CourseAttempt a2 = CourseAttempt.register(
-        AttemptId.generate(), sub.getId(), courseId2, AttemptStatus.FAILED,
-        new Grade(new BigDecimal("2.0")), testPeriodId, "DIURNA");
+    CourseAttempt a1 =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            sub.getId(),
+            courseId,
+            AttemptStatus.PASSED,
+            new Grade(new BigDecimal("4.0")),
+            testPeriodId,
+            "DIURNA");
+    CourseAttempt a2 =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            sub.getId(),
+            courseId2,
+            AttemptStatus.FAILED,
+            new Grade(new BigDecimal("2.0")),
+            testPeriodId,
+            "DIURNA");
 
     saveCourseAttemptPort.save(a1);
     saveCourseAttemptPort.save(a2);
@@ -98,9 +111,15 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
   @Test
   void cancelled_attempt_has_null_grade() {
     Subscription sub = createSubscription();
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(), sub.getId(), courseId, AttemptStatus.CANCELLED,
-        null, testPeriodId, "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            sub.getId(),
+            courseId,
+            AttemptStatus.CANCELLED,
+            null,
+            testPeriodId,
+            "DIURNA");
 
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
     Optional<CourseAttempt> loaded = loadCourseAttemptPort.loadById(saved.getId().value());
@@ -113,9 +132,15 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
   @Test
   void save_returns_attempt_with_incremented_version_after_update() {
     Subscription sub = createSubscription();
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(), sub.getId(), courseId, AttemptStatus.FAILED,
-        new Grade(new BigDecimal("2.0")), testPeriodId, "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            sub.getId(),
+            courseId,
+            AttemptStatus.FAILED,
+            new Grade(new BigDecimal("2.0")),
+            testPeriodId,
+            "DIURNA");
 
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
     long initialVersion = saved.getVersion();
@@ -133,9 +158,15 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
   void period_id_is_stored_and_loaded_as_opaque_uuid() {
     Subscription sub = createSubscription();
     UUID opaquePeriodId = UUID.randomUUID();
-    CourseAttempt attempt = CourseAttempt.register(
-        AttemptId.generate(), sub.getId(), courseId, AttemptStatus.PASSED,
-        new Grade(new BigDecimal("4.0")), opaquePeriodId, "DIURNA");
+    CourseAttempt attempt =
+        CourseAttempt.register(
+            AttemptId.generate(),
+            sub.getId(),
+            courseId,
+            AttemptStatus.PASSED,
+            new Grade(new BigDecimal("4.0")),
+            opaquePeriodId,
+            "DIURNA");
 
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
     Optional<CourseAttempt> loaded = loadCourseAttemptPort.loadById(saved.getId().value());

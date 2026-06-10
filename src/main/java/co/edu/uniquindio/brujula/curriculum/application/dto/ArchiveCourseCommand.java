@@ -11,7 +11,4 @@ import java.util.UUID;
  * @param courseId the course to archive
  * @param expectedVersion the client's known version (optimistic lock check)
  */
-public record ArchiveCourseCommand(
-    UUID actorId,
-    UUID courseId,
-    long expectedVersion) {}
+public record ArchiveCourseCommand(UUID actorId, UUID courseId, long expectedVersion) {}

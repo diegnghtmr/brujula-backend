@@ -68,7 +68,10 @@ management:
     health:
       probes:
         enabled: true
-      show-details: always
+      # QAL-ADV-001 / DEC-10 (WU1): do not expose instance-level details (datasource URLs,
+      # stack traces) to unauthenticated clients in non-local profiles. Local profile overrides
+      # this back to 'always' for developer convenience.
+      show-details: when_authorized
 
 # Brújula Keycloak Admin API configuration (S2-A slice-2 additions)
 # These properties configure the KeycloakAdminApiAdapter used for app-driven student registration.

@@ -12,8 +12,8 @@ import java.util.UUID;
  *
  * <ol>
  *   <li><strong>Acyclicity</strong>: the COURSE_PASSED / SEQUENCE requirement graph must be a
- *       directed acyclic graph (DAG). Uses 3-color DFS (WHITE → GRAY → BLACK).
- *       A GRAY-to-GRAY back-edge indicates a cycle → {@link PrerequisiteCycleException}.
+ *       directed acyclic graph (DAG). Uses 3-color DFS (WHITE → GRAY → BLACK). A GRAY-to-GRAY
+ *       back-edge indicates a cycle → {@link PrerequisiteCycleException}.
  *   <li><strong>Semester ordering</strong>: for every requirement edge, the required course's
  *       recommended semester (per the same journey) must be ≤ the target course's recommended
  *       semester (i.e. the prerequisite must be in the same or earlier semester, not a later one).
@@ -22,8 +22,8 @@ import java.util.UUID;
  *
  * <p>Both checks are merged into a single {@link #validate} pass.
  *
- * <p>ADR-F2-006: This service is framework-free — ZERO imports from {@code org.springframework}
- * or {@code jakarta.persistence}. ArchUnit test {@code WU1-3.5} enforces this at build time.
+ * <p>ADR-F2-006: This service is framework-free — ZERO imports from {@code org.springframework} or
+ * {@code jakarta.persistence}. ArchUnit test {@code WU1-3.5} enforces this at build time.
  *
  * <p>No Spring/JPA imports (ARQ-002).
  */
@@ -31,9 +31,9 @@ public class PrerequisiteAcyclicityService {
 
   /** DFS node color for cycle detection. */
   private enum Color {
-    WHITE,  // not yet visited
-    GRAY,   // currently in the DFS stack (ancestor path)
-    BLACK   // fully processed
+    WHITE, // not yet visited
+    GRAY, // currently in the DFS stack (ancestor path)
+    BLACK // fully processed
   }
 
   // ---------------------------------------------------------------------------
@@ -67,9 +67,7 @@ public class PrerequisiteAcyclicityService {
    * @throws SemesterOrderingViolationException if a forward-semester dependency is found
    */
   public void validate(
-      PrerequisiteGraph graph,
-      List<CourseRequirement> requirements,
-      List<Course> courses) {
+      PrerequisiteGraph graph, List<CourseRequirement> requirements, List<Course> courses) {
     validateAcyclicity(graph);
     validateSemesterOrdering(requirements, courses);
   }
@@ -79,8 +77,8 @@ public class PrerequisiteAcyclicityService {
   // ---------------------------------------------------------------------------
 
   /**
-   * DFS visit: marks the node GRAY (in-stack), recurses on successors, marks BLACK when done.
-   * A successor already colored GRAY indicates a back-edge → cycle.
+   * DFS visit: marks the node GRAY (in-stack), recurses on successors, marks BLACK when done. A
+   * successor already colored GRAY indicates a back-edge → cycle.
    */
   private void dfsVisit(PrerequisiteGraph graph, UUID node, Map<UUID, Color> colors) {
     colors.put(node, Color.GRAY);
@@ -89,7 +87,10 @@ public class PrerequisiteAcyclicityService {
       if (successorColor == Color.GRAY) {
         // Back-edge detected: cycle found
         throw new PrerequisiteCycleException(
-            "Prerequisite cycle detected: edge from " + node + " to " + successor
+            "Prerequisite cycle detected: edge from "
+                + node
+                + " to "
+                + successor
                 + " creates a cycle (back-edge to in-stack node)");
       }
       if (successorColor == Color.WHITE) {
@@ -105,15 +106,13 @@ public class PrerequisiteAcyclicityService {
   // ---------------------------------------------------------------------------
 
   /**
-   * Validate semester ordering: for every COURSE_PASSED/SEQUENCE requirement, the required
-   * course's recommended semester must be ≤ the target course's recommended semester (per the
-   * same journey). Cross-journey comparisons are NOT enforced.
+   * Validate semester ordering: for every COURSE_PASSED/SEQUENCE requirement, the required course's
+   * recommended semester must be ≤ the target course's recommended semester (per the same journey).
+   * Cross-journey comparisons are NOT enforced.
    *
    * @throws SemesterOrderingViolationException if any forward dependency is found
    */
-  public void validateSemesterOrdering(
-      List<CourseRequirement> requirements,
-      List<Course> courses) {
+  public void validateSemesterOrdering(List<CourseRequirement> requirements, List<Course> courses) {
     Map<UUID, Course> courseMap = buildCourseMap(courses);
     for (CourseRequirement req : requirements) {
       if (req.requiredCourseId() == null) {
@@ -129,25 +128,24 @@ public class PrerequisiteAcyclicityService {
   }
 
   private void checkSemesterOrderPerJourney(
-      CourseRequirement req,
-      Course requiredCourse,
-      Course targetCourse) {
+      CourseRequirement req, Course requiredCourse, Course targetCourse) {
     for (RecommendedSemester reqSem : requiredCourse.recommendedSemesters()) {
       String journey = reqSem.journeyCode();
       // Find matching semester for the target course in the same journey
       targetCourse.recommendedSemesters().stream()
           .filter(s -> s.journeyCode().equals(journey))
           .findFirst()
-          .ifPresent(targetSem -> {
-            if (reqSem.semester() > targetSem.semester()) {
-              throw new SemesterOrderingViolationException(
-                  req.requiredCourseId(),
-                  req.targetCourseId(),
-                  journey,
-                  reqSem.semester(),
-                  targetSem.semester());
-            }
-          });
+          .ifPresent(
+              targetSem -> {
+                if (reqSem.semester() > targetSem.semester()) {
+                  throw new SemesterOrderingViolationException(
+                      req.requiredCourseId(),
+                      req.targetCourseId(),
+                      journey,
+                      reqSem.semester(),
+                      targetSem.semester());
+                }
+              });
     }
   }
 

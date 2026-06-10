@@ -6,9 +6,9 @@ import java.util.UUID;
 /**
  * Input port: assemble the plan-level malla (curricular grid) for a given journey.
  *
- * <p>Backs {@code GET /plans/{planId}/malla?journeyCode=...} (design ADR-F2-001).
- * Returns ACTIVE courses grouped by recommended semester for the requested journey code.
- * Assembly is done in-memory: one indexed query per plan + group-by-semester in Java (&lt;500ms p95).
+ * <p>Backs {@code GET /plans/{planId}/malla?journeyCode=...} (design ADR-F2-001). Returns ACTIVE
+ * courses grouped by recommended semester for the requested journey code. Assembly is done
+ * in-memory: one indexed query per plan + group-by-semester in Java (&lt;500ms p95).
  *
  * <p>No Spring/framework imports (ARQ-003).
  */

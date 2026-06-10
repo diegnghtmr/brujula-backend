@@ -23,12 +23,10 @@ import co.edu.uniquindio.brujula.offering.domain.OfferingStatus;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,8 +34,8 @@ import org.junit.jupiter.api.Test;
  * TDD unit tests for {@link CreateOfferingService}.
  *
  * <p>Covers: new key creates + cascades options + records audit; idempotency replay returns stored
- * view; same-key+different-hash throws {@link IdempotencyKeyConflictException}; version in
- * returned view is 0. Zero Spring.
+ * view; same-key+different-hash throws {@link IdempotencyKeyConflictException}; version in returned
+ * view is 0. Zero Spring.
  */
 class CreateOfferingServiceTest {
 
@@ -61,8 +59,9 @@ class CreateOfferingServiceTest {
     jsonCodecPort = mock(JsonCodecPort.class);
     auditRecorder = mock(AuditRecorder.class);
     getCourseQuery = mock(GetCourseQuery.class);
-    service = new CreateOfferingService(
-        saveOfferingPort, idempotencyStorePort, jsonCodecPort, auditRecorder, getCourseQuery);
+    service =
+        new CreateOfferingService(
+            saveOfferingPort, idempotencyStorePort, jsonCodecPort, auditRecorder, getCourseQuery);
   }
 
   @Test
@@ -72,20 +71,45 @@ class CreateOfferingServiceTest {
 
     when(idempotencyStorePort.find(idempotencyKey, "CREATE_OFFERING")).thenReturn(Optional.empty());
 
-    CourseView courseView = new CourseView(
-        courseId, UUID.randomUUID(), programId, "ISC-PROG1", courseName,
-        "REQUIRED", 3, 6, Collections.emptyList(), "ACTIVE", 0L);
+    CourseView courseView =
+        new CourseView(
+            courseId,
+            UUID.randomUUID(),
+            programId,
+            "ISC-PROG1",
+            courseName,
+            "REQUIRED",
+            3,
+            6,
+            Collections.emptyList(),
+            "ACTIVE",
+            0L);
     when(getCourseQuery.getCourse(courseId)).thenReturn(courseView);
 
-    CourseOffering saved = CourseOffering.reconstitute(
-        CourseOfferingId.generate(), courseId, courseName, programId, periodId,
-        OfferingStatus.DRAFT, null, Collections.emptyList(), 0L);
+    CourseOffering saved =
+        CourseOffering.reconstitute(
+            CourseOfferingId.generate(),
+            courseId,
+            courseName,
+            programId,
+            periodId,
+            OfferingStatus.DRAFT,
+            null,
+            Collections.emptyList(),
+            0L);
     when(saveOfferingPort.save(any())).thenReturn(saved);
     when(jsonCodecPort.toJson(any())).thenReturn("{\"id\":\"...\"}");
 
-    CreateOfferingCommand command = new CreateOfferingCommand(
-        idempotencyKey, actorId, programId, courseId, periodId,
-        null, Collections.emptyList(), requestHash);
+    CreateOfferingCommand command =
+        new CreateOfferingCommand(
+            idempotencyKey,
+            actorId,
+            programId,
+            courseId,
+            periodId,
+            null,
+            Collections.emptyList(),
+            requestHash);
 
     OfferingDetailView result = service.createOffering(command);
 
@@ -95,8 +119,9 @@ class CreateOfferingServiceTest {
     verify(saveOfferingPort).save(any());
     verify(auditRecorder).record(argThat(cmd -> "OFFERING_CREATED".equals(cmd.action())));
     verify(jsonCodecPort).toJson(any(OfferingDetailView.class));
-    verify(idempotencyStorePort).save(
-        eq(idempotencyKey), eq("CREATE_OFFERING"), eq(requestHash), eq(201), any(String.class));
+    verify(idempotencyStorePort)
+        .save(
+            eq(idempotencyKey), eq("CREATE_OFFERING"), eq(requestHash), eq(201), any(String.class));
   }
 
   @Test
@@ -104,29 +129,59 @@ class CreateOfferingServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     when(idempotencyStorePort.find(idempotencyKey, "CREATE_OFFERING")).thenReturn(Optional.empty());
 
-    CourseView courseView = new CourseView(
-        courseId, UUID.randomUUID(), programId, null, courseName,
-        "REQUIRED", 3, 6, Collections.emptyList(), "ACTIVE", 0L);
+    CourseView courseView =
+        new CourseView(
+            courseId,
+            UUID.randomUUID(),
+            programId,
+            null,
+            courseName,
+            "REQUIRED",
+            3,
+            6,
+            Collections.emptyList(),
+            "ACTIVE",
+            0L);
     when(getCourseQuery.getCourse(courseId)).thenReturn(courseView);
 
     // Simulate saved offering with 1 schedule option
     co.edu.uniquindio.brujula.offering.domain.ScheduleOption option =
         co.edu.uniquindio.brujula.offering.domain.ScheduleOption.reconstitute(
             co.edu.uniquindio.brujula.offering.domain.ScheduleOptionId.generate(),
-            UUID.randomUUID(), "Grupo A", "DIURNA", Collections.emptyList(), 0L);
-    CourseOffering saved = CourseOffering.reconstitute(
-        CourseOfferingId.generate(), courseId, courseName, programId, periodId,
-        OfferingStatus.DRAFT, null, List.of(option), 0L);
+            UUID.randomUUID(),
+            "Grupo A",
+            "DIURNA",
+            Collections.emptyList(),
+            0L);
+    CourseOffering saved =
+        CourseOffering.reconstitute(
+            CourseOfferingId.generate(),
+            courseId,
+            courseName,
+            programId,
+            periodId,
+            OfferingStatus.DRAFT,
+            null,
+            List.of(option),
+            0L);
     when(saveOfferingPort.save(any())).thenReturn(saved);
     when(jsonCodecPort.toJson(any())).thenReturn("{\"id\":\"...\"}");
 
-    CreateOfferingCommand.SessionDraft sessionDraft = new CreateOfferingCommand.SessionDraft(
-        "MONDAY", java.time.LocalTime.of(8, 0), java.time.LocalTime.of(10, 0));
+    CreateOfferingCommand.SessionDraft sessionDraft =
+        new CreateOfferingCommand.SessionDraft(
+            "MONDAY", java.time.LocalTime.of(8, 0), java.time.LocalTime.of(10, 0));
     CreateOfferingCommand.ScheduleOptionDraft optionDraft =
         new CreateOfferingCommand.ScheduleOptionDraft("Grupo A", "DIURNA", List.of(sessionDraft));
-    CreateOfferingCommand command = new CreateOfferingCommand(
-        idempotencyKey, actorId, programId, courseId, periodId,
-        null, List.of(optionDraft), "hash-xyz");
+    CreateOfferingCommand command =
+        new CreateOfferingCommand(
+            idempotencyKey,
+            actorId,
+            programId,
+            courseId,
+            periodId,
+            null,
+            List.of(optionDraft),
+            "hash-xyz");
 
     OfferingDetailView result = service.createOffering(command);
 
@@ -141,17 +196,33 @@ class CreateOfferingServiceTest {
     String requestHash = "hash-offering";
     UUID offeringId = UUID.randomUUID();
     String storedJson = "{\"id\":\"" + offeringId + "\"}";
-    OfferingDetailView replayView = new OfferingDetailView(
-        offeringId, courseId, courseName, programId, periodId,
-        "DRAFT", null, 0L, Collections.emptyList());
+    OfferingDetailView replayView =
+        new OfferingDetailView(
+            offeringId,
+            courseId,
+            courseName,
+            programId,
+            periodId,
+            "DRAFT",
+            null,
+            0L,
+            Collections.emptyList());
 
     when(idempotencyStorePort.find(idempotencyKey, "CREATE_OFFERING"))
-        .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord(requestHash, 201, storedJson)));
+        .thenReturn(
+            Optional.of(new IdempotencyStorePort.StoredRecord(requestHash, 201, storedJson)));
     when(jsonCodecPort.fromJson(storedJson, OfferingDetailView.class)).thenReturn(replayView);
 
-    CreateOfferingCommand command = new CreateOfferingCommand(
-        idempotencyKey, actorId, programId, courseId, periodId,
-        null, Collections.emptyList(), requestHash);
+    CreateOfferingCommand command =
+        new CreateOfferingCommand(
+            idempotencyKey,
+            actorId,
+            programId,
+            courseId,
+            periodId,
+            null,
+            Collections.emptyList(),
+            requestHash);
 
     OfferingDetailView result = service.createOffering(command);
 
@@ -167,11 +238,19 @@ class CreateOfferingServiceTest {
     String storedJson = "{\"id\":\"00000000-0000-0000-0000-000000000001\"}";
 
     when(idempotencyStorePort.find(idempotencyKey, "CREATE_OFFERING"))
-        .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord("stored-hash", 201, storedJson)));
+        .thenReturn(
+            Optional.of(new IdempotencyStorePort.StoredRecord("stored-hash", 201, storedJson)));
 
-    CreateOfferingCommand command = new CreateOfferingCommand(
-        idempotencyKey, actorId, programId, courseId, periodId,
-        null, Collections.emptyList(), "different-hash");
+    CreateOfferingCommand command =
+        new CreateOfferingCommand(
+            idempotencyKey,
+            actorId,
+            programId,
+            courseId,
+            periodId,
+            null,
+            Collections.emptyList(),
+            "different-hash");
 
     assertThatThrownBy(() -> service.createOffering(command))
         .isInstanceOf(IdempotencyKeyConflictException.class);

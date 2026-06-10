@@ -30,8 +30,10 @@ public class ListSimulationSelectionsService implements ListSimulationSelections
 
   @Override
   public List<SimulationSelectionView> listSelections(UUID simulationId, UUID ownerId) {
-    Simulation simulation = loadSimulationPort.loadById(simulationId)
-        .orElseThrow(() -> new SimulationNotFoundException(simulationId));
+    Simulation simulation =
+        loadSimulationPort
+            .loadById(simulationId)
+            .orElseThrow(() -> new SimulationNotFoundException(simulationId));
     if (!simulation.getOwnerId().equals(ownerId)) {
       throw new SimulationAccessDeniedException(simulationId);
     }
@@ -43,10 +45,13 @@ public class ListSimulationSelectionsService implements ListSimulationSelections
   }
 
   private SimulationSelectionView toView(SimulationSelection selection) {
-    List<SimulationSelectionView.SessionView> sessions = selection.getSessions().stream()
-        .map(s -> new SimulationSelectionView.SessionView(
-            s.day(), s.startsAt().toString(), s.endsAt().toString()))
-        .toList();
+    List<SimulationSelectionView.SessionView> sessions =
+        selection.getSessions().stream()
+            .map(
+                s ->
+                    new SimulationSelectionView.SessionView(
+                        s.day(), s.startsAt().toString(), s.endsAt().toString()))
+            .toList();
 
     return new SimulationSelectionView(
         selection.getId().value(),

@@ -8,21 +8,26 @@ import java.util.UUID;
 /**
  * Domain entity representing a course offering within an academic period.
  *
- * <p>A CourseOffering aggregates one or more {@link ScheduleOption} instances and is
- * identified by an opaque {@link CourseOfferingId}. Instances are reconstituted from
- * persistence via the package-private {@link #reconstitute} factory.
+ * <p>A CourseOffering aggregates one or more {@link ScheduleOption} instances and is identified by
+ * an opaque {@link CourseOfferingId}. Instances are reconstituted from persistence via the
+ * package-private {@link #reconstitute} factory.
  */
 public class CourseOffering {
 
   private final CourseOfferingId id;
+
   /** Opaque reference to curriculum::Course (cross-schema, no FK). */
   private final UUID courseId;
+
   /** Denormalized course name snapshot — avoids runtime curriculum coupling. */
   private final String courseName;
+
   /** Opaque reference to programcatalog::Program (cross-schema, no FK). */
   private final UUID programId;
+
   /** Opaque reference to the academic period this offering belongs to. */
   private final UUID periodId;
+
   private final OfferingStatus status;
   private final String notes;
   private final List<ScheduleOption> scheduleOptions;
@@ -52,8 +57,8 @@ public class CourseOffering {
   /**
    * Write factory: creates a new offering in DRAFT status at version 0.
    *
-   * <p>Inline schedule options are attached atomically; null/empty options allowed
-   * (publishability is enforced only at publish time, not at create time per OFFW-003).
+   * <p>Inline schedule options are attached atomically; null/empty options allowed (publishability
+   * is enforced only at publish time, not at create time per OFFW-003).
    *
    * <p>Satisfies: OFFW-003.
    */
@@ -70,9 +75,18 @@ public class CourseOffering {
     Objects.requireNonNull(courseName, "courseName must not be null");
     Objects.requireNonNull(programId, "programId must not be null");
     Objects.requireNonNull(periodId, "periodId must not be null");
-    List<ScheduleOption> safeOptions = options != null ? options : java.util.Collections.emptyList();
-    return new CourseOffering(id, courseId, courseName, programId, periodId,
-        OfferingStatus.DRAFT, notes, safeOptions, 0L);
+    List<ScheduleOption> safeOptions =
+        options != null ? options : java.util.Collections.emptyList();
+    return new CourseOffering(
+        id,
+        courseId,
+        courseName,
+        programId,
+        periodId,
+        OfferingStatus.DRAFT,
+        notes,
+        safeOptions,
+        0L);
   }
 
   /** Public factory for mapper reconstitution — mirrors progress Subscription.reconstitute(). */
@@ -93,36 +107,38 @@ public class CourseOffering {
     Objects.requireNonNull(periodId, "periodId must not be null");
     Objects.requireNonNull(status, "status must not be null");
     Objects.requireNonNull(scheduleOptions, "scheduleOptions must not be null");
-    return new CourseOffering(id, courseId, courseName, programId, periodId, status, notes, scheduleOptions, version);
+    return new CourseOffering(
+        id, courseId, courseName, programId, periodId, status, notes, scheduleOptions, version);
   }
 
   /**
    * Returns a new instance with the given notes (all other fields unchanged).
    *
-   * <p>The returned instance carries the same version as this one; the @Version increment
-   * happens at JPA flush time (staleness activation invariant, OFFW-004, OFFW-006).
+   * <p>The returned instance carries the same version as this one; the @Version increment happens
+   * at JPA flush time (staleness activation invariant, OFFW-004, OFFW-006).
    *
    * <p>Satisfies: OFFW-004.
    */
   public CourseOffering updateNotes(String notes) {
-    return new CourseOffering(id, courseId, courseName, programId, periodId,
-        status, notes, scheduleOptions, version);
+    return new CourseOffering(
+        id, courseId, courseName, programId, periodId, status, notes, scheduleOptions, version);
   }
 
   /**
    * Transitions this offering to the given {@code target} status and returns a new instance.
    *
    * <p>Preconditions (both checked in order):
+   *
    * <ol>
-   *   <li>The transition must be legal per {@link OfferingStatus#canTransitionTo}; otherwise
-   *       {@link IllegalOfferingTransitionException} is thrown (→ HTTP 409).
+   *   <li>The transition must be legal per {@link OfferingStatus#canTransitionTo}; otherwise {@link
+   *       IllegalOfferingTransitionException} is thrown (→ HTTP 409).
    *   <li>When {@code target} is {@code PRELIMINARY} or {@code FINAL} the offering must have at
-   *       least one schedule option; otherwise {@link OfferingNotPublishableException} is thrown
-   *       (→ HTTP 422). Transitioning to {@code ARCHIVED} does NOT require any options.
+   *       least one schedule option; otherwise {@link OfferingNotPublishableException} is thrown (→
+   *       HTTP 422). Transitioning to {@code ARCHIVED} does NOT require any options.
    * </ol>
    *
-   * <p>The returned instance carries the same version as this one; the @Version increment
-   * happens at JPA flush time (staleness activation invariant, OFFW-005, OFFW-006).
+   * <p>The returned instance carries the same version as this one; the @Version increment happens
+   * at JPA flush time (staleness activation invariant, OFFW-005, OFFW-006).
    *
    * <p>Satisfies: OFFW-005.
    */
@@ -131,16 +147,16 @@ public class CourseOffering {
       throw new IllegalOfferingTransitionException(id, status, target);
     }
     requireSchedulableForPublish(target);
-    return new CourseOffering(id, courseId, courseName, programId, periodId,
-        target, notes, scheduleOptions, version);
+    return new CourseOffering(
+        id, courseId, courseName, programId, periodId, target, notes, scheduleOptions, version);
   }
 
   /**
-   * Guards publication to PRELIMINARY or FINAL: the offering must have at least one
-   * schedule option.
+   * Guards publication to PRELIMINARY or FINAL: the offering must have at least one schedule
+   * option.
    *
-   * @throws OfferingNotPublishableException when {@code target} is PRELIMINARY or FINAL and
-   *         the offering has no schedule options.
+   * @throws OfferingNotPublishableException when {@code target} is PRELIMINARY or FINAL and the
+   *     offering has no schedule options.
    */
   private void requireSchedulableForPublish(OfferingStatus target) {
     if ((target == OfferingStatus.PRELIMINARY || target == OfferingStatus.FINAL)

@@ -18,7 +18,6 @@ import co.edu.uniquindio.brujula.offering.domain.ScheduleOption;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +26,7 @@ import java.util.UUID;
  * Use case: publish (state-transition) a course offering (idempotent, STAFF/ADMIN).
  *
  * <p>Idempotency rules (mirrors CreateOfferingService / CreatePeriodService verbatim):
+ *
  * <ul>
  *   <li>Same key + same hash → return the stored result (replay, no re-execution)
  *   <li>Same key + different hash → throw {@link IdempotencyKeyConflictException} (409)
@@ -34,22 +34,22 @@ import java.util.UUID;
  * </ul>
  *
  * <p>Intensity advisory (OFFW-005, OFFW-006):
+ *
  * <ul>
- *   <li>For each schedule option, compare {@code option.weeklyHours()} against
- *       {@code GetCourseQuery.getCourse(courseId).curricularWeeklyHours()}.
+ *   <li>For each schedule option, compare {@code option.weeklyHours()} against {@code
+ *       GetCourseQuery.getCourse(courseId).curricularWeeklyHours()}.
  *   <li>If ANY option's hours differ → set {@code intensityWarning=true} on the response.
  *   <li>This is ADVISORY: it NEVER returns 422 or blocks publication. Always returns 200 + flag.
  *   <li>This is NOT a no-op: the comparison is performed against the REAL curricular data from
- *       {@code curriculum::api}. Any shortcut that always sets the flag to false/null would be
- *       a regression (DEBT-F4-005 re-introduction).
+ *       {@code curriculum::api}. Any shortcut that always sets the flag to false/null would be a
+ *       regression (DEBT-F4-005 re-introduction).
  * </ul>
  *
  * <p>{@code course_offering.version} is incremented at flush time by the JPA @Version mechanism.
- * The returned view's version MUST be strictly greater than {@code command.expectedVersion()}
- * — this is the staleness activation invariant (OFFW-006, DEBT-F4-003 closure).
+ * The returned view's version MUST be strictly greater than {@code command.expectedVersion()} —
+ * this is the staleness activation invariant (OFFW-006, DEBT-F4-003 closure).
  *
- * <p>Framework-free — wired by {@code OfferingConfiguration}.
- * Satisfies: OFFW-005, OFFW-006.
+ * <p>Framework-free — wired by {@code OfferingConfiguration}. Satisfies: OFFW-005, OFFW-006.
  */
 public class PublishOfferingService implements PublishOfferingUseCase {
 
@@ -89,24 +89,25 @@ public class PublishOfferingService implements PublishOfferingUseCase {
 
     // 2. Load the offering (throws OfferingNotFoundException if absent)
     CourseOfferingId id = CourseOfferingId.of(command.offeringId());
-    CourseOffering existing1 = saveOfferingPort.findCurrentById(id)
-        .orElseThrow(() -> new OfferingNotFoundException(id));
+    CourseOffering existing1 =
+        saveOfferingPort.findCurrentById(id).orElseThrow(() -> new OfferingNotFoundException(id));
 
     // 3. Parse target status and apply domain transition (domain guards throw on violation)
     OfferingStatus targetStatus = OfferingStatus.valueOf(command.targetStatus());
     CourseOffering transitioned = existing1.publishTo(targetStatus);
 
     // 4. Set expectedVersion for optimistic-lock detection then persist
-    CourseOffering withExpectedVersion = CourseOffering.reconstitute(
-        transitioned.getId(),
-        transitioned.getCourseId(),
-        transitioned.getCourseName(),
-        transitioned.getProgramId(),
-        transitioned.getPeriodId(),
-        transitioned.getStatus(),
-        transitioned.getNotes(),
-        transitioned.getScheduleOptions(),
-        command.expectedVersion());
+    CourseOffering withExpectedVersion =
+        CourseOffering.reconstitute(
+            transitioned.getId(),
+            transitioned.getCourseId(),
+            transitioned.getCourseName(),
+            transitioned.getProgramId(),
+            transitioned.getPeriodId(),
+            transitioned.getStatus(),
+            transitioned.getNotes(),
+            transitioned.getScheduleOptions(),
+            command.expectedVersion());
 
     // 5. Persist — may throw OptimisticLockingFailureException (→ 409 at handler)
     //    Returns managed post-flush domain object with @Version incremented.
@@ -124,15 +125,16 @@ public class PublishOfferingService implements PublishOfferingUseCase {
         command.idempotencyKey(), OPERATION, command.requestHash(), 200, responseBodyJson);
 
     // 9. Record audit event (RNF-SEG-007 synchronous, same transaction)
-    auditRecorder.record(new RecordAuditEventCommand(
-        command.actorId(),
-        "STAFF",
-        "OFFERING_PUBLISHED",
-        "course_offering",
-        saved.getId().value(),
-        null,
-        null,
-        null));
+    auditRecorder.record(
+        new RecordAuditEventCommand(
+            command.actorId(),
+            "STAFF",
+            "OFFERING_PUBLISHED",
+            "course_offering",
+            saved.getId().value(),
+            null,
+            null,
+            null));
 
     return view;
   }
@@ -140,9 +142,9 @@ public class PublishOfferingService implements PublishOfferingUseCase {
   /**
    * Advisory intensity check (OFFW-005, OFFW-006).
    *
-   * <p>Queries {@code curriculum::api} for the course's curricular weekly hours and compares
-   * each schedule option's computed weekly hours. Returns {@code true} if ANY option's hours
-   * differ from the curricular hours. This comparison is REAL — it is NOT a no-op.
+   * <p>Queries {@code curriculum::api} for the course's curricular weekly hours and compares each
+   * schedule option's computed weekly hours. Returns {@code true} if ANY option's hours differ from
+   * the curricular hours. This comparison is REAL — it is NOT a no-op.
    *
    * <p>Intensity mismatch is advisory only: it NEVER throws, never returns 422.
    */
@@ -164,9 +166,10 @@ public class PublishOfferingService implements PublishOfferingUseCase {
   }
 
   OfferingDetailView toDetailView(CourseOffering offering, boolean intensityWarning) {
-    List<ScheduleOptionView> optionViews = offering.getScheduleOptions().stream()
-        .map(option -> toOptionView(option, offering.getId().value()))
-        .toList();
+    List<ScheduleOptionView> optionViews =
+        offering.getScheduleOptions().stream()
+            .map(option -> toOptionView(option, offering.getId().value()))
+            .toList();
     return new OfferingDetailView(
         offering.getId().value(),
         offering.getCourseId(),
@@ -181,9 +184,10 @@ public class PublishOfferingService implements PublishOfferingUseCase {
   }
 
   private ScheduleOptionView toOptionView(ScheduleOption option, UUID offeringId) {
-    List<ScheduleSessionView> sessionViews = option.getSessions().stream()
-        .map(s -> new ScheduleSessionView(s.id(), s.day().name(), s.startsAt(), s.endsAt()))
-        .toList();
+    List<ScheduleSessionView> sessionViews =
+        option.getSessions().stream()
+            .map(s -> new ScheduleSessionView(s.id(), s.day().name(), s.startsAt(), s.endsAt()))
+            .toList();
     return new ScheduleOptionView(
         option.getId().value(),
         offeringId,

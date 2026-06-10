@@ -11,12 +11,12 @@ import static org.mockito.Mockito.when;
 
 import co.edu.uniquindio.brujula.curriculum.application.dto.PlanMallaView;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMallaQuery;
+import co.edu.uniquindio.brujula.programcatalog.application.dto.ProgramView;
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
 import co.edu.uniquindio.brujula.progress.application.dto.ProgressSummaryView;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadCourseAttemptPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionProgressService;
-import co.edu.uniquindio.brujula.programcatalog.application.dto.ProgramView;
-import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
 import co.edu.uniquindio.brujula.progress.domain.AttemptId;
 import co.edu.uniquindio.brujula.progress.domain.AttemptStatus;
 import co.edu.uniquindio.brujula.progress.domain.CourseAttempt;
@@ -69,8 +69,9 @@ class GetSubscriptionProgressServiceTest {
     when(getProgramQuery.getProgram(PROGRAM_ID))
         .thenReturn(new ProgramView(PROGRAM_ID, PROGRAM_NAME, "Engineering", "ACTIVE", 0L));
 
-    sut = new GetSubscriptionProgressService(
-        loadSubscriptionPort, loadCourseAttemptPort, assemblePlanMallaQuery, getProgramQuery);
+    sut =
+        new GetSubscriptionProgressService(
+            loadSubscriptionPort, loadCourseAttemptPort, assemblePlanMallaQuery, getProgramQuery);
   }
 
   // -----------------------------------------------------------------------
@@ -119,14 +120,28 @@ class GetSubscriptionProgressServiceTest {
     when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any())).thenReturn(buildMalla());
 
     // COURSE_1 PASSED (4.0), COURSE_2 FAILED (2.0) — each 3 credits
-    CourseAttempt passed = CourseAttempt.reconstitute(
-        AttemptId.generate(), new SubscriptionId(SUBSCRIPTION_ID), COURSE_1,
-        AttemptStatus.PASSED, new Grade(new BigDecimal("4.0")), UUID.randomUUID(),
-        "DIURNA", Instant.now(), 0L);
-    CourseAttempt failed = CourseAttempt.reconstitute(
-        AttemptId.generate(), new SubscriptionId(SUBSCRIPTION_ID), COURSE_2,
-        AttemptStatus.FAILED, new Grade(new BigDecimal("2.0")), UUID.randomUUID(),
-        "DIURNA", Instant.now(), 0L);
+    CourseAttempt passed =
+        CourseAttempt.reconstitute(
+            AttemptId.generate(),
+            new SubscriptionId(SUBSCRIPTION_ID),
+            COURSE_1,
+            AttemptStatus.PASSED,
+            new Grade(new BigDecimal("4.0")),
+            UUID.randomUUID(),
+            "DIURNA",
+            Instant.now(),
+            0L);
+    CourseAttempt failed =
+        CourseAttempt.reconstitute(
+            AttemptId.generate(),
+            new SubscriptionId(SUBSCRIPTION_ID),
+            COURSE_2,
+            AttemptStatus.FAILED,
+            new Grade(new BigDecimal("2.0")),
+            UUID.randomUUID(),
+            "DIURNA",
+            Instant.now(),
+            0L);
     when(loadCourseAttemptPort.loadBySubscriptionId(SUBSCRIPTION_ID))
         .thenReturn(List.of(passed, failed));
 
@@ -190,8 +205,10 @@ class GetSubscriptionProgressServiceTest {
   }
 
   private PlanMallaView buildMalla() {
-    var course1 = new PlanMallaView.CourseSummary(COURSE_1, "C1", "Course 1", "REQUIRED", 3, List.of());
-    var course2 = new PlanMallaView.CourseSummary(COURSE_2, "C2", "Course 2", "REQUIRED", 3, List.of());
+    var course1 =
+        new PlanMallaView.CourseSummary(COURSE_1, "C1", "Course 1", "REQUIRED", 3, List.of());
+    var course2 =
+        new PlanMallaView.CourseSummary(COURSE_2, "C2", "Course 2", "REQUIRED", 3, List.of());
     var bucket = new PlanMallaView.SemesterBucket(1, List.of(course1, course2));
     return new PlanMallaView(PLAN_ID, "DIURNA", List.of(bucket), null);
   }

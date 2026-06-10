@@ -84,7 +84,8 @@ class FlywayV015ProgressTablesTest extends AbstractPostgresIntegrationTest {
             String.class);
 
     assertThat(columns)
-        .as("progress.student_program_subscription must NOT have is_primary column (contract alignment #1630)")
+        .as(
+            "progress.student_program_subscription must NOT have is_primary column (contract alignment #1630)")
         .doesNotContain("is_primary");
   }
 
@@ -185,9 +186,7 @@ class FlywayV015ProgressTablesTest extends AbstractPostgresIntegrationTest {
             """,
             Integer.class);
 
-    assertThat(count)
-        .as("progress.course_attempt must exist after V015 migration")
-        .isEqualTo(1);
+    assertThat(count).as("progress.course_attempt must exist after V015 migration").isEqualTo(1);
   }
 
   @Test
@@ -318,9 +317,7 @@ class FlywayV015ProgressTablesTest extends AbstractPostgresIntegrationTest {
             """,
             Integer.class);
 
-    assertThat(count)
-        .as("PASSED attempt with grade 4.2 must be accepted")
-        .isEqualTo(1);
+    assertThat(count).as("PASSED attempt with grade 4.2 must be accepted").isEqualTo(1);
   }
 
   @Test

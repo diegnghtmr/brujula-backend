@@ -37,16 +37,16 @@ class ListCourseRequirementsServiceTest {
 
   @Test
   void returnsAllRequirementFieldsIncludingConfidenceAndInferred() {
-    CourseRequirement req = CourseRequirement.coursePassed(
-        CourseRequirementId.generate(),
-        targetCourseId,
-        requiredCourseId,
-        false,
-        Confidence.HIGH,
-        false);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            CourseRequirementId.generate(),
+            targetCourseId,
+            requiredCourseId,
+            false,
+            Confidence.HIGH,
+            false);
 
-    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId))
-        .thenReturn(List.of(req));
+    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId)).thenReturn(List.of(req));
 
     List<CourseRequirementView> views = service.listCourseRequirements(targetCourseId);
 
@@ -61,16 +61,16 @@ class ListCourseRequirementsServiceTest {
 
   @Test
   void returnsInferredTrueAndMediumConfidence() {
-    CourseRequirement req = CourseRequirement.coursePassed(
-        CourseRequirementId.generate(),
-        targetCourseId,
-        requiredCourseId,
-        false,
-        Confidence.MEDIUM,
-        true);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            CourseRequirementId.generate(),
+            targetCourseId,
+            requiredCourseId,
+            false,
+            Confidence.MEDIUM,
+            true);
 
-    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId))
-        .thenReturn(List.of(req));
+    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId)).thenReturn(List.of(req));
 
     List<CourseRequirementView> views = service.listCourseRequirements(targetCourseId);
 
@@ -80,16 +80,11 @@ class ListCourseRequirementsServiceTest {
 
   @Test
   void returnsNullConfidenceWhenNotSet() {
-    CourseRequirement req = CourseRequirement.coursePassed(
-        CourseRequirementId.generate(),
-        targetCourseId,
-        requiredCourseId,
-        false,
-        null,
-        null);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            CourseRequirementId.generate(), targetCourseId, requiredCourseId, false, null, null);
 
-    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId))
-        .thenReturn(List.of(req));
+    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId)).thenReturn(List.of(req));
 
     List<CourseRequirementView> views = service.listCourseRequirements(targetCourseId);
 
@@ -99,8 +94,7 @@ class ListCourseRequirementsServiceTest {
 
   @Test
   void returnsEmptyListWhenNoRequirements() {
-    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId))
-        .thenReturn(List.of());
+    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId)).thenReturn(List.of());
 
     List<CourseRequirementView> views = service.listCourseRequirements(targetCourseId);
 
@@ -109,11 +103,10 @@ class ListCourseRequirementsServiceTest {
 
   @Test
   void minimumCreditsRequirementHasNullRequiredCourseId() {
-    CourseRequirement req = CourseRequirement.minimumCredits(
-        CourseRequirementId.generate(), targetCourseId, 60);
+    CourseRequirement req =
+        CourseRequirement.minimumCredits(CourseRequirementId.generate(), targetCourseId, 60);
 
-    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId))
-        .thenReturn(List.of(req));
+    when(loadCourseRequirementPort.loadByTargetCourseId(targetCourseId)).thenReturn(List.of(req));
 
     List<CourseRequirementView> views = service.listCourseRequirements(targetCourseId);
 

@@ -7,8 +7,8 @@ import java.util.Optional;
  *
  * <p>Code: {@code SIMULATION_COURSE_ALREADY_PASSED}.
  *
- * <p>Package-private — only used by {@link SimulationValidationService}.
- * Pure Java, no Spring/JPA (ARQ-002, ADR-F4-004).
+ * <p>Package-private — only used by {@link SimulationValidationService}. Pure Java, no Spring/JPA
+ * (ARQ-002, ADR-F4-004).
  */
 class AlreadyPassedRule {
 
@@ -16,14 +16,15 @@ class AlreadyPassedRule {
    * Returns a blocking notice if the candidate course is already in the student's passed set.
    *
    * @param candidate the selection being added
-   * @param passed    the set of courses the student has effectively passed
+   * @param passed the set of courses the student has effectively passed
    * @return optional blocking notice with code {@code SIMULATION_COURSE_ALREADY_PASSED}
    */
   Optional<ValidationNotice> evaluate(CandidateSelection candidate, PassedCourseSet passed) {
     if (passed.hasPassed(candidate.courseId())) {
-      return Optional.of(new ValidationNotice(
-          "SIMULATION_COURSE_ALREADY_PASSED",
-          "Course already passed: " + candidate.courseName()));
+      return Optional.of(
+          new ValidationNotice(
+              "SIMULATION_COURSE_ALREADY_PASSED",
+              "Course already passed: " + candidate.courseName()));
     }
     return Optional.empty();
   }

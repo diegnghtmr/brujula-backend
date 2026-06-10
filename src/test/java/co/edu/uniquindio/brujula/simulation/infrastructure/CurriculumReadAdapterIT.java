@@ -15,31 +15,30 @@ import org.springframework.boot.test.context.SpringBootTest;
  * sequential-track gatekeeper data end-to-end against a live PostgreSQL database.
  *
  * <p>Data provenance:
+ *
  * <ul>
- *   <li>V012: seeds ISC DEEPENING tracks (e.g. Línea Ingeniería del Software y HCI,
- *       track id = e0a20000-0000-4000-a000-000000000001) with level-option courses
- *       (Profundización I: c0080000-0000-4000-a000-000000000004,
- *        Profundización II: c0080000-0000-4000-a000-000000000005).
- *   <li>V014: sets {@code gatekeeper_course_id = c0050000-0000-4000-a000-000000000005}
- *       (Ingeniería de Software I) on track e0a20000-0000-4000-a000-000000000001.
+ *   <li>V012: seeds ISC DEEPENING tracks (e.g. Línea Ingeniería del Software y HCI, track id =
+ *       e0a20000-0000-4000-a000-000000000001) with level-option courses (Profundización I:
+ *       c0080000-0000-4000-a000-000000000004, Profundización II:
+ *       c0080000-0000-4000-a000-000000000005).
+ *   <li>V014: sets {@code gatekeeper_course_id = c0050000-0000-4000-a000-000000000005} (Ingeniería
+ *       de Software I) on track e0a20000-0000-4000-a000-000000000001.
  * </ul>
  *
- * <p>Traversal path exercised: {@code sequentialPredecessor(courseId, null)} →
- * {@code getCourse(courseId).type()} = "DEEPENING" →
- * {@code getCourse(courseId).planId()} = ISC plan →
- * {@code listSequentialTracks(planId, null)} →
- * find track containing courseId → return gatekeeper.
+ * <p>Traversal path exercised: {@code sequentialPredecessor(courseId, null)} → {@code
+ * getCourse(courseId).type()} = "DEEPENING" → {@code getCourse(courseId).planId()} = ISC plan →
+ * {@code listSequentialTracks(planId, null)} → find track containing courseId → return gatekeeper.
  *
- * <p>If this test returns empty (no predecessor), the traversal is broken — that is a REAL
- * bug to surface, not to mask with a softer assertion.
+ * <p>If this test returns empty (no predecessor), the traversal is broken — that is a REAL bug to
+ * surface, not to mask with a softer assertion.
  *
- * <p>Uses Testcontainers PostgreSQL + Flyway V011..V018 (shared via AbstractPostgresIntegrationTest).
+ * <p>Uses Testcontainers PostgreSQL + Flyway V011..V018 (shared via
+ * AbstractPostgresIntegrationTest).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class CurriculumReadAdapterIT extends AbstractPostgresIntegrationTest {
 
-  @Autowired
-  private CurriculumReadPort curriculumReadPort;
+  @Autowired private CurriculumReadPort curriculumReadPort;
 
   // V012 UUIDs for the ISC "Línea Ingeniería del Software y HCI" DEEPENING track
   // Profundización I (ISC-S8-PROFUNDIZACIONI) — a level-1 course in the track
@@ -52,8 +51,7 @@ class CurriculumReadAdapterIT extends AbstractPostgresIntegrationTest {
       UUID.fromString("c0050000-0000-4000-a000-000000000005");
 
   // V012 planId for ISC Plan 21
-  static final UUID ISC_PLAN_ID =
-      UUID.fromString("33333333-0000-4000-a000-000000000001");
+  static final UUID ISC_PLAN_ID = UUID.fromString("33333333-0000-4000-a000-000000000001");
 
   // -------------------------------------------------------------------------
   // S1: sequentialPredecessor resolves real V014 gatekeeper (traversal proof)
@@ -63,8 +61,8 @@ class CurriculumReadAdapterIT extends AbstractPostgresIntegrationTest {
    * Proves the full getCourse→planId→listSequentialTracks→gatekeeper traversal returns the
    * V014-seeded gatekeeper for a DEEPENING course in the ISC Línea de Software y HCI track.
    *
-   * <p>If this assertion fails with {@code predecessorCourseId == null}, the traversal is
-   * broken and the bug must be fixed — do NOT relax the assertion.
+   * <p>If this assertion fails with {@code predecessorCourseId == null}, the traversal is broken
+   * and the bug must be fixed — do NOT relax the assertion.
    */
   @Test
   void sequentialPredecessor_deepeningCourseInSoftwareLine_resolvesV014Gatekeeper() {
@@ -89,7 +87,8 @@ class CurriculumReadAdapterIT extends AbstractPostgresIntegrationTest {
 
     // ASSERT: the gatekeeper must be Ingeniería de Software I (V014 source of truth)
     assertThat(result.predecessorCourseId())
-        .as("V014 gatekeeper for Línea SW+HCI track must be c0050000-...-5 (Ingeniería de Software I)")
+        .as(
+            "V014 gatekeeper for Línea SW+HCI track must be c0050000-...-5 (Ingeniería de Software I)")
         .isEqualTo(EXPECTED_GATEKEEPER_ID);
 
     // ASSERT: predecessor name must be non-null and non-blank

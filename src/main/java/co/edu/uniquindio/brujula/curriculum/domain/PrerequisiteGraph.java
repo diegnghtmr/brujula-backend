@@ -21,16 +21,14 @@ import java.util.UUID;
  */
 public class PrerequisiteGraph {
 
-  /**
-   * Adjacency list: node → list of successors (courses that depend on this course).
-   */
+  /** Adjacency list: node → list of successors (courses that depend on this course). */
   private final Map<UUID, List<UUID>> adjacency = new HashMap<>();
 
   /**
    * Add a directed edge from {@code from} to {@code to}.
    *
-   * <p>Meaning: course {@code to} depends on (requires) course {@code from}.
-   * Both nodes are registered in the graph even if they have no other edges.
+   * <p>Meaning: course {@code to} depends on (requires) course {@code from}. Both nodes are
+   * registered in the graph even if they have no other edges.
    *
    * @param from the prerequisite course (must have been approved first)
    * @param to the course that requires {@code from}
@@ -41,16 +39,14 @@ public class PrerequisiteGraph {
     adjacency.putIfAbsent(to, new ArrayList<>());
   }
 
-  /**
-   * Returns all nodes (course UUIDs) in the graph.
-   */
+  /** Returns all nodes (course UUIDs) in the graph. */
   public Set<UUID> nodes() {
     return Collections.unmodifiableSet(adjacency.keySet());
   }
 
   /**
-   * Returns the direct successors (dependents) of a given node.
-   * Returns an empty list if the node has no outgoing edges.
+   * Returns the direct successors (dependents) of a given node. Returns an empty list if the node
+   * has no outgoing edges.
    */
   public List<UUID> successors(UUID node) {
     return Collections.unmodifiableList(adjacency.getOrDefault(node, List.of()));

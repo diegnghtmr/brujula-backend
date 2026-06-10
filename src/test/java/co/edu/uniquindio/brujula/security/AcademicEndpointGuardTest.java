@@ -24,29 +24,27 @@ import org.springframework.web.context.WebApplicationContext;
  *
  * <p>STRICT TDD: tests written RED before the guard is implemented.
  *
- * <p>Spec: "Unverified user cannot access academic functions" (§App-Driven Registration, S2-E).
- * A user with onboardingState=PENDING_VERIFICATION MUST be blocked (403) from /api/v1/academic/**.
+ * <p>Spec: "Unverified user cannot access academic functions" (§App-Driven Registration, S2-E). A
+ * user with onboardingState=PENDING_VERIFICATION MUST be blocked (403) from /api/v1/academic/**.
  * ACTIVE users are NOT blocked by this rule.
  *
- * <p>Authorization mechanism (Option B — authority-based, no DB hit per request):
- * {@code IdentityOidcUserService} adds {@code ONBOARDING_ACTIVE} authority when
- * {@code appUser.onboardingState() == ACTIVE}. The {@code SecurityConfiguration} adds an
- * {@code authorizeHttpRequests} rule for {@code /api/v1/academic/**} requiring this authority.
- * Mock tests inject/omit this authority via {@code oidcLogin().authorities(...)}.
+ * <p>Authorization mechanism (Option B — authority-based, no DB hit per request): {@code
+ * IdentityOidcUserService} adds {@code ONBOARDING_ACTIVE} authority when {@code
+ * appUser.onboardingState() == ACTIVE}. The {@code SecurityConfiguration} adds an {@code
+ * authorizeHttpRequests} rule for {@code /api/v1/academic/**} requiring this authority. Mock tests
+ * inject/omit this authority via {@code oidcLogin().authorities(...)}.
  *
- * <p>Rationale for Option B over Option A (custom AuthorizationManager):
- * - No DB hit per request: the authority is established at login time and carried in the session.
- * - Consistent with existing ROLE_ authority pattern (G3 verified).
- * - Authority refreshed correctly on sync-on-login: when PENDING_VERIFICATION user re-authenticates
- *   after email verification, ProvisionUserOnLoginService activates the user and the new session
- *   includes ONBOARDING_ACTIVE.
- * - Keeps SecurityConfiguration clean (just one more requestMatcher rule).
- * - Avoids importing identity module internals into sharedkernel (Modulith safe: authority name
- *   is a String constant, not a domain type).
+ * <p>Rationale for Option B over Option A (custom AuthorizationManager): - No DB hit per request:
+ * the authority is established at login time and carried in the session. - Consistent with existing
+ * ROLE_ authority pattern (G3 verified). - Authority refreshed correctly on sync-on-login: when
+ * PENDING_VERIFICATION user re-authenticates after email verification, ProvisionUserOnLoginService
+ * activates the user and the new session includes ONBOARDING_ACTIVE. - Keeps SecurityConfiguration
+ * clean (just one more requestMatcher rule). - Avoids importing identity module internals into
+ * sharedkernel (Modulith safe: authority name is a String constant, not a domain type).
  *
- * <p>Test seam: no real /api/v1/academic/** endpoints exist yet (Fase 2). The test asserts
- * the authorization DECISION via the HTTP status: 403 for PENDING, not-403 for ACTIVE.
- * A 404 from an ACTIVE user is acceptable and expected (endpoint does not exist yet).
+ * <p>Test seam: no real /api/v1/academic/** endpoints exist yet (Fase 2). The test asserts the
+ * authorization DECISION via the HTTP status: 403 for PENDING, not-403 for ACTIVE. A 404 from an
+ * ACTIVE user is acceptable and expected (endpoint does not exist yet).
  *
  * <p>Satisfies: S2-E, Spec §Unverified user cannot access academic functions, RN-008.
  */
@@ -72,10 +70,7 @@ class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/api/v1/academic/courses")
-                .with(
-                    oidcLogin()
-                        .authorities(
-                            new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         // ONBOARDING_ACTIVE authority absent → security rule blocks → 403
         .andExpect(status().isForbidden());
   }
@@ -99,7 +94,8 @@ class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
             result -> {
               int status = result.getResponse().getStatus();
               // 404 is fine (endpoint doesn't exist yet in Fase 1).
-              // Must NOT be 403 (that would mean the verification guard is wrongly blocking ACTIVE).
+              // Must NOT be 403 (that would mean the verification guard is wrongly blocking
+              // ACTIVE).
               assertThat(status)
                   .as(
                       "ACTIVE user must NOT be blocked by verification guard on /api/v1/academic/**"
@@ -135,11 +131,7 @@ class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
     // PENDING_VERIFICATION user can access /me (not an academic endpoint)
     mockMvc
         .perform(
-            get("/me")
-                .with(
-                    oidcLogin()
-                        .authorities(
-                            new SimpleGrantedAuthority("ROLE_STUDENT"))))
+            get("/me").with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(
             result -> {
               int status = result.getResponse().getStatus();
@@ -157,8 +149,8 @@ class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
 
   /**
    * W-001 spec compliance: a PENDING_VERIFICATION user hitting /api/v1/academic/** must receive a
-   * 403 response with Content-Type application/problem+json and a body containing
-   * {@code "code": "EMAIL_VERIFICATION_REQUIRED"} (RFC 9457 ProblemDetail extension).
+   * 403 response with Content-Type application/problem+json and a body containing {@code "code":
+   * "EMAIL_VERIFICATION_REQUIRED"} (RFC 9457 ProblemDetail extension).
    *
    * <p>Currently fails because Spring Security's default {@code AccessDeniedHandlerImpl} returns a
    * generic 403 with no body. This test is RED until a custom {@code AccessDeniedHandler} is
@@ -170,9 +162,7 @@ class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
     mockMvc
         .perform(
             get("/api/v1/academic/courses")
-                .with(
-                    oidcLogin()
-                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isForbidden())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
         .andExpect(jsonPath("$.code").value("EMAIL_VERIFICATION_REQUIRED"));
@@ -185,9 +175,9 @@ class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
   /**
    * Regression guard for W-001: the custom AccessDeniedHandler must be SCOPED to
    * /api/v1/academic/** only. A STUDENT hitting /admin/** must receive a generic 403 (missing role,
-   * not missing email verification). The response must NOT contain
-   * {@code "code": "EMAIL_VERIFICATION_REQUIRED"} — that would mean we accidentally relabelled
-   * every access-denied as an email-verification issue, breaking admin authorization semantics.
+   * not missing email verification). The response must NOT contain {@code "code":
+   * "EMAIL_VERIFICATION_REQUIRED"} — that would mean we accidentally relabelled every access-denied
+   * as an email-verification issue, breaking admin authorization semantics.
    *
    * <p>ONBOARDING_ACTIVE is present so the academic guard is not triggered; the failure comes from
    * lacking ROLE_ADMIN, which is a regular authorization denial.
@@ -220,11 +210,11 @@ class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
   // -------------------------------------------------------------------------
 
   /**
-   * W-002 edge-case coverage: an ADMIN user with ONBOARDING_ACTIVE authority must NOT be blocked
-   * by the academic verification guard. OIDC-provisioned ADMIN accounts start with
-   * {@code OnboardingState.ACTIVE} and receive ONBOARDING_ACTIVE at login time, so they satisfy
-   * the guard. A 404 is acceptable (no academic endpoint exists yet); any result other than 403
-   * proves the guard is correctly scoped.
+   * W-002 edge-case coverage: an ADMIN user with ONBOARDING_ACTIVE authority must NOT be blocked by
+   * the academic verification guard. OIDC-provisioned ADMIN accounts start with {@code
+   * OnboardingState.ACTIVE} and receive ONBOARDING_ACTIVE at login time, so they satisfy the guard.
+   * A 404 is acceptable (no academic endpoint exists yet); any result other than 403 proves the
+   * guard is correctly scoped.
    */
   @Test
   void adminWithOnboardingActive_hitting_academicEndpoint_isNotBlockedByVerificationGuard()

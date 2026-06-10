@@ -14,8 +14,8 @@ public interface ResendEmailVerificationUseCase {
   /**
    * Resend the email verification link for the given email.
    *
-   * <p>If the email is registered and unverified, the verification email is resent via Keycloak.
-   * If the email is not registered, the method returns silently (no exception, no Keycloak call).
+   * <p>If the email is registered and unverified, the verification email is resent via Keycloak. If
+   * the email is not registered, the method returns silently (no exception, no Keycloak call).
    *
    * @param email the institutional email address from the request
    */

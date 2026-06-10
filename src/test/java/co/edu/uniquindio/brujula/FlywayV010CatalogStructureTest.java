@@ -178,9 +178,7 @@ class FlywayV010CatalogStructureTest extends AbstractPostgresIntegrationTest {
             """,
             Integer.class);
 
-    assertThat(count)
-        .as("catalog.study_plan table must exist after V010 migration")
-        .isEqualTo(1);
+    assertThat(count).as("catalog.study_plan table must exist after V010 migration").isEqualTo(1);
   }
 
   @Test
@@ -199,8 +197,15 @@ class FlywayV010CatalogStructureTest extends AbstractPostgresIntegrationTest {
     assertThat(columns)
         .as("catalog.study_plan must have all required columns")
         .contains(
-            "id", "program_id", "name", "status", "total_credits", "reference_year", "version",
-            "created_at", "updated_at");
+            "id",
+            "program_id",
+            "name",
+            "status",
+            "total_credits",
+            "reference_year",
+            "version",
+            "created_at",
+            "updated_at");
   }
 
   @Test

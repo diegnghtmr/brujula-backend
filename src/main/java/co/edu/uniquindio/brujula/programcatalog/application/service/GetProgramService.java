@@ -11,8 +11,8 @@ import java.util.UUID;
 /**
  * Use case implementation: get a single academic program by ID.
  *
- * <p>Throws {@link ProgramNotFoundException} (maps to HTTP 404) if the program is not found.
- * No Spring annotations — wired via infrastructure configuration (ARQ-002).
+ * <p>Throws {@link ProgramNotFoundException} (maps to HTTP 404) if the program is not found. No
+ * Spring annotations — wired via infrastructure configuration (ARQ-002).
  */
 public class GetProgramService implements GetProgramQuery {
 
@@ -25,8 +25,10 @@ public class GetProgramService implements GetProgramQuery {
   @Override
   public ProgramView getProgram(UUID rawId) {
     ProgramId programId = new ProgramId(rawId);
-    AcademicProgram program = loadProgramPort.loadById(programId)
-        .orElseThrow(() -> new ProgramNotFoundException(programId));
+    AcademicProgram program =
+        loadProgramPort
+            .loadById(programId)
+            .orElseThrow(() -> new ProgramNotFoundException(programId));
     return toView(program);
   }
 

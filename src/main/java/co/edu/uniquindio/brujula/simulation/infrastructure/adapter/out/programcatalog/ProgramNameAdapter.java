@@ -6,11 +6,11 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Anti-corruption adapter: bridges simulation's {@link ProgramNameReadPort} to
- * programcatalog's published {@code programcatalog::api} named interface (INV-001).
+ * Anti-corruption adapter: bridges simulation's {@link ProgramNameReadPort} to programcatalog's
+ * published {@code programcatalog::api} named interface (INV-001).
  *
- * <p>Returns the program's display name. The simulation application layer and domain never
- * see programcatalog types (ARQ-002).
+ * <p>Returns the program's display name. The simulation application layer and domain never see
+ * programcatalog types (ARQ-002).
  *
  * <p>Package-private per ARQ-006b. Wired by {@code SimulationConfiguration}.
  */

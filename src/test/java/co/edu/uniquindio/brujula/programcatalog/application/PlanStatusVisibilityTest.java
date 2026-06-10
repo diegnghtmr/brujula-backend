@@ -35,12 +35,15 @@ class PlanStatusVisibilityTest {
 
   @Test
   void studentSeesOnlyActivePlans() {
-    StudyPlan activePlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 0L);
-    StudyPlan draftPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
-    StudyPlan archivedPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 120, 2010, 1L);
+    StudyPlan activePlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 0L);
+    StudyPlan draftPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
+    StudyPlan archivedPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 120, 2010, 1L);
 
     when(loadStudyPlanPort.loadByProgramId(programId))
         .thenReturn(List.of(activePlan, draftPlan, archivedPlan));
@@ -53,8 +56,9 @@ class PlanStatusVisibilityTest {
 
   @Test
   void draftPlanIsHiddenFromStudent() {
-    StudyPlan draftPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
+    StudyPlan draftPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
 
     when(loadStudyPlanPort.loadByProgramId(programId)).thenReturn(List.of(draftPlan));
 
@@ -65,8 +69,9 @@ class PlanStatusVisibilityTest {
 
   @Test
   void archivedPlanIsHiddenFromStudent() {
-    StudyPlan archivedPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 120, 2010, 1L);
+    StudyPlan archivedPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 120, 2010, 1L);
 
     when(loadStudyPlanPort.loadByProgramId(programId)).thenReturn(List.of(archivedPlan));
 
@@ -77,12 +82,15 @@ class PlanStatusVisibilityTest {
 
   @Test
   void staffSeesAllStatuses() {
-    StudyPlan activePlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 0L);
-    StudyPlan draftPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
-    StudyPlan archivedPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 120, 2010, 1L);
+    StudyPlan activePlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 0L);
+    StudyPlan draftPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
+    StudyPlan archivedPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 120, 2010, 1L);
 
     when(loadStudyPlanPort.loadByProgramId(programId))
         .thenReturn(List.of(activePlan, draftPlan, archivedPlan));
@@ -94,8 +102,9 @@ class PlanStatusVisibilityTest {
 
   @Test
   void adminSeesAllStatuses() {
-    StudyPlan draftPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
+    StudyPlan draftPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
 
     when(loadStudyPlanPort.loadByProgramId(programId)).thenReturn(List.of(draftPlan));
 
@@ -117,12 +126,15 @@ class PlanStatusVisibilityTest {
 
   @Test
   void nullCallerRoleSeesOnlyActivePlans() {
-    StudyPlan activePlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 0L);
-    StudyPlan draftPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
-    StudyPlan archivedPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 120, 2010, 1L);
+    StudyPlan activePlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 0L);
+    StudyPlan draftPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
+    StudyPlan archivedPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Old Plan", PlanStatus.ARCHIVED, 120, 2010, 1L);
 
     when(loadStudyPlanPort.loadByProgramId(programId))
         .thenReturn(List.of(activePlan, draftPlan, archivedPlan));
@@ -135,13 +147,14 @@ class PlanStatusVisibilityTest {
 
   @Test
   void unknownCallerRoleSeesOnlyActivePlans() {
-    StudyPlan activePlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 0L);
-    StudyPlan draftPlan = StudyPlan.reconstitute(
-        PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
+    StudyPlan activePlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Plan 21", PlanStatus.ACTIVE, 163, 2021, 0L);
+    StudyPlan draftPlan =
+        StudyPlan.reconstitute(
+            PlanId.generate(), programId, "Draft Plan", PlanStatus.DRAFT, 100, null, 0L);
 
-    when(loadStudyPlanPort.loadByProgramId(programId))
-        .thenReturn(List.of(activePlan, draftPlan));
+    when(loadStudyPlanPort.loadByProgramId(programId)).thenReturn(List.of(activePlan, draftPlan));
 
     List<StudyPlanView> result = service.listProgramPlans(programId, "UNKNOWN");
 

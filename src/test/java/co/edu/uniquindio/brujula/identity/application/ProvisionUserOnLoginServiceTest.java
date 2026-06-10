@@ -186,15 +186,16 @@ class ProvisionUserOnLoginServiceTest {
 
   /**
    * C-002 happy path: a self-registered app_user row with oidcSubject=null and email
-   * x@uniquindio.edu.co exists. When OIDC login completes for that email with a real sub claim,
-   * the EXISTING row must be found (by email), linked (oidcSubject set to the real sub,
-   * onboardingState synced from email_verified), and saved — NO new row created.
+   * x@uniquindio.edu.co exists. When OIDC login completes for that email with a real sub claim, the
+   * EXISTING row must be found (by email), linked (oidcSubject set to the real sub, onboardingState
+   * synced from email_verified), and saved — NO new row created.
    */
   @Test
   void selfRegisteredUser_firstOidcLogin_linksExistingRowByEmail_notDuplicate() {
     when(loadAllowedDomainsPort.loadAllowedDomains()).thenReturn(Set.of("uniquindio.edu.co"));
 
-    // Pre-registered null-subject row (AppUser.register() creates PENDING_VERIFICATION, null subject)
+    // Pre-registered null-subject row (AppUser.register() creates PENDING_VERIFICATION, null
+    // subject)
     AppUser preRegistered =
         AppUser.reconstitute(
             UUID.randomUUID(),

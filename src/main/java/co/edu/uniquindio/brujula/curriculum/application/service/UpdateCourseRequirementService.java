@@ -15,25 +15,27 @@ import co.edu.uniquindio.brujula.curriculum.domain.CourseRequirementNotFoundExce
 import co.edu.uniquindio.brujula.curriculum.domain.PrerequisiteAcyclicityService;
 import co.edu.uniquindio.brujula.curriculum.domain.PrerequisiteGraph;
 import co.edu.uniquindio.brujula.curriculum.domain.RequirementType;
-
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Use case: update an existing CourseRequirement with optimistic locking (STAFF/ADMIN, NOT idempotent).
+ * Use case: update an existing CourseRequirement with optimistic locking (STAFF/ADMIN, NOT
+ * idempotent).
  *
  * <p>Follows the UpdateCourseService pattern:
+ *
  * <ol>
  *   <li>Load current requirement (throws {@link CourseRequirementNotFoundException} if absent)
  *   <li>For COURSE_PASSED/SEQUENCE types, perform cycle detection against the real persisted graph
- *       with the OLD edge excluded and the NEW proposed edge included (mirrors CreateCourseRequirementService)
- *   <li>Reconstitute with updated fields and {@code expectedVersion} for optimistic lock enforcement
+ *       with the OLD edge excluded and the NEW proposed edge included (mirrors
+ *       CreateCourseRequirementService)
+ *   <li>Reconstitute with updated fields and {@code expectedVersion} for optimistic lock
+ *       enforcement
  *   <li>Persist — may throw {@code OptimisticLockingFailureException} (→ 409)
  *   <li>Record audit event
  * </ol>
  *
- * <p>Framework-free — wired by {@code CurriculumConfiguration}.
- * Satisfies: CUR-003, IMP-007.
+ * <p>Framework-free — wired by {@code CurriculumConfiguration}. Satisfies: CUR-003, IMP-007.
  */
 public class UpdateCourseRequirementService implements UpdateCourseRequirementUseCase {
 
@@ -66,22 +68,24 @@ public class UpdateCourseRequirementService implements UpdateCourseRequirementUs
     CourseRequirementId id = new CourseRequirementId(command.requirementId());
 
     // 1. Load current requirement
-    CourseRequirement existing = saveRequirementPort.findCurrentById(id)
-        .orElseThrow(() -> new CourseRequirementNotFoundException(id));
+    CourseRequirement existing =
+        saveRequirementPort
+            .findCurrentById(id)
+            .orElseThrow(() -> new CourseRequirementNotFoundException(id));
 
     // 2. Resolve updated fields (fall back to existing if command field is null)
-    RequirementType newType = command.type() != null
-        ? RequirementType.valueOf(command.type())
-        : existing.type();
-    UUID newRequiredCourseId = command.requiredCourseId() != null
-        ? command.requiredCourseId()
-        : existing.requiredCourseId();
-    Integer newRequiredCredits = command.requiredCredits() != null
-        ? command.requiredCredits()
-        : existing.requiredCredits();
-    Boolean newSimultaneityAllowed = command.simultaneityAllowed() != null
-        ? command.simultaneityAllowed()
-        : existing.simultaneityAllowed();
+    RequirementType newType =
+        command.type() != null ? RequirementType.valueOf(command.type()) : existing.type();
+    UUID newRequiredCourseId =
+        command.requiredCourseId() != null
+            ? command.requiredCourseId()
+            : existing.requiredCourseId();
+    Integer newRequiredCredits =
+        command.requiredCredits() != null ? command.requiredCredits() : existing.requiredCredits();
+    Boolean newSimultaneityAllowed =
+        command.simultaneityAllowed() != null
+            ? command.simultaneityAllowed()
+            : existing.simultaneityAllowed();
 
     // 3. Cycle detection for edge-creating requirement types (COURSE_PASSED / SEQUENCE).
     //    Build the graph from the real persisted plan requirements, but EXCLUDE this requirement's
@@ -98,39 +102,45 @@ public class UpdateCourseRequirementService implements UpdateCourseRequirementUs
     }
 
     // 4. Reconstitute with updated fields and expectedVersion for optimistic lock enforcement
-    CourseRequirement withExpectedVersion = CourseRequirement.reconstitute(
-        existing.id(),
-        existing.targetCourseId(),
-        newType,
-        newRequiredCourseId,
-        newRequiredCredits,
-        newSimultaneityAllowed,
-        existing.confidence(),
-        existing.inferred(),
-        existing.status(),
-        command.expectedVersion());
+    CourseRequirement withExpectedVersion =
+        CourseRequirement.reconstitute(
+            existing.id(),
+            existing.targetCourseId(),
+            newType,
+            newRequiredCourseId,
+            newRequiredCredits,
+            newSimultaneityAllowed,
+            existing.confidence(),
+            existing.inferred(),
+            existing.status(),
+            command.expectedVersion());
 
     // 5. Persist — may throw OptimisticLockingFailureException (→ 409)
     CourseRequirement saved = saveRequirementPort.save(withExpectedVersion);
 
     // 6. Record audit event
-    auditRecorder.record(new RecordAuditEventCommand(
-        command.actorId(),
-        "STAFF",
-        "COURSE_REQUIREMENT_UPDATED",
-        "course_requirement",
-        saved.id().value(),
-        null,
-        null,
-        null));
+    auditRecorder.record(
+        new RecordAuditEventCommand(
+            command.actorId(),
+            "STAFF",
+            "COURSE_REQUIREMENT_UPDATED",
+            "course_requirement",
+            saved.id().value(),
+            null,
+            null,
+            null));
 
     return toView(saved);
   }
 
   private UUID resolvePlanId(UUID targetCourseId) {
-    Course course = loadCoursePort.loadById(new CourseId(targetCourseId))
-        .orElseThrow(() -> new IllegalStateException(
-            "Target course not found for requirement cycle check: " + targetCourseId));
+    Course course =
+        loadCoursePort
+            .loadById(new CourseId(targetCourseId))
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "Target course not found for requirement cycle check: " + targetCourseId));
     return course.planId();
   }
 

@@ -45,7 +45,9 @@ final class AppUserMapper {
             toRoleJpa(user.role()),
             toStatusJpa(user.status()),
             user.onboardingCompleted(),
-            user.onboardingState() != null ? user.onboardingState().name() : OnboardingState.ACTIVE.name());
+            user.onboardingState() != null
+                ? user.onboardingState().name()
+                : OnboardingState.ACTIVE.name());
 
     entity.setConsentTimestamp(user.consentTimestamp());
     entity.setTermsVersion(user.termsVersion());

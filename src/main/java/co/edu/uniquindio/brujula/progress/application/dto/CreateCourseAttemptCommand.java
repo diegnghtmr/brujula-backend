@@ -7,8 +7,8 @@ import java.util.UUID;
  * Command to create a new course attempt.
  *
  * <p>Self-validating record (ARQ-001). Status is passed as a plain String (the enum name) so that
- * REST controllers do not need to import domain types — the use case performs
- * {@code AttemptStatus.valueOf(statusName)} when constructing the domain object.
+ * REST controllers do not need to import domain types — the use case performs {@code
+ * AttemptStatus.valueOf(statusName)} when constructing the domain object.
  *
  * @param idempotencyKey UUID from the Idempotency-Key header (required)
  * @param actorId authenticated student's user ID

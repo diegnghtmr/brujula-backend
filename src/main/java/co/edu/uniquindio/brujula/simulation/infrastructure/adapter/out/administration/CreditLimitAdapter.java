@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Anti-corruption adapter: bridges simulation's {@link CreditLimitPort} to
- * administration's published {@code administration::api.GetCreditLimitQuery} (ADR-F4-006, INV-001).
+ * Anti-corruption adapter: bridges simulation's {@link CreditLimitPort} to administration's
+ * published {@code administration::api.GetCreditLimitQuery} (ADR-F4-006, INV-001).
  *
  * <p>Default credit limit is 23 when no explicit override exists (ADR-013, spec API-002).
  */

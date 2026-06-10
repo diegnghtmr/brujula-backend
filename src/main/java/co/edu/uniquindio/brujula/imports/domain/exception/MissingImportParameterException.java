@@ -3,9 +3,8 @@ package co.edu.uniquindio.brujula.imports.domain.exception;
 /**
  * Thrown when a required parameter is missing for the requested import kind.
  *
- * <p>For example: kind=COURSES without planId, or kind=OFFERINGS without periodId.
- * Maps to HTTP 400 Bad Request at the controller layer (WU4).
- * Covers: SC-001-G, SC-001-H.
+ * <p>For example: kind=COURSES without planId, or kind=OFFERINGS without periodId. Maps to HTTP 400
+ * Bad Request at the controller layer (WU4). Covers: SC-001-G, SC-001-H.
  */
 public class MissingImportParameterException extends RuntimeException {
 

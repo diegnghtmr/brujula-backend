@@ -79,8 +79,7 @@ class JacksonJsonCodecAdapterTest {
     UUID id = UUID.randomUUID();
     // fullName contains newline + tab — WARNING-003 scenario: old escapeJson() didn't handle these
     var view =
-        new StaffAccountView(
-            id, "alice@uniquindio.edu.co", "Alice\nSmith\tJr", "ACTIVE", 1L);
+        new StaffAccountView(id, "alice@uniquindio.edu.co", "Alice\nSmith\tJr", "ACTIVE", 1L);
 
     String json = codec.toJson(view);
     StaffAccountView result = codec.fromJson(json, StaffAccountView.class);

@@ -20,7 +20,8 @@ public interface RegisterStudentUseCase {
    * @throws co.edu.uniquindio.brujula.identity.domain.DomainNotAllowedException if the email domain
    *     is not in the allowed list (RN-007)
    * @throws EmailAlreadyRegisteredException if a user with this email already exists
-   * @throws co.edu.uniquindio.brujula.identity.application.port.out.KeycloakUserProvisioningPort.KeycloakProvisioningException
+   * @throws
+   *     co.edu.uniquindio.brujula.identity.application.port.out.KeycloakUserProvisioningPort.KeycloakProvisioningException
    *     if Keycloak returns an error during user creation
    */
   RegisterStudentResult register(RegisterStudentCommand command);

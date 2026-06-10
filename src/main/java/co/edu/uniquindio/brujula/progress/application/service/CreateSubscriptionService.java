@@ -1,6 +1,5 @@
 package co.edu.uniquindio.brujula.progress.application.service;
 
-import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand;
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.progress.application.dto.CreateSubscriptionCommand;
@@ -8,12 +7,13 @@ import co.edu.uniquindio.brujula.progress.application.dto.SubscriptionView;
 import co.edu.uniquindio.brujula.progress.application.port.in.CreateSubscriptionUseCase;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
 import co.edu.uniquindio.brujula.progress.application.port.out.SaveSubscriptionPort;
+import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
 import co.edu.uniquindio.brujula.progress.domain.DuplicateProgramSubscriptionException;
 import co.edu.uniquindio.brujula.progress.domain.InactivePlanException;
 import co.edu.uniquindio.brujula.progress.domain.MaxSubscriptionsExceededException;
-import co.edu.uniquindio.brujula.progress.application.port.out.ValidatePlanStatusPort;
 import co.edu.uniquindio.brujula.progress.domain.Subscription;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
+import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import java.util.Optional;
@@ -91,7 +91,12 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
     // 4. Create and persist subscription
     SubscriptionId id = SubscriptionId.generate();
     Subscription subscription =
-        Subscription.create(id, command.actorId(), command.programId(), command.planId(), command.referenceJourneyCode());
+        Subscription.create(
+            id,
+            command.actorId(),
+            command.programId(),
+            command.planId(),
+            command.referenceJourneyCode());
     Subscription saved = saveSubscriptionPort.save(subscription);
 
     // 5. Build view and store idempotency record (use returned entity for correct version)

@@ -23,7 +23,6 @@ import co.edu.uniquindio.brujula.identity.application.service.RegisterStudentSer
 import co.edu.uniquindio.brujula.identity.domain.AppUser;
 import co.edu.uniquindio.brujula.identity.domain.DomainNotAllowedException;
 import co.edu.uniquindio.brujula.identity.domain.OnboardingState;
-import co.edu.uniquindio.brujula.identity.domain.Role;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,8 +87,7 @@ class RegisterStudentServiceTest {
     when(saveAppUserPort.save(any())).thenReturn(savedUser);
 
     var command =
-        new RegisterStudentCommand(
-            "student@uniquindio.edu.co", "Juan Pérez", "1.0", "1.0");
+        new RegisterStudentCommand("student@uniquindio.edu.co", "Juan Pérez", "1.0", "1.0");
 
     RegisterStudentResult result = sut.register(command);
 
@@ -99,7 +97,8 @@ class RegisterStudentServiceTest {
     assertThat(result.onboardingState()).isEqualTo("PENDING_VERIFICATION");
 
     // Keycloak user created
-    verify(keycloakPort).createUser(argThat(cmd -> "student@uniquindio.edu.co".equals(cmd.email())));
+    verify(keycloakPort)
+        .createUser(argThat(cmd -> "student@uniquindio.edu.co".equals(cmd.email())));
 
     // AppUser persisted with PENDING_VERIFICATION
     verify(saveAppUserPort)
@@ -131,9 +130,7 @@ class RegisterStudentServiceTest {
   void register_withDisallowedDomain_throwsDomainNotAllowedException_beforeAnyKeycloakCall() {
     when(loadAllowedDomainsPort.loadAllowedDomains()).thenReturn(Set.of("uniquindio.edu.co"));
 
-    var command =
-        new RegisterStudentCommand(
-            "hacker@gmail.com", "Bad Actor", "1.0", "1.0");
+    var command = new RegisterStudentCommand("hacker@gmail.com", "Bad Actor", "1.0", "1.0");
 
     assertThatThrownBy(() -> sut.register(command))
         .isInstanceOf(DomainNotAllowedException.class)
@@ -154,8 +151,7 @@ class RegisterStudentServiceTest {
     when(loadAppUserPort.existsByEmail("existing@uniquindio.edu.co")).thenReturn(true);
 
     var command =
-        new RegisterStudentCommand(
-            "existing@uniquindio.edu.co", "Existing User", "1.0", "1.0");
+        new RegisterStudentCommand("existing@uniquindio.edu.co", "Existing User", "1.0", "1.0");
 
     assertThatThrownBy(() -> sut.register(command))
         .isInstanceOf(EmailAlreadyRegisteredException.class);
@@ -175,8 +171,7 @@ class RegisterStudentServiceTest {
         .thenThrow(new KeycloakProvisioningException("Keycloak down", "KEYCLOAK_503"));
 
     var command =
-        new RegisterStudentCommand(
-            "student@uniquindio.edu.co", "Juan Pérez", "1.0", "1.0");
+        new RegisterStudentCommand("student@uniquindio.edu.co", "Juan Pérez", "1.0", "1.0");
 
     assertThatThrownBy(() -> sut.register(command))
         .isInstanceOf(KeycloakProvisioningException.class);
@@ -201,8 +196,7 @@ class RegisterStudentServiceTest {
     when(saveAppUserPort.save(any())).thenReturn(savedUser);
 
     var command =
-        new RegisterStudentCommand(
-            "student@uniquindio.edu.co", "Juan Pérez", "1.0", "1.0");
+        new RegisterStudentCommand("student@uniquindio.edu.co", "Juan Pérez", "1.0", "1.0");
 
     sut.register(command);
 

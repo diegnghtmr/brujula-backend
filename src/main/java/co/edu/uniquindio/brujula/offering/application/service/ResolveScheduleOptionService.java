@@ -12,7 +12,6 @@ import co.edu.uniquindio.brujula.offering.domain.ScheduleOption;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOptionId;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOptionNotFoundException;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleSession;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -27,25 +26,27 @@ public class ResolveScheduleOptionService implements ResolveScheduleOptionQuery 
   private final LoadOfferingPort loadOfferingPort;
 
   public ResolveScheduleOptionService(
-      LoadScheduleOptionPort loadScheduleOptionPort,
-      LoadOfferingPort loadOfferingPort) {
+      LoadScheduleOptionPort loadScheduleOptionPort, LoadOfferingPort loadOfferingPort) {
     this.loadScheduleOptionPort = loadScheduleOptionPort;
     this.loadOfferingPort = loadOfferingPort;
   }
 
   @Override
   public ScheduleOptionResolutionView resolveScheduleOption(UUID scheduleOptionId) {
-    ScheduleOption option = loadScheduleOptionPort
-        .findById(new ScheduleOptionId(scheduleOptionId))
-        .orElseThrow(() -> new ScheduleOptionNotFoundException(new ScheduleOptionId(scheduleOptionId)));
+    ScheduleOption option =
+        loadScheduleOptionPort
+            .findById(new ScheduleOptionId(scheduleOptionId))
+            .orElseThrow(
+                () -> new ScheduleOptionNotFoundException(new ScheduleOptionId(scheduleOptionId)));
 
-    CourseOffering offering = loadOfferingPort
-        .findById(new CourseOfferingId(option.getOfferingId()))
-        .orElseThrow(() -> new OfferingNotFoundException(new CourseOfferingId(option.getOfferingId())));
+    CourseOffering offering =
+        loadOfferingPort
+            .findById(new CourseOfferingId(option.getOfferingId()))
+            .orElseThrow(
+                () -> new OfferingNotFoundException(new CourseOfferingId(option.getOfferingId())));
 
-    List<ScheduleSessionView> sessionViews = option.getSessions().stream()
-        .map(this::toSessionView)
-        .toList();
+    List<ScheduleSessionView> sessionViews =
+        option.getSessions().stream().map(this::toSessionView).toList();
 
     return new ScheduleOptionResolutionView(
         option.getId().value(),
@@ -64,9 +65,6 @@ public class ResolveScheduleOptionService implements ResolveScheduleOptionQuery 
 
   private ScheduleSessionView toSessionView(ScheduleSession session) {
     return new ScheduleSessionView(
-        session.id(),
-        session.day().name(),
-        session.startsAt(),
-        session.endsAt());
+        session.id(), session.day().name(), session.startsAt(), session.endsAt());
   }
 }

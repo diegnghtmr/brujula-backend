@@ -33,7 +33,9 @@ import java.util.UUID;
 public final class AppUser {
 
   private final UUID id;
-  private String oidcSubject; // null for self-registered users before first OIDC login; mutable only via linkOidcSubject
+  private String
+      oidcSubject; // null for self-registered users before first OIDC login; mutable only via
+  // linkOidcSubject
   private final String email;
   private final String fullName;
   private final Role role;
@@ -148,8 +150,8 @@ public final class AppUser {
   /**
    * Reconstitute an AppUser from persistence (Slice 1 compat — no consent fields).
    *
-   * <p>No default logic applied — every field is explicit. Uses ACTIVE as default
-   * onboardingState for backward compat with existing OIDC-provisioned rows.
+   * <p>No default logic applied — every field is explicit. Uses ACTIVE as default onboardingState
+   * for backward compat with existing OIDC-provisioned rows.
    */
   public static AppUser reconstitute(
       UUID id,
@@ -241,9 +243,9 @@ public final class AppUser {
   /**
    * Link an OIDC subject to a previously subject-less self-registered user.
    *
-   * <p>Called by {@code ProvisionUserOnLoginService} when a self-registered user (created via
-   * POST /auth/registration with oidcSubject=null) completes their first OIDC login. Invariant:
-   * this method may only be called once — throws if oidcSubject is already set.
+   * <p>Called by {@code ProvisionUserOnLoginService} when a self-registered user (created via POST
+   * /auth/registration with oidcSubject=null) completes their first OIDC login. Invariant: this
+   * method may only be called once — throws if oidcSubject is already set.
    *
    * @param subject the OIDC subject (sub claim) from the Keycloak token
    * @throws IllegalStateException if oidcSubject is already set (linkage already done)
@@ -264,9 +266,8 @@ public final class AppUser {
    * Activate this user — transitions {@link OnboardingState#PENDING_VERIFICATION} to {@link
    * OnboardingState#ACTIVE}.
    *
-   * <p>Called by {@code ProvisionUserOnLoginService} when the OIDC login carries
-   * {@code email_verified=true} (sync-on-login pattern, obs #1574). Idempotent: no-op if already
-   * ACTIVE.
+   * <p>Called by {@code ProvisionUserOnLoginService} when the OIDC login carries {@code
+   * email_verified=true} (sync-on-login pattern, obs #1574). Idempotent: no-op if already ACTIVE.
    */
   public void activate() {
     if (this.onboardingState == OnboardingState.PENDING_VERIFICATION) {

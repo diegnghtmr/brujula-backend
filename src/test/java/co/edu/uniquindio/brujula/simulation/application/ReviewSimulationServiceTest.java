@@ -14,18 +14,16 @@ import co.edu.uniquindio.brujula.simulation.application.dto.ProgramCreditSummary
 import co.edu.uniquindio.brujula.simulation.application.dto.ScheduleOptionResolutionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationValidationView;
-import co.edu.uniquindio.brujula.simulation.application.dto.ValidationNoticeView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.GetSimulationQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.out.CreditLimitPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.CurriculumReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort;
-import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.ProgramNameReadPort;
+import co.edu.uniquindio.brujula.simulation.application.port.out.ProgressReadPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationSelectionPort;
 import co.edu.uniquindio.brujula.simulation.application.service.ReviewSimulationService;
-import co.edu.uniquindio.brujula.simulation.domain.SimScheduleSession;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
@@ -35,7 +33,6 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationStillBlockedException;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -77,10 +74,17 @@ class ReviewSimulationServiceTest {
     curriculumReadPort = mock(CurriculumReadPort.class);
     programNameReadPort = mock(ProgramNameReadPort.class);
     getSimulationQuery = mock(GetSimulationQuery.class);
-    sut = new ReviewSimulationService(
-        loadSimulationPort, loadSimulationSelectionPort, saveSimulationSelectionPort,
-        offeringReadPort, creditLimitPort, progressReadPort, curriculumReadPort,
-        programNameReadPort, getSimulationQuery);
+    sut =
+        new ReviewSimulationService(
+            loadSimulationPort,
+            loadSimulationSelectionPort,
+            saveSimulationSelectionPort,
+            offeringReadPort,
+            creditLimitPort,
+            progressReadPort,
+            curriculumReadPort,
+            programNameReadPort,
+            getSimulationQuery);
   }
 
   // -------------------------------------------------------------------------
@@ -89,33 +93,67 @@ class ReviewSimulationServiceTest {
 
   private Simulation makeSimulation(UUID simId) {
     return Simulation.reconstitute(
-        new SimulationId(simId), OWNER_ID, "Test Sim", PERIOD_ID,
-        List.of(PROGRAM_A), SimulationLifecycle.ACTIVE,
-        Instant.now(), Instant.now(), 0L);
+        new SimulationId(simId),
+        OWNER_ID,
+        "Test Sim",
+        PERIOD_ID,
+        List.of(PROGRAM_A),
+        SimulationLifecycle.ACTIVE,
+        Instant.now(),
+        Instant.now(),
+        0L);
   }
 
-  private SimulationSelection makeSelection(UUID simId, UUID offeringId, UUID schedOptId,
-      UUID courseId, long selectedVersion) {
+  private SimulationSelection makeSelection(
+      UUID simId, UUID offeringId, UUID schedOptId, UUID courseId, long selectedVersion) {
     return SimulationSelection.reconstitute(
-        new SimulationSelectionId(UUID.randomUUID()), simId, offeringId, schedOptId,
-        courseId, "Test Course", PROGRAM_A, 3.0,
-        "DIURNA", "PRELIMINARY", selectedVersion, List.of(), "ACTIVE", 0L);
+        new SimulationSelectionId(UUID.randomUUID()),
+        simId,
+        offeringId,
+        schedOptId,
+        courseId,
+        "Test Course",
+        PROGRAM_A,
+        3.0,
+        "DIURNA",
+        "PRELIMINARY",
+        selectedVersion,
+        List.of(),
+        "ACTIVE",
+        0L);
   }
 
-  private ScheduleOptionResolutionView makeResolution(UUID schedOptId, UUID offeringId,
-      UUID courseId, long newVersion) {
+  private ScheduleOptionResolutionView makeResolution(
+      UUID schedOptId, UUID offeringId, UUID courseId, long newVersion) {
     return new ScheduleOptionResolutionView(
-        schedOptId, offeringId, courseId, "Test Course", PROGRAM_A, PERIOD_ID,
-        "DIURNA", 0.0, "PRELIMINARY", newVersion, List.of());
+        schedOptId,
+        offeringId,
+        courseId,
+        "Test Course",
+        PROGRAM_A,
+        PERIOD_ID,
+        "DIURNA",
+        0.0,
+        "PRELIMINARY",
+        newVersion,
+        List.of());
   }
 
   private SimulationDetailView makeCurrentDetail(UUID simId) {
     return new SimulationDetailView(
-        simId, "Test Sim", PERIOD_ID, "2026-2", List.of(PROGRAM_A),
-        "CURRENT", Instant.now(), Instant.now(), 1L,
+        simId,
+        "Test Sim",
+        PERIOD_ID,
+        "2026-2",
+        List.of(PROGRAM_A),
+        "CURRENT",
+        Instant.now(),
+        Instant.now(),
+        1L,
         List.of(),
         List.of(new ProgramCreditSummaryView(PROGRAM_A, "Systems Eng", 0.0, 23, true)),
-        List.of(), 0.0,
+        List.of(),
+        0.0,
         new SimulationValidationView(List.of(), List.of()));
   }
 
@@ -163,7 +201,8 @@ class ReviewSimulationServiceTest {
     Simulation simulation = makeSimulation(simId);
     SimulationSelection sel = makeSelection(simId, offeringId, schedOptId, courseId, 1L);
     long newVersion = 5L;
-    ScheduleOptionResolutionView resolved = makeResolution(schedOptId, offeringId, courseId, newVersion);
+    ScheduleOptionResolutionView resolved =
+        makeResolution(schedOptId, offeringId, courseId, newVersion);
     SimulationDetailView expectedDetail = makeCurrentDetail(simId);
 
     when(loadSimulationPort.loadById(simId)).thenReturn(Optional.of(simulation));
@@ -180,8 +219,8 @@ class ReviewSimulationServiceTest {
     sut.reviewSimulation(simId, OWNER_ID);
 
     // Verify save was called with the refreshed snapshot (new version = 5)
-    verify(saveSimulationSelectionPort).save(
-        argThat(s -> s.getSelectedOfferingVersion() == newVersion));
+    verify(saveSimulationSelectionPort)
+        .save(argThat(s -> s.getSelectedOfferingVersion() == newVersion));
   }
 
   // -------------------------------------------------------------------------
@@ -204,9 +243,11 @@ class ReviewSimulationServiceTest {
     when(offeringReadPort.resolveScheduleOption(schedOptId)).thenReturn(resolved);
     when(progressReadPort.passedCourseIds(OWNER_ID, PROGRAM_A)).thenReturn(Set.of());
     // Prereq requirement that the student has NOT passed
-    when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(
-        List.of(new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
-            courseId, prereqCourseId, "COURSE_PASSED", "HIGH", false, "Pre-course")));
+    when(curriculumReadPort.requirementsForCourse(courseId))
+        .thenReturn(
+            List.of(
+                new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
+                    courseId, prereqCourseId, "COURSE_PASSED", "HIGH", false, "Pre-course")));
     when(curriculumReadPort.courseCredits(courseId)).thenReturn(3);
     when(curriculumReadPort.sequentialPredecessor(eq(courseId), any())).thenReturn(null);
     when(creditLimitPort.creditLimit(PROGRAM_A, PERIOD_ID)).thenReturn(23);

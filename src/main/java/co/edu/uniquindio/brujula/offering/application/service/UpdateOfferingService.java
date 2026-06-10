@@ -12,7 +12,6 @@ import co.edu.uniquindio.brujula.offering.domain.CourseOffering;
 import co.edu.uniquindio.brujula.offering.domain.CourseOfferingId;
 import co.edu.uniquindio.brujula.offering.domain.OfferingNotFoundException;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOption;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -23,8 +22,7 @@ import java.util.UUID;
  * staleness activation invariant (OFFW-006). The JPA @Version mechanism handles the increment
  * automatically at flush time when the row's notes column changes.
  *
- * <p>Framework-free — wired by {@code OfferingConfiguration}.
- * Satisfies: OFFW-004, OFFW-006.
+ * <p>Framework-free — wired by {@code OfferingConfiguration}. Satisfies: OFFW-004, OFFW-006.
  */
 public class UpdateOfferingService implements UpdateOfferingUseCase {
 
@@ -41,47 +39,50 @@ public class UpdateOfferingService implements UpdateOfferingUseCase {
     CourseOfferingId id = CourseOfferingId.of(command.offeringId());
 
     // 1. Load current offering (throws OfferingNotFoundException if absent)
-    CourseOffering existing = saveOfferingPort.findCurrentById(id)
-        .orElseThrow(() -> new OfferingNotFoundException(id));
+    CourseOffering existing =
+        saveOfferingPort.findCurrentById(id).orElseThrow(() -> new OfferingNotFoundException(id));
 
     // 2. Apply notes update via domain method (returns new immutable instance)
     CourseOffering updated = existing.updateNotes(command.notes());
 
     // 3. Reconstitute with expectedVersion so the JPA adapter sets it on the entity;
     //    Hibernate detects mismatch at flush → OptimisticLockingFailureException (→ 409).
-    CourseOffering withExpectedVersion = CourseOffering.reconstitute(
-        updated.getId(),
-        updated.getCourseId(),
-        updated.getCourseName(),
-        updated.getProgramId(),
-        updated.getPeriodId(),
-        updated.getStatus(),
-        updated.getNotes(),
-        updated.getScheduleOptions(),
-        command.expectedVersion());
+    CourseOffering withExpectedVersion =
+        CourseOffering.reconstitute(
+            updated.getId(),
+            updated.getCourseId(),
+            updated.getCourseName(),
+            updated.getProgramId(),
+            updated.getPeriodId(),
+            updated.getStatus(),
+            updated.getNotes(),
+            updated.getScheduleOptions(),
+            command.expectedVersion());
 
     // 4. Persist — may throw OptimisticLockingFailureException (→ 409 at handler)
     //    The adapter returns the managed post-flush entity with @Version already incremented.
     CourseOffering saved = saveOfferingPort.save(withExpectedVersion);
 
     // 5. Record audit event (version bump already happened in save + flush)
-    auditRecorder.record(new RecordAuditEventCommand(
-        command.actorId(),
-        "STAFF",
-        "OFFERING_UPDATED",
-        "course_offering",
-        saved.getId().value(),
-        null,
-        null,
-        null));
+    auditRecorder.record(
+        new RecordAuditEventCommand(
+            command.actorId(),
+            "STAFF",
+            "OFFERING_UPDATED",
+            "course_offering",
+            saved.getId().value(),
+            null,
+            null,
+            null));
 
     return toDetailView(saved);
   }
 
   OfferingDetailView toDetailView(CourseOffering offering) {
-    List<ScheduleOptionView> optionViews = offering.getScheduleOptions().stream()
-        .map(option -> toOptionView(option, offering.getId().value()))
-        .toList();
+    List<ScheduleOptionView> optionViews =
+        offering.getScheduleOptions().stream()
+            .map(option -> toOptionView(option, offering.getId().value()))
+            .toList();
     return new OfferingDetailView(
         offering.getId().value(),
         offering.getCourseId(),
@@ -95,9 +96,10 @@ public class UpdateOfferingService implements UpdateOfferingUseCase {
   }
 
   private ScheduleOptionView toOptionView(ScheduleOption option, UUID offeringId) {
-    List<ScheduleSessionView> sessionViews = option.getSessions().stream()
-        .map(s -> new ScheduleSessionView(s.id(), s.day().name(), s.startsAt(), s.endsAt()))
-        .toList();
+    List<ScheduleSessionView> sessionViews =
+        option.getSessions().stream()
+            .map(s -> new ScheduleSessionView(s.id(), s.day().name(), s.startsAt(), s.endsAt()))
+            .toList();
     return new ScheduleOptionView(
         option.getId().value(),
         offeringId,

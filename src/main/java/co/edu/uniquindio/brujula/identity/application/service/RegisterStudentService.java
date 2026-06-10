@@ -30,7 +30,8 @@ import org.slf4j.LoggerFactory;
  *   <li>Check email is not already registered (pre-condition for idempotency).
  *   <li>Create user in Keycloak via {@link KeycloakUserProvisioningPort#createUser}. If Keycloak
  *       fails, the method throws and no AppUser is persisted.
- *   <li>Register {@link AppUser} with consent evidence captured, onboardingState=PENDING_VERIFICATION.
+ *   <li>Register {@link AppUser} with consent evidence captured,
+ *       onboardingState=PENDING_VERIFICATION.
  *   <li>Persist the AppUser.
  *   <li>Trigger email verification via {@link
  *       KeycloakUserProvisioningPort#triggerEmailVerification}. If this fails, log a warning and
@@ -100,8 +101,7 @@ public class RegisterStudentService implements RegisterStudentUseCase {
 
     // 4. Build AppUser with consent evidence and PENDING_VERIFICATION state.
     AppUser newUser = AppUser.register(command.email(), command.fullName());
-    newUser.captureConsent(
-        currentTermsVersion, currentPrivacyVersion, Instant.now());
+    newUser.captureConsent(currentTermsVersion, currentPrivacyVersion, Instant.now());
 
     // 5. Persist the AppUser.
     AppUser saved = saveAppUserPort.save(newUser);
@@ -121,14 +121,7 @@ public class RegisterStudentService implements RegisterStudentUseCase {
     // 7. Record audit event (RNF-SEG-007: synchronous, same logical unit).
     auditRecorder.record(
         new RecordAuditEventCommand(
-            saved.id(),
-            "STUDENT",
-            "STUDENT_REGISTERED",
-            "app_user",
-            saved.id(),
-            null,
-            null,
-            null));
+            saved.id(), "STUDENT", "STUDENT_REGISTERED", "app_user", saved.id(), null, null, null));
 
     // ARQ-001: onboardingState passed as String to avoid REST adapter importing domain enum.
     return new RegisterStudentResult(saved.id(), saved.email(), saved.onboardingState().name());

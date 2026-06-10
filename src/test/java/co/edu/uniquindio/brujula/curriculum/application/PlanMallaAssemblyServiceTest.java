@@ -42,7 +42,8 @@ class PlanMallaAssemblyServiceTest {
   void setUp() {
     loadCoursePort = mock(LoadCoursePort.class);
     loadCourseRequirementPort = mock(LoadCourseRequirementPort.class);
-    assemblePlanMallaQuery = new PlanMallaAssemblyService(loadCoursePort, loadCourseRequirementPort);
+    assemblePlanMallaQuery =
+        new PlanMallaAssemblyService(loadCoursePort, loadCourseRequirementPort);
   }
 
   // ---------------------------------------------------------------------------
@@ -71,13 +72,13 @@ class PlanMallaAssemblyServiceTest {
 
     PlanMallaView.SemesterBucket sem1 = result.semesterBuckets().get(0);
     assertThat(sem1.recommendedSemester()).isEqualTo(1);
-    assertThat(sem1.courses()).extracting(PlanMallaView.CourseSummary::id)
+    assertThat(sem1.courses())
+        .extracting(PlanMallaView.CourseSummary::id)
         .containsExactlyInAnyOrder(c1Id, c2Id);
 
     PlanMallaView.SemesterBucket sem2 = result.semesterBuckets().get(1);
     assertThat(sem2.recommendedSemester()).isEqualTo(2);
-    assertThat(sem2.courses()).extracting(PlanMallaView.CourseSummary::id)
-        .containsExactly(c3Id);
+    assertThat(sem2.courses()).extracting(PlanMallaView.CourseSummary::id).containsExactly(c3Id);
   }
 
   @Test
@@ -88,8 +89,10 @@ class PlanMallaAssemblyServiceTest {
     UUID archivedId = UUID.randomUUID();
 
     Course active = makeCourse(activeId, planId, "Física I", 1, "DIURNA", CourseStatus.ACTIVE);
-    Course inactive = makeCourse(inactiveId, planId, "Electiva X", 1, "DIURNA", CourseStatus.INACTIVE);
-    Course archived = makeCourse(archivedId, planId, "Materia Vieja", 2, "DIURNA", CourseStatus.ARCHIVED);
+    Course inactive =
+        makeCourse(inactiveId, planId, "Electiva X", 1, "DIURNA", CourseStatus.INACTIVE);
+    Course archived =
+        makeCourse(archivedId, planId, "Materia Vieja", 2, "DIURNA", CourseStatus.ARCHIVED);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(active, inactive, archived));
     when(loadCourseRequirementPort.loadByTargetCourseIds(anyList())).thenReturn(List.of());
@@ -107,7 +110,8 @@ class PlanMallaAssemblyServiceTest {
     UUID diurnaOnly = UUID.randomUUID();
     UUID nocturnaOnly = UUID.randomUUID();
 
-    Course courseD = makeCourse(diurnaOnly, planId, "Sistemas Digitales", 3, "DIURNA", CourseStatus.ACTIVE);
+    Course courseD =
+        makeCourse(diurnaOnly, planId, "Sistemas Digitales", 3, "DIURNA", CourseStatus.ACTIVE);
     Course courseN = makeCourse(nocturnaOnly, planId, "Redes", 4, "NOCTURNA", CourseStatus.ACTIVE);
     // Add NOCTURNA semester for courseD too (multi-journey)
     Course courseDandN = courseWithTwoJourneys(planId, "Álgebra Lineal", 2, 3);
@@ -132,9 +136,12 @@ class PlanMallaAssemblyServiceTest {
     UUID planId = UUID.randomUUID();
 
     // Insert in reverse order to verify sorting
-    Course sem3 = makeCourse(UUID.randomUUID(), planId, "Estructuras", 3, "DIURNA", CourseStatus.ACTIVE);
-    Course sem1 = makeCourse(UUID.randomUUID(), planId, "Cálculo I", 1, "DIURNA", CourseStatus.ACTIVE);
-    Course sem2 = makeCourse(UUID.randomUUID(), planId, "Cálculo II", 2, "DIURNA", CourseStatus.ACTIVE);
+    Course sem3 =
+        makeCourse(UUID.randomUUID(), planId, "Estructuras", 3, "DIURNA", CourseStatus.ACTIVE);
+    Course sem1 =
+        makeCourse(UUID.randomUUID(), planId, "Cálculo I", 1, "DIURNA", CourseStatus.ACTIVE);
+    Course sem2 =
+        makeCourse(UUID.randomUUID(), planId, "Cálculo II", 2, "DIURNA", CourseStatus.ACTIVE);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(sem3, sem1, sem2));
     when(loadCourseRequirementPort.loadByTargetCourseIds(anyList())).thenReturn(List.of());
@@ -162,18 +169,19 @@ class PlanMallaAssemblyServiceTest {
     UUID planId = UUID.randomUUID();
     UUID courseId = UUID.randomUUID();
 
-    Course course = Course.reconstitute(
-        new CourseId(courseId),
-        planId,
-        UUID.randomUUID(),
-        "ISC-S1-PROG1",
-        "Programación I",
-        CourseType.REQUIRED,
-        4,
-        4,
-        List.of(new RecommendedSemester("DIURNA", 1)),
-        CourseStatus.ACTIVE,
-        0L);
+    Course course =
+        Course.reconstitute(
+            new CourseId(courseId),
+            planId,
+            UUID.randomUUID(),
+            "ISC-S1-PROG1",
+            "Programación I",
+            CourseType.REQUIRED,
+            4,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 1)),
+            CourseStatus.ACTIVE,
+            0L);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(course));
     when(loadCourseRequirementPort.loadByTargetCourseIds(anyList())).thenReturn(List.of());
@@ -203,13 +211,9 @@ class PlanMallaAssemblyServiceTest {
     Course calcI = makeCourse(calcI_id, planId, "Cálculo I", 1, "DIURNA", CourseStatus.ACTIVE);
 
     // Programación I has a COURSE_PASSED requirement on Cálculo I (confidence=HIGH, inferred=false)
-    CourseRequirement req = CourseRequirement.coursePassed(
-        new CourseRequirementId(reqId),
-        progI_id,
-        calcI_id,
-        false,
-        Confidence.HIGH,
-        false);
+    CourseRequirement req =
+        CourseRequirement.coursePassed(
+            new CourseRequirementId(reqId), progI_id, calcI_id, false, Confidence.HIGH, false);
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(progI, calcI));
     when(loadCourseRequirementPort.loadByTargetCourseIds(anyList())).thenReturn(List.of(req));
@@ -217,11 +221,12 @@ class PlanMallaAssemblyServiceTest {
     PlanMallaView result = assemblePlanMallaQuery.assemblePlanMalla(planId, "DIURNA");
 
     // Find ProgI in results
-    PlanMallaView.CourseSummary progICs = result.semesterBuckets().stream()
-        .flatMap(b -> b.courses().stream())
-        .filter(cs -> cs.id().equals(progI_id))
-        .findFirst()
-        .orElseThrow();
+    PlanMallaView.CourseSummary progICs =
+        result.semesterBuckets().stream()
+            .flatMap(b -> b.courses().stream())
+            .filter(cs -> cs.id().equals(progI_id))
+            .findFirst()
+            .orElseThrow();
 
     assertThat(progICs.requirements()).hasSize(1);
     PlanMallaView.RequirementSummary rs = progICs.requirements().get(0);
@@ -231,11 +236,12 @@ class PlanMallaAssemblyServiceTest {
     assertThat(rs.inferred()).isFalse();
 
     // Cálculo I has no requirements
-    PlanMallaView.CourseSummary calcICs = result.semesterBuckets().stream()
-        .flatMap(b -> b.courses().stream())
-        .filter(cs -> cs.id().equals(calcI_id))
-        .findFirst()
-        .orElseThrow();
+    PlanMallaView.CourseSummary calcICs =
+        result.semesterBuckets().stream()
+            .flatMap(b -> b.courses().stream())
+            .filter(cs -> cs.id().equals(calcI_id))
+            .findFirst()
+            .orElseThrow();
 
     assertThat(calcICs.requirements()).isEmpty();
   }
@@ -245,12 +251,13 @@ class PlanMallaAssemblyServiceTest {
     UUID planId = UUID.randomUUID();
 
     // 5 courses — requirements should be loaded in ONE bulk call, not 5
-    List<Course> courses = List.of(
-        makeCourse(UUID.randomUUID(), planId, "Curso A", 1, "DIURNA", CourseStatus.ACTIVE),
-        makeCourse(UUID.randomUUID(), planId, "Curso B", 1, "DIURNA", CourseStatus.ACTIVE),
-        makeCourse(UUID.randomUUID(), planId, "Curso C", 2, "DIURNA", CourseStatus.ACTIVE),
-        makeCourse(UUID.randomUUID(), planId, "Curso D", 2, "DIURNA", CourseStatus.ACTIVE),
-        makeCourse(UUID.randomUUID(), planId, "Curso E", 3, "DIURNA", CourseStatus.ACTIVE));
+    List<Course> courses =
+        List.of(
+            makeCourse(UUID.randomUUID(), planId, "Curso A", 1, "DIURNA", CourseStatus.ACTIVE),
+            makeCourse(UUID.randomUUID(), planId, "Curso B", 1, "DIURNA", CourseStatus.ACTIVE),
+            makeCourse(UUID.randomUUID(), planId, "Curso C", 2, "DIURNA", CourseStatus.ACTIVE),
+            makeCourse(UUID.randomUUID(), planId, "Curso D", 2, "DIURNA", CourseStatus.ACTIVE),
+            makeCourse(UUID.randomUUID(), planId, "Curso E", 3, "DIURNA", CourseStatus.ACTIVE));
 
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(courses);
     when(loadCourseRequirementPort.loadByTargetCourseIds(anyList())).thenReturn(List.of());
@@ -289,9 +296,7 @@ class PlanMallaAssemblyServiceTest {
 
     PlanMallaView result = assemblePlanMallaQuery.assemblePlanMalla(planId, "DIURNA");
 
-    assertThat(result.graduationRequirements())
-        .isNotNull()
-        .isNotBlank();
+    assertThat(result.graduationRequirements()).isNotNull().isNotBlank();
   }
 
   @Test
@@ -305,17 +310,15 @@ class PlanMallaAssemblyServiceTest {
 
     String advisory = result.graduationRequirements();
     // Advisory must mention both graduation gates per spec
-    assertThat(advisory.toLowerCase())
-        .contains("lengua")
-        .contains("cátedra multidisciplinar");
+    assertThat(advisory.toLowerCase()).contains("lengua").contains("cátedra multidisciplinar");
   }
 
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 
-  private Course makeCourse(UUID id, UUID planId, String name, int semester, String journeyCode,
-      CourseStatus status) {
+  private Course makeCourse(
+      UUID id, UUID planId, String name, int semester, String journeyCode, CourseStatus status) {
     return Course.reconstitute(
         new CourseId(id),
         planId,
@@ -330,7 +333,8 @@ class PlanMallaAssemblyServiceTest {
         0L);
   }
 
-  private Course courseWithTwoJourneys(UUID planId, String name, int diurnaSemester, int nocturnaSwemester) {
+  private Course courseWithTwoJourneys(
+      UUID planId, String name, int diurnaSemester, int nocturnaSwemester) {
     return Course.reconstitute(
         new CourseId(UUID.randomUUID()),
         planId,

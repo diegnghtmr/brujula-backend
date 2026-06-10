@@ -9,11 +9,7 @@ import java.util.UUID;
  * <p>BOLA: {@code ownerId} is always from the authenticated principal.
  */
 public record ListSimulationsCriteria(
-    UUID ownerId,
-    UUID periodId,
-    String status,
-    int page,
-    int size) {
+    UUID ownerId, UUID periodId, String status, int page, int size) {
 
   public ListSimulationsCriteria {
     Objects.requireNonNull(ownerId, "ownerId required");

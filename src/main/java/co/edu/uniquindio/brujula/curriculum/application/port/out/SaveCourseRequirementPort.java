@@ -33,8 +33,8 @@ public interface SaveCourseRequirementPort {
   Optional<CourseRequirement> findCurrentById(CourseRequirementId id);
 
   /**
-   * Load all requirements for a given plan (across all target courses in the plan).
-   * Used for cycle detection against the real persisted graph.
+   * Load all requirements for a given plan (across all target courses in the plan). Used for cycle
+   * detection against the real persisted graph.
    *
    * @param planId the study plan UUID
    * @return all requirements belonging to courses in the plan

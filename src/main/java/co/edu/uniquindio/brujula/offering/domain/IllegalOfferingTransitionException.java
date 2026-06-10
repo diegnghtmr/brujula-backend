@@ -13,8 +13,9 @@ public class IllegalOfferingTransitionException extends RuntimeException {
 
   public IllegalOfferingTransitionException(
       CourseOfferingId offeringId, OfferingStatus from, OfferingStatus to) {
-    super(String.format("Illegal offering transition: %s → %s for offering %s",
-        from, to, offeringId.value()));
+    super(
+        String.format(
+            "Illegal offering transition: %s → %s for offering %s", from, to, offeringId.value()));
     this.offeringId = offeringId;
     this.from = from;
     this.to = to;

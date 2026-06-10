@@ -8,14 +8,11 @@ import java.util.Objects;
  *
  * <p>Pure domain record — no Spring/JPA (ARQ-002).
  *
- * @param code     machine-readable code (SIMULATION_* prefix per INV-003)
- * @param message  human-readable description
+ * @param code machine-readable code (SIMULATION_* prefix per INV-003)
+ * @param message human-readable description
  * @param metadata optional context map (nullable; may carry clash coordinates, course names, etc.)
  */
-public record ValidationNotice(
-    String code,
-    String message,
-    Map<String, Object> metadata) {
+public record ValidationNotice(String code, String message, Map<String, Object> metadata) {
 
   public ValidationNotice {
     Objects.requireNonNull(code, "code required");

@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA-backed adapter implementing {@link LoadProgramPort}.
  *
- * <p>Package-private per ARQ-006. Delegates to {@link AcademicProgramJpaRepository} and
- * {@link CatalogPersistenceMapper} for domain ↔ entity conversion.
+ * <p>Package-private per ARQ-006. Delegates to {@link AcademicProgramJpaRepository} and {@link
+ * CatalogPersistenceMapper} for domain ↔ entity conversion.
  *
  * <p>Satisfies: CAT-001, Phase 1 WU4 persistence adapters.
  */
@@ -28,15 +28,12 @@ class ProgramCatalogPersistenceAdapter implements LoadProgramPort {
   @Override
   @Transactional(readOnly = true)
   public List<AcademicProgram> loadAll() {
-    return repository.findAll().stream()
-        .map(CatalogPersistenceMapper::toDomain)
-        .toList();
+    return repository.findAll().stream().map(CatalogPersistenceMapper::toDomain).toList();
   }
 
   @Override
   @Transactional(readOnly = true)
   public Optional<AcademicProgram> loadById(ProgramId programId) {
-    return repository.findById(programId.value())
-        .map(CatalogPersistenceMapper::toDomain);
+    return repository.findById(programId.value()).map(CatalogPersistenceMapper::toDomain);
   }
 }

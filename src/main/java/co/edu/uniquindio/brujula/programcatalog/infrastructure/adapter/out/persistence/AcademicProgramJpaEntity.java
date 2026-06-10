@@ -46,9 +46,23 @@ class AcademicProgramJpaEntity {
     this.status = status;
   }
 
-  UUID getId() { return id; }
-  String getName() { return name; }
-  String getFaculty() { return faculty; }
-  String getStatus() { return status; }
-  long getVersion() { return version; }
+  UUID getId() {
+    return id;
+  }
+
+  String getName() {
+    return name;
+  }
+
+  String getFaculty() {
+    return faculty;
+  }
+
+  String getStatus() {
+    return status;
+  }
+
+  long getVersion() {
+    return version;
+  }
 }

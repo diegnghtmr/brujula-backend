@@ -32,14 +32,11 @@ interface CourseAttemptJpaRepository extends JpaRepository<CourseAttemptJpaEntit
       @Param("courseId") UUID courseId,
       Pageable pageable);
 
-  /**
-   * Count attempts for a subscription, filtered by courseId (nullable).
-   */
+  /** Count attempts for a subscription, filtered by courseId (nullable). */
   @Query(
       "SELECT COUNT(a) FROM CourseAttemptJpaEntity a "
           + "WHERE a.subscriptionId = :subscriptionId "
           + "AND (:courseId IS NULL OR a.courseId = :courseId)")
   long countBySubscriptionIdAndOptionalCourseId(
-      @Param("subscriptionId") UUID subscriptionId,
-      @Param("courseId") UUID courseId);
+      @Param("subscriptionId") UUID subscriptionId, @Param("courseId") UUID courseId);
 }

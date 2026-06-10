@@ -7,12 +7,12 @@ package co.edu.uniquindio.brujula.imports.domain.model;
  */
 public enum ImportKind {
 
-    /** Bulk import of curriculum courses. */
-    COURSES,
+  /** Bulk import of curriculum courses. */
+  COURSES,
 
-    /** Bulk import of course requirements (prerequisites/co-requisites). */
-    REQUIREMENTS,
+  /** Bulk import of course requirements (prerequisites/co-requisites). */
+  REQUIREMENTS,
 
-    /** Bulk import of course offerings for an academic period. */
-    OFFERINGS
+  /** Bulk import of course offerings for an academic period. */
+  OFFERINGS
 }

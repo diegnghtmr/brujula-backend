@@ -6,12 +6,12 @@ import java.util.UUID;
 /**
  * Input port: retrieve a single study plan by ID.
  *
- * <p>Backs {@code GET /plans/{planId}} (CAT-002). Throws
- * {@link co.edu.uniquindio.brujula.programcatalog.domain.StudyPlanNotFoundException}
- * (mapped to HTTP 404) when the plan does not exist.
+ * <p>Backs {@code GET /plans/{planId}} (CAT-002). Throws {@link
+ * co.edu.uniquindio.brujula.programcatalog.domain.StudyPlanNotFoundException} (mapped to HTTP 404)
+ * when the plan does not exist.
  *
- * <p>The caller role is used for visibility filtering: STUDENTs see only ACTIVE plans;
- * STAFF/ADMIN see all statuses.
+ * <p>The caller role is used for visibility filtering: STUDENTs see only ACTIVE plans; STAFF/ADMIN
+ * see all statuses.
  *
  * <p>Accepts plain {@link UUID} (not a domain VO) so REST adapters do not need to import domain
  * types (ARQ-001). No Spring/framework imports (ARQ-003).

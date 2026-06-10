@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
  * RED→GREEN unit tests for {@link DuplicateSelectionRule} (spec VAL-006).
  *
  * <p>Each test genuinely fires the rule path under test:
+ *
  * <ul>
  *   <li>Same courseId present → blocked.
  *   <li>Different courseId → allowed.
@@ -39,8 +40,9 @@ class DuplicateSelectionRuleTest {
   @Test
   void sameCourseId_present_returnsBlockingNotice() {
     // ARRANGE: existing selection already has courseId
-    ExistingSelection existing = new ExistingSelection(
-        UUID.randomUUID(), courseId, "Cálculo Diferencial", programId, 4.0, List.of());
+    ExistingSelection existing =
+        new ExistingSelection(
+            UUID.randomUUID(), courseId, "Cálculo Diferencial", programId, 4.0, List.of());
 
     CandidateSelection candidate = buildCandidate(courseId);
 
@@ -56,14 +58,23 @@ class DuplicateSelectionRuleTest {
   @Test
   void sameCourseId_viaDifferentScheduleOption_returnsBlockingNotice() {
     // Different selectionId (different scheduleOption variant), same courseId
-    ExistingSelection existing = new ExistingSelection(
-        UUID.randomUUID(), courseId, "Cálculo Diferencial", programId, 4.0, List.of());
+    ExistingSelection existing =
+        new ExistingSelection(
+            UUID.randomUUID(), courseId, "Cálculo Diferencial", programId, 4.0, List.of());
 
     // Candidate has a different scheduleOptionId but same courseId
-    CandidateSelection candidate = new CandidateSelection(
-        UUID.randomUUID(), // different scheduleOptionId
-        UUID.randomUUID(), courseId, "Cálculo Diferencial",
-        programId, 4.0, "NOCTURNA", "FINAL", 1L, List.of());
+    CandidateSelection candidate =
+        new CandidateSelection(
+            UUID.randomUUID(), // different scheduleOptionId
+            UUID.randomUUID(),
+            courseId,
+            "Cálculo Diferencial",
+            programId,
+            4.0,
+            "NOCTURNA",
+            "FINAL",
+            1L,
+            List.of());
 
     Optional<ValidationNotice> result = rule.evaluate(candidate, List.of(existing));
 
@@ -78,8 +89,9 @@ class DuplicateSelectionRuleTest {
   @Test
   void differentCourseId_returnsEmpty() {
     UUID differentCourseId = UUID.randomUUID();
-    ExistingSelection existing = new ExistingSelection(
-        UUID.randomUUID(), differentCourseId, "Física I", programId, 3.0, List.of());
+    ExistingSelection existing =
+        new ExistingSelection(
+            UUID.randomUUID(), differentCourseId, "Física I", programId, 3.0, List.of());
 
     CandidateSelection candidate = buildCandidate(courseId);
 
@@ -99,8 +111,12 @@ class DuplicateSelectionRuleTest {
 
   @Test
   void multipleDifferentCourses_noneMatch_returnsEmpty() {
-    ExistingSelection e1 = new ExistingSelection(UUID.randomUUID(), UUID.randomUUID(), "Física I", programId, 3.0, List.of());
-    ExistingSelection e2 = new ExistingSelection(UUID.randomUUID(), UUID.randomUUID(), "Física II", programId, 3.0, List.of());
+    ExistingSelection e1 =
+        new ExistingSelection(
+            UUID.randomUUID(), UUID.randomUUID(), "Física I", programId, 3.0, List.of());
+    ExistingSelection e2 =
+        new ExistingSelection(
+            UUID.randomUUID(), UUID.randomUUID(), "Física II", programId, 3.0, List.of());
 
     CandidateSelection candidate = buildCandidate(courseId);
 
@@ -114,10 +130,18 @@ class DuplicateSelectionRuleTest {
   // -------------------------------------------------------------------------
 
   private CandidateSelection buildCandidate(UUID cId) {
-    SimScheduleSession session = new SimScheduleSession(
-        "MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0));
+    SimScheduleSession session =
+        new SimScheduleSession("MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0));
     return new CandidateSelection(
-        UUID.randomUUID(), UUID.randomUUID(), cId,
-        "Cálculo Diferencial", programId, 4.0, "DIURNA", "FINAL", 1L, List.of(session));
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        cId,
+        "Cálculo Diferencial",
+        programId,
+        4.0,
+        "DIURNA",
+        "FINAL",
+        1L,
+        List.of(session));
   }
 }

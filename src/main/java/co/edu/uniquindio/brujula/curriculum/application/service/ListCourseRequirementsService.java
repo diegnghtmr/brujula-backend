@@ -12,8 +12,8 @@ import java.util.UUID;
  * Use case implementation: list requirements for a course.
  *
  * <p>Returns all requirement fields including {@code confidence} and {@code inferred} metadata
- * (ADR-F2-004, CROSS-001 schema extension). No filtering by status in Fase 2.
- * No Spring annotations — wired via infrastructure configuration (ARQ-002).
+ * (ADR-F2-004, CROSS-001 schema extension). No filtering by status in Fase 2. No Spring annotations
+ * — wired via infrastructure configuration (ARQ-002).
  */
 public class ListCourseRequirementsService implements ListCourseRequirementsQuery {
 
@@ -25,10 +25,9 @@ public class ListCourseRequirementsService implements ListCourseRequirementsQuer
 
   @Override
   public List<CourseRequirementView> listCourseRequirements(UUID targetCourseId) {
-    List<CourseRequirement> requirements = loadCourseRequirementPort.loadByTargetCourseId(targetCourseId);
-    return requirements.stream()
-        .map(this::toView)
-        .toList();
+    List<CourseRequirement> requirements =
+        loadCourseRequirementPort.loadByTargetCourseId(targetCourseId);
+    return requirements.stream().map(this::toView).toList();
   }
 
   // ---------------------------------------------------------------------------

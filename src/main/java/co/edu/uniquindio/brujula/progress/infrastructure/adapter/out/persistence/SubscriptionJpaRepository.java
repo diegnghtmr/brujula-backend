@@ -22,10 +22,10 @@ interface SubscriptionJpaRepository
    * Acquires a row-level {@code SELECT ... FOR UPDATE} lock on all ACTIVE subscriptions of a
    * student.
    *
-   * <p>FIX-W1 (TOCTOU): called inside the same {@code @Transactional} create flow, BEFORE
-   * counting. Any concurrent transaction trying to INSERT a new ACTIVE row for the same userId will
-   * block until this transaction commits or rolls back, serialising concurrent creates and
-   * preventing the cap=2 invariant from being violated under load.
+   * <p>FIX-W1 (TOCTOU): called inside the same {@code @Transactional} create flow, BEFORE counting.
+   * Any concurrent transaction trying to INSERT a new ACTIVE row for the same userId will block
+   * until this transaction commits or rolls back, serialising concurrent creates and preventing the
+   * cap=2 invariant from being violated under load.
    *
    * @param userId the student whose active subscriptions are locked
    * @return the locked entities (count = current active subscriptions for this user)
