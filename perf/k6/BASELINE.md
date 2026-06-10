@@ -88,48 +88,24 @@ Loaded via `docker exec -i brujula-postgres psql -U brujula -d planner_db < perf
 | `imports.import_batch` | 50 (VALIDATED) |
 
 **Staff program assignments** (required for `list-imports.js` to return non-empty results):
-The `staff@uniquindio.edu.co` user must have at least one assigned program in
-`administration.staff_account` + `administration.staff_program_assignment`. Run once after seed:
-
-```sql
-INSERT INTO administration.staff_account (id, email, full_name, status, version, created_at, updated_at)
-VALUES ('19000000-0000-4000-0001-000000000001', 'staff@uniquindio.edu.co', 'Staff Test',
-        'ACTIVE', 0, NOW(), NOW()) ON CONFLICT (email) DO NOTHING;
-
-INSERT INTO administration.staff_program_assignment (id, staff_id, program_id, active, assigned_at, version)
-SELECT ('19100000-0000-4000-' || LPAD(TO_HEX(i), 4, '0') || '-000000000001')::UUID,
-       '19000000-0000-4000-0001-000000000001',
-       ('a0000000-0000-4000-' || LPAD(TO_HEX(i), 4, '0') || '-000000000001')::UUID,
-       true, NOW(), 0
-FROM generate_series(1, 10) AS i
-ON CONFLICT (staff_id, program_id) DO NOTHING;
-```
+Seeded automatically by `perf/seed/synthetic.sql` (block 9 — `administration.staff_account` +
+`administration.staff_program_assignment`). No manual step required after a fresh `docker compose up + seed`.
+The seed is idempotent (`ON CONFLICT DO NOTHING`) and self-contained — it does not depend on the staff user
+logging in first. Deterministic UUIDs: staff account `19000000-0000-4000-0001-000000000001`,
+assignments `19100000-0000-4000-{i:04x}-000000000001` for programs 1–10.
 
 ---
 
 ## How to Run
 
-Prerequisites: `compose.full.yaml` running, synthetic seed loaded, staff program assignments seeded.
+Prerequisites: `compose.full.yaml` running, synthetic seed loaded (staff account and program assignments are included in the seed — no separate step).
 
 ```bash
 # Bring up the stack
 docker compose -f ops/local/compose.full.yaml up -d --wait
 
-# Load synthetic seed
+# Load synthetic seed (includes staff account + program assignments — no extra step needed)
 docker exec -i brujula-postgres psql -U brujula -d planner_db < perf/seed/synthetic.sql
-
-# Seed staff program assignments (run once per fresh DB)
-docker exec brujula-postgres psql -U brujula -d planner_db -c "
-INSERT INTO administration.staff_account (id, email, full_name, status, version, created_at, updated_at)
-VALUES ('19000000-0000-4000-0001-000000000001', 'staff@uniquindio.edu.co', 'Staff Test',
-        'ACTIVE', 0, NOW(), NOW()) ON CONFLICT (email) DO NOTHING;
-INSERT INTO administration.staff_program_assignment (id, staff_id, program_id, active, assigned_at, version)
-SELECT ('19100000-0000-4000-' || LPAD(TO_HEX(i), 4, '0') || '-000000000001')::UUID,
-       '19000000-0000-4000-0001-000000000001',
-       ('a0000000-0000-4000-' || LPAD(TO_HEX(i), 4, '0') || '-000000000001')::UUID,
-       true, NOW(), 0
-FROM generate_series(1, 10) AS i
-ON CONFLICT (staff_id, program_id) DO NOTHING;"
 
 # Run each script (5 VUs, 30s)
 docker run --rm --network=host \
