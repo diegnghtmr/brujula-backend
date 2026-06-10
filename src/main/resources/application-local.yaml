@@ -27,6 +27,12 @@ springdoc:
     enabled: true
     path: /swagger-ui/index.html
 
+brujula:
+  frontend:
+    # Local override: explicit value (not env-driven) for developer convenience.
+    # Matches the Vite dev server default port for brujula-frontend.
+    base-url: "http://localhost:5173"
+
 management:
   endpoints:
     web:
