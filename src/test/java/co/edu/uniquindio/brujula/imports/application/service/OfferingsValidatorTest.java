@@ -239,6 +239,267 @@ class OfferingsValidatorTest {
         .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("DUPLICATE_SESSION_IN_OPTION"));
   }
 
+  // -------------------------------------------------------------------------
+  // DEBT-F7-002: interval-overlap detection within same (course, option, day)
+  // -------------------------------------------------------------------------
+
+  /**
+   * DEBT-F7-002-T1 (RED→GREEN): same (course, option_label, day), times 08:00-10:00 vs 09:00-11:00
+   * — partial overlap → DUPLICATE_SESSION_IN_OPTION on the second row.
+   */
+  @Test
+  void overlapping_sessions_same_option_same_day_produces_duplicate_error() {
+    String courseId = "550e8400-e29b-41d4-a716-446655440000";
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "08:00",
+                    "end_time", "10:00",
+                    "status", "ACTIVE")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "09:00",
+                    "end_time", "11:00",
+                    "status", "ACTIVE")));
+
+    Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
+
+    assertThat(issueMap)
+        .as(
+            "08:00-10:00 vs 09:00-11:00 on the same (course, option, day) overlap; "
+                + "second row must produce DUPLICATE_SESSION_IN_OPTION")
+        .containsKey(1);
+    assertThat(issueMap.get(1))
+        .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("DUPLICATE_SESSION_IN_OPTION"));
+  }
+
+  /**
+   * DEBT-F7-002-T2 (RED→GREEN): same (course, option_label, day), times 08:00-10:00 vs 10:00-12:00
+   * — adjacent (touching endpoints, half-open intervals) → BOTH valid (no error).
+   */
+  @Test
+  void adjacent_sessions_same_option_same_day_are_valid() {
+    String courseId = "550e8400-e29b-41d4-a716-446655440000";
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "08:00",
+                    "end_time", "10:00",
+                    "status", "ACTIVE")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "10:00",
+                    "end_time", "12:00",
+                    "status", "ACTIVE")));
+
+    Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
+
+    assertThat(issueMap)
+        .as(
+            "08:00-10:00 and 10:00-12:00 are adjacent (touching endpoints, half-open); "
+                + "they must NOT produce a conflict")
+        .doesNotContainKey(0);
+    assertThat(issueMap).doesNotContainKey(1);
+  }
+
+  /**
+   * DEBT-F7-002-T3 (preserve existing): same (course, option_label, day, start_time, end_time)
+   * exact duplicate → DUPLICATE_SESSION_IN_OPTION. Existing behaviour preserved.
+   */
+  @Test
+  void exact_duplicate_session_same_option_same_day_produces_error() {
+    String courseId = "550e8400-e29b-41d4-a716-446655440000";
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "08:00",
+                    "end_time", "10:00",
+                    "status", "ACTIVE")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "08:00",
+                    "end_time", "10:00",
+                    "status", "ACTIVE")));
+
+    Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
+
+    assertThat(issueMap)
+        .as("Exact duplicate (same start_time) must still produce DUPLICATE_SESSION_IN_OPTION")
+        .containsKey(1);
+    assertThat(issueMap.get(1))
+        .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("DUPLICATE_SESSION_IN_OPTION"));
+  }
+
+  /**
+   * DEBT-F7-002-T4: overlapping times on DIFFERENT days → BOTH valid. Overlap is only flagged
+   * within the same (course, option_label, day) group.
+   */
+  @Test
+  void overlapping_times_different_days_same_option_are_valid() {
+    String courseId = "550e8400-e29b-41d4-a716-446655440000";
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "08:00",
+                    "end_time", "10:00",
+                    "status", "ACTIVE")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "WED",
+                    "start_time", "09:00",
+                    "end_time", "11:00",
+                    "status", "ACTIVE")));
+
+    Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
+
+    assertThat(issueMap)
+        .as(
+            "Overlapping time intervals on different days within the same option must both be valid"
+                + " — overlap detection is scoped to the same (course, option_label, day) group")
+        .doesNotContainKey(0);
+    assertThat(issueMap).doesNotContainKey(1);
+  }
+
+  /**
+   * DEBT-F7-002-T5: overlapping times on same day but DIFFERENT option_labels → BOTH valid. Overlap
+   * detection is scoped to the same option group.
+   */
+  @Test
+  void overlapping_times_different_option_labels_same_day_are_valid() {
+    String courseId = "550e8400-e29b-41d4-a716-446655440000";
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "08:00",
+                    "end_time", "10:00",
+                    "status", "ACTIVE")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G2",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "09:00",
+                    "end_time", "11:00",
+                    "status", "ACTIVE")));
+
+    Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
+
+    assertThat(issueMap)
+        .as(
+            "Overlapping times with different option_labels on the same day must both be valid"
+                + " — overlap is only detected within the same (course, option_label, day) group")
+        .doesNotContainKey(0);
+    assertThat(issueMap).doesNotContainKey(1);
+  }
+
+  /**
+   * DEBT-F7-002-T6: fully-contained interval — row0 08:00-11:00, row1 09:00-09:30 on the same
+   * (course, option_label, day) → DUPLICATE_SESSION_IN_OPTION on row1.
+   *
+   * <p>Exercises the case where one session is completely enclosed by another, confirming the
+   * half-open overlap condition {@code newStart < existingEnd && newEnd > existingStart} catches
+   * containment as well as partial overlap.
+   */
+  @Test
+  void contained_session_inside_existing_session_produces_error() {
+    String courseId = "550e8400-e29b-41d4-a716-446655440000";
+    List<ImportRow> rows =
+        List.of(
+            new ImportRow(
+                0,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "08:00",
+                    "end_time", "11:00",
+                    "status", "ACTIVE")),
+            new ImportRow(
+                1,
+                Map.of(
+                    "period", "2026-1",
+                    "course", courseId,
+                    "option_label", "G1",
+                    "journey", "J1",
+                    "day", "MON",
+                    "start_time", "09:00",
+                    "end_time", "09:30",
+                    "status", "ACTIVE")));
+
+    Map<Integer, List<ImportIssue>> issueMap = validator.validateAll(rows);
+
+    assertThat(issueMap)
+        .as(
+            "09:00-09:30 is fully contained inside 08:00-11:00 on the same (course, option, day); "
+                + "second row must produce DUPLICATE_SESSION_IN_OPTION")
+        .containsKey(1);
+    assertThat(issueMap.get(1))
+        .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("DUPLICATE_SESSION_IN_OPTION"));
+  }
+
   /**
    * WU4-T3 (RED→GREEN): 3 rows same (course, option_label) on MON, WED, FRI → all valid. This is
    * the core multi-session grouping scenario.

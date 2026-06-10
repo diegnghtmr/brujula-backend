@@ -132,12 +132,24 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
     }
     PassedCourseSet passedCourseSet = new PassedCourseSet(allPassedIds);
 
-    // DEBT-F7-001 fix: batch-fetch all passed-course credits once before the selection loop.
-    // Replaces the O(N×S) per-course loop (one courseCredits(UUID) call per passed course per
-    // selection). coursesCredits(Set) issues a single round-trip; absent entries treated as 0.
-    Map<UUID, Integer> passedCreditsMap = curriculumReadPort.coursesCredits(allPassedIds);
+    // DEBT-F7-006 fix: fold candidate-course IDs into the existing batch call so that
+    // coursesCredits(Set) is invoked exactly once for ALL credit lookups (passed-course
+    // accumulation + per-candidate credit value). Before this fix, the loop called
+    // courseCredits(UUID) once per active selection (O(S) extra round-trips).
+    Set<UUID> candidateCourseIds = new HashSet<>();
+    for (SelectionWithResolved swr : selWithResolved) {
+      candidateCourseIds.add(swr.resolved().courseId());
+    }
+    Set<UUID> combinedCourseIds = new HashSet<>(allPassedIds);
+    combinedCourseIds.addAll(candidateCourseIds);
+
+    // DEBT-F7-001 fix: batch-fetch all credits once before the selection loop.
+    // DEBT-F7-006 extends the set to include candidate course IDs so a single round-trip
+    // covers both passed-credit accumulation and per-candidate credit lookup.
+    // Absent entries treated as 0 (per CurriculumReadPort contract).
+    Map<UUID, Integer> combinedCreditsMap = curriculumReadPort.coursesCredits(combinedCourseIds);
     int accumulatedPassedCredits =
-        passedCreditsMap.values().stream().mapToInt(Integer::intValue).sum();
+        allPassedIds.stream().mapToInt(id -> combinedCreditsMap.getOrDefault(id, 0)).sum();
 
     // 5. Re-run validation for each selection with FRESH offering data
     List<ValidationNotice> allBlocking = new ArrayList<>();
@@ -153,6 +165,19 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
               .map(s -> new SimScheduleSession(s.day(), s.startsAt(), s.endsAt()))
               .toList();
 
+      // Read candidate credits from the combined batch map (DEBT-F7-006).
+      // Absent key → 0: safe because candidate courses originate from the offering system,
+      // which only references courses that exist in the curriculum. In the pre-batch code,
+      // courseCredits(UUID) would have thrown CourseNotFoundException for a missing course;
+      // that exception type lives in curriculum.domain (no @NamedInterface), which is outside
+      // the simulation module's allowed dependencies (curriculum::api, curriculum::api-dto only).
+      // Importing it would violate the Spring-Modulith boundary enforced by ModularityTest.
+      // The 0-fallback is therefore the correct documented behavior: consistent with the
+      // passed-course path (which also uses getOrDefault(id, 0)) and with the
+      // CurriculumReadPort.coursesCredits contract ("Missing course IDs are absent from
+      // the returned map. Callers MUST treat a missing entry as 0 credits").
+      double candidateCredits = combinedCreditsMap.getOrDefault(resolved.courseId(), 0);
+
       CandidateSelection candidate =
           new CandidateSelection(
               resolved.scheduleOptionId(),
@@ -160,7 +185,7 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
               resolved.courseId(),
               resolved.courseName(),
               resolved.programId(),
-              curriculumReadPort.courseCredits(resolved.courseId()),
+              candidateCredits,
               resolved.journeyCode(),
               resolved.offeringStatus(),
               resolved.offeringVersion(),
