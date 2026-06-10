@@ -48,21 +48,51 @@
       "credentials": [
         {
           "type": "password",
-          "value": "CHANGE_ME_BEFORE_USE",
-          "temporary": true
+          "value": "Admin_Dev_2024!",
+          "temporary": false
         }
       ],
-      "realmRoles": ["ADMIN"],
-      "_comment": "Seed ADMIN user. Change password on first login. Never use in production."
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "student-brujula",
+      "email": "student@uniquindio.edu.co",
+      "firstName": "Student",
+      "lastName": "Test",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Student_Dev_2024!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["STUDENT"]
+    },
+    {
+      "username": "staff-brujula",
+      "email": "staff@uniquindio.edu.co",
+      "firstName": "Staff",
+      "lastName": "Test",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Staff_Dev_2024!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["STAFF"]
     }
   ],
 
   "clients": [
     {
-      "_slice": "1",
       "clientId": "brujula-backend",
-      "name": "Brújula Backend (Slice 1 — confidential OIDC)",
-      "description": "Confidential backend client for server-side OIDC login flow (authorization_code). Slice 1.",
+      "name": "Brújula Backend (confidential OIDC)",
+      "description": "Confidential backend client for server-side OIDC login flow (authorization_code).",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "secret": "CHANGE_ME",
@@ -97,10 +127,9 @@
       ]
     },
     {
-      "_slice": "1",
       "clientId": "brujula-frontend",
       "name": "Brújula Frontend (SPA — public client)",
-      "description": "Public OIDC client for the Brújula SPA. Slice 1 + Slice 2 (verify-email redirect URI added in Slice 2).",
+      "description": "Public OIDC client for the Brújula SPA. directAccessGrantsEnabled:true for ROPC token minting in k6 load tests.",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "publicClient": true,
@@ -119,11 +148,9 @@
       "fullScopeAllowed": true
     },
     {
-      "_slice": "2",
-      "_comment": "Slice 2 addition (S2-A): service-account client for app-driven student registration via Keycloak Admin API. Confidential + service accounts enabled. Secret via env BRUJULA_KEYCLOAK_REGISTRATION_SVC_CLIENT_SECRET — NEVER commit real secret.",
       "clientId": "brujula-registration-svc",
-      "name": "Brújula Registration Service Account (Slice 2)",
-      "description": "Confidential service-account client for backend-driven user provisioning (registration, email verification trigger, password reset trigger) via Keycloak Admin API. Requires manage-users + view-users roles on realm-management.",
+      "name": "Brújula Registration Service Account",
+      "description": "Confidential service-account client for backend-driven user provisioning via Keycloak Admin API.",
       "enabled": true,
       "clientAuthenticatorType": "client-secret",
       "secret": "CHANGE_ME_REGISTRATION_SVC",
@@ -138,14 +165,11 @@
   ],
 
   "clientScopeMappings": {
-    "_slice2_comment": "Slice 2 addition: grant realm-management roles to brujula-registration-svc service account. manage-users allows POST /admin/realms/{realm}/users. view-users allows GET /admin/realms/{realm}/users.",
     "realm-management": [
       {
         "client": "brujula-registration-svc",
         "roles": ["manage-users", "view-users"]
       }
     ]
-  },
-
-  "_comment": "realm-export.json for brujula-dev. Slice-1: backend OIDC client + SPA public client + ADMIN seed user. Slice-2 (S2-A): brujula-registration-svc service-account client with manage-users role. G4 RESOLVED: validate via docker compose exec keycloak /opt/keycloak/bin/kc.sh import --file /opt/keycloak/data/import/realm-export.json. Do NOT commit real secrets."
+  }
 }

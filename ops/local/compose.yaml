@@ -36,6 +36,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-brujula}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brujula_dev}
       POSTGRES_DB: ${POSTGRES_DB:-planner_db}
+      # postgres 18 stores data in a versioned subdirectory by default.
+      # Explicitly set PGDATA to avoid "data already exists at parent mount" error.
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
@@ -71,13 +74,24 @@ services:
       KC_HEALTH_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
+      # T-WU7 fix: set the canonical public hostname URL so tokens are issued with
+      # iss=http://localhost:8090/realms/brujula-dev. Without this, the issuer in
+      # tokens depends on the Host header of the request — when the backend calls
+      # keycloak:8080/userinfo, Keycloak sees Host:keycloak:8080 and rejects the
+      # token (iss mismatch). Pinning to http://localhost:8090 (the host-mapped port)
+      # makes all tokens consistent regardless of how Keycloak is reached.
+      # Keycloak 26 KC_HOSTNAME accepts either a plain hostname OR a full URL.
+      KC_HOSTNAME: ${KC_HOSTNAME:-http://localhost:8090}
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
     volumes:
       - ./keycloak:/opt/keycloak/data/import:ro
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/health/ready || exit 1"]
+      # Keycloak 26 image has no curl/wget; use bash /dev/tcp to probe the management port.
+      # bash -c '(echo -e "GET /health/ready HTTP/1.0\r\n\r\n" | timeout 5 bash -c "cat > /dev/tcp/localhost/9000") 2>/dev/null' exits 0 on connection
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"status\":' <&3"]
       interval: 15s
       timeout: 10s
       retries: 10
