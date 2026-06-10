@@ -78,6 +78,10 @@ management:
 # All secrets MUST be provided via environment variables — never committed as real values.
 # G4 RESOLVED: service-account client brujula-registration-svc added to realm-export.json (Slice 2).
 brujula:
+  # Frontend SPA base URL used for post-login redirects (OAuth2 success handler) and
+  # email/recovery link landing pages. Override per environment via BRUJULA_FRONTEND_BASE_URL.
+  frontend:
+    base-url: "${BRUJULA_FRONTEND_BASE_URL:http://localhost:5173}"
   registration:
     # G6 RESOLVED: Consent terms/version source = configuration properties (Slice 2, S2-B-0).
     # Version bumps require only a config change and restart (no code release).
@@ -87,10 +91,12 @@ brujula:
     current-privacy-version: "1.0"
     # SPA landing URI for Keycloak's email verification redirect (obs #1574).
     # Must be registered as a valid redirect URI for the SPA client in the realm.
-    verify-redirect-uri: "http://localhost:5173/verify-email"
+    # Composed from brujula.frontend.base-url so there is a single source of truth for the host.
+    verify-redirect-uri: "${brujula.frontend.base-url}/verify-email"
     # SPA landing URI for Keycloak's password recovery redirect (OPTION A, S2-D).
     # Keycloak redirects the user here after they complete the password reset on Keycloak's page.
-    recovery-redirect-uri: "http://localhost:5173/reset-password"
+    # Composed from brujula.frontend.base-url so there is a single source of truth for the host.
+    recovery-redirect-uri: "${brujula.frontend.base-url}/reset-password"
   keycloak:
     # Keycloak server base URL (overridden per environment via env vars or profile yaml).
     auth-server-url: http://localhost:9090
