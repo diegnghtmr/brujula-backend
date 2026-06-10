@@ -23,12 +23,12 @@ import { check, sleep } from "k6";
 // ---------------------------------------------------------------------------
 // Configuration — all values can be overridden via -e flags or environment
 // ---------------------------------------------------------------------------
-const KC_URL    = __ENV.KC_URL    || "http://localhost:9090";
+const KC_URL    = __ENV.KC_URL    || "http://localhost:8090";
 const KC_REALM  = __ENV.KC_REALM  || "brujula-dev";
 const KC_CLIENT = __ENV.KC_CLIENT || "brujula-frontend";
 const BASE_URL  = __ENV.BASE_URL  || "http://localhost:8080";
 const USERNAME  = __ENV.STAFF_USER || "staff@uniquindio.edu.co";
-const PASSWORD  = __ENV.STAFF_PASS || "REPLACE_ME";
+const PASSWORD  = __ENV.STAFF_PASS || "Staff_Dev_2024!";
 
 // ---------------------------------------------------------------------------
 // Thresholds — informational smoke gates (not hard SLOs per QAL-PERF-003)
