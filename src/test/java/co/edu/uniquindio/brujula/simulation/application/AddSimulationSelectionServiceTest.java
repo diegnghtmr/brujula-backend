@@ -35,7 +35,9 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationValidationBlockedException;
 import java.time.Instant;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -511,6 +513,12 @@ class AddSimulationSelectionServiceTest {
     for (UUID pid : passedIds) {
       when(curriculumReadPort.courseCredits(pid)).thenReturn(5);
     }
+    // DEBT-F7-001 fix: stub the batch method used after refactor
+    Map<UUID, Integer> passedCreditsMap50 = new HashMap<>();
+    for (UUID pid : passedIds) {
+      passedCreditsMap50.put(pid, 5);
+    }
+    when(curriculumReadPort.coursesCredits(passedIds)).thenReturn(passedCreditsMap50);
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of(minCredReq));
     when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
     when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
@@ -567,6 +575,12 @@ class AddSimulationSelectionServiceTest {
     for (UUID pid : passedIds) {
       when(curriculumReadPort.courseCredits(pid)).thenReturn(5);
     }
+    // DEBT-F7-001 fix: stub the batch method used after refactor
+    Map<UUID, Integer> passedCreditsMap60 = new HashMap<>();
+    for (UUID pid : passedIds) {
+      passedCreditsMap60.put(pid, 5);
+    }
+    when(curriculumReadPort.coursesCredits(passedIds)).thenReturn(passedCreditsMap60);
     when(curriculumReadPort.requirementsForCourse(courseId)).thenReturn(List.of(minCredReq));
     when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
     when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");

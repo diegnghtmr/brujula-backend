@@ -31,6 +31,7 @@ import co.edu.uniquindio.brujula.simulation.domain.ValidationNotice;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -131,6 +132,13 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
     }
     PassedCourseSet passedCourseSet = new PassedCourseSet(allPassedIds);
 
+    // DEBT-F7-001 fix: batch-fetch all passed-course credits once before the selection loop.
+    // Replaces the O(N×S) per-course loop (one courseCredits(UUID) call per passed course per
+    // selection). coursesCredits(Set) issues a single round-trip; absent entries treated as 0.
+    Map<UUID, Integer> passedCreditsMap = curriculumReadPort.coursesCredits(allPassedIds);
+    int accumulatedPassedCredits =
+        passedCreditsMap.values().stream().mapToInt(Integer::intValue).sum();
+
     // 5. Re-run validation for each selection with FRESH offering data
     List<ValidationNotice> allBlocking = new ArrayList<>();
     List<ValidationNotice> allWarnings = new ArrayList<>();
@@ -199,23 +207,7 @@ public class ReviewSimulationService implements ReviewSimulationUseCase {
         seqPredecessor = null;
       }
 
-      // Accumulated passed credits
-      int accumulatedPassedCredits = 0;
-      try {
-        accumulatedPassedCredits =
-            allPassedIds.stream()
-                .mapToInt(
-                    id -> {
-                      try {
-                        return curriculumReadPort.courseCredits(id);
-                      } catch (Exception ex) {
-                        return 0;
-                      }
-                    })
-                .sum();
-      } catch (Exception ignored) {
-        // use 0
-      }
+      // Accumulated passed credits — uses pre-fetched batch map (DEBT-F7-001)
 
       SimulationValidationResult result =
           validationService.validate(
