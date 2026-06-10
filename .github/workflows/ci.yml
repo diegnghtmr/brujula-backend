@@ -1,0 +1,55 @@
+# Local/manual only — no remote runner configured; run via ci/run.sh or act
+#
+# To run locally with act:
+#   act push --job backend-ci
+#
+# To run directly:
+#   bash ci/run.sh
+#
+# Gate semantics: all three steps must exit 0 for the pipeline to pass.
+# A failure at any step aborts subsequent steps (fail-fast by default).
+
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - "feature/fase-7-backend"
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+  workflow_dispatch: {}
+
+jobs:
+  backend-ci:
+    name: Backend Quality Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: spotlessCheck — code formatting
+        run: ./gradlew spotlessCheck
+
+      - name: test — unit + integration tests
+        run: ./gradlew test
+        env:
+          # Testcontainers needs Docker; available on GitHub-hosted ubuntu-latest
+          TESTCONTAINERS_RYUK_DISABLED: "false"
+
+      - name: jacocoTestCoverageVerification — coverage gate
+        # LINE >= 80%, BRANCH >= 70% on domain + application/service packages.
+        # Runs after test because jacocoTestReport is a finalizer of test.
+        run: ./gradlew jacocoTestCoverageVerification
