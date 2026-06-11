@@ -242,9 +242,8 @@ class FlywayV021PromoteIscHardPrereqsTest extends AbstractPostgresIntegrationTes
   // ---------------------------------------------------------------------------
 
   @Test
-  void v021_does_not_touch_non_isc_edges() {
-    // This test uses stable known HIGH/false edges from ISC itself to confirm scope.
-    // The two newly-promoted edges (confidence=HIGH, inferred=false) must exist exactly once each.
+  void v021_promotes_exactly_two_isc_edges_to_high_false() {
+    // Confirm the two promoted ISC edges now exist as HIGH/non-inferred, exactly once each.
     Integer edgeOneCount =
         jdbc.queryForObject(
             """
@@ -282,6 +281,41 @@ class FlywayV021PromoteIscHardPrereqsTest extends AbstractPostgresIntegrationTes
         .as(
             "V021: exactly 1 promoted Formulación y Evaluación ← Ingeniería Económica edge (HIGH/false)")
         .isEqualTo(1);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Cross-program no-collateral: only the 2 ISC edges were promoted, nothing else changed
+  // ---------------------------------------------------------------------------
+
+  /**
+   * V021 must not affect any other program's edges. V013 seeded exactly 11 MEDIUM/inferred=true
+   * COURSE_PASSED edges for Licenciatura en Lenguas Modernas; none of those may be touched by V021.
+   * After V021, the global count of remaining MEDIUM/inferred=true COURSE_PASSED rows across all
+   * programs must equal exactly 11 (the V013-Lenguas total), confirming no cross-program
+   * collateral.
+   */
+  @Test
+  void v021_does_not_touch_non_isc_medium_inferred_edges() {
+    // V012 had 2 MEDIUM/inferred=true ISC edges — both promoted by V021 → 0 remaining for ISC.
+    // V013 seeded 11 MEDIUM/inferred=true edges for Lenguas — untouched by V021.
+    // Total remaining MEDIUM/inferred=true COURSE_PASSED rows = 11.
+    Integer globalRemainingMediumInferred =
+        jdbc.queryForObject(
+            """
+            SELECT COUNT(*)
+            FROM curriculum.course_requirement
+            WHERE type = 'COURSE_PASSED'
+              AND confidence = 'MEDIUM'
+              AND inferred = true
+            """,
+            Integer.class);
+
+    assertThat(globalRemainingMediumInferred)
+        .as(
+            "V021: global MEDIUM/inferred=true COURSE_PASSED count must be exactly 11 after promotion"
+                + " — the 2 ISC edges were promoted (leaving 0 for ISC) and the 11 Lenguas"
+                + " advisory edges from V013 must remain untouched (no cross-program collateral)")
+        .isEqualTo(11);
   }
 
   // ---------------------------------------------------------------------------
