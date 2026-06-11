@@ -29,7 +29,12 @@ public interface LoadSubscriptionPort {
   List<Subscription> loadActiveByUserId(UUID userId);
 
   /**
-   * Count the number of ACTIVE subscriptions for a student (used for cap=2 enforcement).
+   * Count the number of ACTIVE subscriptions for a student.
+   *
+   * <p>Note: cap=2 enforcement in {@code CreateSubscriptionService} is NOT done via this method.
+   * Cap enforcement uses {@link #lockActiveByUserIdForUpdate} (distinct programId set) to hold a
+   * write lock across the check-and-insert. This method is used by {@code DeleteSubscriptionService}
+   * to determine whether the last active subscription is being removed.
    *
    * @param userId the student user ID
    * @return count of active subscriptions
@@ -37,13 +42,17 @@ public interface LoadSubscriptionPort {
   int countActiveByUserId(UUID userId);
 
   /**
-   * Check whether the student already has an active subscription for a specific program.
+   * Check whether the student already has an active subscription for the exact (program, journey)
+   * combination. This is the uniqueness key per business rule: Diurna and Nocturna of the same
+   * program are two distinct valid subscriptions.
    *
    * @param userId the student user ID
    * @param programId the program to check
-   * @return true if an active subscription for that program exists
+   * @param journeyCode the jornada code (e.g. DIURNA, NOCTURNA)
+   * @return true if an active subscription for that (program, journey) pair exists
    */
-  boolean existsActiveByUserIdAndProgramId(UUID userId, UUID programId);
+  boolean existsActiveByUserIdAndProgramIdAndJourneyCode(
+      UUID userId, UUID programId, String journeyCode);
 
   /**
    * Check whether the subscription has any associated course attempt records.

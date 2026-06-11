@@ -42,12 +42,20 @@ interface SubscriptionJpaRepository
           + " WHERE s.userId = :userId AND s.status = 'ACTIVE'")
   int countActiveByUserId(@Param("userId") UUID userId);
 
+  /**
+   * Checks whether an active subscription exists for the exact (userId, programId,
+   * referenceJourneyCode) triple. This is the correct uniqueness key: Diurna and Nocturna of the
+   * same program are two distinct valid subscriptions.
+   */
   @Query(
       "SELECT CASE WHEN COUNT(s) > 0 THEN TRUE ELSE FALSE END"
           + " FROM StudentProgramSubscriptionJpaEntity s"
-          + " WHERE s.userId = :userId AND s.programId = :programId AND s.status = 'ACTIVE'")
-  boolean existsActiveByUserIdAndProgramId(
-      @Param("userId") UUID userId, @Param("programId") UUID programId);
+          + " WHERE s.userId = :userId AND s.programId = :programId"
+          + " AND s.referenceJourneyCode = :journeyCode AND s.status = 'ACTIVE'")
+  boolean existsActiveByUserIdAndProgramIdAndReferenceJourneyCode(
+      @Param("userId") UUID userId,
+      @Param("programId") UUID programId,
+      @Param("journeyCode") String journeyCode);
 
   @Query(
       "SELECT CASE WHEN COUNT(a) > 0 THEN TRUE ELSE FALSE END"

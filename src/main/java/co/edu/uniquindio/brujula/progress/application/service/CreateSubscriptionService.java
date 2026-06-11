@@ -16,20 +16,34 @@ import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
 import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyKeyConflictException;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Use case: create a new subscription for the authenticated student.
  *
- * <p>Enforces: cap=2 active subscriptions (contract #1630), duplicate-program guard, idempotency
- * via sharedkernel {@link IdempotencyStorePort}, audit via {@link AuditRecorder} (CROSS-4).
+ * <p>Enforces:
+ *
+ * <ul>
+ *   <li>Cap: at most 2 DISTINCT programs (careers) per student. Within each program, both jornadas
+ *       (Diurna and Nocturna) are allowed. If the incoming programId is already in the student's
+ *       active set, the cap does NOT apply.
+ *   <li>Duplicate guard: the uniqueness key is (programId + referenceJourneyCode). Same program +
+ *       same journey is rejected as a duplicate; same program + different journey is allowed.
+ *   <li>Idempotency via sharedkernel {@link IdempotencyStorePort}.
+ *   <li>Audit via {@link AuditRecorder} (CROSS-4).
+ * </ul>
  *
  * <p>Framework-free — wired by {@code ProgressConfiguration}. Satisfies: SUB-1, CROSS-1, CROSS-4.
  */
 public class CreateSubscriptionService implements CreateSubscriptionUseCase {
 
   public static final String OPERATION = "CREATE_SUBSCRIPTION";
-  private static final int MAX_ACTIVE_SUBSCRIPTIONS = 2;
+  private static final int MAX_DISTINCT_PROGRAMS = 2;
 
   private final LoadSubscriptionPort loadSubscriptionPort;
   private final SaveSubscriptionPort saveSubscriptionPort;
@@ -54,6 +68,7 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
   }
 
   @Override
+  @Transactional
   public SubscriptionView createSubscription(CreateSubscriptionCommand command) {
     // 1. Idempotency check
     Optional<IdempotencyStorePort.StoredRecord> existing =
@@ -66,17 +81,30 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
       return jsonCodecPort.fromJson(stored.responseBodyJson(), SubscriptionView.class);
     }
 
-    // 2. Cap=2 enforcement (contract #1630).
-    // FIX-W1: acquire a row-level write lock on existing active subscriptions BEFORE counting.
+    // 2. Cap enforcement (contract #1630 — revised).
+    // FIX-W1: acquire a row-level write lock on existing active subscriptions BEFORE any check.
     // This serialises concurrent creates per-student and prevents the TOCTOU race.
-    int activeCount = loadSubscriptionPort.lockActiveByUserIdForUpdate(command.actorId()).size();
-    if (activeCount >= MAX_ACTIVE_SUBSCRIPTIONS) {
-      throw new MaxSubscriptionsExceededException(command.actorId(), activeCount);
+    //
+    // Business rule: the cap is on DISTINCT PROGRAMS (careers), not on total active rows.
+    // Within each program both jornadas are allowed (max 4 rows = 2 programs × 2 jornadas).
+    // If the incoming programId is already in the active set, the cap does NOT apply
+    // (adding a different jornada of an already-subscribed program is always permitted, subject
+    // to the duplicate-jornada check below).
+    List<Subscription> activeSubs =
+        loadSubscriptionPort.lockActiveByUserIdForUpdate(command.actorId());
+    Set<UUID> distinctActiveProgramIds =
+        activeSubs.stream().map(Subscription::getProgramId).collect(Collectors.toSet());
+
+    boolean programAlreadyInSet = distinctActiveProgramIds.contains(command.programId());
+    if (!programAlreadyInSet && distinctActiveProgramIds.size() >= MAX_DISTINCT_PROGRAMS) {
+      throw new MaxSubscriptionsExceededException(
+          command.actorId(), distinctActiveProgramIds.size());
     }
 
-    // 3. Duplicate-program guard
-    if (loadSubscriptionPort.existsActiveByUserIdAndProgramId(
-        command.actorId(), command.programId())) {
+    // 3. Duplicate-jornada guard: (programId + referenceJourneyCode) is the uniqueness key.
+    // Same program + same journey → duplicate. Same program + different journey → allowed.
+    if (loadSubscriptionPort.existsActiveByUserIdAndProgramIdAndJourneyCode(
+        command.actorId(), command.programId(), command.referenceJourneyCode())) {
       throw new DuplicateProgramSubscriptionException(command.actorId(), command.programId());
     }
 

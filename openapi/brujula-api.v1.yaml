@@ -251,12 +251,15 @@ paths:
       operationId: listMySubscriptions
       responses:
         "200":
-          description: Suscripciones activas (entre 1 y 2).
+          description: |
+            Suscripciones activas del estudiante. Máximo 2 programas/carreras distintos; dentro de
+            cada programa se permiten ambas jornadas (diurna y nocturna), por lo que el máximo de
+            filas activas es 4 (2 programas × 2 jornadas).
           content:
             application/json:
               schema:
                 type: array
-                maxItems: 2
+                maxItems: 4
                 items: { $ref: "#/components/schemas/Subscription" }
         "401": { $ref: "#/components/responses/Unauthorized" }
     post:
@@ -264,8 +267,14 @@ paths:
       summary: Suscribirse a un programa
       description: |
         Asocia el estudiante a un programa, un plan activo y una jornada de
-        referencia. Máximo dos suscripciones activas; el tercer programa se
-        rechaza con `409`.
+        referencia. Máximo 2 programas/carreras distintos activos; el intento de
+        agregar un tercer programa distinto se rechaza con `409`.
+
+        Dentro de un mismo programa se permiten ambas jornadas (diurna y nocturna)
+        como suscripciones independientes. El duplicado se evalúa por la combinación
+        programa + jornada: suscribirse al mismo programa con la misma jornada que ya
+        existe es rechazado con `409`; suscribirse al mismo programa con una jornada
+        diferente es permitido y no cuenta contra el límite de programas.
       operationId: createSubscription
       parameters:
         - $ref: "#/components/parameters/IdempotencyKey"
@@ -287,7 +296,9 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "409":
-          description: Límite de 2 suscripciones superado, programa ya suscrito, o reuso inválido de `Idempotency-Key`.
+          description: |
+            Límite de 2 programas distintos superado, combinación programa+jornada ya
+            suscrita, o reuso inválido de `Idempotency-Key`.
           content:
             application/problem+json:
               schema: { $ref: "#/components/schemas/ProblemDetail" }

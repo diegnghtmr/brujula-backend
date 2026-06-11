@@ -3,10 +3,13 @@ package co.edu.uniquindio.brujula.progress.domain;
 import java.util.UUID;
 
 /**
- * Thrown when a student attempts to create a 3rd active subscription (cap = 2, per contract).
+ * Thrown when a student attempts to subscribe to a 3rd distinct program (cap = 2 distinct
+ * programs per student, per contract).
  *
- * <p>Maps to HTTP 409 Conflict. Contract alignment: {@code maxItems: 2} on listMySubscriptions
- * response, POST description states "Máximo dos suscripciones activas" (observation #1630).
+ * <p>Within each program, both jornadas (Diurna and Nocturna) are allowed as separate
+ * subscriptions. The cap applies only to distinct programs (careers).
+ *
+ * <p>Maps to HTTP 409 Conflict.
  */
 public class MaxSubscriptionsExceededException extends RuntimeException {
 
@@ -15,7 +18,7 @@ public class MaxSubscriptionsExceededException extends RuntimeException {
 
   public MaxSubscriptionsExceededException(UUID userId, int activeCount) {
     super(
-        "Student %s has reached the maximum of 2 active subscriptions (current: %d)."
+        "Student %s has reached the maximum of 2 distinct active programs (current distinct: %d)."
             .formatted(userId, activeCount));
     this.userId = userId;
     this.activeCount = activeCount;
