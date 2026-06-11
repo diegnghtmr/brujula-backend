@@ -123,6 +123,7 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
   private SubscriptionView toView(Subscription subscription) {
     // programName and planName are not resolved at creation time (no catalog port injected here).
     // The REST adapter / dedicated query service resolves names for responses.
+    // TODO(WU4): resolve program/plan/journey names like GetSubscriptionService
     return new SubscriptionView(
         subscription.getId().value(),
         subscription.getProgramId(),

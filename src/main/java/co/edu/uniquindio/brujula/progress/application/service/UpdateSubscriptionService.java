@@ -91,6 +91,7 @@ public class UpdateSubscriptionService implements UpdateSubscriptionUseCase {
   }
 
   private SubscriptionView toView(Subscription sub) {
+    // TODO(WU4): resolve program/plan/journey names like GetSubscriptionService
     return new SubscriptionView(
         sub.getId().value(),
         sub.getProgramId(),
