@@ -25,6 +25,15 @@ import java.util.UUID;
  */
 public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubscriptionQuery {
 
+  /**
+   * Role used when calling {@link GetStudyPlanQuery#getStudyPlan} for display-name resolution only.
+   *
+   * <p>ADMIN scope is intentional: a STUDENT role would throw on non-ACTIVE plans, but we still
+   * need to display the human-readable plan name even when the plan was archived after the student
+   * subscribed. This is a read-only, display-only lookup — it does not grant any write privilege.
+   */
+  private static final String NAME_RESOLUTION_ROLE = "ADMIN";
+
   private final LoadSubscriptionPort loadSubscriptionPort;
   private final GetProgramQuery getProgramQuery;
   private final GetStudyPlanQuery getStudyPlanQuery;
@@ -43,7 +52,13 @@ public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubs
 
   @Override
   public List<SubscriptionView> listMySubscriptions(UUID userId) {
-    return loadSubscriptionPort.loadActiveByUserId(userId).stream().map(this::toView).toList();
+    // ADR-F3-005 (no N+1): fetch the journey list ONCE for the entire result set, then pass it
+    // into each toView call so the list path makes a single listJourneys() call regardless of
+    // how many subscriptions are returned.
+    List<JourneyRef> allJourneys = fetchJourneysSafely();
+    return loadSubscriptionPort.loadActiveByUserId(userId).stream()
+        .map(sub -> toView(sub, allJourneys))
+        .toList();
   }
 
   @Override
@@ -58,13 +73,19 @@ public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubs
       throw new SubscriptionNotFoundException(subscriptionId);
     }
 
-    return toView(sub);
+    // Single-GET path: fetch journeys once for this single subscription.
+    List<JourneyRef> allJourneys = fetchJourneysSafely();
+    return toView(sub, allJourneys);
   }
 
-  private SubscriptionView toView(Subscription sub) {
+  /**
+   * Builds a {@link SubscriptionView} using a pre-fetched journey list so callers control when
+   * {@link ListJourneysQuery#listJourneys()} is invoked (avoids per-row refetch in the list path).
+   */
+  private SubscriptionView toView(Subscription sub, List<JourneyRef> allJourneys) {
     String programName = resolveProgramName(sub.getProgramId());
     String planName = resolvePlanName(sub.getPlanId());
-    String journeyName = resolveJourneyName(sub.getReferenceJourneyCode());
+    String journeyName = resolveJourneyName(sub.getReferenceJourneyCode(), allJourneys);
 
     return new SubscriptionView(
         sub.getId().value(),
@@ -89,7 +110,11 @@ public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubs
    */
   private String resolveProgramName(UUID programId) {
     try {
-      return getProgramQuery.getProgram(programId).name();
+      var result = getProgramQuery.getProgram(programId);
+      if (result == null) {
+        return programId.toString();
+      }
+      return result.name();
     } catch (Exception e) {
       return programId.toString();
     }
@@ -101,27 +126,39 @@ public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubs
    */
   private String resolvePlanName(UUID planId) {
     try {
-      return getStudyPlanQuery.getStudyPlan(planId, "ADMIN").name();
+      var result = getStudyPlanQuery.getStudyPlan(planId, NAME_RESOLUTION_ROLE);
+      if (result == null) {
+        return planId.toString();
+      }
+      return result.name();
     } catch (Exception e) {
       return planId.toString();
     }
   }
 
   /**
-   * Resolves the human-readable journey name for the given journey code. Falls back to the code
-   * itself if the catalog lookup fails or the code is not found (mirrors FIX-S1 in
+   * Fetches the full journey list from the catalog. Returns an empty list (not null) on failure so
+   * callers always receive a safe-to-iterate list and the per-subscription fallback logic applies.
+   */
+  private List<JourneyRef> fetchJourneysSafely() {
+    try {
+      List<JourneyRef> result = listJourneysQuery.listJourneys();
+      return result != null ? result : List.of();
+    } catch (Exception e) {
+      return List.of();
+    }
+  }
+
+  /**
+   * Resolves the human-readable journey name for the given journey code from a pre-fetched list.
+   * Falls back to the code itself if the list is empty or the code is not found (mirrors FIX-S1 in
    * GetSubscriptionCurriculumService).
    */
-  private String resolveJourneyName(String journeyCode) {
-    try {
-      List<JourneyRef> journeys = listJourneysQuery.listJourneys();
-      return journeys.stream()
-          .filter(j -> journeyCode.equalsIgnoreCase(j.code()))
-          .map(JourneyRef::name)
-          .findFirst()
-          .orElse(journeyCode);
-    } catch (Exception e) {
-      return journeyCode;
-    }
+  private String resolveJourneyName(String journeyCode, List<JourneyRef> allJourneys) {
+    return allJourneys.stream()
+        .filter(j -> journeyCode.equalsIgnoreCase(j.code()))
+        .map(JourneyRef::name)
+        .findFirst()
+        .orElse(journeyCode);
   }
 }

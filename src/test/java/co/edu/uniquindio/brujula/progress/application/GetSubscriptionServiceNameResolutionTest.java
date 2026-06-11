@@ -176,6 +176,24 @@ class GetSubscriptionServiceNameResolutionTest {
   }
 
   @Test
+  void get_subscription_falls_back_to_id_string_when_plan_lookup_fails() {
+    // Stub the plan query to throw — mirrors the program and journey fallback tests.
+    // NAME_RESOLUTION_ROLE ("ADMIN") is used so archived plans still resolve; when the port
+    // throws we expect planName to fall back to PLAN_ID.toString() rather than propagating.
+    when(getStudyPlanQuery.getStudyPlan(PLAN_ID, "ADMIN"))
+        .thenThrow(new RuntimeException("catalog unavailable"));
+    Subscription sub = buildSubscription();
+    when(loadSubscriptionPort.loadById(SUB_ID)).thenReturn(Optional.of(sub));
+
+    SubscriptionView view = sut.getSubscription(SUB_ID, USER_ID);
+
+    assertThat(view.planName())
+        .as("planName must fall back to PLAN_ID string when plan lookup throws")
+        .isNotNull()
+        .isEqualTo(PLAN_ID.toString());
+  }
+
+  @Test
   void get_subscription_falls_back_to_code_when_journey_lookup_fails() {
     when(listJourneysQuery.listJourneys()).thenThrow(new RuntimeException("catalog unavailable"));
     Subscription sub = buildSubscription();
