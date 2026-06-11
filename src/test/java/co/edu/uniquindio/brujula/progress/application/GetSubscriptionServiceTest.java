@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetStudyPlanQuery;
+import co.edu.uniquindio.brujula.programcatalog.application.port.in.ListJourneysQuery;
 import co.edu.uniquindio.brujula.progress.application.dto.SubscriptionView;
 import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionPort;
 import co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService;
@@ -32,7 +35,13 @@ class GetSubscriptionServiceTest {
   @BeforeEach
   void setUp() {
     loadSubscriptionPort = mock(LoadSubscriptionPort.class);
-    sut = new GetSubscriptionService(loadSubscriptionPort);
+    // WU3-FIX: catalog ports are now required; use mocks that return null-safe defaults
+    GetProgramQuery getProgramQuery = mock(GetProgramQuery.class);
+    GetStudyPlanQuery getStudyPlanQuery = mock(GetStudyPlanQuery.class);
+    ListJourneysQuery listJourneysQuery = mock(ListJourneysQuery.class);
+    sut =
+        new GetSubscriptionService(
+            loadSubscriptionPort, getProgramQuery, getStudyPlanQuery, listJourneysQuery);
   }
 
   @Test

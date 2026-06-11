@@ -39,10 +39,11 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>BOLA defence: caller identity always resolved from the session principal, never from a request
  * parameter (TRD §10).
  *
- * <p>Name resolution (programName, planName, journeyName): the catalog look-up is a WU3 concern.
- * For WU2, null names are passed through to the response. The generated Subscription model marks
- * them {@code @NotNull} in the OpenAPI spec, so they are rendered as a placeholder string {@code
- * "N/A"} rather than null to avoid a serialisation validation failure.
+ * <p>Name resolution (programName, planName, journeyName): resolved from the programcatalog
+ * published ports inside {@link
+ * co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService} (WU3-FIX, mirrors
+ * FIX-W2). A null-safety fallback of {@code "N/A"} is kept in {@link #toDto} for defensive
+ * resilience on write paths (create/update) until those services also resolve names.
  *
  * <p>Satisfies: SUB-1..4, CROSS-2, CROSS-3, CROSS-4. ARQ-001.
  */
@@ -188,8 +189,9 @@ class SubscriptionController implements SubscriptionsApi {
   // -------------------------------------------------------------------------
 
   private Subscription toDto(SubscriptionView view) {
-    // WU3-SEAM: programName/planName/journeyName resolved by catalog look-up in WU3.
-    // For WU2, placeholder "N/A" is used to satisfy @NotNull constraints in the generated model.
+    // WU3-FIX: programName/planName/journeyName are now resolved by GetSubscriptionService
+    // from the programcatalog published ports (mirrors FIX-W2). Null-safety fallback kept
+    // for defensive resilience (e.g. create/update paths where resolution is not yet applied).
     String programName = view.programName() != null ? view.programName() : "N/A";
     String planName = view.planName() != null ? view.planName() : "N/A";
     String journeyName = view.referenceJourneyName() != null ? view.referenceJourneyName() : "N/A";
