@@ -11,6 +11,7 @@ import co.edu.uniquindio.brujula.identity.application.port.out.SaveAppUserPort;
 import co.edu.uniquindio.brujula.identity.domain.AppUser;
 import co.edu.uniquindio.brujula.identity.domain.Role;
 import java.util.UUID;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,15 +158,22 @@ class ProgressCurriculumIntegrationTest extends AbstractPostgresIntegrationTest 
                         + FORMULACION_PROYECTOS
                         + "')].progressStatus")
                 .value("BLOCKED"))
-        // The unmet requirement list must reference Ingeniería Económica (no [Recomendado] prefix
-        // for HARD edges)
+        // The unmet requirement list must be non-empty and reference Ingeniería Económica
+        // (no [Recomendado] prefix for HARD edges — V021 promoted this edge to HARD)
         .andExpect(
             jsonPath(
                     "$.semesters[?(@.recommendedSemester == 8)].courses"
                         + "[?(@.courseId == '"
                         + FORMULACION_PROYECTOS
                         + "')].unmetRequirements")
-                .isArray());
+                .isNotEmpty())
+        .andExpect(
+            jsonPath(
+                    "$.semesters[?(@.recommendedSemester == 8)].courses"
+                        + "[?(@.courseId == '"
+                        + FORMULACION_PROYECTOS
+                        + "')].unmetRequirements")
+                .value(Matchers.hasItem(Matchers.hasItem("Ingeniería Económica"))));
   }
 
   // -----------------------------------------------------------------------
