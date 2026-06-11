@@ -1,6 +1,5 @@
 package co.edu.uniquindio.brujula.progress.adapter.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -12,6 +11,7 @@ import co.edu.uniquindio.brujula.identity.application.port.out.SaveAppUserPort;
 import co.edu.uniquindio.brujula.identity.domain.AppUser;
 import co.edu.uniquindio.brujula.identity.domain.Role;
 import java.util.UUID;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +32,9 @@ import org.springframework.web.context.WebApplicationContext;
  * <ol>
  *   <li>BLOCKED: "Programación I" (c0020000-…-003) has an unmet HARD prereq "Lógica de
  *       Programación" (c0010000-…-004, HIGH/inferred=false) → BLOCKED.
- *   <li>AVAILABLE + advisory: "Formulación y Evaluación de Proyectos" (c0080000-…-001) has an unmet
- *       SOFT prereq "Ingeniería Económica" (c0070000-…-001, MEDIUM/inferred=true) → AVAILABLE with
- *       a non-empty unmetRequirements list ([Recomendado] prefix).
+ *   <li>BLOCKED (V021): "Formulación y Evaluación de Proyectos" (c0080000-…-001) has an unmet HARD
+ *       prereq "Ingeniería Económica" (c0070000-…-001, HIGH/inferred=false after V021) → BLOCKED
+ *       (V021 promoted this edge from SOFT to HARD).
  *   <li>PASSED: "Matemáticas Generales" (c0010000-…-001) — we insert a PASSED attempt →
  *       progressStatus = PASSED.
  * </ol>
@@ -62,10 +62,9 @@ class ProgressCurriculumIntegrationTest extends AbstractPostgresIntegrationTest 
   private static final UUID LOGICA_DE_PROGRAMACION =
       UUID.fromString("c0010000-0000-4000-a000-000000000004"); // prereq of Programación I
   private static final UUID FORMULACION_PROYECTOS =
-      UUID.fromString(
-          "c0080000-0000-4000-a000-000000000001"); // Sem8, SOFT prereq→AVAILABLE+advisory
+      UUID.fromString("c0080000-0000-4000-a000-000000000001"); // Sem8, HARD prereq (V021)→BLOCKED
   private static final UUID INGENIERIA_ECONOMICA =
-      UUID.fromString("c0070000-0000-4000-a000-000000000001"); // soft prereq of Formulación
+      UUID.fromString("c0070000-0000-4000-a000-000000000001"); // hard prereq of Formulación (V021)
   private static final UUID MATEMATICAS_GENERALES =
       UUID.fromString("c0010000-0000-4000-a000-000000000001"); // Sem1, no prereqs→PASSED scenario
 
@@ -128,50 +127,53 @@ class ProgressCurriculumIntegrationTest extends AbstractPostgresIntegrationTest 
   }
 
   // -----------------------------------------------------------------------
-  // FIX-W1 scenario (b): unmet MEDIUM/inferred=true prereq → AVAILABLE + advisory
+  // FIX-W1 scenario (b): unmet HARD prereq (promoted by V021) → BLOCKED
   // -----------------------------------------------------------------------
 
   /**
-   * "Formulación y Evaluación de Proyectos" (Sem 8 DIURNA) requires "Ingeniería Económica" via
-   * MEDIUM/inferred=true edge. With no attempt for "Ingeniería Económica", the prereq is unmet but
-   * SOFT → AVAILABLE with advisory unmetRequirement ([Recomendado] prefix).
+   * V021 promoted "Formulación y Evaluación de Proyectos" ← "Ingeniería Económica" edge from SOFT
+   * (MEDIUM/inferred=true) to HARD (HIGH/inferred=false). With no attempt for "Ingeniería
+   * Económica", the prereq is unmet and now HARD → the course is BLOCKED.
+   *
+   * <p>This replaces the pre-V021 scenario (b) which expected AVAILABLE+advisory for a SOFT edge.
    */
   @Test
-  void formulacion_proyectos_with_no_attempts_is_available_with_advisory() throws Exception {
+  void formulacion_proyectos_with_no_attempts_is_blocked_due_to_hard_prereq() throws Exception {
     UUID subscriptionId = insertSubscription(studentSubject, SISTEMAS_PLAN_ID);
 
-    // No attempts for Ingeniería Económica → unmet SOFT prereq
-    String responseBody =
-        mockMvc
-            .perform(
-                get("/me/subscriptions/{id}/curriculum", subscriptionId)
-                    .with(
-                        oidcLogin()
-                            .idToken(t -> t.subject(studentSubject))
-                            .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
-            .andExpect(status().isOk())
-            // Formulación must be AVAILABLE (SOFT prereq does NOT block)
-            .andExpect(
-                jsonPath(
-                        "$.semesters[?(@.recommendedSemester == 8)].courses"
-                            + "[?(@.courseId == '"
-                            + FORMULACION_PROYECTOS
-                            + "')].progressStatus")
-                    .value("AVAILABLE"))
-            // The advisory unmet requirement list must be non-empty
-            .andExpect(
-                jsonPath(
-                        "$.semesters[?(@.recommendedSemester == 8)].courses"
-                            + "[?(@.courseId == '"
-                            + FORMULACION_PROYECTOS
-                            + "')].unmetRequirements")
-                    .isArray())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-    // Verify the [Recomendado] advisory prefix appears in the response body (SOFT prereq advisory)
-    assertThat(responseBody).contains("[Recomendado]");
+    // No attempts for Ingeniería Económica → unmet HARD prereq (V021) → BLOCKED
+    mockMvc
+        .perform(
+            get("/me/subscriptions/{id}/curriculum", subscriptionId)
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+        .andExpect(status().isOk())
+        // Formulación must be BLOCKED (V021 promoted the prereq edge to HARD)
+        .andExpect(
+            jsonPath(
+                    "$.semesters[?(@.recommendedSemester == 8)].courses"
+                        + "[?(@.courseId == '"
+                        + FORMULACION_PROYECTOS
+                        + "')].progressStatus")
+                .value("BLOCKED"))
+        // The unmet requirement list must be non-empty and reference Ingeniería Económica
+        // (no [Recomendado] prefix for HARD edges — V021 promoted this edge to HARD)
+        .andExpect(
+            jsonPath(
+                    "$.semesters[?(@.recommendedSemester == 8)].courses"
+                        + "[?(@.courseId == '"
+                        + FORMULACION_PROYECTOS
+                        + "')].unmetRequirements")
+                .isNotEmpty())
+        .andExpect(
+            jsonPath(
+                    "$.semesters[?(@.recommendedSemester == 8)].courses"
+                        + "[?(@.courseId == '"
+                        + FORMULACION_PROYECTOS
+                        + "')].unmetRequirements")
+                .value(Matchers.hasItem(Matchers.hasItem("Ingeniería Económica"))));
   }
 
   // -----------------------------------------------------------------------
