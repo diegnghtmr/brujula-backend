@@ -50,9 +50,10 @@ class SubscriptionPersistenceAdapter implements LoadSubscriptionPort, SaveSubscr
   }
 
   @Override
-  @Transactional(readOnly = true)
-  public boolean existsActiveByUserIdAndProgramId(UUID userId, UUID programId) {
-    return jpaRepository.existsActiveByUserIdAndProgramId(userId, programId);
+  public boolean existsActiveByUserIdAndProgramIdAndJourneyCode(
+      UUID userId, UUID programId, String journeyCode) {
+    return jpaRepository.existsActiveByUserIdAndProgramIdAndReferenceJourneyCode(
+        userId, programId, journeyCode);
   }
 
   @Override
@@ -62,10 +63,12 @@ class SubscriptionPersistenceAdapter implements LoadSubscriptionPort, SaveSubscr
   }
 
   @Override
+  @Transactional(readOnly = false)
   public List<Subscription> lockActiveByUserIdForUpdate(UUID userId) {
     // FIX-W1: acquires SELECT FOR UPDATE on all ACTIVE rows for userId.
-    // Must be called within an existing @Transactional write transaction (the class-level
-    // @Transactional annotation on this adapter satisfies that requirement).
+    // The write lock is only effective when held inside an active read-write transaction.
+    // The CALLER (CreateSubscriptionService) is responsible for opening that transaction;
+    // this adapter method joins it (REQUIRED propagation) but does not create it alone.
     return jpaRepository.lockActiveByUserIdForUpdate(userId).stream()
         .map(mapper::toDomain)
         .toList();
