@@ -61,8 +61,7 @@ class FlywayV025HistoricalPeriodsSeedTest extends AbstractPostgresIntegrationTes
   void v025_seeds_exactly_7_closed_periods() {
     Integer closedCount =
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM offering.academic_period WHERE status = 'CLOSED'",
-            Integer.class);
+            "SELECT COUNT(*) FROM offering.academic_period WHERE status = 'CLOSED'", Integer.class);
 
     assertThat(closedCount)
         .as("V025 must seed exactly 7 CLOSED periods (2023-1 through 2026-1)")
@@ -89,8 +88,7 @@ class FlywayV025HistoricalPeriodsSeedTest extends AbstractPostgresIntegrationTes
   void v017_period_2026_2_remains_active_after_v025() {
     String status =
         jdbc.queryForObject(
-            "SELECT status FROM offering.academic_period WHERE name = '2026-2'",
-            String.class);
+            "SELECT status FROM offering.academic_period WHERE name = '2026-2'", String.class);
 
     assertThat(status)
         .as("V025 must not touch 2026-2 — it must remain ACTIVE as seeded by V017")
