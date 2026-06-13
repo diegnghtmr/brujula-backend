@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Test;
 /**
  * RED→GREEN unit tests for {@link MinCreditsRule} (SIMULATION_MIN_CREDITS_NOT_MET).
  *
- * <p>Data-gap note: As of WU4b the seed data (V012/V013) has NO MINIMUM_CREDITS edges for
- * individual courses. This rule is wired and functionally correct but fires zero violations against
- * seed data. Tests below use synthetic MINIMUM_CREDITS requirement edges to prove genuine rule
- * firing. When real seed data is added the rule fires without code changes.
+ * <p>Data-gap note: The seed data has NO MINIMUM_CREDITS edges for individual courses. This rule is
+ * wired and functionally correct but fires zero violations against seed data. Tests below use
+ * synthetic MINIMUM_CREDITS requirement edges to prove genuine rule firing. When real seed data is
+ * added the rule fires without code changes.
  *
  * <p>Firing evidence:
  *

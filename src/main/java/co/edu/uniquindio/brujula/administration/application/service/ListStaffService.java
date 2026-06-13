@@ -14,9 +14,9 @@ import org.springframework.lang.Nullable;
  * Query service: list and find staff accounts.
  *
  * <p>Converts the status name string to a domain enum internally, so REST adapters using {@link
- * ListStaffQuery} do not need to import domain types (ARQ-001).
+ * ListStaffQuery} do not need to import domain types.
  *
- * <p>Framework-free. Satisfies: Design §2.2 GetStaffQuery/ListStaffQuery.
+ * <p>Framework-free.
  */
 public class ListStaffService implements ListStaffQuery {
 

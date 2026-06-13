@@ -7,10 +7,9 @@ import java.util.UUID;
  * Immutable view of a requirement edge between two courses in the curriculum graph.
  *
  * <p>Input to {@link CourseAvailabilityService}. Produced by the application layer from the
- * curriculum published port ({@code PlanMallaView.RequirementSummary}). No Spring/JPA imports
- * (ARQ-002).
+ * curriculum published port ({@code PlanMallaView.RequirementSummary}). No Spring/JPA imports.
  *
- * <p>Edge classification per ADR-F3-004:
+ * <p>Edge classification:
  *
  * <ul>
  *   <li>HARD edge = official ({@code inferred=false}) OR {@code confidence=HIGH}. An unmet HARD

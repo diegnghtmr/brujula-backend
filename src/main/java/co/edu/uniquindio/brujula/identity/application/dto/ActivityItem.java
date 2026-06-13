@@ -6,8 +6,8 @@ import java.util.UUID;
 /**
  * A single activity entry returned to the API caller.
  *
- * <p>Lives in {@code application.dto} (not {@code application.port.in}) to satisfy ARQ-003, which
- * requires all classes in {@code port.in} to be interfaces.
+ * <p>Lives in {@code application.dto} (not {@code application.port.in}) because port.in must
+ * contain interfaces only.
  *
  * @param id event UUID
  * @param actorId user UUID who performed the action

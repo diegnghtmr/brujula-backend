@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA-backed adapter implementing {@link LoadCoursePort} and {@link SaveCoursePort}.
  *
- * <p>Package-private per ARQ-006. Satisfies: CUR-001, Phase 2 WU4 (read) and WU5 (write).
+ * <p>Package-private. Satisfies: CUR-001 (read and write).
  *
  * <p>Transaction strategy: class-level {@code @Transactional} (read-write default) so write methods
  * inherit a writable transaction; each read method explicitly overrides with

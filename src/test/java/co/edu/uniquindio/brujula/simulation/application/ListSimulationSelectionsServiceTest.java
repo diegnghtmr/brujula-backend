@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU4a application unit tests for {@link ListSimulationSelectionsService}.
+ * Application unit tests for {@link ListSimulationSelectionsService}.
  *
  * <p>Covers: owner gets empty list, owner gets list with 2 items, non-owner → 403, simulation not
  * found → 404.
@@ -76,7 +76,7 @@ class ListSimulationSelectionsServiceTest {
     List<SimulationSelectionView> views = sut.listSelections(simulationId, ownerId);
 
     assertThat(views).hasSize(2);
-    // Verify warnings are always empty (WU4a)
+    // Verify warnings are always empty
     views.forEach(v -> assertThat(v.warnings()).isEmpty());
   }
 

@@ -1,8 +1,8 @@
 -- V018__create_simulation_tables.sql
 -- Forward-only migration. NEVER edit this file after it is committed.
 -- Creates simulation module tables. Schema 'simulation' was created in V001__create_schemas.sql.
--- Design: ADR-F4-001, ADR-F4-004. Cross-schema opaque UUIDs, NO cross-schema FK (ADR-F3-009).
--- INV-004: OUTDATED status is NEVER stored — only ACTIVE/DELETED lifecycle is persisted.
+-- Cross-schema opaque UUIDs, NO cross-schema FK.
+-- OUTDATED status is NEVER stored — only ACTIVE/DELETED lifecycle is persisted.
 
 -- ---------------------------------------------------------------------------
 -- simulation.simulation
@@ -35,9 +35,8 @@ CREATE INDEX idx_simulation_owner_period
 
 -- ---------------------------------------------------------------------------
 -- simulation.simulation_selection
--- Deferred to WU4 (selection content is WU4 scope per design §1.2).
--- The table is created here so V018 stands alone and WU4 does not need a schema-altering migration.
--- It will remain empty until WU4's AddSimulationSelectionService is wired.
+-- Created here so V018 stands alone without requiring a later schema-altering migration.
+-- It will remain empty until AddSimulationSelectionService is wired.
 -- ---------------------------------------------------------------------------
 CREATE TABLE simulation.simulation_selection (
     id                          UUID    NOT NULL DEFAULT gen_random_uuid(),

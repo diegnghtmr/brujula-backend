@@ -5,7 +5,7 @@ import co.edu.uniquindio.brujula.progress.domain.CourseAttempt;
 /**
  * Output port: write-side operations for {@link CourseAttempt}.
  *
- * <p>ARQ-003: application layer depends on this interface, not on concrete persistence adapters.
+ * <p>Application layer depends on this interface, not on concrete persistence adapters.
  */
 public interface SaveCourseAttemptPort {
 
@@ -13,7 +13,7 @@ public interface SaveCourseAttemptPort {
    * Persist a course attempt (insert or update).
    *
    * <p>Returns the managed domain object with the post-flush version (mirrors {@code
-   * SaveSubscriptionPort.save} FIX-W4 pattern).
+   * SaveSubscriptionPort.save} pattern).
    *
    * @param attempt the attempt to persist
    * @return the saved attempt with the DB-incremented version
@@ -21,8 +21,8 @@ public interface SaveCourseAttemptPort {
   CourseAttempt save(CourseAttempt attempt);
 
   /**
-   * Hard-delete a course attempt by the internal entity. Used for PRG-4 (delete attempt). In
-   * practice, the domain records a deletion audit event before calling this.
+   * Hard-delete a course attempt by the internal entity. In practice, the domain records a deletion
+   * audit event before calling this.
    *
    * @param attempt the attempt to delete
    */

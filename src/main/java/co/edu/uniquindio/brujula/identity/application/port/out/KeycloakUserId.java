@@ -7,7 +7,7 @@ package co.edu.uniquindio.brujula.identity.application.port.out;
  * {@code POST /admin/realms/{realm}/users} (Keycloak 26.4 response: 201 + Location header whose
  * last path segment is the user UUID).
  *
- * <p>Framework-free (ARQ-002).
+ * <p>Framework-free.
  *
  * @param value the raw Keycloak user UUID string (e.g. {@code "a2f0e8c1-1234-..."})
  */

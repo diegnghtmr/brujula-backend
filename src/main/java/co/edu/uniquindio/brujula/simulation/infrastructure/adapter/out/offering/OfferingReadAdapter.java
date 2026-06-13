@@ -11,11 +11,10 @@ import org.springframework.stereotype.Component;
 
 /**
  * Anti-corruption adapter: bridges simulation's {@link OfferingReadPort} to offering's published
- * {@code offering::api} named interface (ADR-F4-005, INV-001).
+ * {@code offering::api} named interface.
  *
- * <p>WU3: {@link #resolvePeriodName(UUID)} implemented. WU4a: {@link #resolveScheduleOption(UUID)}
- * and {@link #currentOfferingVersion(UUID)} implemented. Mapping from offering::api-dto types to
- * sim-local types happens HERE (boundary mapping at adapter edge).
+ * <p>Mapping from offering::api-dto types to sim-local types happens here (boundary mapping at
+ * adapter edge).
  */
 @Component
 class OfferingReadAdapter implements OfferingReadPort {
@@ -44,7 +43,7 @@ class OfferingReadAdapter implements OfferingReadPort {
     co.edu.uniquindio.brujula.offering.application.dto.ScheduleOptionResolutionView offeringView =
         resolveScheduleOptionQuery.resolveScheduleOption(scheduleOptionId);
 
-    // Map sessions: offering ScheduleSessionView → sim-local SessionSlot (boundary purity, ARQ-002)
+    // Map sessions: offering ScheduleSessionView → sim-local SessionSlot (boundary purity)
     List<ScheduleOptionResolutionView.SessionSlot> sessions =
         offeringView.sessions().stream()
             .map(

@@ -4,7 +4,7 @@ import java.util.Optional;
 
 /**
  * Pure validation rule: blocks adding a PERSONAL_ELECTIVE or DEEPENING course when the student has
- * not passed the track's gatekeeper prerequisite (spec VAL-008 — SIMULATION_SEQUENTIAL_ORDER).
+ * not passed the track's gatekeeper prerequisite (SIMULATION_SEQUENTIAL_ORDER).
  *
  * <p>Sequential-track policy:
  *
@@ -17,8 +17,7 @@ import java.util.Optional;
  *   <li>REQUIRED / INSTITUTIONAL / other types → rule is not evaluated.
  * </ul>
  *
- * <p>Package-private — only used by {@link SimulationValidationService}. Pure Java, no Spring/JPA
- * (ARQ-002, ADR-F4-004).
+ * <p>Package-private — only used by {@link SimulationValidationService}. Pure Java, no Spring/JPA.
  */
 class SequentialTrackEvaluator {
 

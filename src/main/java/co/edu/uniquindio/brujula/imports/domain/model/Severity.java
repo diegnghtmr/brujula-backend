@@ -6,7 +6,7 @@ package co.edu.uniquindio.brujula.imports.domain.model;
  * <p>ERROR issues are blocking — the affected row does not count toward {@code validRows}. WARNING
  * issues are non-blocking — the row still counts toward {@code validRows}.
  *
- * <p>Pure domain enum — zero framework annotations (ARQ-002).
+ * <p>Pure domain enum — zero framework annotations.
  */
 public enum Severity {
 

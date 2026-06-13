@@ -45,7 +45,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU4a application unit tests for {@link AddSimulationSelectionService}.
+ * Application unit tests for {@link AddSimulationSelectionService}.
  *
  * <p>Covers: happy path (201), idempotency replay, hash conflict → 409, non-owner → 403, simulation
  * not found → 404, blocking validation → SimulationValidationBlockedException.
@@ -353,11 +353,11 @@ class AddSimulationSelectionServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4b: Duplicate selection blocking (SIMULATION_DUPLICATE_SELECTION)
+  // Duplicate selection blocking (SIMULATION_DUPLICATE_SELECTION)
   // -------------------------------------------------------------------------
 
   /**
-   * WU4b: When the same courseId is already in the simulation, addSelection must throw
+   * When the same courseId is already in the simulation, addSelection must throw
    * SimulationValidationBlockedException with SIMULATION_DUPLICATE_SELECTION.
    */
   @Test
@@ -398,12 +398,12 @@ class AddSimulationSelectionServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4b: Soft-prereq warning (SIMULATION_SOFT_PREREQ_WARNING)
+  // Soft-prereq warning (SIMULATION_SOFT_PREREQ_WARNING)
   // -------------------------------------------------------------------------
 
   /**
-   * WU4b: When a soft (inferred MEDIUM) prerequisite is unmet, addSelection returns 201 (no
-   * blocking exception) and the view contains the SIMULATION_SOFT_PREREQ_WARNING notice.
+   * When a soft (inferred MEDIUM) prerequisite is unmet, addSelection returns 201 (no blocking
+   * exception) and the view contains the SIMULATION_SOFT_PREREQ_WARNING notice.
    */
   @Test
   void addSelection_softPrereqUnmet_returnsViewWithWarning() {
@@ -448,11 +448,11 @@ class AddSimulationSelectionServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // FIX F1 RED→GREEN: MinCreditsRule fed with real credit SUM (not size())
+  // MinCreditsRule fed with real credit SUM (not size())
   // -------------------------------------------------------------------------
 
   /**
-   * RED→GREEN proof for FIX F1 (fix-batch WU4b).
+   * Proof: MinCreditsRule fed with real credit SUM (not size()).
    *
    * <p>Scenario: student has passed 10 courses of 5 credits each = 50 actual credits. The candidate
    * course has a MINIMUM_CREDITS requirement of 60. With the old size()-proxy: accumulatedCredits =
@@ -513,7 +513,7 @@ class AddSimulationSelectionServiceTest {
     for (UUID pid : passedIds) {
       when(curriculumReadPort.courseCredits(pid)).thenReturn(5);
     }
-    // DEBT-F7-001 fix: stub the batch method used after refactor
+    // Stub the batch method used after refactor
     Map<UUID, Integer> passedCreditsMap50 = new HashMap<>();
     for (UUID pid : passedIds) {
       passedCreditsMap50.put(pid, 5);
@@ -575,7 +575,7 @@ class AddSimulationSelectionServiceTest {
     for (UUID pid : passedIds) {
       when(curriculumReadPort.courseCredits(pid)).thenReturn(5);
     }
-    // DEBT-F7-001 fix: stub the batch method used after refactor
+    // Stub the batch method used after refactor
     Map<UUID, Integer> passedCreditsMap60 = new HashMap<>();
     for (UUID pid : passedIds) {
       passedCreditsMap60.put(pid, 5);
@@ -594,12 +594,11 @@ class AddSimulationSelectionServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // FIX F3: acknowledgeWarnings=true + blocking notice → still 409
+  // acknowledgeWarnings=true + blocking notice → still 409
   // -------------------------------------------------------------------------
 
   /**
-   * FIX F3: Asserts that a BLOCKING validation notice is never bypassed by
-   * acknowledgeWarnings=true.
+   * Asserts that a BLOCKING validation notice is never bypassed by acknowledgeWarnings=true.
    *
    * <p>Per spec VAL-009: warnings are never blocking — they always ride in warnings[]. The
    * acknowledgeWarnings flag is RESERVED / no-op. A BLOCKING notice (e.g. already-passed) always

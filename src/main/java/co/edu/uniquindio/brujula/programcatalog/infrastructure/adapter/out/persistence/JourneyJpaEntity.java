@@ -9,8 +9,8 @@ import java.util.UUID;
 /**
  * JPA entity mapping to the {@code catalog.journey} table (created by Flyway V010).
  *
- * <p>Package-private per ARQ-006. No {@code @Version} on Journey — it is read-only in Fase 2
- * (journeys are seeded data with no optimistic-lock requirement per spec CAT-003).
+ * <p>Package-private. No {@code @Version} on Journey — it is read-only (journeys are seeded data
+ * with no optimistic-lock requirement).
  */
 @Entity
 @Table(name = "journey", schema = "catalog")

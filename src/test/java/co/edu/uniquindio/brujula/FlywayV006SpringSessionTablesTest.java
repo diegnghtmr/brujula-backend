@@ -9,9 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * G1 RESOLVE + RED test for V006__create_spring_session_tables.sql.
- *
- * <p>Verifies that {@code platform.spring_session} and {@code platform.spring_session_attributes}
+ * Verifies that {@code platform.spring_session} and {@code platform.spring_session_attributes}
  * tables exist after Flyway migration, and that {@code spring.session.jdbc.initialize-schema} is
  * set to {@code never} (tables come from Flyway, not Spring Session DDL). Also probes the exact
  * {@code spring.session.jdbc.table-name} effective property key used by Spring Session 4 to reach
@@ -22,9 +20,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * spring.session.jdbc.table-name} config property retains the value {@code platform.SPRING_SESSION}
  * — Spring Session emits unquoted SQL, and PostgreSQL folds unquoted identifiers to lowercase at
  * runtime, matching V020's renamed tables.
- *
- * <p>Satisfies: S1-A-1 (G1), S1-A-6, Spec §Session Persistence (ADR-007, RNF-SEG-003/004), Design
- * §3 V006.
  */
 @SpringBootTest
 class FlywayV006SpringSessionTablesTest extends AbstractPostgresIntegrationTest {
@@ -68,8 +63,8 @@ class FlywayV006SpringSessionTablesTest extends AbstractPostgresIntegrationTest 
   }
 
   /**
-   * G1 RESOLUTION: Spring Session 4 uses {@code spring.session.jdbc.initialize-schema} to control
-   * DDL auto-creation. Must be {@code never} so Flyway owns the schema.
+   * Spring Session 4 uses {@code spring.session.jdbc.initialize-schema} to control DDL
+   * auto-creation. Must be {@code never} so Flyway owns the schema.
    */
   @Test
   void spring_session_initialize_schema_is_never() {
@@ -78,13 +73,13 @@ class FlywayV006SpringSessionTablesTest extends AbstractPostgresIntegrationTest 
     assertThat(initSchema)
         .as(
             "spring.session.jdbc.initialize-schema must be 'never' — tables come from Flyway,"
-                + " not Spring Session auto-DDL (ADR-F1-004)")
+                + " not Spring Session auto-DDL")
         .isEqualTo("never");
   }
 
   /**
-   * G1 RESOLUTION: Spring Session 4 uses {@code spring.session.jdbc.table-name} to reach a
-   * schema-qualified table. The effective value must be {@code platform.SPRING_SESSION}.
+   * Spring Session 4 uses {@code spring.session.jdbc.table-name} to reach a schema-qualified table.
+   * The effective value must be {@code platform.SPRING_SESSION}.
    */
   @Test
   void spring_session_table_name_is_schema_qualified() {
@@ -93,7 +88,7 @@ class FlywayV006SpringSessionTablesTest extends AbstractPostgresIntegrationTest 
     assertThat(tableName)
         .as(
             "spring.session.jdbc.table-name must be 'platform.SPRING_SESSION' so Spring Session"
-                + " writes to the correct schema (G1 resolution)")
+                + " writes to the correct schema")
         .isEqualTo("platform.SPRING_SESSION");
   }
 

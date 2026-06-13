@@ -8,9 +8,9 @@ import java.util.UUID;
  * Application-layer DTO for an ImportBatch read view.
  *
  * <p>Returned by UploadImportService and serialized to the idempotency store. The REST controller
- * (WU4) maps this to the generated ImportSummary model — not the reverse direction.
+ * maps this to the generated ImportSummary model — not the reverse direction.
  *
- * <p>No Spring/JPA imports. No domain types (ARQ-001).
+ * <p>No Spring/JPA imports. No domain types.
  */
 public record ImportSummary(
     UUID id,

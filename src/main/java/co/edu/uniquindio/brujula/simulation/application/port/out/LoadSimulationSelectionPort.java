@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Output port: load simulation selections from persistence.
  *
- * <p>Named by need (ARQ-001). Implemented by {@code SimulationPersistenceAdapter}.
+ * <p>Named by need. Implemented by {@code SimulationPersistenceAdapter}.
  */
 public interface LoadSimulationSelectionPort {
 

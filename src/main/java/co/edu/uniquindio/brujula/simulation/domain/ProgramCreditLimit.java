@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Credit limit policy for a program in a period.
  *
- * <p>Sourced from {@code CreditLimitPort} (→ administration::api). Pure value record (ARQ-002).
+ * <p>Sourced from {@code CreditLimitPort} (→ administration::api). Pure value record.
  *
  * @param programId the program UUID
  * @param programName human-readable program name (for metadata in notices)

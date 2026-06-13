@@ -9,15 +9,15 @@ import java.util.UUID;
  * <p>Invariants:
  *
  * <ul>
- *   <li>{@code totalCredits} must be > 0 (CAT-002).
+ *   <li>{@code totalCredits} must be > 0.
  *   <li>{@code name} must not be null or blank.
  *   <li>{@code programId} must not be null.
  * </ul>
  *
- * <p>Status defaults to {@link PlanStatus#DRAFT}. Version initializes to {@code 0} (DT-014/DB-006).
- * {@code referenceYear} is optional (nullable).
+ * <p>Status defaults to {@link PlanStatus#DRAFT}. Version initializes to {@code 0} for optimistic
+ * locking. {@code referenceYear} is optional (nullable).
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public final class StudyPlan {
 

@@ -7,10 +7,10 @@ import java.util.UUID;
  * Input port: compute and return the progress summary for a subscription.
  *
  * <p>Implements: AVL-2 — bulk-loads attempts and plan courses, delegates to {@link
- * co.edu.uniquindio.brujula.progress.domain.ProgressSummaryCalculator}. BOLA-guarded. ARQ-003.
+ * co.edu.uniquindio.brujula.progress.domain.ProgressSummaryCalculator}. BOLA-guarded.
  *
  * <p>Returns {@link ProgressSummaryView} (application DTO) instead of a domain type, so REST
- * adapters can use the result without importing domain classes (ARQ-001).
+ * adapters can use the result without importing domain classes.
  *
  * <p>No Spring/framework imports.
  */

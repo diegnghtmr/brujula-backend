@@ -21,7 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-4.3 RED: Verifies GetCourseService returns a CourseView for found courses and throws
+ * Verifies GetCourseService returns a CourseView for found courses and throws
  * CourseNotFoundException (404-mapped domain exception) for missing courses.
  */
 class GetCourseServiceTest {

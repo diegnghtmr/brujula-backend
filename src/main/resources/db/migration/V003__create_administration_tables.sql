@@ -2,8 +2,7 @@
 --
 -- Module: administration
 -- Schema: administration
--- Satisfies: Spec §Admin Staff Account Management (RF-ADM-002, RN-127..132),
---            Spec §Allowed Email Domains (RN-007), Design §3 V003
+-- Satisfies: Admin Staff Account Management spec, Allowed Email Domains spec
 
 -- Staff account — one row per staff member
 CREATE TABLE IF NOT EXISTS administration.staff_account (
@@ -38,7 +37,7 @@ CREATE TABLE IF NOT EXISTS administration.allowed_email_domain (
 COMMENT ON TABLE  administration.allowed_email_domain IS 'Allowed email domains enforced at identity provisioning and student registration.';
 COMMENT ON COLUMN administration.allowed_email_domain.domain IS 'Normalized lowercase hostname, e.g. uniquindio.edu.co.';
 
--- Staff program assignments — table modeled for Fase 1; lifecycle (writes) deferred to Fase 2
+-- Staff program assignments — lifecycle writes deferred to a later phase
 CREATE TABLE IF NOT EXISTS administration.staff_program_assignment (
     id          UUID        NOT NULL DEFAULT gen_random_uuid(),
     staff_id    UUID        NOT NULL,
@@ -53,5 +52,5 @@ CREATE TABLE IF NOT EXISTS administration.staff_program_assignment (
     CONSTRAINT staff_program_assignment_unique       UNIQUE (staff_id, program_id)
 );
 
-COMMENT ON TABLE  administration.staff_program_assignment IS 'Assignment of staff to academic programs. Write lifecycle deferred to Fase 2.';
-COMMENT ON COLUMN administration.staff_program_assignment.program_id IS 'Reference to programcatalog.program (no FK across schemas in Fase 1).';
+COMMENT ON TABLE  administration.staff_program_assignment IS 'Assignment of staff to academic programs. Write lifecycle deferred to a later phase.';
+COMMENT ON COLUMN administration.staff_program_assignment.program_id IS 'Reference to programcatalog.program (no FK across schemas).';

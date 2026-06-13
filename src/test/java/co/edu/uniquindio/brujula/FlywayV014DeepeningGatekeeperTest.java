@@ -10,19 +10,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * RED test for V014__add_deepening_track_gatekeeper.sql (WU3 batch 3b verify fix — FIX-1).
- *
- * <p>Asserts that after V014 Flyway migration has run:
+ * Asserts that after V014 Flyway migration has run:
  *
  * <ul>
  *   <li>The {@code gatekeeper_course_id} column exists on {@code curriculum.sequential_track}
- *   <li>The 3 ISC DEEPENING tracks each point to their correct per-line gatekeeper course
+ *   <li>The 3 ISC DEEPENING tracks each point to their correct per-line gatekeeper course (Ing.
+ *       Software+HCI → IS I; Infra TI → Admin Infra TI; Gestión Información → BD I)
  *   <li>The PERSONAL_ELECTIVE track (Electivas de Formación Personal) has NULL gatekeeper
  * </ul>
- *
- * <p>Fails until V014__add_deepening_track_gatekeeper.sql exists. Satisfies: ADR-F2-003, CUR-005
- * gatekeeper correctness (Ing. Software+HCI → IS I; Infra TI → Admin Infra TI; Gestión Información
- * → BD I).
  */
 @SpringBootTest
 class FlywayV014DeepeningGatekeeperTest extends AbstractPostgresIntegrationTest {

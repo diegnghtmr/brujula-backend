@@ -42,19 +42,19 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU3-T12 RED: REST integration tests for the CourseAttempt endpoints.
+ * REST integration tests for the CourseAttempt endpoints.
  *
  * <p>Scenarios:
  *
  * <ul>
- *   <li>CROSS-2-UNAUTH: unauthenticated → 401.
- *   <li>CROSS-2-STAFF: STAFF role on /me/course-attempts → 403.
- *   <li>PRG-1-HP: STUDENT POST create → 201.
- *   <li>PRG-1-MISSING-IDEMPOTENCY-KEY: POST without Idempotency-Key → 400.
- *   <li>PRG-1-GRADE-MISMATCH: grade-status mismatch → 422.
- *   <li>CROSS-3: optimistic-lock conflict → 409.
- *   <li>PRG-2-BOLA: GET attempt belonging to another user → 404.
- *   <li>PRG-4-HP: DELETE attempt → 204.
+ *   <li>Unauthenticated → 401.
+ *   <li>STAFF role on /me/course-attempts → 403.
+ *   <li>STUDENT POST create → 201.
+ *   <li>POST without Idempotency-Key → 400.
+ *   <li>Grade-status mismatch → 422.
+ *   <li>Optimistic-lock conflict → 409.
+ *   <li>GET attempt belonging to another user → 404.
+ *   <li>DELETE attempt → 204.
  * </ul>
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -69,7 +69,7 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   @MockitoBean private UpdateCourseAttemptUseCase updateCourseAttemptUseCase;
   @MockitoBean private DeleteCourseAttemptUseCase deleteCourseAttemptUseCase;
 
-  // WU4: mock new query services so this test class doesn't wire real application services
+  // Mock new query services so this test class doesn't wire real application services
   @MockitoBean
   private co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionCurriculumQuery
       getSubscriptionCurriculumQuery;
@@ -274,7 +274,7 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
         .andExpect(status().isNoContent());
   }
 
-  // WU4: stubs replaced with real delegation — unknown subscription returns 404 (BOLA/not found)
+  // Stubs replaced with real delegation — unknown subscription returns 404 (BOLA/not found)
   @Test
   void get_subscription_curriculum_unknown_returns_404() throws Exception {
     UUID subId = UUID.randomUUID();
@@ -338,7 +338,7 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
         .andExpect(status().isConflict());
   }
 
-  // FIX-W4 note: the domain now enforces periodId non-null at register() time (contract-required).
+  // The domain enforces periodId non-null at register() time (contract-required).
   // However the CourseAttemptView application DTO still supports null periodId for
   // reconstituted/legacy rows. The controller must pass it through as-is without substitution.
   @Test
@@ -354,7 +354,7 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
             null, // periodId = null — legacy/reconstituted row; controller passes through as-is
             null,
             "DIURNA",
-            "PASSED", // FIX-S1: plain String
+            "PASSED",
             new BigDecimal("4.2"),
             Instant.now(),
             0L);
@@ -385,7 +385,7 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
                 }
                 """))
         .andExpect(status().isCreated())
-        // FIX-S2: periodId in response must be null (not the zero UUID sentinel)
+        // periodId in response must be null (not the zero UUID sentinel)
         .andExpect(jsonPath("$.periodId").value((Object) null));
   }
 
@@ -402,7 +402,7 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
         null,
         null,
         "DIURNA",
-        "PASSED", // FIX-S1: plain String
+        "PASSED",
         new BigDecimal("4.2"),
         Instant.now(),
         0L);

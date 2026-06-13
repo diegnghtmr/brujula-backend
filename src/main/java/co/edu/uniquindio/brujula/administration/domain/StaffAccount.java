@@ -6,11 +6,9 @@ import java.util.UUID;
  * StaffAccount aggregate — represents an administrative staff account.
  *
  * <p>Lifecycle: created ACTIVE; can be deactivated/reactivated by ADMIN. Optimistic locking via
- * version field. Program assignments are modeled in Fase 1 but the assignment lifecycle (writes) is
- * deferred to Fase 2.
+ * version field. The assignment lifecycle (writes) is deferred.
  *
- * <p>No framework annotations — wired by infrastructure configuration. Satisfies: Design §2.2, Spec
- * §Admin Staff Account Management (RF-ADM-002, RN-127..132).
+ * <p>No framework annotations — wired by infrastructure configuration.
  */
 public final class StaffAccount {
 

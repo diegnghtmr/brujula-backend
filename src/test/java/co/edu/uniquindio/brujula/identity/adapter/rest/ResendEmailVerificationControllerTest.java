@@ -34,7 +34,7 @@ import org.springframework.web.context.WebApplicationContext;
  *   <li>Endpoint is permitAll: unauthenticated request succeeds
  * </ul>
  *
- * <p>Satisfies: S2-C, Design §1.3 permitAll for /auth/email-verifications/**, RNF-SEG-006.
+ * <p>Endpoint is permitAll (unauthenticated request must succeed).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class ResendEmailVerificationControllerTest extends AbstractPostgresIntegrationTest {
@@ -57,7 +57,7 @@ class ResendEmailVerificationControllerTest extends AbstractPostgresIntegrationT
   }
 
   // -------------------------------------------------------------------------
-  // S2-C-1: Known email → 202 Accepted
+  // Known email → 202 Accepted
   // -------------------------------------------------------------------------
 
   @Test
@@ -73,7 +73,7 @@ class ResendEmailVerificationControllerTest extends AbstractPostgresIntegrationT
   }
 
   // -------------------------------------------------------------------------
-  // S2-C-2: Unknown email → SAME 202 Accepted (no user enumeration)
+  // Unknown email → SAME 202 Accepted (no user enumeration)
   // -------------------------------------------------------------------------
 
   @Test
@@ -90,7 +90,7 @@ class ResendEmailVerificationControllerTest extends AbstractPostgresIntegrationT
   }
 
   // -------------------------------------------------------------------------
-  // S2-C-3: permitAll — unauthenticated request reaches the endpoint
+  // permitAll — unauthenticated request reaches the endpoint
   // -------------------------------------------------------------------------
 
   @Test

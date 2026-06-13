@@ -13,7 +13,7 @@ import java.util.UUID;
  * and raw attempt summaries.
  *
  * <p>Pure function — no Spring beans, no ports, no I/O. Enforced by {@code
- * ProgressDomainPurityTest} (ARQ-002, ADR-F3-004).
+ * ProgressDomainPurityTest}.
  *
  * <p>Credit math:
  *
@@ -34,7 +34,8 @@ import java.util.UUID;
  *       grade); CANCELLED attempts are excluded.
  * </ul>
  *
- * <p>Satisfies: AVL-2-HP, AVL-2-NO-ATTEMPTS, CROSS-6-DISCLAIMER.
+ * <p>Handles empty-attempt case (returns zero credits/percentage) and includes a self-declared data
+ * disclaimer in the result.
  */
 public class ProgressSummaryCalculator {
 

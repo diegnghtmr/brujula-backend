@@ -7,27 +7,27 @@
  *
  * <ul>
  *   <li>{@code sharedkernel} — JsonCodecPort, IdempotencyStorePort
- *   <li>{@code audit::spi} — AuditRecorder SPI (WU3+)
- *   <li>{@code audit::spi-dto} — audit event DTOs (WU3+)
- *   <li>{@code curriculum::api} — curriculum write use-cases for confirm (WU5+)
+ *   <li>{@code audit::spi} — AuditRecorder SPI
+ *   <li>{@code audit::spi-dto} — audit event DTOs
+ *   <li>{@code curriculum::api} — curriculum write use-cases for confirm
  *   <li>{@code curriculum::api-dto} — CreateCourseCommand, CreateCourseRequirementCommand,
- *       CourseView DTOs consumed by ConfirmImportService during row replay (WU6)
- *   <li>{@code offering::api} — offering write use-case for confirm OFFERINGS (WU7)
+ *       CourseView DTOs consumed by ConfirmImportService during row replay
+ *   <li>{@code offering::api} — offering write use-case for confirm OFFERINGS
  *   <li>{@code offering::api-dto} — CreateOfferingCommand DTO consumed by ConfirmImportService
- *       during OFFERINGS row replay (WU7, mirrors curriculum::api-dto pattern)
- *   <li>{@code programcatalog::api} — program/plan resolution for validation (WU3)
- *   <li>{@code administration::spi} — staff assignment check + actor→StaffAccount resolution (WU2,
- *       {@code StaffAssignmentAdapter}). This edge is NOW backed by a real
- *       {@code @NamedInterface("spi")} in {@code administration.application.port.in.spi}, so Spring
- *       Modulith genuinely validates this boundary.
- *   <li>{@code identity::api} — GetCurrentUserQuery for actor resolution in REST controller (WU4)
- *   <li>{@code identity::api-dto} — UserProfile DTO consumed by REST controller (WU4)
- *   <li>{@code generated} — OpenAPI-generated ImportsApi interface and model DTOs in REST adapters
- *       (ARQ-005, WU4). Mirrors the offering module pattern.
+ *       during OFFERINGS row replay (mirrors curriculum::api-dto pattern)
+ *   <li>{@code programcatalog::api} — program/plan resolution for validation
+ *   <li>{@code administration::spi} — staff assignment check + actor→StaffAccount resolution
+ *       ({@code StaffAssignmentAdapter}). Backed by a real {@code @NamedInterface("spi")} in {@code
+ *       administration.application.port.in.spi}, so Spring Modulith genuinely validates this
+ *       boundary.
+ *   <li>{@code identity::api} — GetCurrentUserQuery for actor resolution in REST controller
+ *   <li>{@code identity::api-dto} — UserProfile DTO consumed by REST controller
+ *   <li>{@code generated} — OpenAPI-generated ImportsApi interface and model DTOs in REST adapters.
+ *       Mirrors the offering module pattern.
  * </ul>
  *
  * <p>Note: bare module names (e.g. {@code "audit"}) are migrated to NamedInterface paths (e.g.
- * {@code "audit::spi"}) per Spring Modulith convention and the design ADR for this change.
+ * {@code "audit::spi"}) per Spring Modulith convention.
  */
 @org.springframework.modulith.ApplicationModule(
     allowedDependencies = {

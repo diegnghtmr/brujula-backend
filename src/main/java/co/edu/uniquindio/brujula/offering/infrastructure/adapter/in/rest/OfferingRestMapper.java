@@ -30,7 +30,7 @@ import java.util.UUID;
 /**
  * REST mapper: converts offering application DTOs to generated contract model objects.
  *
- * <p>Package-private per ARQ-006b. courseName is denormalized from the course_offering table.
+ * <p>Package-private. courseName is denormalized from the course_offering table.
  */
 class OfferingRestMapper {
 
@@ -105,7 +105,7 @@ class OfferingRestMapper {
   /**
    * Map a REST create-offering request to the application command.
    *
-   * <p>ARQ-001: only generated model + application DTOs referenced here.
+   * <p>Only generated model + application DTOs referenced here.
    */
   CreateOfferingCommand fromRequest(
       UUID idempotencyKey,
@@ -147,7 +147,7 @@ class OfferingRestMapper {
   /**
    * Map a REST update-offering request to the application command.
    *
-   * <p>ARQ-001: only generated model + application DTOs referenced here.
+   * <p>Only generated model + application DTOs referenced here.
    */
   UpdateOfferingCommand fromUpdateRequest(
       UUID offeringId, OfferingUpdateRequest request, UUID actorId) {
@@ -158,7 +158,7 @@ class OfferingRestMapper {
   /**
    * Map a REST publish-offering request to the application command.
    *
-   * <p>ARQ-001: only generated model + application DTOs referenced here.
+   * <p>Only generated model + application DTOs referenced here.
    */
   PublishOfferingCommand fromPublishRequest(
       UUID idempotencyKey,

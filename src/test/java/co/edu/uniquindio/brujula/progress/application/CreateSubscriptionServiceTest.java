@@ -32,10 +32,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU2-T09 RED+GREEN: use case unit tests for {@link CreateSubscriptionService}.
+ * Use case unit tests for {@link CreateSubscriptionService}.
  *
- * <p>Covers: SUB-1-HP, SUB-1-CAP, SUB-1-DUP, SUB-1-IDEM, SUB-1-IDEM-CONFLICT, SUB-1-JORNADA-DUP,
- * SUB-1-JORNADA-DIFF-ALLOWED, SUB-1-CAP-DISTINCT-PROGRAMS.
+ * <p>Covers: happy path, cap, duplicate, idempotency, idempotency conflict, duplicate journey,
+ * different journey allowed, cap on distinct programs.
  */
 class CreateSubscriptionServiceTest {
 
@@ -85,7 +85,7 @@ class CreateSubscriptionServiceTest {
         .thenReturn(false);
     when(saveSubscriptionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
     when(jsonCodecPort.toJson(any())).thenReturn("{\"id\":\"...\"}");
-    // FIX-W3: plan must be ACTIVE (via anti-corruption facade)
+    // Plan must be ACTIVE (via anti-corruption facade)
     when(validatePlanStatusPort.getPlanStatus(planId)).thenReturn("ACTIVE");
 
     SubscriptionView view = sut.createSubscription(command);
@@ -98,7 +98,7 @@ class CreateSubscriptionServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // FIX-W3 RED: SUB-1-INACTIVE-PLAN — ARCHIVED plan rejected with 422
+  // ARCHIVED plan rejected with 422
   // -------------------------------------------------------------------------
 
   @Test
@@ -125,7 +125,7 @@ class CreateSubscriptionServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // SUB-1-CAP: cap is on DISTINCT programs, not total rows
+  // Cap is on DISTINCT programs, not total rows
   // -------------------------------------------------------------------------
 
   /**
@@ -337,9 +337,9 @@ class CreateSubscriptionServiceTest {
   }
 
   /**
-   * SUB-1-CAP-DISTINCT-PROGRAMS: 2 active rows for the SAME program (programA-DIURNA +
-   * programA-NOCTURNA) → only 1 distinct program. Subscribing to a NEW programB → SUCCEEDS because
-   * only 1 distinct program is active, adding a 2nd distinct program is within the cap of 2.
+   * 2 active rows for the SAME program (programA-DIURNA + programA-NOCTURNA) → only 1 distinct
+   * program. Subscribing to a NEW programB → SUCCEEDS because only 1 distinct program is active,
+   * adding a 2nd distinct program is within the cap of 2.
    *
    * <p>This test discriminates the current distinct-program logic from the old row-count logic:
    * under the old count-based check (count >= 2) this would have thrown; under the correct

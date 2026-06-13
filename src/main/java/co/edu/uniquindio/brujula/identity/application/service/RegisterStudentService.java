@@ -22,11 +22,11 @@ import org.slf4j.LoggerFactory;
 /**
  * Use case service: register a new student via self-registration.
  *
- * <p>Orchestration (Slice 2, S2-B-3):
+ * <p>Orchestration:
  *
  * <ol>
- *   <li>Validate email domain against allowed-domain list (RN-007, RNF-SEG-006 dual enforcement).
- *       This is the FIRST gate — Keycloak is NEVER called for rejected domains.
+ *   <li>Validate email domain against allowed-domain list. This is the FIRST gate — Keycloak is
+ *       NEVER called for rejected domains.
  *   <li>Check email is not already registered (pre-condition for idempotency).
  *   <li>Create user in Keycloak via {@link KeycloakUserProvisioningPort#createUser}. If Keycloak
  *       fails, the method throws and no AppUser is persisted.
@@ -36,13 +36,13 @@ import org.slf4j.LoggerFactory;
  *   <li>Trigger email verification via {@link
  *       KeycloakUserProvisioningPort#triggerEmailVerification}. If this fails, log a warning and
  *       continue (email can be resent; the AppUser is already persisted — resilience decision).
- *   <li>Record {@code STUDENT_REGISTERED} audit event (RNF-SEG-007).
+ *   <li>Record {@code STUDENT_REGISTERED} audit event.
  * </ol>
  *
- * <p>Framework-free (ARQ-002). Wired by {@link
+ * <p>Framework-free. Wired by {@link
  * co.edu.uniquindio.brujula.identity.infrastructure.configuration.IdentityConfiguration}.
  *
- * <p>Gap G6 RESOLVED: consent terms/version source = configuration properties {@code
+ * <p>Consent terms/version source = configuration properties {@code
  * brujula.registration.current-terms-version} and {@code current-privacy-version}.
  */
 public class RegisterStudentService implements RegisterStudentUseCase {
@@ -79,7 +79,7 @@ public class RegisterStudentService implements RegisterStudentUseCase {
 
   @Override
   public RegisterStudentResult register(RegisterStudentCommand command) {
-    // 1. Enforce allowed-domain policy — FIRST gate (RN-007, RNF-SEG-006 dual enforcement).
+    // 1. Enforce allowed-domain policy — FIRST gate.
     //    Keycloak is NEVER called if the domain is rejected.
     Set<String> allowedDomains = loadAllowedDomainsPort.loadAllowedDomains();
     var policy = new AllowedEmailDomainPolicy(allowedDomains);
@@ -93,9 +93,9 @@ public class RegisterStudentService implements RegisterStudentUseCase {
     }
 
     // 3. Create user in Keycloak (throws KeycloakProvisioningException on failure).
-    //    OPTION A (DT-011): no password here. The backend creates the Keycloak user without
-    //    a credential; the UPDATE_PASSWORD action in triggerEmailVerification (step 6) prompts
-    //    the user to set their password on Keycloak's own page after email verification.
+    //    The backend creates the Keycloak user without a credential; the UPDATE_PASSWORD action
+    //    in triggerEmailVerification (step 6) prompts the user to set their password on
+    //    Keycloak's own page after email verification.
     var keycloakUserId =
         keycloakPort.createUser(new ProvisionUserCommand(command.email(), command.fullName()));
 
@@ -118,12 +118,12 @@ public class RegisterStudentService implements RegisterStudentUseCase {
           e.getMessage());
     }
 
-    // 7. Record audit event (RNF-SEG-007: synchronous, same logical unit).
+    // 7. Record audit event (synchronous, same logical unit).
     auditRecorder.record(
         new RecordAuditEventCommand(
             saved.id(), "STUDENT", "STUDENT_REGISTERED", "app_user", saved.id(), null, null, null));
 
-    // ARQ-001: onboardingState passed as String to avoid REST adapter importing domain enum.
+    // onboardingState passed as String to avoid REST adapter importing domain enum.
     return new RegisterStudentResult(saved.id(), saved.email(), saved.onboardingState().name());
   }
 }

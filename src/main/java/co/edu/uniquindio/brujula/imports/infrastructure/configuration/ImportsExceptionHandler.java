@@ -21,10 +21,9 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
  * Maps imports-module domain exceptions to RFC 9457 {@code application/problem+json} responses.
  *
  * <p>Lives in {@code infrastructure.configuration} (same pattern as OfferingExceptionHandler) so
- * that it may reference domain exception types without violating ARQ-001. Infrastructure may depend
- * on domain (ARQ-008).
+ * that it may reference domain exception types. Infrastructure may depend on domain.
  *
- * <p>Exception → HTTP mapping (IMP-012):
+ * <p>Exception → HTTP mapping:
  *
  * <ul>
  *   <li>{@link UnsupportedFileTypeException} → 415 UNSUPPORTED_FILE_TYPE
@@ -39,7 +38,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
  * </ul>
  *
  * <p>The {@code code} property is set on the ProblemDetail so it appears at the top-level {@code
- * $.code} field (matching OfferingExceptionHandler convention). Satisfies IMP-012.
+ * $.code} field (matching OfferingExceptionHandler convention).
  *
  * <p>Scoped to the imports REST package with {@link Ordered#HIGHEST_PRECEDENCE}. The shared {@link
  * IdempotencyKeyConflictException} (sharedkernel) is handled by several module advices, all
@@ -164,16 +163,16 @@ class ImportsExceptionHandler {
   }
 
   // -------------------------------------------------------------------------
-  // 501 Not Implemented — defensive guard (IMP-012)
+  // 501 Not Implemented — defensive guard
   // -------------------------------------------------------------------------
 
   /**
    * Maps {@link UnsupportedOperationException} to HTTP 501 Not Implemented.
    *
-   * <p>Kept as a defensive handler. As of WU7, no supported import kind (COURSES, REQUIREMENTS,
-   * OFFERINGS) throws this exception from {@code ConfirmImportService.replayRows()}. If a future
-   * kind is added and not yet implemented, this handler prevents leaking a raw 500 stack trace at
-   * the API boundary (IMP-012).
+   * <p>Kept as a defensive handler. No supported import kind (COURSES, REQUIREMENTS, OFFERINGS)
+   * throws this exception from {@code ConfirmImportService.replayRows()}. If a future kind is added
+   * and not yet implemented, this handler prevents leaking a raw 500 stack trace at the API
+   * boundary.
    */
   @ExceptionHandler(UnsupportedOperationException.class)
   ProblemDetail handleNotImplemented(UnsupportedOperationException ex) {

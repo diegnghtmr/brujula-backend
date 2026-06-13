@@ -14,8 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * administration.allowed_email_domain} after the full migration run. Fails until the seed migration
  * file exists.
  *
- * <p>Satisfies: S1-A-7, Spec §Allowed Email Domains (RN-007), Design §3 V007, MIG-005 (data
- * separate from structure).
+ * <p>Data is seeded separately from structure to keep migrations idempotent.
  */
 @SpringBootTest
 class FlywayV007SeedAllowedDomainTest extends AbstractPostgresIntegrationTest {
@@ -36,7 +35,7 @@ class FlywayV007SeedAllowedDomainTest extends AbstractPostgresIntegrationTest {
     assertThat(count)
         .as(
             "administration.allowed_email_domain must contain the seed row"
-                + " domain='uniquindio.edu.co' after V007 data migration (RN-007)")
+                + " domain='uniquindio.edu.co' after V007 data migration")
         .isEqualTo(1);
   }
 }

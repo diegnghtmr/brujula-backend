@@ -12,7 +12,7 @@ import java.util.UUID;
  * Use case implementation: get a single academic program by ID.
  *
  * <p>Throws {@link ProgramNotFoundException} (maps to HTTP 404) if the program is not found. No
- * Spring annotations — wired via infrastructure configuration (ARQ-002).
+ * Spring annotations — wired via infrastructure configuration.
  */
 public class GetProgramService implements GetProgramQuery {
 

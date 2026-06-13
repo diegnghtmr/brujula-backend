@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Typed identifier for a {@link DegreeWorkModality} aggregate (value object).
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public record DegreeWorkModalityId(UUID value) {
 

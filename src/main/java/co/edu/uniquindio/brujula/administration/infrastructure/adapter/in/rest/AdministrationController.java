@@ -48,16 +48,16 @@ import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * REST adapter implementing {@link AdministrationApi} (contract-first, ARQ-001).
+ * REST adapter implementing {@link AdministrationApi} (contract-first).
  *
- * <p>Implements Fase-1 endpoints fully: createStaff (idempotent), listStaff, updateStaff, getStaff,
+ * <p>Implemented endpoints: createStaff (idempotent), listStaff, updateStaff, getStaff,
  * addAllowedEmailDomain, listAllowedEmailDomains, removeAllowedEmailDomain.
  *
- * <p>Fase-2 stubs (return 501): assignProgramToStaff, listStaffAssignments, revokeStaffAssignment,
+ * <p>Stubs (return 501): assignProgramToStaff, listStaffAssignments, revokeStaffAssignment,
  * setCreditLimit, listCreditLimits, createPeriod, updatePeriod, createProgram, updateProgram,
  * createJourney.
  *
- * <p>ARQ-001: only generated model and application-layer DTOs imported here — no domain types.
+ * <p>Only generated model and application-layer DTOs imported here — no domain types.
  */
 @RestController
 class AdministrationController implements AdministrationApi {
@@ -91,7 +91,7 @@ class AdministrationController implements AdministrationApi {
   }
 
   // -------------------------------------------------------------------------
-  // Fase-1 endpoints
+  // Implemented endpoints
   // -------------------------------------------------------------------------
 
   @Override
@@ -180,7 +180,7 @@ class AdministrationController implements AdministrationApi {
   }
 
   // -------------------------------------------------------------------------
-  // Fase-2 stubs — return 501 Not Implemented
+  // Stubs — return 501 Not Implemented
   // -------------------------------------------------------------------------
 
   @Override
@@ -283,7 +283,7 @@ class AdministrationController implements AdministrationApi {
   }
 
   // -------------------------------------------------------------------------
-  // Private helpers — ARQ-001 compliant (application DTOs only)
+  // Private helpers (application DTOs only)
   // -------------------------------------------------------------------------
 
   /** Resolve actor UUID from session principal (OIDC sub lookup). BOLA safe: never from request. */
@@ -307,7 +307,7 @@ class AdministrationController implements AdministrationApi {
     }
   }
 
-  // DTO mappers: application DTOs → generated model (ARQ-005)
+  // DTO mappers: application DTOs → generated model
 
   private Staff toStaffDto(StaffAccountView view) {
     return new Staff(
@@ -318,9 +318,7 @@ class AdministrationController implements AdministrationApi {
         view.version());
   }
 
-  /**
-   * Maps offering {@link AcademicPeriodView} → generated {@link AcademicPeriod} model (ARQ-001).
-   */
+  /** Maps offering {@link AcademicPeriodView} → generated {@link AcademicPeriod} model. */
   private AcademicPeriod toPeriodDto(AcademicPeriodView view) {
     AcademicPeriod dto =
         new AcademicPeriod(view.id(), view.name(), PeriodStatus.fromValue(view.status()));

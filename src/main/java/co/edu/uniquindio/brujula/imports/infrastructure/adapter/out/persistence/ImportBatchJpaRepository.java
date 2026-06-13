@@ -9,8 +9,7 @@ import org.springframework.data.repository.query.Param;
 /**
  * Spring Data JPA repository for {@link ImportBatchJpaEntity}.
  *
- * <p>Package-private per ARQ-006b. Only {@link ImportBatchPersistenceAdapter} uses this repository
- * directly.
+ * <p>Package-private. Only {@link ImportBatchPersistenceAdapter} uses this repository directly.
  */
 interface ImportBatchJpaRepository extends JpaRepository<ImportBatchJpaEntity, UUID> {
 
@@ -44,7 +43,7 @@ interface ImportBatchJpaRepository extends JpaRepository<ImportBatchJpaEntity, U
       @Param("kind") String kind, @Param("status") String status);
 
   /**
-   * List batches for a set of programs in a single IN-clause query (QAL-PERF-001).
+   * List batches for a set of programs in a single IN-clause query.
    *
    * <p>Replaces the O(N) per-program loop in {@code ListImportsService.loadBatchesForStaff} with
    * one prepared statement regardless of the number of programs.

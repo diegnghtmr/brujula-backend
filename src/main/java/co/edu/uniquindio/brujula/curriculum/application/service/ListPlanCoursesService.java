@@ -12,10 +12,10 @@ import java.util.UUID;
 /**
  * Use case implementation: list courses for a plan.
  *
- * <p>Filters ARCHIVED and INACTIVE courses when the caller is a STUDENT (CUR-001 / CourseStatus
- * Javadoc: INACTIVE is "temporarily disabled; hidden from student views"; ARCHIVED is
- * "soft-deleted; hidden from all non-admin views"). No Spring annotations — wiring is handled in
- * the infrastructure configuration layer (ARQ-002).
+ * <p>Filters ARCHIVED and INACTIVE courses when the caller is a STUDENT (see CourseStatus Javadoc:
+ * INACTIVE is "temporarily disabled; hidden from student views"; ARCHIVED is "soft-deleted; hidden
+ * from all non-admin views"). No Spring annotations — wiring is handled in the infrastructure
+ * configuration layer.
  */
 public class ListPlanCoursesService implements ListPlanCoursesQuery {
 

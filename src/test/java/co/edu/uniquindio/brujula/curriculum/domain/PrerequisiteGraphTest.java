@@ -8,9 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-3.1 RED: Prerequisite graph and acyclicity service tests.
+ * Prerequisite graph and acyclicity service tests.
  *
- * <p>Covers CUR-003 scenarios: direct cycle (2-cycle), multi-hop cycle, self-loop, valid DAG.
+ * <p>Covers: direct cycle (2-cycle), multi-hop cycle, self-loop, valid DAG.
  */
 class PrerequisiteGraphTest {
 
@@ -104,7 +104,7 @@ class PrerequisiteGraphTest {
 
   @Test
   void fullDiamondDagIsValid() {
-    // FIX-5 (SUGGESTION-1): full diamond A→B, A→C, B→D, C→D
+    // Full diamond A→B, A→C, B→D, C→D
     // D is reachable from both B and C (two paths from A). The DFS colors D BLACK on first visit
     // and skips it (already BLACK) on second visit — no false PrerequisiteCycleException.
     PrerequisiteGraph graph = new PrerequisiteGraph();

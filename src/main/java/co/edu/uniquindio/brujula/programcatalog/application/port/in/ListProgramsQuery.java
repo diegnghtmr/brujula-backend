@@ -6,10 +6,10 @@ import co.edu.uniquindio.brujula.programcatalog.application.dto.ProgramView;
 /**
  * Input port: list academic programs with optional status filtering and pagination.
  *
- * <p>Backs {@code GET /programs} (CAT-001). When {@code statusFilter} is "ACTIVE", only active
- * programs are returned. A null filter returns all programs.
+ * <p>Backs {@code GET /programs}. When {@code statusFilter} is "ACTIVE", only active programs are
+ * returned. A null filter returns all programs.
  *
- * <p>No Spring/framework imports (ARQ-003).
+ * <p>No Spring/framework imports.
  */
 public interface ListProgramsQuery {
 

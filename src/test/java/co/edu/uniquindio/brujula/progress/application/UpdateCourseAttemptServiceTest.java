@@ -30,9 +30,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3-T10 RED+GREEN: use case unit tests for {@link UpdateCourseAttemptService}.
+ * Use case unit tests for {@link UpdateCourseAttemptService}.
  *
- * <p>Covers: PRG-3-HP, PRG-3-VERSION-CONFLICT (via JPA optimistic lock), grade revalidation.
+ * <p>Covers: happy path, version conflict (via JPA optimistic lock), grade revalidation.
  */
 class UpdateCourseAttemptServiceTest {
 
@@ -74,7 +74,7 @@ class UpdateCourseAttemptServiceTest {
 
     CourseAttemptView view = sut.updateCourseAttempt(command);
 
-    assertThat(view.statusName()).isEqualTo("PASSED"); // FIX-S1: plain String
+    assertThat(view.statusName()).isEqualTo("PASSED"); // plain String
     verify(auditRecorder).record(any());
   }
 

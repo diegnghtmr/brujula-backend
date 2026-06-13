@@ -2,7 +2,7 @@
 --
 -- Module: audit
 -- Schema: audit
--- Satisfies: Spec §Audit Log (RN-010, RNF-SEG-007), Design §3 V004
+-- Satisfies: Audit Log spec
 -- Note: append-only by design; no UPDATE grants assumed at application level.
 
 CREATE TABLE IF NOT EXISTS audit.audit_event (

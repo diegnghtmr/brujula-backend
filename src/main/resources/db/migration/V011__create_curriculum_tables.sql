@@ -2,7 +2,7 @@
 --
 -- Module: curriculum
 -- Schema: curriculum
--- Satisfies: CUR-001 through CUR-007, Design §5 V011
+-- Satisfies: Curriculum module spec
 --
 -- Tables:
 --   curriculum.course                         — course aggregate (per study plan)
@@ -39,12 +39,12 @@ CREATE TABLE IF NOT EXISTS curriculum.course (
 );
 
 COMMENT ON TABLE  curriculum.course IS 'Curricular course (space académico) belonging to a study plan.';
-COMMENT ON COLUMN curriculum.course.plan_id IS 'FK reference to catalog.study_plan (no cross-schema FK per ARQ-008).';
-COMMENT ON COLUMN curriculum.course.program_id IS 'FK reference to catalog.academic_program (no cross-schema FK per ARQ-008).';
-COMMENT ON COLUMN curriculum.course.official_code IS 'Optional minted internal code (format PROG-Ssem-SLUG). Unique per program when set (ADR-F2-005).';
+COMMENT ON COLUMN curriculum.course.plan_id IS 'FK reference to catalog.study_plan (no cross-schema FK).';
+COMMENT ON COLUMN curriculum.course.program_id IS 'FK reference to catalog.academic_program (no cross-schema FK).';
+COMMENT ON COLUMN curriculum.course.official_code IS 'Optional minted internal code (format PROG-Ssem-SLUG). Unique per program when set.';
 COMMENT ON COLUMN curriculum.course.type IS 'Course type: REQUIRED | PERSONAL_ELECTIVE | DEEPENING | DEGREE_WORK | INSTITUTIONAL | OPTIONAL.';
 COMMENT ON COLUMN curriculum.course.status IS 'Course lifecycle: ACTIVE | INACTIVE | ARCHIVED.';
-COMMENT ON COLUMN curriculum.course.version IS 'Optimistic locking version counter (DB-006/DT-014).';
+COMMENT ON COLUMN curriculum.course.version IS 'Optimistic locking version counter.';
 
 -- Malla assembly index: drives the primary malla group-by query (plan + status filter)
 CREATE INDEX IF NOT EXISTS course_plan_status_idx
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS curriculum.course_recommended_semester (
     CONSTRAINT course_recommended_semester_chk        CHECK (semester >= 1)
 );
 
-COMMENT ON TABLE  curriculum.course_recommended_semester IS 'Per-journey recommended semester for a course (ADR-F2-003). Drives malla assembly.';
+COMMENT ON TABLE  curriculum.course_recommended_semester IS 'Per-journey recommended semester for a course. Drives malla assembly.';
 COMMENT ON COLUMN curriculum.course_recommended_semester.journey_code IS 'Journey code reference (e.g. DIURNA, NOCTURNA). Not a FK — journey is in catalog schema.';
 COMMENT ON COLUMN curriculum.course_recommended_semester.semester IS 'Recommended semester number (>= 1) for this course in the given journey.';
 
@@ -105,12 +105,12 @@ CREATE TABLE IF NOT EXISTS curriculum.course_requirement (
     CONSTRAINT course_requirement_credits_chk     CHECK (required_credits IS NULL OR required_credits >= 0)
 );
 
-COMMENT ON TABLE  curriculum.course_requirement IS 'Prerequisite/requirement edge in the curricular graph. COURSE_PASSED/SEQUENCE edges form a DAG (CUR-003).';
+COMMENT ON TABLE  curriculum.course_requirement IS 'Prerequisite/requirement edge in the curricular graph. COURSE_PASSED/SEQUENCE edges form a DAG.';
 COMMENT ON COLUMN curriculum.course_requirement.target_course_id IS 'Course that has this requirement (the one the student wants to take).';
 COMMENT ON COLUMN curriculum.course_requirement.type IS 'Requirement type: COURSE_PASSED | SEQUENCE | MINIMUM_CREDITS | CONFIGURABLE.';
 COMMENT ON COLUMN curriculum.course_requirement.required_course_id IS 'The prerequisite course (for COURSE_PASSED/SEQUENCE types). Nullable.';
 COMMENT ON COLUMN curriculum.course_requirement.confidence IS 'Inference confidence for this edge: HIGH | MEDIUM | LOW. Null for official edges.';
-COMMENT ON COLUMN curriculum.course_requirement.inferred IS 'True for inferred (non-official) edges from best-effort analysis (ADR-F2-004).';
+COMMENT ON COLUMN curriculum.course_requirement.inferred IS 'True for inferred (non-official) edges from best-effort analysis.';
 COMMENT ON COLUMN curriculum.course_requirement.version IS 'Optimistic locking version counter.';
 
 -- Prerequisite graph lookup index: retrieve all requirements for a given target course
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS curriculum.sequential_track (
 );
 
 COMMENT ON TABLE  curriculum.sequential_track IS 'Ordered electiva/profundización sequential track for a study plan.';
-COMMENT ON COLUMN curriculum.sequential_track.plan_id IS 'FK reference to catalog.study_plan (no cross-schema FK per ARQ-008).';
+COMMENT ON COLUMN curriculum.sequential_track.plan_id IS 'FK reference to catalog.study_plan (no cross-schema FK).';
 COMMENT ON COLUMN curriculum.sequential_track.kind IS 'Track kind: PERSONAL_ELECTIVE | DEEPENING.';
 COMMENT ON COLUMN curriculum.sequential_track.consecutive_simultaneity_allowed IS 'Whether consecutive levels can be taken simultaneously (configurable per plan).';
 COMMENT ON COLUMN curriculum.sequential_track.version IS 'Optimistic locking version counter.';
@@ -192,6 +192,6 @@ CREATE TABLE IF NOT EXISTS curriculum.degree_work_modality (
 );
 
 COMMENT ON TABLE  curriculum.degree_work_modality IS 'Degree work modality option for a study plan (e.g. aplicación, investigación, pasantía).';
-COMMENT ON COLUMN curriculum.degree_work_modality.plan_id IS 'FK reference to catalog.study_plan (no cross-schema FK per ARQ-008).';
+COMMENT ON COLUMN curriculum.degree_work_modality.plan_id IS 'FK reference to catalog.study_plan (no cross-schema FK).';
 COMMENT ON COLUMN curriculum.degree_work_modality.status IS 'Modality lifecycle: ACTIVE | ARCHIVED.';
 COMMENT ON COLUMN curriculum.degree_work_modality.version IS 'Optimistic locking version counter.';

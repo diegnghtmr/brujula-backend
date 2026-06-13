@@ -15,8 +15,6 @@ import org.springframework.stereotype.Component;
  * <p>Keycloak includes realm roles in the {@code realm_access.roles} claim (configured in the realm
  * export as a mapper). This component extracts those roles and the standard claims (sub, email,
  * name/preferred_username).
- *
- * <p>Satisfies: S1-B-5, Design §2.1 OidcUserClaimsMapper.
  */
 @Component
 public class OidcUserClaimsMapper {
@@ -32,7 +30,7 @@ public class OidcUserClaimsMapper {
     String email = oidcUser.getEmail();
     String fullName = resolveFullName(oidcUser);
     Set<String> roles = extractRealmRoles(oidcUser);
-    // S2-B-4 sync-on-login: extract email_verified claim for onboardingState transition.
+    // Extract email_verified claim for onboardingState transition on sync-on-login.
     Boolean emailVerified = oidcUser.getEmailVerified();
     return new ProvisionCommand(sub, email, fullName, roles, emailVerified);
   }

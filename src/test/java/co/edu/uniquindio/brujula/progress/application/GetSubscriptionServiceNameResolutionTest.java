@@ -24,10 +24,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3-NAME-RESOLUTION RED+GREEN: asserts that {@link GetSubscriptionService} resolves programName,
- * planName, and referenceJourneyName from catalog ports (WU3 seam fix).
+ * Asserts that {@link GetSubscriptionService} resolves programName, planName, and
+ * referenceJourneyName from catalog ports.
  *
- * <p>Mirrors the pattern established in {@code GetSubscriptionProgressServiceTest} (FIX-W2).
+ * <p>Mirrors the pattern established in {@code GetSubscriptionProgressServiceTest}.
  */
 class GetSubscriptionServiceNameResolutionTest {
 
@@ -74,7 +74,7 @@ class GetSubscriptionServiceNameResolutionTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU3-NAME-GET: getSubscription resolves all three names
+  // getSubscription resolves all three names
   // -------------------------------------------------------------------------
 
   @Test
@@ -114,7 +114,7 @@ class GetSubscriptionServiceNameResolutionTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU3-NAME-LIST: listMySubscriptions resolves all three names
+  // listMySubscriptions resolves all three names
   // -------------------------------------------------------------------------
 
   @Test
@@ -157,7 +157,7 @@ class GetSubscriptionServiceNameResolutionTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU3-NAME-FALLBACK: graceful fallback when catalog lookup fails
+  // Graceful fallback when catalog lookup fails
   // -------------------------------------------------------------------------
 
   @Test

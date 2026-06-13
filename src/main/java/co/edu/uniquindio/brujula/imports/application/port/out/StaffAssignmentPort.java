@@ -7,16 +7,14 @@ import java.util.UUID;
 /**
  * Output port: staff assignment check for the imports module.
  *
- * <p>Named by need (ARQ-001). Implemented by {@code StaffAssignmentAdapter} in {@code
+ * <p>Implemented by {@code StaffAssignmentAdapter} in {@code
  * imports.infrastructure.adapter.out.administration}, which delegates to {@code
  * administration::spi.IsStaffAssignedToProgramQuery} and {@code
  * administration::spi.ResolveStaffByEmailQuery}.
  *
  * <p>This port insulates the imports application layer from the {@code administration} module
- * internals (anti-corruption adapter pattern, mirroring {@code CreditLimitPort} in simulation).
- *
- * <p>The upload/confirm services (WU3/WU6) will depend on this port; not on administration
- * directly.
+ * internals (anti-corruption adapter pattern). Upload and confirm services depend on this port, not
+ * on administration directly.
  */
 public interface StaffAssignmentPort {
 
@@ -59,7 +57,7 @@ public interface StaffAssignmentPort {
   /**
    * Return all program UUIDs for which the given staff member has active assignments.
    *
-   * <p>Used by ListImportsService (IMP-003) to scope the list query to assigned programs.
+   * <p>Used by ListImportsService to scope the list query to assigned programs.
    *
    * @param staffId the staff account UUID
    * @return list of program UUIDs; empty if none

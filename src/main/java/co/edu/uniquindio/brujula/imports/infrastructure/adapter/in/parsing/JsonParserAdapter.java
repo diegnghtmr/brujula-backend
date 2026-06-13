@@ -14,7 +14,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * JSON parser adapter — reads JSON import files using Jackson 3 (ADR-F6-003).
+ * JSON parser adapter — reads JSON import files using Jackson 3.
  *
  * <p>Expected JSON format: a top-level array of objects, where each object maps column header names
  * to string values. Example:

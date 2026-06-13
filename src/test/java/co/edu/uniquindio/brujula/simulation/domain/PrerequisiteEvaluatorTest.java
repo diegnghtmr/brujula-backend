@@ -12,9 +12,8 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link PrerequisiteEvaluator}.
  *
- * <p>Tests the Fase-3 hard-edge policy: HARD = official (inferred=null/false) OR confidence=HIGH →
- * blocks. SOFT = inferred=true AND confidence in {MEDIUM, LOW, null} → NO notice in WU4a (TODO
- * WU4b).
+ * <p>Tests the hard-edge policy: HARD = official (inferred=null/false) OR confidence=HIGH → blocks.
+ * SOFT = inferred=true AND confidence in {MEDIUM, LOW, null} → no notice.
  */
 class PrerequisiteEvaluatorTest {
 
@@ -84,7 +83,7 @@ class PrerequisiteEvaluatorTest {
 
   @Test
   void softInferredMediumConfidenceUnmetProducesNoNoticeInWU4a() {
-    // inferred=true AND confidence=MEDIUM → SOFT edge → NO notice in WU4a (TODO WU4b)
+    // inferred=true AND confidence=MEDIUM → SOFT edge → NO notice
     PrereqRequirement req =
         new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "MEDIUM", true, "Estadística");
     CandidateSelection candidate = buildCandidate(courseId);
@@ -92,13 +91,13 @@ class PrerequisiteEvaluatorTest {
 
     Optional<ValidationNotice> result = evaluator.evaluate(candidate, List.of(req), passed);
 
-    // WU4a: soft prereqs produce NO notice (not a block, not a warning yet)
+    // Soft prereqs produce NO notice (not a block, not a warning)
     assertThat(result).isEmpty();
   }
 
   @Test
   void softInferredLowConfidenceUnmetProducesNoNoticeInWU4a() {
-    // inferred=true AND confidence=LOW → SOFT → no notice in WU4a
+    // inferred=true AND confidence=LOW → SOFT → no notice
     PrereqRequirement req =
         new PrereqRequirement(courseId, prereqId, "COURSE_PASSED", "LOW", true, "Química");
     CandidateSelection candidate = buildCandidate(courseId);
@@ -119,7 +118,7 @@ class PrerequisiteEvaluatorTest {
 
   @Test
   void nonCoursePassedTypeSkipped() {
-    // MINIMUM_CREDITS requirement — not evaluated in WU4a
+    // MINIMUM_CREDITS requirement — not evaluated by this rule
     PrereqRequirement req =
         new PrereqRequirement(courseId, prereqId, "MINIMUM_CREDITS", "HIGH", false, "Something");
     CandidateSelection candidate = buildCandidate(courseId);
@@ -131,7 +130,7 @@ class PrerequisiteEvaluatorTest {
   }
 
   // -------------------------------------------------------------------------
-  // evaluateAll() — returns ALL blocking notices (used in WU5 review re-validation)
+  // evaluateAll() — returns ALL blocking notices (used in review re-validation)
   // -------------------------------------------------------------------------
 
   @Test
@@ -185,7 +184,7 @@ class PrerequisiteEvaluatorTest {
   }
 
   // -------------------------------------------------------------------------
-  // collectSoftWarnings() — WU4b soft-prereq warning collection
+  // collectSoftWarnings() — soft-prereq warning collection
   // -------------------------------------------------------------------------
 
   @Test

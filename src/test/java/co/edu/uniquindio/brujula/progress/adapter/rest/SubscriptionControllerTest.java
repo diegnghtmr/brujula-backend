@@ -45,7 +45,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU2-T14 RED: REST integration tests for the Subscription endpoints.
+ * REST integration tests for the Subscription endpoints.
  *
  * <p>Uses {@code @SpringBootTest} + real security chain (same pattern as {@code
  * ProfileApiSecurityTest}). Application-layer ports are mocked via {@code @MockitoBean} so no
@@ -54,17 +54,15 @@ import org.springframework.web.context.WebApplicationContext;
  * <p>Scenarios:
  *
  * <ul>
- *   <li>CROSS-2-UNAUTH: unauthenticated → 401/redirect.
- *   <li>CROSS-2-STAFF: STAFF role on /me/** → 403 (students-only resource).
- *   <li>SUB-1-HP: STUDENT POST create → 201.
- *   <li>SUB-1-MISSING-IDEMPOTENCY-KEY: POST without Idempotency-Key → 400.
- *   <li>SUB-1-CAP: cap=2 exceeded → 409.
- *   <li>CROSS-3: optimistic-lock conflict → 409.
- *   <li>SUB-4-BOLA: GET subscription belonging to another user → 404.
- *   <li>SUB-4-DELETE-LAST: delete last active subscription → 409.
+ *   <li>Unauthenticated → 401/redirect.
+ *   <li>STAFF role on /me/** → 403 (students-only resource).
+ *   <li>STUDENT POST create → 201.
+ *   <li>POST without Idempotency-Key → 400.
+ *   <li>Cap=2 exceeded → 409.
+ *   <li>Optimistic-lock conflict → 409.
+ *   <li>GET subscription belonging to another user → 404.
+ *   <li>Delete last active subscription → 409.
  * </ul>
- *
- * <p>Satisfies: WU2-T14, CROSS-2, CROSS-3, SUB-1, SUB-4. ARQ-001.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
@@ -110,7 +108,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // CROSS-2-UNAUTH: unauthenticated requests are rejected
+  // Unauthenticated requests are rejected
   // -------------------------------------------------------------------------
 
   @Test
@@ -144,7 +142,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // CROSS-2-STAFF: STAFF role cannot access /me/subscriptions (student resource)
+  // STAFF role cannot access /me/subscriptions (student resource)
   // -------------------------------------------------------------------------
 
   @Test
@@ -177,7 +175,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SUB-1-MISSING-IDEMPOTENCY-KEY: POST without Idempotency-Key header → 400
+  // POST without Idempotency-Key header → 400
   // -------------------------------------------------------------------------
 
   @Test
@@ -197,7 +195,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SUB-1-HP: STUDENT creates subscription → 201
+  // STUDENT creates subscription → 201
   // -------------------------------------------------------------------------
 
   @Test
@@ -241,7 +239,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SUB-1-CAP: cap=2 exceeded → 409
+  // Cap=2 exceeded → 409
   // -------------------------------------------------------------------------
 
   @Test
@@ -265,7 +263,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // CROSS-3: idempotency-key conflict → 409
+  // Idempotency-key conflict → 409
   // -------------------------------------------------------------------------
 
   @Test
@@ -290,7 +288,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SUB-4-BOLA: GET subscription belonging to another user → 404
+  // GET subscription belonging to another user → 404
   // -------------------------------------------------------------------------
 
   @Test
@@ -310,7 +308,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SUB-4-DELETE-LAST: delete last active subscription → 409
+  // Delete last active subscription → 409
   // -------------------------------------------------------------------------
 
   @Test
@@ -351,20 +349,17 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // FIX-S2: PATCH /me/subscriptions/{subscriptionId} REST tests
+  // PATCH /me/subscriptions/{subscriptionId} REST tests
   // -------------------------------------------------------------------------
 
-  /**
-   * FIX-S2 + FIX-W4: successful PATCH returns 200 with incremented version in response
-   * (SUB-3-JOURNEY).
-   */
+  /** Successful PATCH returns 200 with incremented version in response. */
   @Test
   void patch_subscription_journey_change_returns_200_with_incremented_version() throws Exception {
     UUID subId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
     UUID planId = UUID.randomUUID();
 
-    // View returned by service carries version=1 (incremented — FIX-W4)
+    // View returned by service carries version=1 (incremented)
     SubscriptionView updatedView =
         new SubscriptionView(
             subId,
@@ -397,10 +392,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
         .andExpect(jsonPath("$.version").value(1L));
   }
 
-  /**
-   * FIX-S2 + FIX-W2: PATCH without acknowledgeHistoryImpact when plan change has attempts → 422
-   * (spec SUB-3-PLAN-NO-ACK).
-   */
+  /** PATCH without acknowledgeHistoryImpact when plan change has attempts → 422. */
   @Test
   void patch_subscription_plan_change_without_ack_returns_422() throws Exception {
     UUID subId = UUID.randomUUID();
@@ -425,7 +417,7 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
         .andExpect(status().isUnprocessableEntity());
   }
 
-  /** FIX-S2 + CROSS-3: PATCH with stale version → 409 (SUB-3-VERSION-CONFLICT). */
+  /** PATCH with stale version → 409. */
   @Test
   void patch_subscription_stale_version_returns_409() throws Exception {
     UUID subId = UUID.randomUUID();

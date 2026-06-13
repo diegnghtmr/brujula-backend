@@ -12,7 +12,7 @@ import java.util.UUID;
  *
  * <p>Delegates to {@link LoadDegreeWorkModalityPort#loadByPlanId}. Returns all modalities
  * regardless of status (the REST layer can filter if needed). No Spring annotations — wired via
- * infrastructure configuration (ARQ-002).
+ * infrastructure configuration.
  */
 public class ListDegreeWorkModalitiesService implements ListDegreeWorkModalitiesQuery {
 

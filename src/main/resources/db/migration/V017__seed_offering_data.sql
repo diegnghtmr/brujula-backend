@@ -17,7 +17,7 @@
 -- UUID encoding: all offering IDs start with 00, all option IDs with 00, all session IDs with 00.
 -- UUIDs must contain only hex chars [0-9a-f].
 -- References: course UUIDs from V012 (Sistemas) and V013 (Lenguas).
--- Cross-schema references are opaque UUIDs — no FK (ADR-F3-009).
+-- Cross-schema references are opaque UUIDs — no FK.
 
 -- ============================================================
 -- Academic period 2026-2 (ACTIVE)

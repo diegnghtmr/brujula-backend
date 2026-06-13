@@ -10,13 +10,11 @@ import org.springframework.data.repository.query.Param;
 /**
  * Spring Data JPA repository for {@link CourseAttemptJpaEntity}.
  *
- * <p>Package-private per ARQ-006b. Only the persistence adapter accesses this interface.
+ * <p>Package-private. Only the persistence adapter accesses this interface.
  */
 interface CourseAttemptJpaRepository extends JpaRepository<CourseAttemptJpaEntity, UUID> {
 
-  /**
-   * Load all attempts for a subscription (backs the bulk-load pattern, ADR-F3-005 N+1 avoidance).
-   */
+  /** Load all attempts for a subscription (backs the bulk-load pattern; N+1 avoidance). */
   List<CourseAttemptJpaEntity> findBySubscriptionId(UUID subscriptionId);
 
   /**

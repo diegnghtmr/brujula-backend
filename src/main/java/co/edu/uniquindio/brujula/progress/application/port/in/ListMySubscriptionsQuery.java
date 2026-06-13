@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * Input port: list the authenticated student's subscriptions.
  *
- * <p>Returns only ACTIVE subscriptions (soft-deleted excluded). ARQ-003: interface only.
+ * <p>Returns only ACTIVE subscriptions (soft-deleted excluded). Interface only.
  */
 public interface ListMySubscriptionsQuery {
 

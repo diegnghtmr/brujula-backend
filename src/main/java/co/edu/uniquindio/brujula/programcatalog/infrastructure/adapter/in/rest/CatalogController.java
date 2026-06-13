@@ -26,20 +26,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST adapter implementing the generated {@link CatalogApi} interface (contract-first, ARQ-001).
+ * REST adapter implementing the generated {@link CatalogApi} interface (contract-first).
  *
- * <p>Implements the read-only catalog endpoints for Phase 3 WU4:
+ * <p>Implements the read-only catalog endpoints:
  *
  * <ul>
- *   <li>GET /programs — listPrograms (CAT-001)
- *   <li>GET /programs/{programId} — getProgram (CAT-001)
- *   <li>GET /programs/{programId}/plans — listProgramPlans (CAT-002)
- *   <li>GET /plans/{planId} — getStudyPlan (CAT-002)
- *   <li>GET /journeys — listJourneys (CAT-003)
+ *   <li>GET /programs — listPrograms
+ *   <li>GET /programs/{programId} — getProgram
+ *   <li>GET /programs/{programId}/plans — listProgramPlans
+ *   <li>GET /plans/{planId} — getStudyPlan
+ *   <li>GET /journeys — listJourneys
  * </ul>
  *
- * <p>ARQ-001: no domain types imported — only application DTOs and generated model types.
- * Package-private per ARQ-006.
+ * <p>No domain types imported — only application DTOs and generated model types. Package-private.
  */
 @RestController
 class CatalogController implements CatalogApi {
@@ -67,7 +66,7 @@ class CatalogController implements CatalogApi {
   // CatalogApi implementations
   // ---------------------------------------------------------------------------
 
-  /** CAT-001: list programs with optional status filter and pagination. */
+  /** List programs with optional status filter and pagination. */
   @Override
   public ResponseEntity<ProgramPage> listPrograms(
       @Nullable ProgramStatus status, Integer page, Integer size, @Nullable List<String> sort) {
@@ -77,14 +76,14 @@ class CatalogController implements CatalogApi {
     return ResponseEntity.ok(programPage);
   }
 
-  /** CAT-001: get a single program by ID. */
+  /** Get a single program by ID. */
   @Override
   public ResponseEntity<Program> getProgram(UUID programId) {
     ProgramView view = getProgramQuery.getProgram(programId);
     return ResponseEntity.ok(toProgramDto(view));
   }
 
-  /** CAT-002: list study plans for a program (with role-based visibility). */
+  /** List study plans for a program (with role-based visibility). */
   @Override
   public ResponseEntity<List<StudyPlan>> listProgramPlans(
       UUID programId, @Nullable PlanStatus status) {
@@ -94,7 +93,7 @@ class CatalogController implements CatalogApi {
     return ResponseEntity.ok(result);
   }
 
-  /** CAT-002: get a single study plan by ID (with role-based visibility). */
+  /** Get a single study plan by ID (with role-based visibility). */
   @Override
   public ResponseEntity<StudyPlan> getStudyPlan(UUID planId) {
     String callerRole = resolveCallerRole();
@@ -102,7 +101,7 @@ class CatalogController implements CatalogApi {
     return ResponseEntity.ok(toStudyPlanDto(view));
   }
 
-  /** CAT-003: list all active journeys. */
+  /** List all active journeys. */
   @Override
   public ResponseEntity<List<Journey>> listJourneys() {
     List<JourneyRef> refs = listJourneysQuery.listJourneys();
@@ -111,7 +110,7 @@ class CatalogController implements CatalogApi {
   }
 
   // ---------------------------------------------------------------------------
-  // DTO mappers: application DTOs → generated model (ARQ-005)
+  // DTO mappers: application DTOs → generated model
   // ---------------------------------------------------------------------------
 
   private ProgramPage toProgramPage(PagedResult<ProgramView> result) {
@@ -156,7 +155,7 @@ class CatalogController implements CatalogApi {
     journey.setId(ref.id());
     journey.setCode(ref.code());
     journey.setName(ref.name());
-    journey.setActive(true); // listJourneys returns only active ones (CAT-003)
+    journey.setActive(true); // listJourneys returns only active ones
     return journey;
   }
 

@@ -8,7 +8,7 @@ import java.util.UUID;
  *
  * <p>Mirrors the structure of {@code CourseRequirementView} from curriculum::api but kept in the
  * simulation domain to preserve boundary purity. Mapped from {@code CurriculumReadPort} results at
- * the adapter edge (ARQ-002, INV-001).
+ * the adapter edge.
  *
  * <p>Hard-edge policy (identical to Fase-3 {@code CourseRequirementEdge.isHard()}): HARD = official
  * ({@code inferred == false} or null) OR {@code confidence == HIGH}. SOFT = {@code inferred ==

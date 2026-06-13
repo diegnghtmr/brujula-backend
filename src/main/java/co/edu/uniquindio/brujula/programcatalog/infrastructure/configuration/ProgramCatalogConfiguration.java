@@ -16,16 +16,16 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>Bridges domain/application (framework-free) into the Spring container. Infrastructure adapters
  * are auto-detected via {@code @Component}; application services are registered here to maintain
- * explicit wiring (ARQ-002).
+ * explicit wiring.
  *
- * <p>Wired services (read-only catalog query use cases — Phase 3 WU4):
+ * <p>Wired services (read-only catalog query use cases):
  *
  * <ul>
- *   <li>{@link ListProgramsService} — CAT-001 list programs with status filter + pagination
- *   <li>{@link GetProgramService} — CAT-001 get single program by ID
- *   <li>{@link ListProgramPlansService} — CAT-002 list study plans for a program
- *   <li>{@link GetStudyPlanService} — CAT-002 get single study plan by ID
- *   <li>{@link ListJourneysService} — CAT-003 list active journeys
+ *   <li>{@link ListProgramsService} — list programs with status filter + pagination
+ *   <li>{@link GetProgramService} — get single program by ID
+ *   <li>{@link ListProgramPlansService} — list study plans for a program
+ *   <li>{@link GetStudyPlanService} — get single study plan by ID
+ *   <li>{@link ListJourneysService} — list active journeys
  * </ul>
  */
 @Configuration

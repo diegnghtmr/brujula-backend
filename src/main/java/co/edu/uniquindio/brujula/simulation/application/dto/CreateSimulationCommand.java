@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * Command to create a new simulation (SIM-001).
  *
- * <p>All fields use UUID/String primitives (ARQ-001).
+ * <p>All fields use UUID/String primitives.
  */
 public record CreateSimulationCommand(
     UUID idempotencyKey,

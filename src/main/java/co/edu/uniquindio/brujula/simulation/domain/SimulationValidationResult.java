@@ -7,7 +7,7 @@ import java.util.List;
  *
  * <p>Partitions the collected notices into blocking and warning lists. Immutable.
  *
- * @param blocking notices that prevent the selection (SIMULATION_* codes, INV-003)
+ * @param blocking notices that prevent the selection (SIMULATION_* codes)
  * @param warnings advisory notices that ride in the response body without blocking
  */
 public record SimulationValidationResult(

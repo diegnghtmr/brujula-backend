@@ -17,7 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * WU3 integration tests for SimulationPersistenceAdapter.
+ * Integration tests for SimulationPersistenceAdapter.
  *
  * <p>Verifies against Flyway V016+V017+V018 migrated PostgreSQL (Testcontainers). Tests: save/load,
  * soft-delete, list-by-owner, uuid[] program_ids round-trip.

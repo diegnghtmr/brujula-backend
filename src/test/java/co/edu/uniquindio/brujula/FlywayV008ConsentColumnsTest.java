@@ -14,10 +14,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <p>Verifies that {@code identity.app_user} gains the consent columns and {@code onboarding_state}
  * column after V008 migration. Fails until the migration file exists.
  *
- * <p>Design §3 / §6: consent evidence stored on AppUser; onboarding_state text column replaces
- * onboarding_completed bool as the authoritative state field for Slice 2 onwards.
- *
- * <p>Satisfies: S2-B-1, Spec §Successful registration stores consent evidence.
+ * <p>Consent evidence is stored on AppUser; onboarding_state text column replaces
+ * onboarding_completed bool as the authoritative state field.
  */
 @SpringBootTest
 class FlywayV008ConsentColumnsTest extends AbstractPostgresIntegrationTest {
@@ -94,9 +92,9 @@ class FlywayV008ConsentColumnsTest extends AbstractPostgresIntegrationTest {
   }
 
   /**
-   * W-002: verify that the onboarding_state column default is 'ACTIVE'. The V008 UPDATE was a no-op
-   * (WHERE 'ACTIVE' = 'ACTIVE') — the column DEFAULT handles backfill. This test proves the DEFAULT
-   * value is 'ACTIVE', making the no-op UPDATE harmless and removable.
+   * Verify that the onboarding_state column default is 'ACTIVE'. The V008 UPDATE was a no-op (WHERE
+   * 'ACTIVE' = 'ACTIVE') — the column DEFAULT handles backfill. This test proves the DEFAULT value
+   * is 'ACTIVE', making the no-op UPDATE harmless and removable.
    */
   @Test
   void identity_app_user_onboarding_state_column_default_is_active() {

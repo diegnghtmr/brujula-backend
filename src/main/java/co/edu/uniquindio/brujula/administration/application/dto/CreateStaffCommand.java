@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Command DTO for creating a staff account (idempotent).
  *
- * <p>Lives in {@code application.dto} to comply with ARQ-003 (port.in must be interfaces only).
+ * <p>Lives in {@code application.dto} because port.in must be interfaces only.
  *
  * @param idempotencyKey client-supplied UUID from the Idempotency-Key header
  * @param actorId the UUID of the authenticated ADMIN creating the staff account

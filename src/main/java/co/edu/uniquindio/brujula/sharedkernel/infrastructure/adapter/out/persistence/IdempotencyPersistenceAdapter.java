@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
  * own (de)serialization. This is the ONLY idempotency adapter platform-wide (replaces the former
  * administration-scoped adapter).
  *
- * <p>Package-private (ARQ-006b). Design: ADR-F3-001.
+ * <p>Package-private. Design: ADR-F3-001.
  */
 @Component
 class IdempotencyPersistenceAdapter implements IdempotencyStorePort {

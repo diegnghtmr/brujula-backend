@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 /**
  * Spring Data JPA repository for {@link CourseRequirementJpaEntity}.
  *
- * <p>Package-private per ARQ-006.
+ * <p>Package-private.
  */
 interface CourseRequirementJpaRepository extends JpaRepository<CourseRequirementJpaEntity, UUID> {
 
@@ -16,7 +16,7 @@ interface CourseRequirementJpaRepository extends JpaRepository<CourseRequirement
 
   /**
    * Bulk fetch: load all requirements whose target course ID is in the given collection. Used by
-   * malla assembly to avoid N+1 per course (ADR-F2-001).
+   * malla assembly to avoid N+1 per course.
    */
   List<CourseRequirementJpaEntity> findByTargetCourseIdIn(List<UUID> courseIds);
 

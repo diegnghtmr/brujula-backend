@@ -30,7 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * QAL-SEC-001 — BOLA HTTP-layer ownership tests for simulation resources.
+ * BOLA HTTP-layer ownership tests for simulation resources.
  *
  * <p>Uses {@code @SpringBootTest} + Testcontainers PostgreSQL (via {@link
  * AbstractPostgresIntegrationTest}) + {@code spring-security-test} {@code oidcLogin()} with TWO
@@ -47,12 +47,10 @@ import org.springframework.web.context.WebApplicationContext;
  * <p>Scenarios covered:
  *
  * <ul>
- *   <li>T-WU2.1 — cross-owner GET → 403 with application/problem+json and $.code
- *   <li>T-WU2.2 — cross-owner PATCH → 403 with application/problem+json and $.code
- *   <li>T-WU2.3 — cross-owner DELETE → 403 with application/problem+json and $.code
+ *   <li>Cross-owner GET → 403 with application/problem+json and $.code
+ *   <li>Cross-owner PATCH → 403 with application/problem+json and $.code
+ *   <li>Cross-owner DELETE → 403 with application/problem+json and $.code
  * </ul>
- *
- * <p>Satisfies: QAL-SEC-001, QAL-SEC-001-S1, QAL-SEC-001-S2.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SimulationBolaTest extends AbstractPostgresIntegrationTest {
@@ -116,13 +114,13 @@ class SimulationBolaTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // T-WU2.1 — QAL-SEC-001-S1: cross-owner GET → 403
+  // Cross-owner GET → 403
   // -------------------------------------------------------------------------
 
   /**
-   * T-WU2.1: principal-A sends GET on principal-B's simulation. Real GetSimulationService checks
-   * ownership → SimulationAccessDeniedException → 403. The response body must contain
-   * application/problem+json with $.code.
+   * Principal-A sends GET on principal-B's simulation. Real GetSimulationService checks ownership →
+   * SimulationAccessDeniedException → 403. The response body must contain application/problem+json
+   * with $.code.
    */
   @Test
   void cross_owner_get_simulation_returns_403_with_problem_json() throws Exception {
@@ -141,12 +139,12 @@ class SimulationBolaTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // T-WU2.2 — QAL-SEC-001-S2: cross-owner PATCH → 403
+  // Cross-owner PATCH → 403
   // -------------------------------------------------------------------------
 
   /**
-   * T-WU2.2: principal-A sends PATCH on principal-B's simulation. Real UpdateSimulationService
-   * checks ownership → SimulationAccessDeniedException → 403.
+   * Principal-A sends PATCH on principal-B's simulation. Real UpdateSimulationService checks
+   * ownership → SimulationAccessDeniedException → 403.
    */
   @Test
   void cross_owner_patch_simulation_returns_403_with_problem_json() throws Exception {
@@ -172,12 +170,12 @@ class SimulationBolaTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // T-WU2.3 — QAL-SEC-001-S2: cross-owner DELETE → 403
+  // Cross-owner DELETE → 403
   // -------------------------------------------------------------------------
 
   /**
-   * T-WU2.3: principal-A sends DELETE on principal-B's simulation. Real DeleteSimulationService
-   * checks ownership → SimulationAccessDeniedException → 403.
+   * Principal-A sends DELETE on principal-B's simulation. Real DeleteSimulationService checks
+   * ownership → SimulationAccessDeniedException → 403.
    */
   @Test
   void cross_owner_delete_simulation_returns_403_with_problem_json() throws Exception {
@@ -198,11 +196,11 @@ class SimulationBolaTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // T-WU2.5 — owner GET with missing catalog entry → 200 (graceful fallback)
+  // Owner GET with missing catalog entry → 200 (graceful fallback)
   // -------------------------------------------------------------------------
 
   /**
-   * T-WU2.5 (W-2 fix): principal-B (the owner) GETs their own simulation.
+   * Principal-B (the owner) GETs their own simulation.
    *
    * <p>The simulation was seeded with a random {@code programId} that has NO entry in the program
    * catalog. Before the W-2 fix, {@code GetSimulationService} step 7 called {@code

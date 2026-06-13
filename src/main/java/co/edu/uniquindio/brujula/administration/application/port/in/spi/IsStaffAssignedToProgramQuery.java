@@ -10,7 +10,7 @@ import java.util.UUID;
  * Cross-module consumers (e.g. {@code imports}) must access this port ONLY through {@code
  * administration::spi}.
  *
- * <p>ARQ-001: method signatures use only UUID/primitive types — no domain entities cross the module
+ * <p>Method signatures use only UUID/primitive types — no domain entities cross the module
  * boundary.
  *
  * <p>Only <em>active</em> assignments ({@code active = true}) are considered for the check.

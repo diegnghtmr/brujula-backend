@@ -8,7 +8,7 @@ import java.util.UUID;
  * Immutable set of course UUIDs the student has effectively passed.
  *
  * <p>Populated from {@code ProgressReadPort.passedCourseIds()} and injected into validation rules
- * as a pure value (no port calls inside domain). ARQ-002.
+ * as a pure value (no port calls inside domain).
  *
  * @param courseIds the set of passed course UUIDs (defensive copy; never null)
  */

@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Input port: retrieve a single study plan by ID.
  *
- * <p>Backs {@code GET /plans/{planId}} (CAT-002). Throws {@link
+ * <p>Backs {@code GET /plans/{planId}}. Throws {@link
  * co.edu.uniquindio.brujula.programcatalog.domain.StudyPlanNotFoundException} (mapped to HTTP 404)
  * when the plan does not exist.
  *
@@ -14,7 +14,7 @@ import java.util.UUID;
  * see all statuses.
  *
  * <p>Accepts plain {@link UUID} (not a domain VO) so REST adapters do not need to import domain
- * types (ARQ-001). No Spring/framework imports (ARQ-003).
+ * types. No Spring/framework imports.
  */
 public interface GetStudyPlanQuery {
 

@@ -16,8 +16,8 @@ import java.util.UUID;
  * @param version optimistic lock version for staleness detection
  * @param scheduleOptions the available schedule options for this offering
  * @param intensityWarning advisory flag set when any schedule option's weekly hours do not match
- *     the curricular weekly hours for the course (OFFW-005); null when the field was not computed
- *     (e.g. read-only queries)
+ *     the curricular weekly hours for the course; null when the field was not computed (e.g.
+ *     read-only queries)
  */
 public record OfferingDetailView(
     UUID id,
@@ -32,8 +32,8 @@ public record OfferingDetailView(
     Boolean intensityWarning) {
 
   /**
-   * Compact convenience constructor for callers that do not compute the intensity warning (pre-WU3
-   * callers — create, update, read queries). Sets {@code intensityWarning} to null.
+   * Compact convenience constructor for callers that do not compute the intensity warning (e.g.
+   * create, update, read queries). Sets {@code intensityWarning} to null.
    */
   public OfferingDetailView(
       UUID id,

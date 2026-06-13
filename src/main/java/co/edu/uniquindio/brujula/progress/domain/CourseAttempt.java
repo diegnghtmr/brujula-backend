@@ -7,8 +7,8 @@ import java.util.UUID;
 /**
  * CourseAttempt — aggregate root representing a student's declared attempt at a course.
  *
- * <p>Design: ADR-F3-002. Multiple attempts per (subscriptionId, courseId) are allowed. Grade↔status
- * coherence enforced on creation and update:
+ * <p>Multiple attempts per (subscriptionId, courseId) are allowed. Grade↔status coherence enforced
+ * on creation and update:
  *
  * <ul>
  *   <li>PASSED: grade required, must be in [3.0, 5.0].
@@ -16,8 +16,7 @@ import java.util.UUID;
  *   <li>CANCELLED: grade must be null.
  * </ul>
  *
- * <p>periodId is opaque (ADR-F3-009); stored as-is without cross-module validation. No Spring/JPA
- * imports (ARQ-002).
+ * <p>periodId is opaque; stored as-is without cross-module validation. No Spring/JPA imports.
  */
 public final class CourseAttempt {
 
@@ -26,7 +25,7 @@ public final class CourseAttempt {
   private final UUID courseId;
   private AttemptStatus status;
   private Grade grade; // nullable; null for CANCELLED
-  private UUID periodId; // opaque; contract-required non-null (FIX-W4; ADR-F3-009 deferred)
+  private UUID periodId; // opaque; contract-required non-null
   private String journeyCode;
   private final Instant registeredAt;
   private final long version;
@@ -59,16 +58,16 @@ public final class CourseAttempt {
   /**
    * Register a new course attempt.
    *
-   * <p>FIX-W4: {@code periodId} is contract-REQUIRED (non-null). The OpenAPI schema {@code
-   * CourseAttempt} and {@code CourseAttemptCreateRequest} both list {@code periodId} in {@code
-   * required}. The domain now enforces this — null is rejected.
+   * <p>{@code periodId} is contract-REQUIRED (non-null). The OpenAPI schema {@code CourseAttempt}
+   * and {@code CourseAttemptCreateRequest} both list {@code periodId} in {@code required}. The
+   * domain enforces this — null is rejected.
    *
    * @param id generated attempt ID
    * @param subscriptionId owning subscription
    * @param courseId course being attempted
    * @param status declared outcome
    * @param grade nullable; must comply with grade-status coherence rules
-   * @param periodId opaque period UUID — REQUIRED, non-null (ADR-F3-009 deferred; contract wins)
+   * @param periodId opaque period UUID — REQUIRED, non-null
    * @param journeyCode journey code (non-blank)
    * @return the new CourseAttempt with version=0
    * @throws NullPointerException if periodId is null
@@ -220,7 +219,7 @@ public final class CourseAttempt {
               status, "CANCELLED must not have a grade but received " + grade.value());
         }
       }
-        // Exhaustive: PASSED, FAILED, CANCELLED are all contract values (FIX-W2: PENDING removed)
+        // Exhaustive: PASSED, FAILED, CANCELLED are all contract values
     }
   }
 

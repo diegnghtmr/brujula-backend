@@ -2,11 +2,11 @@
 --
 -- !! PROVISIONAL / NON-OFFICIAL !!
 -- Source: Plan rediseño curricular 2016, Acuerdo C. Superior 042/2016, 168 cr, 55 courses, 10 sem DIURNA.
--- NOCTURNA 12-semester distribution is INFERRED (topological re-binning, human-approved #1610).
+-- NOCTURNA 12-semester distribution is INFERRED (topological re-binning, human-approved).
 -- ALL prerequisite edges: inferred=true (no official prereq matrix — Acuerdo 042 does not publish one).
 -- Confidence: ALTA → HIGH, MEDIA → MEDIUM, BAJA → LOW (per prerrequisitos-inferidos.md).
 --
--- Satisfies: CAT-002/003, CUR-001/002/003/004/005/007, Design §5 V013
+-- Satisfies: Program catalog and curriculum specs
 -- official_code minting: {PROG}-S{diurna_sem}-{SLUG}
 --   PROG=LM, SLUG = accent-fold(name) → strip non-alnum → UPPERCASE
 --
@@ -68,7 +68,7 @@ VALUES (
 --    FK: program_id = '11111111-0000-4000-b000-000000000001'
 --    Types: REQUIRED / PERSONAL_ELECTIVE / DEEPENING / INSTITUTIONAL
 --    official_code: LM-S{diurna_sem}-{SLUG}
---    Note: weekly hours not published in Acuerdo 042; using 0 as placeholder (ADR-F2-005).
+--    Note: weekly hours not published in Acuerdo 042; using 0 as placeholder.
 -- ============================================================
 
 -- --- Semester I (6 courses, 14 cr) ---
@@ -314,7 +314,7 @@ INSERT INTO curriculum.course (id, plan_id, program_id, official_code, name, typ
 -- ============================================================
 -- 6. Course recommended semesters
 --    DIURNA: official semesters from Acuerdo 042 malla
---    NOCTURNA: approved inferred 12-semester distribution (#1610)
+--    NOCTURNA: approved inferred 12-semester distribution
 --    Topological order preserved: no course placed before its prerequisite
 -- ============================================================
 

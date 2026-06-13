@@ -13,7 +13,7 @@ import java.util.UUID;
  * Use case implementation: list sequential tracks for a study plan.
  *
  * <p>Delegates to {@link LoadSequentialTrackPort#loadByPlanId} with optional kind filter. No Spring
- * annotations — wired via infrastructure configuration (ARQ-002).
+ * annotations — wired via infrastructure configuration.
  */
 public class ListSequentialTracksService implements ListSequentialTracksQuery {
 

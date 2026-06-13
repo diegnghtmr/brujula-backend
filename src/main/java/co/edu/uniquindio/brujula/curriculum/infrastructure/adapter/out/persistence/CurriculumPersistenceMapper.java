@@ -23,8 +23,8 @@ import java.util.List;
  * Pure-translation mapper between persistence entities and domain objects for the curriculum
  * module.
  *
- * <p>Package-private (ARQ-006). Stateless — all methods are static. No business logic here — pure
- * field mapping only.
+ * <p>Package-private. Stateless — all methods are static. No business logic here — pure field
+ * mapping only.
  */
 final class CurriculumPersistenceMapper {
 

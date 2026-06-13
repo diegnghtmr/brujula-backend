@@ -18,7 +18,7 @@ import java.util.Set;
  * <p>Nodes are arbitrary string identifiers (course codes or synthetic IDs). Uses a 3-color DFS
  * (WHITE → GRAY → BLACK), matching the algorithm in {@code curriculum.domain}.
  *
- * <p>Framework-free — no Spring or JPA imports (ARQ-002).
+ * <p>Framework-free — no Spring or JPA imports.
  */
 class ImportCycleDetector {
 

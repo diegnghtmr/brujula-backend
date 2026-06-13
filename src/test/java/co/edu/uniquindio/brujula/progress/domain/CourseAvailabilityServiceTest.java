@@ -8,16 +8,16 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU4-T01 RED: unit tests for {@link CourseAvailabilityService}.
+ * Unit tests for {@link CourseAvailabilityService}.
  *
  * <p>Scenarios:
  *
  * <ul>
- *   <li>AVL-1-HP: all hard prereqs met → AVAILABLE.
- *   <li>AVL-1-BLOCKED: official/HIGH prereq unmet → BLOCKED with reason.
- *   <li>AVL-1-SOFT-PREREQ: inferred MEDIUM prereq unmet → AVAILABLE + advisory in unmet list.
- *   <li>AVL-1-PASSED-COURSE: course with effective PASSED → PASSED status.
- *   <li>empty plan → empty result.
+ *   <li>All hard prereqs met → AVAILABLE.
+ *   <li>Official/HIGH prereq unmet → BLOCKED with reason.
+ *   <li>Inferred MEDIUM prereq unmet → AVAILABLE + advisory in unmet list.
+ *   <li>Course with effective PASSED → PASSED status.
+ *   <li>Empty plan → empty result.
  * </ul>
  */
 class CourseAvailabilityServiceTest {
@@ -25,7 +25,7 @@ class CourseAvailabilityServiceTest {
   private final CourseAvailabilityService sut = new CourseAvailabilityService();
 
   // -----------------------------------------------------------------------
-  // AVL-1-HP: all hard prereqs met → AVAILABLE
+  // All hard prereqs met → AVAILABLE
   // -----------------------------------------------------------------------
 
   @Test
@@ -53,7 +53,7 @@ class CourseAvailabilityServiceTest {
   }
 
   // -----------------------------------------------------------------------
-  // AVL-1-BLOCKED: official (inferred=false) or HIGH confidence prereq unmet → BLOCKED
+  // Official (inferred=false) or HIGH confidence prereq unmet → BLOCKED
   // -----------------------------------------------------------------------
 
   @Test
@@ -108,7 +108,7 @@ class CourseAvailabilityServiceTest {
   }
 
   // -----------------------------------------------------------------------
-  // AVL-1-SOFT-PREREQ: inferred=true + MEDIUM/LOW confidence → AVAILABLE + advisory
+  // Inferred=true + MEDIUM/LOW confidence → AVAILABLE + advisory
   // -----------------------------------------------------------------------
 
   @Test
@@ -157,7 +157,7 @@ class CourseAvailabilityServiceTest {
   }
 
   // -----------------------------------------------------------------------
-  // AVL-1-PASSED-COURSE: course with effective PASSED carries PASSED
+  // Course with effective PASSED carries PASSED
   // -----------------------------------------------------------------------
 
   @Test

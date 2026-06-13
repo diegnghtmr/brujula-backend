@@ -10,7 +10,7 @@ import java.util.UUID;
  * <p>Extends the data in {@link SimulationView} with assembled sub-objects computed at read time.
  * Used for GET /me/simulations/{id} and POST /me/simulations/{id}/review responses.
  *
- * <p>ARQ-001: plain String/UUID/primitive types only. No domain entities.
+ * <p>Plain String/UUID/primitive types only. No domain entities.
  *
  * @param id simulation UUID
  * @param name simulation name

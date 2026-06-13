@@ -24,13 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
  * REST adapter for the Profile API ({@code GET /me}, {@code GET /me/activity}).
  *
  * <p>Implements the generated {@link ProfileApi} interface (contract-first). DTO↔domain mapping is
- * confined to this adapter (ARQ-005). Domain objects are never returned directly.
+ * confined to this adapter. Domain objects are never returned directly.
  *
  * <p>BOLA defence: the authenticated user's id is always derived from the session principal (via
- * {@link SecurityContextHolder}), never from a request parameter (TRD §10, Spec §Per-Resource
- * Authorization).
- *
- * <p>Satisfies: S1-B-7, Design §2.1 adapter.in.rest.
+ * {@link SecurityContextHolder}), never from a request parameter.
  */
 @RestController
 class ProfileController implements ProfileApi {
@@ -86,8 +83,8 @@ class ProfileController implements ProfileApi {
   }
 
   // -------------------------------------------------------------------------
-  // DTO mappers (confined to this adapter, ARQ-005)
-  // Domain types are NOT imported here — only application-layer DTOs (ARQ-001).
+  // DTO mappers (confined to this adapter)
+  // Domain types are NOT imported here — only application-layer DTOs.
   // -------------------------------------------------------------------------
 
   private CurrentUser toDto(UserProfile profile) {

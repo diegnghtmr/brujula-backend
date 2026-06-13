@@ -9,7 +9,7 @@ import java.util.UUID;
  * <p>Represents a single recorded audit event. No setters, no update path. Created via factory
  * methods: {@link #record} for new events, {@link #reconstitute} for loading from storage.
  *
- * <p>Satisfies: Design §2.3, Spec §Audit Log (TRD §6.3 Todos→audit, RNF-SEG-007).
+ * <p>Append-only: no update path; created via factory methods only.
  */
 public final class AuditEvent {
 

@@ -10,7 +10,7 @@ import java.util.UUID;
  * <p>{@code status} is the contract-level {@code SimulationStatus} string (CURRENT/OUTDATED),
  * computed at read time — never stored (INV-004).
  *
- * <p>All fields use plain String/UUID (ARQ-001).
+ * <p>All fields use plain String/UUID.
  */
 public record SimulationView(
     UUID id,

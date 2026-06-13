@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Output port: read-side operations for {@link CourseAttempt}.
  *
- * <p>ARQ-003: application layer depends on this interface, not on concrete persistence adapters.
+ * <p>Application layer depends on this interface, not on concrete persistence adapters.
  */
 public interface LoadCourseAttemptPort {
 

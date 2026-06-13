@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
  * <p>Bridges framework-free application services into the Spring container. Persistence adapters
  * are auto-detected via {@code @Component}; services are registered here for explicit wiring.
  *
- * <p>ARQ-006: all port.out adapters are injected as interfaces — never concrete adapter classes.
+ * <p>All port.out adapters are injected as interfaces — never concrete adapter classes.
  */
 @Configuration
 class AdministrationConfiguration {

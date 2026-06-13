@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Application-layer DTO for a StudyPlan read view.
  *
- * <p>Returned by query services to REST adapters (ARQ-001 — controllers do not touch domain). No
+ * <p>Returned by query services to REST adapters — controllers do not touch domain. No
  * Spring/framework imports.
  *
  * @param id the plan UUID
@@ -14,7 +14,7 @@ import java.util.UUID;
  * @param status the plan status string (DRAFT, ACTIVE, ARCHIVED)
  * @param totalCredits total graduation credits
  * @param referenceYear optional year of the plan agreement (nullable)
- * @param version optimistic lock version (DT-014)
+ * @param version optimistic lock version
  */
 public record StudyPlanView(
     UUID id,

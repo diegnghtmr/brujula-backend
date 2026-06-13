@@ -7,10 +7,9 @@ import java.util.UUID;
 /**
  * Subscription — aggregate root representing a student's enrollment in a program/plan.
  *
- * <p>Design: ADR-F3-002. Contract alignment (#1630): NO primary flag, cap=2 enforced at application
- * level.
+ * <p>Contract alignment: NO primary flag, cap=2 enforced at application level.
  *
- * <p>No Spring/JPA imports (ARQ-002). Framework-free pure domain object.
+ * <p>No Spring/JPA imports. Framework-free pure domain object.
  */
 public final class Subscription {
 
@@ -103,7 +102,7 @@ public final class Subscription {
   /**
    * Soft-delete this subscription. Idempotent: no-op if already DELETED.
    *
-   * <p>Design: ADR-F3-003. Attempts are NOT deleted; they remain as historical data.
+   * <p>Attempts are NOT deleted; they remain as historical data.
    */
   public void softDelete() {
     this.status = SubscriptionStatus.DELETED;
@@ -124,7 +123,7 @@ public final class Subscription {
    *
    * <p>If {@code hasAttempts=true} and {@code acknowledgeHistoryImpact=false}, the change is
    * rejected with {@link HistoryImpactNotAcknowledgedException}. This gate ensures students
-   * understand that existing course attempts may be reclassified as off-plan (ADR-F3-007).
+   * understand that existing course attempts may be reclassified as off-plan.
    *
    * @param newPlanId target plan ID (non-null)
    * @param newJourneyCode target journey (non-blank)

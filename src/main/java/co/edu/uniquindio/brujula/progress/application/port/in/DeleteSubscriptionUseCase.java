@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * Input port: soft-delete a subscription.
  *
- * <p>Rejects deletion if it would leave the student with zero active subscriptions. ARQ-003.
+ * <p>Rejects deletion if it would leave the student with zero active subscriptions.
  */
 public interface DeleteSubscriptionUseCase {
 

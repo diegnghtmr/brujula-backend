@@ -7,8 +7,8 @@ import java.util.UUID;
 /**
  * Application-layer view of a simulation selection.
  *
- * <p>ARQ-001: only primitive/String/UUID types — no domain entities. Maps 1:1 to the generated
- * {@code SimulationSelection} API model.
+ * <p>Only primitive/String/UUID types — no domain entities. Maps 1:1 to the generated {@code
+ * SimulationSelection} API model.
  *
  * @param id selection UUID
  * @param offeringId parent offering UUID

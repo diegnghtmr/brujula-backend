@@ -1,9 +1,9 @@
 package co.edu.uniquindio.brujula.imports.application.dto;
 
 /**
- * Query parameters for the list-imports operation (IMP-003).
+ * Query parameters for the list-imports operation.
  *
- * <p>Application DTO — no Spring/domain imports (ARQ-001).
+ * <p>Application DTO — no Spring/domain imports.
  *
  * @param actorEmail actor's institutional email (for STAFF program-scoping)
  * @param actorRole "STAFF" or "ADMIN" — ADMIN sees all batches

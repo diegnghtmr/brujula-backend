@@ -2,7 +2,7 @@ package co.edu.uniquindio.brujula.progress.domain;
 
 /**
  * Thrown when a plan change is attempted on a subscription that has existing course attempts, but
- * the student has not acknowledged the history impact (ADR-F3-007).
+ * the student has not acknowledged the history impact.
  *
  * <p>Maps to HTTP 409 Conflict in the REST adapter.
  */

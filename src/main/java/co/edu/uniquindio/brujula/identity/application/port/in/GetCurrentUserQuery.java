@@ -7,10 +7,10 @@ import java.util.UUID;
  * Input port: retrieve the authenticated user's own profile.
  *
  * <p>Backs {@code GET /me}. The caller (REST adapter) resolves the user id from the session
- * principal — no external id parameter accepted (BOLA defense, TRD §10).
+ * principal — no external id parameter accepted (BOLA defense).
  *
  * <p>Returns {@link UserProfile} (application-layer DTO) so that REST adapters do not import domain
- * classes directly (ARQ-001).
+ * classes directly.
  */
 public interface GetCurrentUserQuery {
 

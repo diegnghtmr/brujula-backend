@@ -14,7 +14,7 @@ import java.util.Optional;
  * (candidate ends exactly when existing starts) are NOT a clash per spec.
  *
  * <p>Package-private — only used by {@link SimulationValidationService}. Pure Java, no Spring/JPA
- * (ARQ-002, ADR-F4-004).
+ * (ADR-F4-004).
  */
 class ScheduleClashDetector {
 

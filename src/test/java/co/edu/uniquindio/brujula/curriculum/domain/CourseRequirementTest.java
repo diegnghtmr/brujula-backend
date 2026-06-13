@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-1.9 RED: Verifies CourseRequirement aggregate validation rules.
+ * Verifies CourseRequirement aggregate validation rules.
  *
  * <p>Rules:
  *
@@ -15,8 +15,7 @@ import org.junit.jupiter.api.Test;
  *   <li>COURSE_PASSED requires non-null requiredCourseId.
  *   <li>MINIMUM_CREDITS requires non-null requiredCredits.
  *   <li>COURSE_PASSED with null requiredCourseId is rejected.
- *   <li>reconstitute() enforces the same per-type invariants as the factory methods (FIX-1,
- *       WARNING-1).
+ *   <li>reconstitute() enforces the same per-type invariants as the factory methods.
  * </ul>
  */
 class CourseRequirementTest {
@@ -139,7 +138,7 @@ class CourseRequirementTest {
   }
 
   // -------------------------------------------------------------------------
-  // reconstitute() — FIX-1 (WARNING-1): per-type invariants must be enforced
+  // reconstitute() — per-type invariants must be enforced
   // -------------------------------------------------------------------------
 
   @Test
@@ -164,7 +163,7 @@ class CourseRequirementTest {
 
   @Test
   void reconstituteRejectsCoursePassedWithNullRequiredCourseId() {
-    // COURSE_PASSED with null requiredCourseId violates CUR-002 invariant even via reconstitute
+    // COURSE_PASSED with null requiredCourseId violates the invariant even via reconstitute
     assertThatThrownBy(
             () ->
                 CourseRequirement.reconstitute(

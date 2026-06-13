@@ -21,7 +21,7 @@ import java.math.BigDecimal;
  * <p>Enforces BOLA ownership, grade-status coherence (delegated to {@link CourseAttempt}), and
  * optimistic locking (JPA {@code @Version} → {@code OptimisticLockingFailureException} → 409).
  *
- * <p>Framework-free — wired by {@code ProgressConfiguration}. Satisfies: PRG-3, CROSS-3, CROSS-4.
+ * <p>Framework-free — wired by {@code ProgressConfiguration}.
  */
 public class UpdateCourseAttemptService implements UpdateCourseAttemptUseCase {
 
@@ -64,7 +64,7 @@ public class UpdateCourseAttemptService implements UpdateCourseAttemptUseCase {
     // Persist (JPA @Version handles optimistic locking)
     CourseAttempt saved = saveCourseAttemptPort.save(attempt);
 
-    // Audit (CROSS-4: COURSE_ATTEMPT_UPDATED)
+    // Audit: COURSE_ATTEMPT_UPDATED
     auditRecorder.record(
         new RecordAuditEventCommand(
             command.actorId(),
@@ -85,11 +85,11 @@ public class UpdateCourseAttemptService implements UpdateCourseAttemptUseCase {
         attempt.getId().value(),
         attempt.getSubscriptionId().value(),
         attempt.getCourseId(),
-        "N/A", // courseName resolved by WU4
+        "N/A", // courseName not yet resolved
         attempt.getPeriodId(),
-        null, // periodName resolved by WU4
+        null, // periodName not yet resolved
         attempt.getJourneyCode(),
-        attempt.getStatus().name(), // FIX-S1: plain String, no domain type in application DTO
+        attempt.getStatus().name(), // plain String — no domain type in application DTO
         gradeValue,
         attempt.getRegisteredAt(),
         attempt.getVersion());

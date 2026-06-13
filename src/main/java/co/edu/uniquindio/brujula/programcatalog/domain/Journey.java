@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * Journey (Jornada) — entity representing a study schedule modality for a program.
  *
- * <p>Examples: DIURNA, NOCTURNA. A program may have multiple journeys (CAT-003).
+ * <p>Examples: DIURNA, NOCTURNA. A program may have multiple journeys.
  *
  * <p>Invariants:
  *
@@ -14,7 +14,7 @@ import java.util.Objects;
  *   <li>{@code name} must not be null or blank.
  * </ul>
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public final class Journey {
 

@@ -12,11 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
  * Reads the allowed email domains from the {@code administration.allowed_email_domain} table using
  * a plain JDBC query.
  *
- * <p>This is a READ-ONLY cross-schema access: the identity module reads only the domain strings
- * from the administration schema. It does NOT reach into {@code administration} module's internal
- * JPA adapter (ARQ-006 compliant — no import of administration's JPA entity/repository).
- *
- * <p>Satisfies: S1-B-6, RN-007, RNF-SEG-006 (dual domain enforcement at provisioning).
+ * <p>READ-ONLY cross-schema access: the identity module reads only the domain strings from the
+ * administration schema. It does NOT reach into {@code administration} module's internal JPA
+ * adapter (no import of administration's JPA entity/repository).
  */
 @Component
 class AllowedDomainQueryAdapter implements LoadAllowedDomainsPort {

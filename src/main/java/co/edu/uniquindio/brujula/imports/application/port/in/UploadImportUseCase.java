@@ -9,7 +9,7 @@ import co.edu.uniquindio.brujula.imports.application.dto.UploadImportCommand;
  * <p>Orchestrates: idempotency check → file type/size guard → assignment guard → parse → validate →
  * persist ImportBatch (VALIDATED or INVALID) → audit → idempotency save → return ImportSummary.
  *
- * <p>Published in the imports module api. No Spring/JPA imports (ARQ-003). Satisfies: IMP-001.
+ * <p>Published in the imports module api. No Spring/JPA imports.
  */
 public interface UploadImportUseCase {
 

@@ -20,7 +20,7 @@
  *   <li>{@code programcatalog::api-dto} — program catalog DTOs
  *   <li>{@code identity::api} — current user resolution via named interface
  *   <li>{@code identity::api-dto} — user profile DTOs
- *   <li>{@code generated} — OpenAPI-generated interfaces and model DTOs in REST adapters (ARQ-005)
+ *   <li>{@code generated} — OpenAPI-generated interfaces and model DTOs in REST adapters
  * </ul>
  */
 @org.springframework.modulith.ApplicationModule(

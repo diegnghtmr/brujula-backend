@@ -29,18 +29,17 @@ import org.springframework.util.AntPathMatcher;
  *   <li>CSRF protection via {@code csrf.spa()} (Security 7 verified fact #1) — RNF-SEG-004,
  *       ADR-F1-001.
  *   <li>Role-based authorization ({@code authorizeHttpRequests}) — RF-AUT-002, ADR-F1-002.
- *   <li>Spring Session JDBC persistence (auto-configured via properties) — ADR-F1-004.
- *   <li>Session fixation protection (new session on login) — TRD §10.
+ *   <li>Spring Session JDBC persistence (auto-configured via properties).
+ *   <li>Session fixation protection (new session on login).
  *   <li>Logout at {@code POST /auth/logout} — RF-AUT-003.
- *   <li>Method-level security via {@code @EnableMethodSecurity} — BOLA defense, TRD §10.
+ *   <li>Method-level security via {@code @EnableMethodSecurity} — BOLA defense.
  * </ul>
  *
  * <p>The {@code SecurityFilterChain} is the cross-cutting composition root and stays in {@code
  * sharedkernel} (ADR-F1-002). OIDC provisioning logic is in {@code
  * identity.infrastructure.adapter.in.oidc} (wired in WU-B).
  *
- * <p>Satisfies: S1-A-8, Spec §OIDC Login Flow §CSRF Protection §Role-Based Authorization §Logout.
- * ADR-F1-001, ADR-F1-002, ADR-F1-004, RNF-SEG-001..005.
+ * <p>Satisfies: S1-A-8. ADR-F1-001, ADR-F1-002, RNF-SEG-001..005.
  */
 @Configuration
 @EnableWebSecurity
@@ -71,7 +70,7 @@ public class SecurityConfiguration {
   /**
    * Production security filter chain.
    *
-   * <p>Authorization matchers (Design §1.3):
+   * <p>Authorization matchers:
    *
    * <ul>
    *   <li>{@code permitAll}: actuator health, springdoc (local profile), auth registration +
@@ -121,7 +120,7 @@ public class SecurityConfiguration {
         .csrf(csrf -> csrf.spa())
 
         // ----------------------------------------------------------------
-        // Authorization rules (Design §1.3)
+        // Authorization rules
         // ----------------------------------------------------------------
         .authorizeHttpRequests(
             authorize ->
@@ -172,7 +171,7 @@ public class SecurityConfiguration {
             exceptions -> exceptions.accessDeniedHandler(academicAccessDeniedHandler()))
 
         // ----------------------------------------------------------------
-        // Session management — new session on login (TRD §10 rotation)
+        // Session management — new session on login (session fixation rotation)
         // Storage: Spring Session JDBC via spring-boot-starter-session-jdbc
         // (properties: spring.session.jdbc.table-name, initialize-schema=never)
         // ----------------------------------------------------------------

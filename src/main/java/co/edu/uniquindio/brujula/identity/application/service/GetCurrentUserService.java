@@ -13,7 +13,8 @@ import java.util.UUID;
  * <p>Backs {@code GET /me}. The caller resolves the user id from the session principal; this
  * service only loads by internal UUID or OIDC subject. BOLA defence: no external id override path.
  *
- * <p>Maps {@link AppUser} (domain) to {@link UserProfile} (application DTO) — ARQ-001.
+ * <p>Maps {@link AppUser} (domain) to {@link UserProfile} (application DTO). Domain types are never
+ * returned directly to REST adapters.
  */
 public class GetCurrentUserService implements GetCurrentUserQuery {
 

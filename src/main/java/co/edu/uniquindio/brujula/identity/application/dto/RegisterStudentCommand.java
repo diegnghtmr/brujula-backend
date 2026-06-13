@@ -8,8 +8,8 @@ package co.edu.uniquindio.brujula.identity.application.dto;
  * user sets their initial credential on Keycloak's own page after clicking the verification link.
  * The consent versions are validated against configured current versions.
  *
- * <p>Lives in {@code identity.application.dto} (ARQ-003): DTOs are permitted in the application
- * layer but not in port.in (port.in is interfaces only, ARQ-003).
+ * <p>Lives in {@code identity.application.dto}: DTOs are permitted in the application layer but not
+ * in port.in (port.in is interfaces only).
  */
 public record RegisterStudentCommand(
     String email, String fullName, String termsVersion, String privacyVersion) {

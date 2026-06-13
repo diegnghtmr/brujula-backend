@@ -51,22 +51,17 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST adapter: course attempt endpoints ({@code /me/course-attempts/**}).
  *
- * <p>Implements the generated {@link ProgressApi} contract-first interface (ARQ-001).
- * Package-private per ARQ-006b. STUDENT-only; STAFF/ADMIN access rejected via
- * {@code @PreAuthorize("hasRole('STUDENT')")}.
+ * <p>Implements the generated {@link ProgressApi} contract-first interface. Package-private.
+ * STUDENT-only; STAFF/ADMIN access rejected via {@code @PreAuthorize("hasRole('STUDENT')")}.
  *
- * <p>Also implements curriculum and progress summary endpoints ({@code AVL-1}, {@code AVL-2}).
- * Delegates to {@link GetSubscriptionCurriculumQuery} and {@link GetSubscriptionProgressQuery}.
+ * <p>Also implements curriculum and progress summary endpoints. Delegates to {@link
+ * GetSubscriptionCurriculumQuery} and {@link GetSubscriptionProgressQuery}.
  *
- * <p>Satisfies: PRG-1..4, AVL-1, AVL-2, CROSS-2, CROSS-3, CROSS-4. ARQ-001.
+ * <p>{@code ProgressSummary.programName} is resolved via {@code GetSubscriptionProgressService}
+ * which calls the programcatalog published port.
  *
- * <p>FIX-W2: {@code ProgressSummary.programName} is now resolved via {@code
- * GetSubscriptionProgressService} which calls the programcatalog published port. No longer a UUID
- * placeholder.
- *
- * <p>CONTRACT GAP (W-3-doc): {@code PeriodAverage.periodName} still uses {@code
- * periodId.toString()} as placeholder until a period catalog lookup port is implemented (known
- * debt).
+ * <p>Known gap: {@code PeriodAverage.periodName} still uses {@code periodId.toString()} as
+ * placeholder until a period catalog lookup port is implemented.
  */
 @RestController
 class CourseAttemptController implements ProgressApi {
@@ -229,7 +224,7 @@ class CourseAttemptController implements ProgressApi {
   }
 
   // -------------------------------------------------------------------------
-  // AVL-1: GET /me/subscriptions/{id}/curriculum
+  // GET /me/subscriptions/{id}/curriculum — curriculum view
   // -------------------------------------------------------------------------
 
   @Override
@@ -243,7 +238,7 @@ class CourseAttemptController implements ProgressApi {
   }
 
   // -------------------------------------------------------------------------
-  // AVL-2: GET /me/subscriptions/{id}/progress
+  // GET /me/subscriptions/{id}/progress — progress summary
   // -------------------------------------------------------------------------
 
   @Override
@@ -278,7 +273,7 @@ class CourseAttemptController implements ProgressApi {
   }
 
   // -------------------------------------------------------------------------
-  // DTO mappers: application DTOs → generated contract models (ARQ-001, ARQ-005)
+  // DTO mappers: application DTOs → generated contract models
   // -------------------------------------------------------------------------
 
   private CurriculumView toCurriculumViewDto(CurriculumViewData data) {
@@ -298,7 +293,7 @@ class CourseAttemptController implements ProgressApi {
   }
 
   private CurriculumCourse toCurriculumCourseDto(CurriculumCourseData courseData) {
-    // Map String type to generated enum (ARQ-001: no domain enums in REST layer)
+    // Map String type to generated enum (no domain enums in REST layer)
     CourseType courseType = CourseType.fromValue(courseData.type());
     // Map String progressStatus to generated enum
     CourseProgressStatus progressStatus =
@@ -317,13 +312,13 @@ class CourseAttemptController implements ProgressApi {
   /**
    * Maps {@link ProgressSummaryView} to the generated {@link ProgressSummary} contract model.
    *
-   * <p>FIX-W2: {@code programName} is now resolved from the application view (programcatalog port).
+   * <p>{@code programName} is resolved from the application view (programcatalog port).
    *
-   * <p>CONTRACT GAP (W-3-doc): {@code PeriodAverage.periodName} uses {@code periodId.toString()} as
-   * placeholder until a period catalog lookup port is implemented (known debt; TODO below).
+   * <p>Known gap: {@code PeriodAverage.periodName} uses {@code periodId.toString()} as placeholder
+   * until a period catalog lookup port is implemented.
    */
   private ProgressSummary toProgressSummaryDto(UUID subscriptionId, ProgressSummaryView view) {
-    // FIX-W2: programName is now the human-readable name resolved from programcatalog
+    // programName is the human-readable name resolved from programcatalog
     String programName = view.programName();
 
     Double estimatedAvg =
@@ -351,15 +346,14 @@ class CourseAttemptController implements ProgressApi {
   }
 
   private PeriodAverage toPeriodAverageDto(PeriodAverageView periodView) {
-    // TODO (W-3-doc): periodName is periodId.toString() — known debt.
-    // Requires a period catalog lookup port (out of WU4 scope; ADR-F3 deferred).
+    // TODO: periodName is periodId.toString() — known gap; requires a period catalog lookup port.
     String periodName = periodView.periodId().toString();
     return new PeriodAverage(
         periodView.periodId(), periodName, periodView.estimatedAverage().doubleValue());
   }
 
   // -------------------------------------------------------------------------
-  // DTO mapper: CourseAttemptView → generated CourseAttempt model (ARQ-005)
+  // DTO mapper: CourseAttemptView → generated CourseAttempt model
   // -------------------------------------------------------------------------
 
   private CourseAttempt toDto(CourseAttemptView view) {
@@ -370,8 +364,7 @@ class CourseAttemptController implements ProgressApi {
             ? view.registeredAt().atOffset(ZoneOffset.UTC)
             : OffsetDateTime.now(ZoneOffset.UTC);
 
-    // FIX-W4: periodId is contract-REQUIRED (non-null since domain enforces it). Pass through
-    // directly.
+    // periodId is contract-REQUIRED (non-null since domain enforces it). Pass through directly.
     UUID periodId = view.periodId();
 
     co.edu.uniquindio.brujula.generated.model.AttemptStatus contractStatus =

@@ -44,8 +44,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * DEBT-F4-003 closure: end-to-end staleness tests that drive a {@code course_offering.version} bump
- * through REAL application services — NOT manual JDBC UPDATEs.
+ * End-to-end staleness tests that drive a {@code course_offering.version} bump through REAL
+ * application services — NOT manual JDBC UPDATEs.
  *
  * <p>Three scenarios:
  *
@@ -63,7 +63,7 @@ import org.springframework.web.context.WebApplicationContext;
  *       chain. PRELIMINARY passes {@code CourseOffering#isPublished()}, so the offering stays
  *       resolvable after publish; {@code GetOfferingQuery.getOffering()} returns it, and staleness
  *       is decided by real version comparison — the sentinel branch is NOT taken. This scenario is
- *       the keystone proof that {@link PublishOfferingUseCase} activates the DEBT-F4-003 mechanism
+ *       the keystone proof that {@link PublishOfferingUseCase} activates the staleness mechanism
  *       through the same chain as scenario 1.
  * </ol>
  *
@@ -85,8 +85,6 @@ import org.springframework.web.context.WebApplicationContext;
  *   <li>Period 2026-2: {@code 00000001-0000-4000-a000-000000000001}
  *   <li>ISC program: {@code 11111111-0000-4000-a000-000000000001}
  * </ul>
- *
- * <p>Satisfies: OFFW-006, DEBT-F4-003.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
@@ -193,7 +191,7 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // DEBT-F4-003 / scenario 1:
+  // Scenario 1:
   //   Seed selection at version N on V017 PROG_III (FINAL).
   //   Bump offering version through UpdateOfferingUseCase (REAL service, NOT JDBC).
   //   Assert DB version > N AND simulation status = OUTDATED.
@@ -228,8 +226,8 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
             new SimScheduleSession("WEDNESDAY", LocalTime.of(10, 0), LocalTime.of(12, 0))));
 
     // Bump offering version through the REAL UpdateOfferingService — NOT a direct JDBC UPDATE.
-    // This is the keystone assertion of DEBT-F4-003: the staleness chain must work when
-    // the version increment is triggered by a real application service call, not a test hack.
+    // The staleness chain must work when the version increment is triggered by a real application
+    // service call, not a test hack.
     UpdateOfferingCommand updateCmd =
         new UpdateOfferingCommand(
             PROG_III_OFFERING_ID,
@@ -245,7 +243,7 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
             Long.class,
             PROG_III_OFFERING_ID);
     assertThat(bumpedVersion)
-        .as("UpdateOfferingService MUST increment course_offering.version (OFFW-006)")
+        .as("UpdateOfferingService MUST increment course_offering.version")
         .isGreaterThan(initialVersion);
 
     // CRITICAL: now the selection's selectedOfferingVersion (initialVersion) < bumpedVersion
@@ -263,7 +261,7 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // DEBT-F4-003 / scenario 2:
+  // Scenario 2:
   //   Create a BRAND-NEW DRAFT offering (random UUID, not from V017) with a schedule option.
   //   Seed selection snapshot at version 0.
   //   Transition offering DRAFT→ARCHIVED through PublishOfferingUseCase (REAL service, NOT JDBC).
@@ -352,7 +350,7 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
             Long.class,
             freshOfferingId);
     assertThat(bumpedVersion)
-        .as("PublishOfferingService MUST increment course_offering.version (OFFW-006)")
+        .as("PublishOfferingService MUST increment course_offering.version")
         .isGreaterThan(initialVersion);
 
     // CRITICAL: staleness chain must fire — publish bumped the version, selection is OUTDATED.
@@ -368,7 +366,7 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // DEBT-F4-003 / scenario 3 (keystone proof for publish path, pure version-comparison):
+  // Scenario 3 (keystone proof for publish path, pure version-comparison):
   //   Create a BRAND-NEW DRAFT offering (random UUID, not from V017) with a schedule option.
   //   Seed selection snapshot at version 0.
   //   Transition offering DRAFT→PRELIMINARY through PublishOfferingUseCase (REAL service, NOT
@@ -381,7 +379,7 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   //   OUTDATED via the PURE VERSION-COMPARISON chain — the exception-sentinel branch is NOT taken.
   //
   //   This directly contrasts with scenario 2 (DRAFT→ARCHIVED, sentinel path) and proves that
-  //   PublishOfferingService activates the same DEBT-F4-003 mechanism as UpdateOfferingService
+  //   PublishOfferingService activates the same staleness mechanism as UpdateOfferingService
   //   (scenario 1). This test would FAIL if PublishOfferingService did not bump the version,
   //   because the version-comparison guard fires before the MockMvc assertion.
   //
@@ -463,8 +461,7 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
             Long.class,
             freshOfferingId);
     assertThat(bumpedVersion)
-        .as(
-            "PublishOfferingService MUST increment course_offering.version for PRELIMINARY (OFFW-006)")
+        .as("PublishOfferingService MUST increment course_offering.version for PRELIMINARY")
         .isGreaterThan(initialVersion);
 
     // Guard: offering must still be resolvable — isPublished() must return true for PRELIMINARY.

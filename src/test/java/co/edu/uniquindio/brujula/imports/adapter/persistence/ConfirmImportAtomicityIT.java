@@ -25,14 +25,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Keystone atomicity integration test for WU6 (ADR-F6-001 — all-or-nothing confirm).
- *
- * <p>This test proves that the single-{@code @Transactional} boundary in {@code
- * ConfirmImportService#confirm} rolls back ALL row writes when ANY row fails. Uses a REAL
+ * Keystone atomicity integration test: proves that the single-{@code @Transactional} boundary in
+ * {@code ConfirmImportService#confirm} rolls back ALL row writes when ANY row fails. Uses a REAL
  * Testcontainers Postgres instance (via {@link AbstractPostgresIntegrationTest}) and REAL service
  * beans — no {@code @MockitoBean} on any curriculum use-case.
  *
- * <h3>Scenario A: REQUIREMENTS cycle (T6.3-1 — the load-bearing rollback proof)</h3>
+ * <h3>Scenario A: REQUIREMENTS cycle (the load-bearing rollback proof)</h3>
  *
  * <ol>
  *   <li>Seed two courses (A and B) in a fresh plan using direct JDBC.
@@ -50,7 +48,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  *       the count would be 1.
  * </ol>
  *
- * <h3>Scenario B: happy-path confirm (T6.3-2 — positive counterpart)</h3>
+ * <h3>Scenario B: happy-path confirm (positive counterpart)</h3>
  *
  * Proves that when all rows succeed the batch is committed as CONFIRMED and the requirement row IS
  * persisted.
@@ -60,8 +58,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * post-commit state.
  *
  * <p>No {@code @MockitoBean} on any curriculum use-case: both scenarios drive the REAL {@code
- * CreateCourseRequirementService} → REAL {@code SaveCourseRequirementPort} → REAL Postgres. Covers:
- * ADR-F6-001, INV-03, IMP-005, T6.3.
+ * CreateCourseRequirementService} → REAL {@code SaveCourseRequirementPort} → REAL Postgres.
  */
 @SpringBootTest
 class ConfirmImportAtomicityIT extends AbstractPostgresIntegrationTest {
@@ -75,7 +72,7 @@ class ConfirmImportAtomicityIT extends AbstractPostgresIntegrationTest {
   @Autowired private JdbcTemplate jdbcTemplate;
 
   // -------------------------------------------------------------------------
-  // T6.3-1 — Scenario A: requirements cycle rolls back ALL writes (ADR-F6-001 keystone proof)
+  // Scenario A: requirements cycle rolls back ALL writes (keystone rollback proof)
   // -------------------------------------------------------------------------
 
   /**
@@ -184,7 +181,7 @@ class ConfirmImportAtomicityIT extends AbstractPostgresIntegrationTest {
     // ---- Act + Assert (a): PrerequisiteCycleException propagates -------------
     assertThatThrownBy(() -> confirmImportUseCase.confirm(command))
         .isInstanceOf(PrerequisiteCycleException.class)
-        .as("Row 1's cycle MUST propagate out of confirm() (ADR-F6-001)");
+        .as("Row 1's cycle MUST propagate out of confirm()");
 
     // ---- Assert (b): batch status is still VALIDATED in DB ------------------
     Optional<ImportBatch> reloaded = loadImportBatchPort.findById(batchId);
@@ -206,7 +203,7 @@ class ConfirmImportAtomicityIT extends AbstractPostgresIntegrationTest {
     // committed).
     //   - COUNT would be 1 (row 0 survived) → THIS ASSERTION WOULD FAIL.
     //
-    // If CreateCourseRequirementService used REQUIRES_NEW (forbidden by ADR-F6-001):
+    // If CreateCourseRequirementService used REQUIRES_NEW (forbidden — all-or-nothing contract):
     //   - Row 0 would commit in its own nested TX before the outer TX rolls back.
     //   - COUNT would be 1 → THIS ASSERTION WOULD FAIL.
     int requirementCount =
@@ -218,12 +215,12 @@ class ConfirmImportAtomicityIT extends AbstractPostgresIntegrationTest {
     assertThat(requirementCount)
         .as(
             "Zero requirement edges must survive after rolled-back confirm — "
-                + "row 0's flushed A→B edge must have been rolled back (ADR-F6-001, INV-03)")
+                + "row 0's flushed A→B edge must have been rolled back (all-or-nothing contract)")
         .isEqualTo(0);
   }
 
   // -------------------------------------------------------------------------
-  // T6.3-2 — happy-path confirm: single REQUIREMENTS row commits successfully
+  // Scenario B: happy-path confirm — single REQUIREMENTS row commits successfully
   // -------------------------------------------------------------------------
 
   /**
@@ -324,7 +321,7 @@ class ConfirmImportAtomicityIT extends AbstractPostgresIntegrationTest {
     Optional<ImportBatch> reloaded = loadImportBatchPort.findById(batchId);
     assertThat(reloaded).isPresent();
     assertThat(reloaded.get().getStatus())
-        .as("ImportBatch status must be CONFIRMED after successful confirm (IMP-005)")
+        .as("ImportBatch status must be CONFIRMED after successful confirm")
         .isEqualTo(ImportStatus.CONFIRMED);
 
     // The requirement row must exist in DB

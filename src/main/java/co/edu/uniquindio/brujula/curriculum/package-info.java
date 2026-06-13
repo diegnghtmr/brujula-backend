@@ -10,7 +10,7 @@
  *   <li>{@code programcatalog} — program catalog data
  *   <li>{@code identity::api} — current user resolution for write controller endpoints
  *   <li>{@code identity::api-dto} — user profile DTOs
- *   <li>{@code generated} — OpenAPI-generated interfaces and model DTOs in REST adapters (ARQ-005)
+ *   <li>{@code generated} — OpenAPI-generated interfaces and model DTOs in REST adapters
  * </ul>
  */
 @org.springframework.modulith.ApplicationModule(

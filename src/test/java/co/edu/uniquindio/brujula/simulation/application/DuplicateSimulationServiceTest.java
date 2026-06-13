@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * WU3 application unit tests for {@link DuplicateSimulationService}.
+ * Application unit tests for {@link DuplicateSimulationService}.
  *
  * <p>Covers: happy path, idempotency replay, hash mismatch → conflict, non-owner → 403, name
  * override applied.
@@ -174,14 +174,14 @@ class DuplicateSimulationServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4b: Duplicate carries source simulation's selections (SIM-006 / Finding F10)
+  // Duplicate carries source simulation's selections
   // -------------------------------------------------------------------------
 
   /**
-   * FIX F5 (WU4b): When a simulation with existing selections is duplicated, the new simulation
-   * must have a copy of each source selection persisted under the new simulationId, with all fields
-   * preserved (courseId, credits, offeringId, scheduleOptionId) and the simulationId pointing to
-   * the NEW simulation, not the source.
+   * When a simulation with existing selections is duplicated, the new simulation must have a copy
+   * of each source selection persisted under the new simulationId, with all fields preserved
+   * (courseId, credits, offeringId, scheduleOptionId) and the simulationId pointing to the NEW
+   * simulation, not the source.
    *
    * <p>Uses ArgumentCaptor to assert the copied selection's field values, replacing the weak
    * verify(save).save(any()) that would pass even if credits were copied as 0.
@@ -234,7 +234,7 @@ class DuplicateSimulationServiceTest {
     // The duplicated simulation has a new UUID
     assertThat(view.id()).isNotEqualTo(simulationId);
 
-    // FIX F5: use ArgumentCaptor to assert all copied fields are preserved
+    // Use ArgumentCaptor to assert all copied fields are preserved
     ArgumentCaptor<SimulationSelection> captor = ArgumentCaptor.forClass(SimulationSelection.class);
     verify(saveSimulationSelectionPort).save(captor.capture());
     SimulationSelection copied = captor.getValue();

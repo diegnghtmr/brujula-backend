@@ -7,7 +7,7 @@ import java.util.UUID;
  * Typed identity value object for the {@link Journey} aggregate.
  *
  * <p>Wraps a {@link UUID} to prevent accidental ID mixing at the type level. Immutable (record). No
- * Spring/JPA imports (ARQ-002).
+ * Spring/JPA imports.
  */
 public record JourneyId(UUID value) {
 

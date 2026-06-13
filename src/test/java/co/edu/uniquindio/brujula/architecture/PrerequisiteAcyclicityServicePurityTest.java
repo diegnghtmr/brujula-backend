@@ -8,18 +8,18 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
 /**
- * WU1-3.5 RED → GREEN: ADR-F2-006 — {@code PrerequisiteAcyclicityService} must have ZERO imports
- * from {@code org.springframework} or {@code jakarta.persistence}.
+ * {@code PrerequisiteAcyclicityService} must have zero imports from {@code org.springframework} or
+ * {@code jakarta.persistence}.
  *
  * <p>This rule enforces that the domain cycle-detection service remains framework-free and
- * unit-testable, per the hexagonal architecture invariant (ARQ-002).
+ * unit-testable (hexagonal architecture: domain must not depend on any framework).
  */
 @AnalyzeClasses(
     packages = "co.edu.uniquindio.brujula.curriculum.domain",
     importOptions = {ImportOption.DoNotIncludeTests.class})
 class PrerequisiteAcyclicityServicePurityTest {
 
-  /** ADR-F2-006 — PrerequisiteAcyclicityService must not import Spring or Jakarta Persistence. */
+  /** PrerequisiteAcyclicityService must not import Spring or Jakarta Persistence. */
   @ArchTest
   static final ArchRule prerequisiteAcyclicityServiceIsFrameworkFree =
       noClasses()

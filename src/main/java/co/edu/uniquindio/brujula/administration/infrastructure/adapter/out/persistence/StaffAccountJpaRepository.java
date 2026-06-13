@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-/** Spring Data JPA repository for staff accounts. Package-private (ARQ-006). */
+/** Spring Data JPA repository for staff accounts. Package-private. */
 interface StaffAccountJpaRepository extends JpaRepository<StaffAccountJpaEntity, UUID> {
 
   Optional<StaffAccountJpaEntity> findByEmail(String email);

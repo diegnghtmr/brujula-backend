@@ -8,7 +8,7 @@ import java.util.UUID;
  *
  * <p>Implements: AVL-1 — bulk-loads plan malla via curriculum published port, resolves effective
  * attempt statuses, computes per-course availability (PASSED/BLOCKED/AVAILABLE/FAILED/CANCELLED),
- * maps to the contract {@code CurriculumView} schema. BOLA-guarded (ownership verified). ARQ-003.
+ * maps to the contract {@code CurriculumView} schema. BOLA-guarded (ownership verified).
  *
  * <p>No Spring/framework imports.
  */

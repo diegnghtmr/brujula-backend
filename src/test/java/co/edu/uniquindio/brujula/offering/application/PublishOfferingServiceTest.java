@@ -56,7 +56,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
  *   <li>Audit event recorded with OFFERING_PUBLISHED action
  * </ul>
  *
- * <p>Zero Spring — pure unit test. Satisfies: OFFW-005, OFFW-006, WU3 Phase 4.
+ * <p>Zero Spring — pure unit test.
  */
 class PublishOfferingServiceTest {
 

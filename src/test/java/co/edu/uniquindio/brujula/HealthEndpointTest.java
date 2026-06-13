@@ -11,9 +11,8 @@ import org.springframework.core.env.Environment;
 /**
  * Smoke test verifying that the application context loads successfully.
  *
- * <p>Satisfies BB-001 scenario: Application context loads. Note: Spring Boot 4 removes
- * TestRestTemplate and @AutoConfigureMockMvc test slices. Context-load + environment checks replace
- * the direct HTTP health endpoint test for Fase 0.
+ * <p>Note: Spring Boot 4 removes TestRestTemplate and @AutoConfigureMockMvc test slices.
+ * Context-load + environment checks replace the direct HTTP health endpoint test.
  */
 @SpringBootTest
 class HealthEndpointTest extends AbstractPostgresIntegrationTest {

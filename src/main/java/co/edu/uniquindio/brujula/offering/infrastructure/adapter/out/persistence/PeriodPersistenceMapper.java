@@ -7,8 +7,8 @@ import co.edu.uniquindio.brujula.offering.domain.PeriodStatus;
 /**
  * Mapper: {@link AcademicPeriodJpaEntity} ↔ {@link AcademicPeriod} domain entity.
  *
- * <p>Package-private per ARQ-006b. Pure translation — no business logic. Supports both read
- * (toDomain) and write (toJpaEntity) directions.
+ * <p>Package-private. Pure translation — no business logic. Supports both read (toDomain) and write
+ * (toJpaEntity) directions.
  */
 class PeriodPersistenceMapper {
 

@@ -14,13 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Reads the authenticated user's own activity records from {@code audit.audit_event} using JDBC.
  *
- * <p>This is a READ-ONLY cross-schema access from the identity module into the audit schema. The
- * identity module reads only its own actor's events — it does NOT import the audit module's JPA
- * adapter (ARQ-006 compliant). Comprehensive audit RECORDING is WU-C; for WU-B the table may be
- * empty.
- *
- * <p>Satisfies: S1-B-6 (activity sub-task), Design §2.1 ReadActivityPort, Spec §Personal Profile
- * and Activity.
+ * <p>READ-ONLY cross-schema access from the identity module into the audit schema. The identity
+ * module reads only its own actor's events — it does NOT import the audit module's JPA adapter. The
+ * table may be empty until comprehensive audit recording is wired up.
  */
 @Component
 class AuditEventReadAdapter implements ReadActivityPort {

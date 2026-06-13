@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Application-layer DTO for a Subscription (returned by use cases, serialized for idempotency).
  *
- * <p>Includes programName and planName for the REST response contract. ARQ-001: no domain types.
+ * <p>Includes programName and planName for the REST response contract. No domain types.
  *
  * @param id subscription UUID
  * @param programId program UUID

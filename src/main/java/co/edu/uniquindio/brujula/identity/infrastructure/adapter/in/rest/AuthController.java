@@ -19,29 +19,24 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST adapter implementing the generated {@link AuthApi} interface.
  *
- * <p>G2 RESOLUTION: {@code POST /auth/logout} is handled by Spring Security's {@code logout()}
- * filter BEFORE the DispatcherServlet. This shim returns 204 in the unlikely event the request
- * reaches this controller (Spring Security's filter runs first). No domain logic here.
+ * <p>{@code POST /auth/logout} is handled by Spring Security's {@code logout()} filter BEFORE the
+ * DispatcherServlet. This shim returns 204 in the unlikely event the request reaches this
+ * controller (Spring Security's filter runs first). No domain logic here.
  *
- * <p>S2-A-3 CONTRACT UPDATE: confirmEmailVerification and confirmPasswordRecovery have been removed
- * from the API contract. Keycloak handles email verification and password reset natively on its own
- * pages. No backend token-confirm endpoints are needed. See architecture decision #1574.
+ * <p>confirmEmailVerification and confirmPasswordRecovery are NOT in this contract. Keycloak
+ * handles email verification and password reset natively on its own pages. No backend token-confirm
+ * endpoints are needed.
  *
- * <p>S2-B-5: registerStudent delegates to {@link RegisterStudentUseCase}. The controller maps the
- * HTTP request to a {@link RegisterStudentCommand} and maps the result back to {@link
- * RegistrationAccepted} (202 Accepted). ARQ-001: no domain types are referenced directly — only
- * application DTOs and generated model types.
+ * <p>registerStudent delegates to {@link RegisterStudentUseCase}. The controller maps the HTTP
+ * request to a {@link RegisterStudentCommand} and maps the result back to {@link
+ * RegistrationAccepted} (202 Accepted). No domain types are referenced directly — only application
+ * DTOs and generated model types.
  *
- * <p>S2-C: resendEmailVerification delegates to {@link ResendEmailVerificationUseCase}. Always
- * returns 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown
- * emails.
+ * <p>resendEmailVerification delegates to {@link ResendEmailVerificationUseCase}. Always returns
+ * 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown emails.
  *
- * <p>S2-D: requestPasswordRecovery delegates to {@link InitiatePasswordRecoveryUseCase}. Always
- * returns 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown
- * emails.
- *
- * <p>Satisfies: S1-B-5 (G2 resolve), Design §2.1 AuthApi shim, S2-A-3 contract audit, S2-B-5, S2-C,
- * S2-D.
+ * <p>requestPasswordRecovery delegates to {@link InitiatePasswordRecoveryUseCase}. Always returns
+ * 202 Accepted — NO USER ENUMERATION: the response is identical for known and unknown emails.
  */
 @RestController
 class AuthController implements AuthApi {
@@ -68,11 +63,11 @@ class AuthController implements AuthApi {
   }
 
   /**
-   * S2-B-5: Self-registration for students.
+   * Self-registration for students.
    *
    * <p>Maps the HTTP request fields to a {@link RegisterStudentCommand}. The termsVersion and
    * privacyVersion are NOT sourced from the request body — the backend reads them from
-   * configuration (G6 RESOLVED). The request carries only {@code acceptedTerms=true} and {@code
+   * configuration. The request carries only {@code acceptedTerms=true} and {@code
    * acceptedDataProcessing=true} booleans as acknowledgements.
    *
    * <p>Returns 202 Accepted with a {@link RegistrationAccepted} body. Exceptions are mapped by
@@ -84,10 +79,10 @@ class AuthController implements AuthApi {
       UUID idempotencyKey, StudentRegistrationRequest body) {
     // Terms/privacy versions come from application config, NOT from the request body.
     // The command carries empty string placeholders — RegisterStudentService overrides them with
-    // the configured current versions before persisting consent evidence (G6 RESOLVED, obs #1574).
-    // OPTION A (DT-011): no password field on the registration contract.
-    // Keycloak sends UPDATE_PASSWORD via execute-actions-email so the user sets their credential
-    // on Keycloak's own page. The backend never receives or stores a password.
+    // the configured current versions before persisting consent evidence.
+    // No password field on the registration contract: Keycloak sends UPDATE_PASSWORD via
+    // execute-actions-email so the user sets their credential on Keycloak's own page.
+    // The backend never receives or stores a password.
     var command =
         new RegisterStudentCommand(
             body.getEmail(),
@@ -98,7 +93,7 @@ class AuthController implements AuthApi {
 
     RegisterStudentResult result = registerStudentUseCase.register(command);
 
-    // Map onboardingState string to AccountStatus enum (ARQ-001: no domain type imported directly).
+    // Map onboardingState string to AccountStatus enum (no domain type imported directly).
     // RegisterStudentResult.onboardingState() is a String (e.g. "PENDING_VERIFICATION", "ACTIVE").
     // AccountStatus.fromValue() performs safe lookup and throws IllegalArgumentException on
     // mismatch.
@@ -109,7 +104,7 @@ class AuthController implements AuthApi {
   }
 
   /**
-   * S2-C: Resend email verification.
+   * Resend email verification.
    *
    * <p>NO USER ENUMERATION: always returns 202 Accepted regardless of whether the email is
    * registered. The use case handles the conditional Keycloak call internally.
@@ -122,11 +117,11 @@ class AuthController implements AuthApi {
   }
 
   /**
-   * S2-D: Initiate password recovery.
+   * Initiate password recovery.
    *
    * <p>NO USER ENUMERATION: always returns 202 Accepted regardless of whether the email is
-   * registered. OPTION A (DT-011): Keycloak handles the reset page natively; the backend never
-   * receives or stores passwords.
+   * registered. Keycloak handles the reset page natively; the backend never receives or stores
+   * passwords.
    */
   @Override
   public ResponseEntity<Void> requestPasswordRecovery(RequestPasswordRecoveryRequest body) {

@@ -37,11 +37,9 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Spring bean wiring for the simulation module's application services.
  *
- * <p>WU3: CreateSimulationService, ListMySimulationsService, GetSimulationService,
- * UpdateSimulationService, DeleteSimulationService, DuplicateSimulationService.
- *
- * <p>WU4a: AddSimulationSelectionService, RemoveSimulationSelectionService,
- * ListSimulationSelectionsService.
+ * <p>Registers: CreateSimulationService, ListMySimulationsService, GetSimulationService,
+ * UpdateSimulationService, DeleteSimulationService, DuplicateSimulationService,
+ * AddSimulationSelectionService, RemoveSimulationSelectionService, ListSimulationSelectionsService.
  *
  * <p>Framework-free application services registered here for explicit constructor injection.
  * Persistence adapters and cross-module adapters are auto-detected via {@code @Component}.
@@ -50,7 +48,7 @@ import org.springframework.context.annotation.Configuration;
 class SimulationConfiguration {
 
   // -------------------------------------------------------------------------
-  // WU3 services
+  // Core simulation services
   // -------------------------------------------------------------------------
 
   @Bean
@@ -127,7 +125,7 @@ class SimulationConfiguration {
   }
 
   // -------------------------------------------------------------------------
-  // WU4a services
+  // Selection services
   // -------------------------------------------------------------------------
 
   @Bean
@@ -172,7 +170,7 @@ class SimulationConfiguration {
   }
 
   // -------------------------------------------------------------------------
-  // WU5 services
+  // Review service
   // -------------------------------------------------------------------------
 
   @Bean

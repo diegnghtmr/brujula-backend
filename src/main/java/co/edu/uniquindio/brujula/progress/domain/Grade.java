@@ -8,7 +8,7 @@ import java.util.Objects;
  *
  * <p>A grade is considered passing ({@link #passing()}) when its value is ≥ 3.0.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public record Grade(BigDecimal value) {
 

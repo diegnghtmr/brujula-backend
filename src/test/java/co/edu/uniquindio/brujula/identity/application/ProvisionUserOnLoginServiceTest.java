@@ -31,12 +31,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * RED → GREEN use case tests for ProvisionUserOnLoginService.
  *
- * <p>Uses Mockito in-memory stubs — zero Spring context (ARQ-002).
+ * <p>Uses Mockito in-memory stubs — zero Spring context.
  *
  * <p>Scenarios: first login creates user, subsequent login loads existing, allowed-domain policy
  * enforced, Keycloak role claims mapped to Role VO, default role STUDENT when no recognized role.
- *
- * <p>Satisfies: S1-B-3, Spec §Identity Provisioning on First Login.
  */
 @ExtendWith(MockitoExtension.class)
 class ProvisionUserOnLoginServiceTest {
@@ -75,8 +73,8 @@ class ProvisionUserOnLoginServiceTest {
     assertThat(result.oidcSubject()).isEqualTo("sub-new");
     assertThat(result.email()).isEqualTo("alice@uniquindio.edu.co");
     verify(saveAppUserPort).save(any());
-    // Spec §Audit Log: first login MUST record USER_PROVISIONED with the new user as both
-    // actor and entityId (the user is provisioning themselves via OIDC).
+    // First login MUST record USER_PROVISIONED with the new user as both actor and entityId
+    // (the user is provisioning themselves via OIDC).
     verify(auditRecorder)
         .record(
             argThat(

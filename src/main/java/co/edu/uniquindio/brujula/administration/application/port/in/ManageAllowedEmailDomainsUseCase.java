@@ -7,10 +7,8 @@ import java.util.UUID;
 /**
  * Input port: manage allowed email domains (list, add, remove).
  *
- * <p>Uses {@link AllowedDomainView} from {@code application.dto} to comply with ARQ-003 (all types
- * in {@code application.port.in} must be interfaces only).
- *
- * <p>Satisfies: Design §2.2 ManageAllowedEmailDomainsUseCase, Spec §Allowed Email Domains.
+ * <p>Uses {@link AllowedDomainView} from {@code application.dto} because all types in {@code
+ * application.port.in} must be interfaces only.
  */
 public interface ManageAllowedEmailDomainsUseCase {
 
