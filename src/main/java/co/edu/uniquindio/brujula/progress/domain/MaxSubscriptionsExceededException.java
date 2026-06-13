@@ -3,8 +3,8 @@ package co.edu.uniquindio.brujula.progress.domain;
 import java.util.UUID;
 
 /**
- * Thrown when a student attempts to subscribe to a 3rd distinct program (cap = 2 distinct
- * programs per student, per contract).
+ * Thrown when a student attempts to subscribe to a 3rd distinct program (cap = 2 distinct programs
+ * per student, per contract).
  *
  * <p>Within each program, both jornadas (Diurna and Nocturna) are allowed as separate
  * subscriptions. The cap applies only to distinct programs (careers).
