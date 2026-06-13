@@ -34,8 +34,8 @@ import org.junit.jupiter.api.Test;
 /**
  * WU2-T09 RED+GREEN: use case unit tests for {@link CreateSubscriptionService}.
  *
- * <p>Covers: SUB-1-HP, SUB-1-CAP, SUB-1-DUP, SUB-1-IDEM, SUB-1-IDEM-CONFLICT,
- * SUB-1-JORNADA-DUP, SUB-1-JORNADA-DIFF-ALLOWED, SUB-1-CAP-DISTINCT-PROGRAMS.
+ * <p>Covers: SUB-1-HP, SUB-1-CAP, SUB-1-DUP, SUB-1-IDEM, SUB-1-IDEM-CONFLICT, SUB-1-JORNADA-DUP,
+ * SUB-1-JORNADA-DIFF-ALLOWED, SUB-1-CAP-DISTINCT-PROGRAMS.
  */
 class CreateSubscriptionServiceTest {
 
@@ -148,9 +148,11 @@ class CreateSubscriptionServiceTest {
 
     // Two active subscriptions for 2 distinct programs A and B
     Subscription s1 =
-        Subscription.create(SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "DIURNA");
+        Subscription.create(
+            SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "DIURNA");
     Subscription s2 =
-        Subscription.create(SubscriptionId.generate(), userId, programB, UUID.randomUUID(), "DIURNA");
+        Subscription.create(
+            SubscriptionId.generate(), userId, programB, UUID.randomUUID(), "DIURNA");
     when(loadSubscriptionPort.lockActiveByUserIdForUpdate(userId)).thenReturn(List.of(s1, s2));
 
     assertThatThrownBy(() -> sut.createSubscription(command))
@@ -160,8 +162,8 @@ class CreateSubscriptionServiceTest {
   }
 
   /**
-   * Already active in (programA, DIURNA); subscribing (programA, NOCTURNA) → SUCCEEDS.
-   * Program is already in the set, so the cap does NOT apply.
+   * Already active in (programA, DIURNA); subscribing (programA, NOCTURNA) → SUCCEEDS. Program is
+   * already in the set, so the cap does NOT apply.
    */
   @Test
   void same_program_different_jornada_is_allowed_and_cap_does_not_apply() {
@@ -202,7 +204,8 @@ class CreateSubscriptionServiceTest {
   void same_program_same_jornada_is_duplicate_and_rejected() {
     UUID idempotencyKey = UUID.randomUUID();
     CreateSubscriptionCommand command =
-        new CreateSubscriptionCommand(idempotencyKey, userId, programId, planId, "DIURNA", "hash-dup");
+        new CreateSubscriptionCommand(
+            idempotencyKey, userId, programId, planId, "DIURNA", "hash-dup");
 
     when(idempotencyStorePort.find(idempotencyKey, CreateSubscriptionService.OPERATION))
         .thenReturn(Optional.empty());
@@ -225,7 +228,8 @@ class CreateSubscriptionServiceTest {
 
   /**
    * Active in (programA, DIURNA) and (programB, DIURNA) [2 distinct programs]; subscribing
-   * (programA, NOCTURNA) → SUCCEEDS (programA already in set, cap skipped), resulting in 3 active rows.
+   * (programA, NOCTURNA) → SUCCEEDS (programA already in set, cap skipped), resulting in 3 active
+   * rows.
    */
   @Test
   void second_jornada_of_already_subscribed_program_bypasses_cap_with_two_distinct_programs() {
@@ -244,7 +248,8 @@ class CreateSubscriptionServiceTest {
     Subscription sA =
         Subscription.create(SubscriptionId.generate(), userId, programA, planId, "DIURNA");
     Subscription sB =
-        Subscription.create(SubscriptionId.generate(), userId, programB, UUID.randomUUID(), "DIURNA");
+        Subscription.create(
+            SubscriptionId.generate(), userId, programB, UUID.randomUUID(), "DIURNA");
     when(loadSubscriptionPort.lockActiveByUserIdForUpdate(userId)).thenReturn(List.of(sA, sB));
 
     // programA NOCTURNA does NOT exist yet
@@ -263,8 +268,8 @@ class CreateSubscriptionServiceTest {
   }
 
   /**
-   * Full-house scenario: 4 active rows (A-DIURNA, A-NOCTURNA, B-DIURNA, B-NOCTURNA).
-   * Subscribing to a 3rd distinct program C → rejected.
+   * Full-house scenario: 4 active rows (A-DIURNA, A-NOCTURNA, B-DIURNA, B-NOCTURNA). Subscribing to
+   * a 3rd distinct program C → rejected.
    */
   @Test
   void third_distinct_program_rejected_when_full_house_four_rows() {
@@ -282,13 +287,17 @@ class CreateSubscriptionServiceTest {
 
     // 4 active rows — 2 distinct programs
     Subscription s1 =
-        Subscription.create(SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "DIURNA");
+        Subscription.create(
+            SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "DIURNA");
     Subscription s2 =
-        Subscription.create(SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "NOCTURNA");
+        Subscription.create(
+            SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "NOCTURNA");
     Subscription s3 =
-        Subscription.create(SubscriptionId.generate(), userId, programB, UUID.randomUUID(), "DIURNA");
+        Subscription.create(
+            SubscriptionId.generate(), userId, programB, UUID.randomUUID(), "DIURNA");
     Subscription s4 =
-        Subscription.create(SubscriptionId.generate(), userId, programB, UUID.randomUUID(), "NOCTURNA");
+        Subscription.create(
+            SubscriptionId.generate(), userId, programB, UUID.randomUUID(), "NOCTURNA");
     when(loadSubscriptionPort.lockActiveByUserIdForUpdate(userId))
         .thenReturn(List.of(s1, s2, s3, s4));
 
@@ -352,7 +361,8 @@ class CreateSubscriptionServiceTest {
     // Two active rows for the SAME program (programA, DIURNA) + (programA, NOCTURNA)
     // → only 1 distinct program in the active set
     Subscription s1 =
-        Subscription.create(SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "DIURNA");
+        Subscription.create(
+            SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "DIURNA");
     Subscription s2 =
         Subscription.create(
             SubscriptionId.generate(), userId, programA, UUID.randomUUID(), "NOCTURNA");
