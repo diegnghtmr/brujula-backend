@@ -6,8 +6,8 @@ import java.util.UUID;
 /**
  * Command DTO for the idempotent {@code createPeriod} use case.
  *
- * <p>Plain types only (no domain VOs) per ARQ-001. Carries {@code idempotencyKey} + {@code
- * requestHash} for the idempotency store.
+ * <p>Plain types only (no domain VOs). Carries {@code idempotencyKey} + {@code requestHash} for the
+ * idempotency store.
  *
  * @param idempotencyKey client-supplied UUID header
  * @param actorId authenticated ADMIN user ID

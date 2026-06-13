@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * QAL-ADV-001 — Regression scope tests for {@code ProgramCatalogExceptionHandler}.
+ * Regression scope tests for {@code ProgramCatalogExceptionHandler}.
  *
  * <p>Asserts the per-module response contract for module-specific exceptions (status code). {@code
  * basePackages} scoping is defence-in-depth; {@code @Order(HIGHEST_PRECEDENCE)} is the primary
@@ -38,8 +38,8 @@ import org.springframework.web.context.WebApplicationContext;
  * (idempotency, optimistic-lock); its exception contract is 404-only for module-specific not-found
  * exceptions. Status assertion is the load-bearing check for this handler.
  *
- * <p>T-WU1.3 (programcatalog): verifies catalog controller → {@code ProgramCatalogExceptionHandler}
- * maps {@link ProgramNotFoundException} to HTTP 404.
+ * <p>Verifies catalog controller → {@code ProgramCatalogExceptionHandler} maps {@link
+ * ProgramNotFoundException} to HTTP 404.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class ProgramCatalogExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest {
@@ -60,9 +60,8 @@ class ProgramCatalogExceptionHandlerScopeTest extends AbstractPostgresIntegratio
   }
 
   /**
-   * T-WU1.3 (programcatalog) — QAL-ADV-001: catalog controller throwing {@link
-   * ProgramNotFoundException} MUST return HTTP 404 from {@code ProgramCatalogExceptionHandler}
-   * (scoped to the programcatalog REST package).
+   * Catalog controller throwing {@link ProgramNotFoundException} MUST return HTTP 404 from {@code
+   * ProgramCatalogExceptionHandler} (scoped to the programcatalog REST package).
    *
    * <p>This is a status-level contract test (no {@code $.code} on 404 per design). If a handler
    * regression drops the 404 mapping, this test catches it.

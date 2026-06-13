@@ -30,12 +30,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3-T07 RED: use case unit tests for {@link CreateCourseAttemptService}.
+ * Use case unit tests for {@link CreateCourseAttemptService}.
  *
- * <p>Covers: PRG-1-HP, PRG-1-GRADE-MISMATCH, PRG-1-CANCELLED-WITH-GRADE, PRG-1-OPAQUE-PERIOD,
- * PRG-1-MULTI-ATTEMPT, PRG-1-FOREIGN-SUB, PRG-1-IDEM.
+ * <p>Covers: happy path, grade-status mismatch, cancelled-with-grade, opaque period, multi-attempt,
+ * foreign subscription, idempotency.
  *
- * <p>FIX-W4: periodId is contract-REQUIRED (non-null). All commands now use a non-null periodId.
+ * <p>periodId is contract-REQUIRED (non-null). All commands use a non-null periodId.
  */
 class CreateCourseAttemptServiceTest {
 
@@ -52,7 +52,7 @@ class CreateCourseAttemptServiceTest {
   private final UUID courseId = UUID.randomUUID();
   private final UUID planId = UUID.randomUUID();
   private final UUID programId = UUID.randomUUID();
-  // FIX-W4: stable test period UUID — always non-null
+  // Stable test period UUID — always non-null
   private final UUID testPeriodId = UUID.fromString("00000000-0000-4000-a000-000000000001");
 
   @BeforeEach
@@ -102,7 +102,7 @@ class CreateCourseAttemptServiceTest {
     assertThat(view).isNotNull();
     assertThat(view.subscriptionId()).isEqualTo(subscriptionId);
     assertThat(view.courseId()).isEqualTo(courseId);
-    assertThat(view.statusName()).isEqualTo("PASSED"); // FIX-S1: plain String
+    assertThat(view.statusName()).isEqualTo("PASSED");
     verify(auditRecorder).record(any());
   }
 
@@ -228,7 +228,7 @@ class CreateCourseAttemptServiceTest {
             "PASSED",
             new BigDecimal("4.2"),
             Instant.now(),
-            0L); // FIX-S1: plain String
+            0L);
 
     when(idempotencyStorePort.find(idempotencyKey, CreateCourseAttemptService.OPERATION))
         .thenReturn(Optional.of(new IdempotencyStorePort.StoredRecord("hash1", 201, "{}")));

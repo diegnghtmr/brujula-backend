@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-/** WU1-1.1 RED: Verifies all 6 CourseType enum values exist and are distinct. */
+/** Verifies all 6 CourseType enum values exist and are distinct. */
 class CourseTypeTest {
 
   @Test

@@ -37,8 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>the prerequisite graph (findAllByPlanId) reads back correctly for acyclicity checks
  *   <li>version bumps on update (load-bearing proof of @Version on requirements)
  * </ul>
- *
- * Satisfies: CUR-003, IMP-007, SC-009-C, WU5-T5.3.
  */
 @SpringBootTest
 @Transactional

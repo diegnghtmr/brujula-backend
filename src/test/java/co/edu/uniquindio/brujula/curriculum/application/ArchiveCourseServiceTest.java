@@ -29,7 +29,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
  * TDD RED → GREEN: unit tests for {@link ArchiveCourseService}.
  *
  * <p>Covers: successful archive transitions status, audit recorded; not found throws; stale version
- * propagates OptimisticLockingFailureException. WU5 – T5.1 (CUR-002, SC-009-D).
+ * propagates OptimisticLockingFailureException.
  */
 class ArchiveCourseServiceTest {
 

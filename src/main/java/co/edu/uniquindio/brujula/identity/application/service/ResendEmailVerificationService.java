@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Use case service: resend the email verification message (S2-C).
+ * Use case service: resend the email verification message.
  *
  * <p>Security invariant — NO USER ENUMERATION: This service completes silently for BOTH known and
  * unknown emails. The caller (controller) always returns 202 Accepted, making it impossible to
@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  *   <li>If NOT found, return silently (no Keycloak call, no exception).
  * </ol>
  *
- * <p>Framework-free (ARQ-002). Wired by {@link
+ * <p>Framework-free. Wired by {@link
  * co.edu.uniquindio.brujula.identity.infrastructure.configuration.IdentityConfiguration}.
  */
 public class ResendEmailVerificationService implements ResendEmailVerificationUseCase {
@@ -54,8 +54,8 @@ public class ResendEmailVerificationService implements ResendEmailVerificationUs
     }
 
     // User exists — trigger email verification via Keycloak (resilient: swallow Keycloak errors).
-    // W-003: identical resilience pattern to InitiatePasswordRecoveryService — Keycloak failures
-    // must not propagate, keeping the 202 response uniform for known and unknown emails alike.
+    // Identical resilience pattern to InitiatePasswordRecoveryService — Keycloak failures must not
+    // propagate, keeping the 202 response uniform for known and unknown emails alike.
     try {
       keycloakPort.resendEmailVerification(email, verifyRedirectUri);
       log.debug("Email verification resend triggered for user: {}", email);

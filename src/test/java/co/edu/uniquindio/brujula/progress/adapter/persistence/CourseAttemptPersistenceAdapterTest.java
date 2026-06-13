@@ -22,12 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
- * WU3-T05 RED: persistence adapter integration tests for {@link CourseAttempt}.
+ * Persistence adapter integration tests for {@link CourseAttempt}.
  *
  * <p>Uses {@link AbstractPostgresIntegrationTest} ({@code @SpringBootTest} + real Postgres V015).
  * Validates save, load, list-by-subscription, and get-by-id ownership queries.
  *
- * <p>FIX-W4: all {@code CourseAttempt.register()} calls now use a non-null periodId.
+ * <p>All {@code CourseAttempt.register()} calls use a non-null periodId.
  */
 @SpringBootTest
 class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTest {
@@ -41,7 +41,7 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
   private final UUID programId = UUID.randomUUID();
   private final UUID planId = UUID.randomUUID();
   private final UUID courseId = UUID.randomUUID();
-  // FIX-W4: use a stable test period UUID
+  // Use a stable test period UUID
   private final UUID testPeriodId = UUID.fromString("00000000-0000-4000-a000-000000000001");
 
   @Test

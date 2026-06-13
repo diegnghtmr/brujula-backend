@@ -101,7 +101,6 @@ class ConfirmImportServiceTest {
 
   @Test
   void idempotent_retry_same_key_same_hash_returns_stored_summary() {
-    // SC-005-E
     UUID idempotencyKey = UUID.randomUUID();
     ImportSummary storedSummary = confirmedSummary(UUID.randomUUID());
     String storedJson = "{\"stored\":true}";
@@ -214,7 +213,6 @@ class ConfirmImportServiceTest {
 
   @Test
   void invalid_batch_not_confirmable_throws() {
-    // INV-02
     ImportBatch batch = invalidBatch();
     when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
     when(loadImportBatchPort.findById(batch.getId())).thenReturn(Optional.of(batch));
@@ -232,7 +230,6 @@ class ConfirmImportServiceTest {
 
   @Test
   void happy_path_courses_batch_confirmed_and_audit_recorded() {
-    // SC-005-A, IMP-011-B, SC-011-B
     UUID importId = UUID.randomUUID();
     ImportBatch batch = validatedCoursesWithRows(importId, 2);
     when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
@@ -332,12 +329,12 @@ class ConfirmImportServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // T6.2-12 — NFR-003: imported course row is mapped with INACTIVE initial status
+  // Imported course row is mapped with INACTIVE initial status
   // -------------------------------------------------------------------------
 
   @Test
   void courses_row_mapped_with_inactive_initial_status() {
-    // NFR-003: imported courses must land INACTIVE
+    // Imported courses must land INACTIVE
     UUID importId = UUID.randomUUID();
     ImportBatch batch = validatedCoursesWithRows(importId, 1);
     when(idempotencyStorePort.find(any(), any())).thenReturn(Optional.empty());
@@ -359,12 +356,11 @@ class ConfirmImportServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // T7.1-1 — Happy path OFFERINGS: batch confirmed, offering created in DRAFT, audit recorded
+  // Happy path OFFERINGS: batch confirmed, offering created in DRAFT, audit recorded
   // -------------------------------------------------------------------------
 
   @Test
   void offerings_import_creates_offering_entities_and_batch_confirmed() {
-    // IMP-008, SC-008-A, T7.1
     UUID importId = UUID.randomUUID();
     UUID periodId = UUID.randomUUID();
     ImportBatch batch = validatedOfferingsBatch(importId, periodId);
@@ -391,12 +387,12 @@ class ConfirmImportServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // T7.1-2 — NFR-003: CreateOfferingCommand uses DRAFT status (offerings land DRAFT)
+  // CreateOfferingCommand uses DRAFT status (offerings land DRAFT)
   // -------------------------------------------------------------------------
 
   @Test
   void offerings_row_maps_to_CreateOfferingCommand_with_correct_fields() {
-    // IMP-008, NFR-003, SC-008-A — verify the command shape sent to createOfferingUseCase
+    // Verify the command shape sent to createOfferingUseCase
     UUID importId = UUID.randomUUID();
     UUID periodId = UUID.randomUUID();
     UUID courseId = UUID.randomUUID();
@@ -417,10 +413,9 @@ class ConfirmImportServiceTest {
     verify(createOfferingUseCase).createOffering(captor.capture());
     CreateOfferingCommand sent = captor.getValue();
 
-    // NFR-003 load-bearing assertion: CreateOffering already creates in DRAFT —
-    // no explicit status field on CreateOfferingCommand, but CreateOfferingService.createOffering
-    // calls CourseOffering.create() which always starts DRAFT. Assert the command carries the
-    // expected structural fields (not a status field, because CreateOfferingCommand has none).
+    // CreateOffering always creates in DRAFT — no explicit status field on CreateOfferingCommand,
+    // but CreateOfferingService.createOffering calls CourseOffering.create() which always starts
+    // DRAFT. Assert the command carries the expected structural fields.
     assertThat(sent.periodId()).isEqualTo(periodId);
     assertThat(sent.courseId()).isEqualTo(courseId);
     assertThat(sent.programId()).isEqualTo(batch.getProgramId());
@@ -436,12 +431,11 @@ class ConfirmImportServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // T7.1-3 — One offering row fails → exception propagates, batch NOT confirmed
+  // One offering row fails → exception propagates, batch NOT confirmed
   // -------------------------------------------------------------------------
 
   @Test
   void offerings_one_row_failure_propagates_and_batch_not_confirmed() {
-    // INV-03, IMP-005 SC-005-D
     UUID importId = UUID.randomUUID();
     UUID periodId = UUID.randomUUID();
     ImportBatch batch = validatedOfferingsBatch(importId, periodId);
@@ -459,8 +453,7 @@ class ConfirmImportServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4-T4 (RED→GREEN) — multi-session grouping: 3 rows same option → 1 createOffering call
-  //   with ONE command carrying 3 sessions (QAL-IMP-001 / DEBT-F6-002)
+  // Multi-session grouping: 3 rows same option → 1 createOffering call with 3 sessions
   // -------------------------------------------------------------------------
 
   /**
@@ -520,14 +513,14 @@ class ConfirmImportServiceTest {
   }
 
   /**
-   * WU4-T5 (RED→GREEN) — exception propagation: when createOfferingUseCase throws on the FIRST
-   * offering group, the exception propagates and the batch is NOT marked CONFIRMED.
+   * Exception propagation: when createOfferingUseCase throws on the FIRST offering group, the
+   * exception propagates and the batch is NOT marked CONFIRMED.
    *
    * <p>NOTE: This test proves EXCEPTION PROPAGATION only (the invalid group throws on the first
    * createOffering call, so no group writes anything before the failure). It does NOT prove real DB
-   * rollback of an already-written group. The authoritative rollback proof is WU4-IT2
-   * (ConfirmImportOfferingsIT), where a valid group is written within the TX before the invalid
-   * group fails, and COUNT==0 after rollback confirms full-TX atomicity.
+   * rollback of an already-written group. The authoritative rollback proof is in
+   * ConfirmImportOfferingsIT, where a valid group is written within the TX before the invalid group
+   * fails, and COUNT==0 after rollback confirms full-TX atomicity.
    *
    * <p>This tests that the all-or-nothing TX invariant is preserved after the grouping refactor.
    * Since grouping produces fewer calls, a failure on ANY group must roll back ALL prior groups.
@@ -560,9 +553,9 @@ class ConfirmImportServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4-T6 — distinct option_label on same course + period → two separate offerings
+  // Distinct option_label on same course + period → two separate offerings
   //   Guards against a regression where the group key drops the optionLabel component,
-  //   which would silently over-merge G1 and G2 into a single offering (QAL-IMP-001).
+  //   which would silently over-merge G1 and G2 into a single offering.
   // -------------------------------------------------------------------------
 
   /**
@@ -944,9 +937,9 @@ class ConfirmImportServiceTest {
 
   /**
    * Creates a VALIDATED OFFERINGS ImportBatch with 2 rows for the SAME courseId and SAME periodId
-   * but DIFFERENT option_label: G1 on MON and G2 on TUE. Used by WU4-T6 to guard against the
-   * over-merge regression where the group key accidentally drops the optionLabel component and
-   * collapses both groups into one offering.
+   * but DIFFERENT option_label: G1 on MON and G2 on TUE. Guards against the over-merge regression
+   * where the group key accidentally drops the optionLabel component and collapses both groups into
+   * one offering.
    */
   private ImportBatch sameCourseTwoOptionsBatch(UUID importId, UUID periodId, UUID courseId) {
     List<ImportRow> rows =

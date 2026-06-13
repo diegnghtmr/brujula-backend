@@ -8,7 +8,7 @@ import java.util.UUID;
  * Pure input record describing the schedule option the student wants to add.
  *
  * <p>Injected into the validation engine by the application service after resolving the offering
- * data through {@code OfferingReadPort}. No Spring/JPA dependencies (ARQ-002).
+ * data through {@code OfferingReadPort}. No Spring/JPA dependencies.
  *
  * @param scheduleOptionId schedule option UUID
  * @param offeringId parent offering UUID

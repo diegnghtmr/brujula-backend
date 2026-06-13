@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * Application-layer DTO: a semester bucket in the curriculum view.
  *
- * <p>No domain type imports (ARQ-001).
+ * <p>No domain type imports.
  *
  * @param recommendedSemester semester number (1-based)
  * @param courses the courses in this semester bucket

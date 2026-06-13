@@ -28,13 +28,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Spring bean wiring for the imports module (WU3).
+ * Spring bean wiring for the imports module.
  *
  * <p>Bridges framework-free application services into the Spring container. Parser adapters
  * (XlsxParserAdapter, JsonParserAdapter) are auto-detected via {@code @Component}; services are
  * registered here for explicit wiring.
  *
- * <p>ARQ-006: all port.out adapters are injected as interfaces — never concrete adapter classes.
+ * <p>All port.out adapters are injected as interfaces — never concrete adapter classes.
  */
 @Configuration
 @EnableConfigurationProperties(ImportValidationProperties.class)

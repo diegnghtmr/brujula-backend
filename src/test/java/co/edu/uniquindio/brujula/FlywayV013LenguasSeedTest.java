@@ -26,26 +26,21 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * RED test for V013__seed_lenguas_program.sql (WU3-5.2).
- *
- * <p>Asserts that after V010 + V011 + V012 + V013 Flyway migrations have run on a clean PostgreSQL
- * 18 database, the Licenciatura en Lenguas Modernas (LM) seed data satisfies ALL CUR-007
- * consistency constraints:
+ * Asserts that after V010 + V011 + V012 + V013 Flyway migrations have run on a clean PostgreSQL 18
+ * database, the Licenciatura en Lenguas Modernas (LM) seed data satisfies all consistency
+ * constraints:
  *
  * <ul>
- *   <li>Exactly 55 courses seeded for the Lenguas plan (CUR-001, CUR-007)
- *   <li>study_plan.total_credits = 168 (CAT-002, CUR-007)
- *   <li>Journeys DIURNA (10 sem) AND NOCTURNA (12 sem) exist for Lenguas (CAT-003, CUR-007)
- *   <li>All 55 courses have a non-null official_code (CUR-001)
- *   <li>All requirement edges have confidence + inferred set (CUR-002); all inferred=true (Lenguas
- *       has no official prereq matrix — all edges are inferred)
- *   <li>No cycle in the Lenguas course_requirement graph (CUR-003)
- *   <li>No forward-semester dependency for DIURNA journey (CUR-004)
- *   <li>No forward-semester dependency for NOCTURNA journey (CUR-004)
+ *   <li>Exactly 55 courses seeded for the Lenguas plan
+ *   <li>study_plan.total_credits = 168
+ *   <li>Journeys DIURNA (10 sem) and NOCTURNA (12 sem) exist for Lenguas
+ *   <li>All 55 courses have a non-null official_code
+ *   <li>All requirement edges have confidence + inferred set; all inferred=true (Lenguas has no
+ *       official prereq matrix — all edges are inferred)
+ *   <li>No cycle in the Lenguas course_requirement graph
+ *   <li>No forward-semester dependency for DIURNA journey
+ *   <li>No forward-semester dependency for NOCTURNA journey
  * </ul>
- *
- * <p>Fails until V013__seed_lenguas_program.sql exists. Satisfies: CUR-001/002/003/004/005/007,
- * CAT-002/003 for Lenguas program.
  */
 @SpringBootTest
 class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
@@ -57,7 +52,7 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
       new PrerequisiteAcyclicityService();
 
   // ---------------------------------------------------------------------------
-  // CAT-002 / CUR-007: credit total
+  // Credit total
   // ---------------------------------------------------------------------------
 
   @Test
@@ -80,7 +75,7 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-001 / CUR-007: course count
+  // Course count
   // ---------------------------------------------------------------------------
 
   @Test
@@ -103,7 +98,7 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CAT-003 / CUR-007: journeys DIURNA + NOCTURNA
+  // Journeys DIURNA + NOCTURNA
   // ---------------------------------------------------------------------------
 
   @Test
@@ -187,7 +182,7 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-001: all courses have a non-null official_code
+  // All courses have a non-null official_code
   // ---------------------------------------------------------------------------
 
   @Test
@@ -206,7 +201,7 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(nullCodeCount)
-        .as("All Lenguas courses must have a minted official_code (ADR-F2-005)")
+        .as("All Lenguas courses must have a minted official_code")
         .isEqualTo(0);
   }
 
@@ -242,8 +237,8 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-002: all COURSE_PASSED requirements have confidence + inferred populated
-  //          AND inferred=true for ALL Lenguas edges (no official prereq matrix)
+  // All COURSE_PASSED requirements have confidence + inferred populated
+  //   AND inferred=true for ALL Lenguas edges (no official prereq matrix)
   // ---------------------------------------------------------------------------
 
   @Test
@@ -264,8 +259,7 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(nullCount)
-        .as(
-            "All Lenguas COURSE_PASSED requirements must have confidence and inferred populated (CUR-002)")
+        .as("All Lenguas COURSE_PASSED requirements must have confidence and inferred populated")
         .isEqualTo(0);
   }
 
@@ -287,13 +281,12 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(notInferredCount)
-        .as(
-            "All Lenguas requirement edges must have inferred=true (no official prereq matrix — CUR-002)")
+        .as("All Lenguas requirement edges must have inferred=true (no official prereq matrix)")
         .isEqualTo(0);
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-003: no cycle in prerequisite graph
+  // No cycle in prerequisite graph
   // ---------------------------------------------------------------------------
 
   @Test
@@ -308,12 +301,12 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
     }
 
     assertThatCode(() -> acyclicityService.validateAcyclicity(graph))
-        .as("Lenguas prerequisite graph must be a DAG (no cycles) — CUR-003")
+        .as("Lenguas prerequisite graph must be a DAG (no cycles)")
         .doesNotThrowAnyException();
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-004: no forward-semester dependency per journey
+  // No forward-semester dependency per journey
   // ---------------------------------------------------------------------------
 
   @Test
@@ -326,8 +319,7 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
     PrerequisiteGraph graph = buildGraph(reqRows);
 
     assertThatCode(() -> acyclicityService.validate(graph, requirements, courses))
-        .as(
-            "Lenguas DIURNA journey must have no forward-semester prerequisite dependencies (CUR-004)")
+        .as("Lenguas DIURNA journey must have no forward-semester prerequisite dependencies")
         .doesNotThrowAnyException();
   }
 
@@ -341,13 +333,12 @@ class FlywayV013LenguasSeedTest extends AbstractPostgresIntegrationTest {
     PrerequisiteGraph graph = buildGraph(reqRows);
 
     assertThatCode(() -> acyclicityService.validate(graph, requirements, courses))
-        .as(
-            "Lenguas NOCTURNA journey must have no forward-semester prerequisite dependencies (CUR-004)")
+        .as("Lenguas NOCTURNA journey must have no forward-semester prerequisite dependencies")
         .doesNotThrowAnyException();
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-005: sequential tracks present (DEEPENING + PERSONAL_ELECTIVE)
+  // Sequential tracks present (DEEPENING + PERSONAL_ELECTIVE)
   // ---------------------------------------------------------------------------
 
   @Test

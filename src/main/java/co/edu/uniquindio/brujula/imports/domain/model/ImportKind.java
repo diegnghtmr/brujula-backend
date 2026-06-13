@@ -3,7 +3,7 @@ package co.edu.uniquindio.brujula.imports.domain.model;
 /**
  * Discriminates the type of data contained in an ImportBatch.
  *
- * <p>Pure domain enum — zero framework annotations (ARQ-002).
+ * <p>Pure domain enum — zero framework annotations.
  */
 public enum ImportKind {
 

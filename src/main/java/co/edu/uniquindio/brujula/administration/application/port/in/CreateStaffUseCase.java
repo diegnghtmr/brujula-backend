@@ -7,7 +7,7 @@ import co.edu.uniquindio.brujula.administration.application.dto.StaffAccountView
  * Input port: create a new staff account (idempotent via Idempotency-Key).
  *
  * <p>Returns {@link StaffAccountView} (application-layer DTO) so REST adapters do not import domain
- * types (ARQ-001). Satisfies: Design §2.2 CreateStaffUseCase.
+ * types.
  */
 public interface CreateStaffUseCase {
 

@@ -9,9 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-3.3 RED: Semester ordering invariant tests.
- *
- * <p>CUR-004 scenarios:
+ * Semester ordering invariant tests.
  *
  * <ul>
  *   <li>Forward dependency (prereq in later semester) → SemesterOrderingViolationException.
@@ -192,11 +190,11 @@ class SemesterOrderingTest {
 
   @Test
   @org.junit.jupiter.api.DisplayName(
-      "FIX-4 (WARNING-4): target course missing the required journey entry → silent-skip (no exception)")
+      "target course missing the required journey entry → silent-skip (no exception)")
   void targetCourseMissingRequiredJourneySilentlySkips() {
     // Required course A has DIURNA sem 7.
     // Target course B has ONLY NOCTURNA entry (NO DIURNA entry).
-    // Per CUR-004: cross-journey / missing-journey comparisons are NOT enforced.
+    // Cross-journey / missing-journey comparisons are NOT enforced.
     // The check silently skips → NO SemesterOrderingViolationException is thrown.
     // This test LOCKS IN the silent-skip contract so a future change that accidentally throws
     // fails.

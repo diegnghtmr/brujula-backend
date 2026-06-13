@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3 application unit tests for {@link CreateSimulationService}.
+ * Application unit tests for {@link CreateSimulationService}.
  *
  * <p>Covers: happy path, idempotency replay returns stored, hash mismatch → conflict, periodName
  * resolved from stub OfferingReadPort.

@@ -13,9 +13,9 @@ import org.hibernate.type.SqlTypes;
 /**
  * JPA entity mapping to {@code simulation.simulation_selection} (created by Flyway V018).
  *
- * <p>Package-private per ARQ-006b. {@code sessions} stored as JSONB snapshot. Optimistic locking
- * via {@code @Version}. Soft delete via {@code status} field. {@code selectedOfferingVersion} is a
- * snapshot for staleness detection (STALE-001).
+ * <p>Package-private. {@code sessions} stored as JSONB snapshot. Optimistic locking via
+ * {@code @Version}. Soft delete via {@code status} field. {@code selectedOfferingVersion} is a
+ * snapshot for staleness detection.
  */
 @Entity
 @Table(name = "simulation_selection", schema = "simulation")

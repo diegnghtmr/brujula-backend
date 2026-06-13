@@ -22,7 +22,7 @@ import java.util.Optional;
  * changes.
  *
  * <p>Package-private — only used by {@link SimulationValidationService}. Pure Java, no Spring/JPA
- * (ARQ-002, ADR-F4-004).
+ * (ADR-F4-004).
  */
 class MinCreditsRule {
 

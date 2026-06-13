@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Maps identity-module domain exceptions to HTTP problem responses (RFC 9457).
  *
  * <p>Lives in the infrastructure.configuration package (not adapter.in.rest) so that it may
- * reference domain exception types without violating ARQ-001, while still being picked up by
- * Spring's {@code @ControllerAdvice} scan. Infrastructure is permitted to depend on domain
- * (ARQ-008).
+ * reference domain exception types while still being picked up by Spring's
+ * {@code @ControllerAdvice} scan. Infrastructure is permitted to depend on domain.
  *
  * <p>Handles exceptions thrown by identity REST adapters and converts them to appropriate HTTP
  * status codes:
@@ -24,13 +23,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * <ul>
  *   <li>{@link UserNotFoundException} → 404 Not Found
  *   <li>{@link DomainNotAllowedException} → 422 Unprocessable Entity
- *   <li>{@link EmailAlreadyRegisteredException} → 409 Conflict (S2-B-3)
+ *   <li>{@link EmailAlreadyRegisteredException} → 409 Conflict
  * </ul>
  *
- * <p>QAL-ADV-001 (WU1): scoped to the identity REST adapter package so that domain exceptions are
- * always resolved by this handler and cannot be intercepted by foreign module advices. Controllers
- * are package-private; {@code basePackages} string is used instead of {@code assignableTypes}.
- * Template from {@code ImportsExceptionHandler}.
+ * <p>Scoped to the identity REST adapter package so that domain exceptions are always resolved by
+ * this handler and cannot be intercepted by foreign module advices. Controllers are
+ * package-private; {@code basePackages} string is used instead of {@code assignableTypes}.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(
@@ -47,7 +45,7 @@ class IdentityExceptionHandler {
     return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
   }
 
-  /** S2-B-3: email already registered → 409 Conflict per OpenAPI contract. */
+  /** Email already registered → 409 Conflict per OpenAPI contract. */
   @ExceptionHandler(EmailAlreadyRegisteredException.class)
   ProblemDetail handleEmailAlreadyRegistered(EmailAlreadyRegisteredException ex) {
     return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());

@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link ManageAllowedEmailDomainsService} (strict TDD, zero Spring).
  *
- * <p>Spec §Audit Log: "allowed-domain delete" must be audited with action ALLOWED_DOMAIN_DELETED.
+ * <p>"allowed-domain delete" must be audited with action ALLOWED_DOMAIN_DELETED.
  */
 class ManageAllowedEmailDomainsServiceTest {
 

@@ -11,8 +11,8 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code progress.student_program_subscription} (created by Flyway V015).
  *
- * <p>Package-private per ARQ-006b. Optimistic locking via {@code @Version}. No primary flag
- * (contract alignment #1630). No domain types — just persistence state.
+ * <p>Package-private. Optimistic locking via {@code @Version}. No primary flag (contract
+ * alignment). No domain types — just persistence state.
  */
 @Entity
 @Table(name = "student_program_subscription", schema = "progress")

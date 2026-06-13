@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
  * <p>Scenarios:
  *
  * <ul>
- *   <li>(1) no override configured → returns default 23 (ADR-013, ADR-F4-006)
+ *   <li>(1) no override configured → returns default 23
  *   <li>(2) explicit override configured → returns that override
  *   <li>(3) override of 0 (below minimum 1) → throws IllegalStateException (bounds guard)
  *   <li>(4) override of 999 (above maximum 60) → throws IllegalStateException (bounds guard)

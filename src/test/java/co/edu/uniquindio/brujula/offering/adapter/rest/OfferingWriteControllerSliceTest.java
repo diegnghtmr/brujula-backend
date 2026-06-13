@@ -37,7 +37,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU2-TDD: Controller slice security and exception-mapping tests for offering write endpoints.
+ * Controller slice security and exception-mapping tests for offering write endpoints.
  *
  * <p>Tests:
  *

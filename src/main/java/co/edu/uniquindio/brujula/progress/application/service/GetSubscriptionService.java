@@ -16,12 +16,10 @@ import java.util.UUID;
 /**
  * Use case: list and get subscriptions with BOLA ownership guard.
  *
- * <p>Framework-free. Satisfies: SUB-2, CROSS-2.
- *
- * <p>WU3-FIX: resolves programName, planName, and referenceJourneyName from programcatalog
- * published ports (mirrors the FIX-W2 pattern in {@link GetSubscriptionProgressService}). The
- * programcatalog ports are injected directly following the precedent established in {@code
- * GetSubscriptionProgressService} and {@code GetSubscriptionCurriculumService}.
+ * <p>Framework-free. Resolves programName, planName, and referenceJourneyName from programcatalog
+ * published ports. The programcatalog ports are injected directly following the precedent
+ * established in {@code GetSubscriptionProgressService} and {@code
+ * GetSubscriptionCurriculumService}.
  */
 public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubscriptionQuery {
 
@@ -52,9 +50,9 @@ public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubs
 
   @Override
   public List<SubscriptionView> listMySubscriptions(UUID userId) {
-    // ADR-F3-005 (no N+1): fetch the journey list ONCE for the entire result set, then pass it
-    // into each toView call so the list path makes a single listJourneys() call regardless of
-    // how many subscriptions are returned.
+    // N+1 avoidance: fetch the journey list ONCE for the entire result set, then pass it into
+    // each toView call so the list path makes a single listJourneys() call regardless of how
+    // many subscriptions are returned.
     List<JourneyRef> allJourneys = fetchJourneysSafely();
     return loadSubscriptionPort.loadActiveByUserId(userId).stream()
         .map(sub -> toView(sub, allJourneys))
@@ -100,7 +98,7 @@ public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubs
   }
 
   // -------------------------------------------------------------------------
-  // WU3-FIX: catalog name resolvers (mirrors FIX-W2 in GetSubscriptionProgressService)
+  // Catalog name resolvers
   // -------------------------------------------------------------------------
 
   /**
@@ -151,7 +149,7 @@ public class GetSubscriptionService implements ListMySubscriptionsQuery, GetSubs
 
   /**
    * Resolves the human-readable journey name for the given journey code from a pre-fetched list.
-   * Falls back to the code itself if the list is empty or the code is not found (mirrors FIX-S1 in
+   * Falls back to the code itself if the list is empty or the code is not found (mirrors
    * GetSubscriptionCurriculumService).
    */
   private String resolveJourneyName(String journeyCode, List<JourneyRef> allJourneys) {

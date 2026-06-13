@@ -26,24 +26,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * RED test for V012__seed_sistemas_program.sql (WU3-4.1).
- *
- * <p>Asserts that after V010 + V011 + V012 Flyway migrations have run on a clean PostgreSQL 18
- * database, the Ingeniería de Sistemas y Computación (ISC) seed data satisfies ALL CUR-007
- * consistency constraints:
+ * Asserts that after V010 + V011 + V012 Flyway migrations have run on a clean PostgreSQL 18
+ * database, the Ingeniería de Sistemas y Computación (ISC) seed data satisfies all consistency
+ * constraints:
  *
  * <ul>
- *   <li>Exactly 57 courses seeded for the Sistemas plan (CUR-001, CUR-007)
- *   <li>study_plan.total_credits = 163 (CAT-002, CUR-007)
- *   <li>Journeys DIURNA (10 sem) and NOCTURNA (11 sem) exist for Sistemas (CAT-003, CUR-007)
- *   <li>Exactly 3 degree_work_modality rows for Sistemas (CUR-006, CUR-007)
- *   <li>All 57 courses have a non-null official_code (CUR-001)
- *   <li>No cycle in the Sistemas course_requirement graph (CUR-003)
- *   <li>No forward-semester dependency for DIURNA journey (CUR-004)
- *   <li>No forward-semester dependency for NOCTURNA journey (CUR-004)
+ *   <li>Exactly 57 courses seeded for the Sistemas plan
+ *   <li>study_plan.total_credits = 163
+ *   <li>Journeys DIURNA (10 sem) and NOCTURNA (11 sem) exist for Sistemas
+ *   <li>Exactly 3 degree_work_modality rows for Sistemas
+ *   <li>All 57 courses have a non-null official_code
+ *   <li>No cycle in the Sistemas course_requirement graph
+ *   <li>No forward-semester dependency for DIURNA journey
+ *   <li>No forward-semester dependency for NOCTURNA journey
  * </ul>
- *
- * <p>Fails until V012__seed_sistemas_program.sql exists. Satisfies: CUR-005/006/007, CAT-002/003.
  */
 @SpringBootTest
 class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
@@ -55,7 +51,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
       new PrerequisiteAcyclicityService();
 
   // ---------------------------------------------------------------------------
-  // CAT-002 / CUR-007: credit total
+  // Credit total
   // ---------------------------------------------------------------------------
 
   @Test
@@ -78,7 +74,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-001 / CUR-007: course count
+  // Course count
   // ---------------------------------------------------------------------------
 
   @Test
@@ -101,7 +97,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CAT-003 / CUR-007: journeys DIURNA + NOCTURNA
+  // Journeys DIURNA + NOCTURNA
   // ---------------------------------------------------------------------------
 
   @Test
@@ -185,7 +181,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-006 / CUR-007: degree work modalities
+  // Degree work modalities
   // ---------------------------------------------------------------------------
 
   @Test
@@ -229,7 +225,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-001: all courses have a non-null official_code
+  // All courses have a non-null official_code
   // ---------------------------------------------------------------------------
 
   @Test
@@ -248,7 +244,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(nullCodeCount)
-        .as("All Sistemas courses must have a minted official_code (ADR-F2-005)")
+        .as("All Sistemas courses must have a minted official_code")
         .isEqualTo(0);
   }
 
@@ -284,7 +280,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-003: no cycle in prerequisite graph (DIURNA and NOCTURNA are same graph)
+  // No cycle in prerequisite graph (DIURNA and NOCTURNA are same graph)
   // ---------------------------------------------------------------------------
 
   @Test
@@ -309,12 +305,12 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
     }
 
     assertThatCode(() -> acyclicityService.validateAcyclicity(graph))
-        .as("Sistemas prerequisite graph must be a DAG (no cycles) — CUR-003")
+        .as("Sistemas prerequisite graph must be a DAG (no cycles)")
         .doesNotThrowAnyException();
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-004: no forward-semester dependency per journey
+  // No forward-semester dependency per journey
   // ---------------------------------------------------------------------------
 
   @Test
@@ -327,8 +323,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
     PrerequisiteGraph graph = buildGraph(reqRows);
 
     assertThatCode(() -> acyclicityService.validate(graph, requirements, courses))
-        .as(
-            "Sistemas DIURNA journey must have no forward-semester prerequisite dependencies (CUR-004)")
+        .as("Sistemas DIURNA journey must have no forward-semester prerequisite dependencies")
         .doesNotThrowAnyException();
   }
 
@@ -342,13 +337,12 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
     PrerequisiteGraph graph = buildGraph(reqRows);
 
     assertThatCode(() -> acyclicityService.validate(graph, requirements, courses))
-        .as(
-            "Sistemas NOCTURNA journey must have no forward-semester prerequisite dependencies (CUR-004)")
+        .as("Sistemas NOCTURNA journey must have no forward-semester prerequisite dependencies")
         .doesNotThrowAnyException();
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-002: all seeded requirements have confidence + inferred populated
+  // All seeded requirements have confidence + inferred populated
   // ---------------------------------------------------------------------------
 
   @Test
@@ -369,13 +363,12 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(nullCount)
-        .as(
-            "All Sistemas COURSE_PASSED requirements must have confidence and inferred populated (CUR-002)")
+        .as("All Sistemas COURSE_PASSED requirements must have confidence and inferred populated")
         .isEqualTo(0);
   }
 
   // ---------------------------------------------------------------------------
-  // CUR-005: sequential tracks present (PERSONAL_ELECTIVE + DEEPENING)
+  // Sequential tracks present (PERSONAL_ELECTIVE + DEEPENING)
   // ---------------------------------------------------------------------------
 
   @Test
@@ -394,7 +387,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(count)
-        .as("Sistemas must have at least one PERSONAL_ELECTIVE sequential track (CUR-005)")
+        .as("Sistemas must have at least one PERSONAL_ELECTIVE sequential track")
         .isGreaterThanOrEqualTo(1);
   }
 

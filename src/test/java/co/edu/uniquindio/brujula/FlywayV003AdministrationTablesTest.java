@@ -15,8 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * administration.allowed_email_domain}, and {@code administration.staff_program_assignment} exist
  * with correct columns and constraints. Fails until the migration file exists.
  *
- * <p>Satisfies: S1-A-3, Spec §Admin Staff Account Management (RF-ADM-002, RN-127..132), Design §3
- * V003.
+ * <p>Verifies administration schema: staff account, allowed email domain, staff program assignment.
  */
 @SpringBootTest
 class FlywayV003AdministrationTablesTest extends AbstractPostgresIntegrationTest {

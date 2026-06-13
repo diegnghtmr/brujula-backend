@@ -17,11 +17,11 @@ import java.util.UUID;
  *   <li>{@link RequirementType#CONFIGURABLE}: no specific required field (evaluated externally).
  * </ul>
  *
- * <p>Confidence and inferred are metadata fields stored for the simulator (ADR-F2-004); they do NOT
- * affect graph topology or validation in Fase 2.
+ * <p>Confidence and inferred are metadata fields stored for the simulator; they do NOT affect graph
+ * topology or validation.
  *
  * <p>Status defaults to {@link CourseRequirementStatus#ACTIVE}. Version initializes to {@code 0}.
- * No Spring/JPA imports (ARQ-002).
+ * No Spring/JPA imports.
  */
 public final class CourseRequirement {
 
@@ -171,7 +171,7 @@ public final class CourseRequirement {
    * Reconstitute a CourseRequirement from persistence (all fields explicit; no default logic).
    *
    * <p>Enforces the same per-type invariants as the factory methods so that corrupt or incomplete
-   * persistence data cannot produce an invalid aggregate in memory (fixes WARNING-1 / CUR-002).
+   * persistence data cannot produce an invalid aggregate in memory.
    */
   public static CourseRequirement reconstitute(
       CourseRequirementId id,

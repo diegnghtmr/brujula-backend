@@ -10,8 +10,8 @@ import co.edu.uniquindio.brujula.identity.infrastructure.adapter.out.persistence
 /**
  * Mapper between {@link AppUser} domain objects and {@link AppUserJpaEntity} JPA entities.
  *
- * <p>Confined to the persistence adapter package (ARQ-005 / ARQ-006). Updated for V008 fields:
- * consent evidence (consentTimestamp, termsVersion, privacyVersion) and onboardingState.
+ * <p>Confined to the persistence adapter package. Handles consent evidence (consentTimestamp,
+ * termsVersion, privacyVersion) and onboardingState.
  */
 final class AppUserMapper {
 

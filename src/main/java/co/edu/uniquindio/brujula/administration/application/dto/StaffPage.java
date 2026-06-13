@@ -6,7 +6,7 @@ import java.util.List;
  * Paginated result for staff account queries.
  *
  * <p>Contains {@link StaffAccountView} DTOs so that REST adapters do not need to import domain
- * types (ARQ-001).
+ * types.
  *
  * @param items the staff accounts on this page
  * @param page zero-based page number

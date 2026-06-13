@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link EffectiveAttemptResolver} domain service.
  *
- * <p>Scenarios: PRG-5-PASSED-WINS, PRG-5-NO-PASS, empty → Optional.empty() (FIX-W2). ADR-F3-006.
+ * <p>Scenarios: passed wins, no pass, empty → Optional.empty().
  */
 class EffectiveAttemptResolverTest {
 
@@ -20,7 +20,7 @@ class EffectiveAttemptResolverTest {
   private final SubscriptionId subscriptionId = SubscriptionId.generate();
   private final UUID courseId = UUID.randomUUID();
 
-  // FIX-W2 RED: empty attempts must return Optional.empty(), not PENDING sentinel
+  // Empty attempts must return Optional.empty(), not PENDING sentinel
   @Test
   void empty_attempts_yields_optional_empty() {
     Optional<AttemptStatus> result = resolver.resolve(List.of());
@@ -50,7 +50,7 @@ class EffectiveAttemptResolverTest {
 
   @Test
   void passed_then_failed_yields_optional_of_passed() {
-    // PRG-5-PASSED-WINS: any PASSED wins regardless of subsequent status
+    // Any PASSED wins regardless of subsequent status
     CourseAttempt passed = passedAttempt(new BigDecimal("4.0"));
     CourseAttempt failed = failedAttempt(new BigDecimal("2.0"));
     Optional<AttemptStatus> result = resolver.resolve(List.of(passed, failed));
@@ -67,7 +67,7 @@ class EffectiveAttemptResolverTest {
 
   @Test
   void passed_then_failed_then_cancelled_yields_optional_of_passed() {
-    // PRG-5-PASSED-WINS: PASSED dominates over all
+    // PASSED dominates over all
     CourseAttempt passed = passedAttempt(new BigDecimal("4.0"));
     CourseAttempt failed = failedAttempt(new BigDecimal("2.0"));
     CourseAttempt cancelled = cancelledAttempt();
@@ -77,7 +77,7 @@ class EffectiveAttemptResolverTest {
 
   @Test
   void failed_then_cancelled_yields_optional_of_failed() {
-    // PRG-5-NO-PASS: no PASSED attempt — most favorable non-PASSED is FAILED
+    // No PASSED attempt — most favorable non-PASSED is FAILED
     CourseAttempt failed = failedAttempt(new BigDecimal("1.5"));
     CourseAttempt cancelled = cancelledAttempt();
     Optional<AttemptStatus> result = resolver.resolve(List.of(failed, cancelled));

@@ -1,7 +1,7 @@
 -- V016__create_offering_tables.sql
 -- Forward-only migration. NEVER edit this file after it is committed.
 -- Creates offering module tables. Schema 'offering' was created in V001__create_schemas.sql.
--- Design: ADR-F4-003. Cross-schema opaque UUIDs, NO cross-schema FK (ADR-F3-009).
+-- Cross-schema opaque UUIDs, NO cross-schema FK.
 
 -- ---------------------------------------------------------------------------
 -- offering.academic_period
@@ -29,7 +29,7 @@ CREATE INDEX idx_academic_period_status
 -- ---------------------------------------------------------------------------
 CREATE TABLE offering.course_offering (
     id          UUID    NOT NULL DEFAULT gen_random_uuid(),
-    course_id   UUID    NOT NULL,   -- opaque ref to curriculum.course (no FK, ADR-F3-009)
+    course_id   UUID    NOT NULL,   -- opaque ref to curriculum.course (no FK)
     course_name TEXT    NOT NULL,   -- denormalized snapshot; avoids runtime curriculum coupling
     program_id  UUID    NOT NULL,   -- opaque ref to catalog.program (no FK)
     period_id   UUID    NOT NULL,   -- FK to academic_period (intra-schema)

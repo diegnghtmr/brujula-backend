@@ -58,26 +58,24 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU3 REST slice tests for simulation endpoints.
+ * REST slice tests for simulation endpoints.
  *
- * <p>Uses {@code @SpringBootTest} + real security chain (same pattern as {@code
- * SubscriptionControllerTest}). Application-layer ports are mocked via {@code @MockitoBean}.
+ * <p>Uses {@code @SpringBootTest} + real security chain. Application-layer ports are mocked via
+ * {@code @MockitoBean}.
  *
  * <p>Scenarios:
  *
  * <ul>
- *   <li>SIM-001: POST /me/simulations → 201 + Location header
- *   <li>SIM-002: GET /me/simulations → 200 + page structure
- *   <li>SIM-003: GET /me/simulations/{id} → 200 skeleton detail
- *   <li>SIM-004: PATCH /me/simulations/{id} stale version → 409
- *   <li>SIM-005: DELETE /me/simulations/{id} → 204
- *   <li>X-003: non-owner GET → 403
- *   <li>X-003: non-owner DELETE → 403
- *   <li>SIM-004: unknown simulation → 404
- *   <li>WU4/WU5 stubs: addSelection, removeSelection, listSelections, review → 501
+ *   <li>POST /me/simulations → 201 + Location header
+ *   <li>GET /me/simulations → 200 + page structure
+ *   <li>GET /me/simulations/{id} → 200 skeleton detail
+ *   <li>PATCH /me/simulations/{id} stale version → 409
+ *   <li>DELETE /me/simulations/{id} → 204
+ *   <li>Non-owner GET → 403
+ *   <li>Non-owner DELETE → 403
+ *   <li>Unknown simulation → 404
+ *   <li>addSelection, removeSelection, listSelections, review stubs
  * </ul>
- *
- * <p>Satisfies: SIM-001..006, X-001..004, INV-004. ARQ-001.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
@@ -91,11 +89,9 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   @MockitoBean private UpdateSimulationUseCase updateSimulationUseCase;
   @MockitoBean private DeleteSimulationUseCase deleteSimulationUseCase;
   @MockitoBean private DuplicateSimulationUseCase duplicateSimulationUseCase;
-  // WU4a
   @MockitoBean private AddSimulationSelectionUseCase addSimulationSelectionUseCase;
   @MockitoBean private RemoveSimulationSelectionUseCase removeSimulationSelectionUseCase;
   @MockitoBean private ListSimulationSelectionsQuery listSimulationSelectionsQuery;
-  // WU5
   @MockitoBean private ReviewSimulationUseCase reviewSimulationUseCase;
 
   private MockMvc mockMvc;
@@ -130,7 +126,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SIM-001: POST /me/simulations → 201 + Location header
+  // POST /me/simulations → 201 + Location header
   // -------------------------------------------------------------------------
 
   @Test
@@ -176,7 +172,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SIM-001: POST without Idempotency-Key → 400
+  // POST without Idempotency-Key → 400
   // -------------------------------------------------------------------------
 
   @Test
@@ -203,7 +199,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SIM-002: GET /me/simulations → 200 + page
+  // GET /me/simulations → 200 + page
   // -------------------------------------------------------------------------
 
   @Test
@@ -242,7 +238,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SIM-003: GET /me/simulations/{id} → 200 full detail (WU5)
+  // GET /me/simulations/{id} → 200 full detail
   // -------------------------------------------------------------------------
 
   @Test
@@ -251,7 +247,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
     UUID periodId = UUID.randomUUID();
     UUID programId = UUID.randomUUID();
 
-    // Full detail view with all WU5 sub-objects populated
+    // Full detail view with all sub-objects populated
     ProgramCreditSummaryView cs =
         new ProgramCreditSummaryView(programId, "Systems Engineering", 12.0, 23, true);
 
@@ -339,7 +335,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SIM-004: PATCH stale version → 409
+  // PATCH stale version → 409
   // -------------------------------------------------------------------------
 
   @Test
@@ -395,7 +391,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // SIM-005: DELETE /me/simulations/{id} → 204
+  // DELETE /me/simulations/{id} → 204
   // -------------------------------------------------------------------------
 
   @Test
@@ -457,7 +453,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4a: addSimulationSelection → 201 (implemented in WU4a)
+  // addSimulationSelection → 201
   // -------------------------------------------------------------------------
 
   @Test
@@ -508,7 +504,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4a: removeSimulationSelection → 204 (implemented in WU4a)
+  // removeSimulationSelection → 204
   // -------------------------------------------------------------------------
 
   @Test
@@ -533,7 +529,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4a: listSimulationSelections → 200 (implemented in WU4a)
+  // listSimulationSelections → 200
   // -------------------------------------------------------------------------
 
   @Test
@@ -650,16 +646,16 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // FIX F4: HTTP 409 for WU4b code SIMULATION_DUPLICATE_SELECTION
+  // HTTP 409 for SIMULATION_DUPLICATE_SELECTION
   // -------------------------------------------------------------------------
 
   /**
-   * FIX F4: Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json
-   * with code SIMULATION_DUPLICATE_SELECTION when the use case throws
-   * SimulationValidationBlockedException carrying that code (WU4b duplicate rule).
+   * Asserts that POST /me/simulations/{id}/selections returns 409 application/problem+json with
+   * code SIMULATION_DUPLICATE_SELECTION when the use case throws
+   * SimulationValidationBlockedException carrying that code.
    *
-   * <p>Mirrors the add_selection_scheduleClash_returns_409_problem_json pattern (WU4a), confirming
-   * the exception handler maps WU4b codes correctly through the HTTP stack.
+   * <p>Mirrors the add_selection_scheduleClash_returns_409_problem_json pattern, confirming the
+   * exception handler maps duplicate-selection codes correctly through the HTTP stack.
    */
   @Test
   void add_selection_duplicateSelection_returns_409_problem_json() throws Exception {
@@ -698,7 +694,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU5: reviewSimulation → 200 CURRENT (clean, no blockers)
+  // reviewSimulation → 200 CURRENT (clean, no blockers)
   // -------------------------------------------------------------------------
 
   @Test
@@ -742,7 +738,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU5: reviewSimulation → 409 when blockers persist (STALE-002)
+  // reviewSimulation → 409 when blockers persist
   // -------------------------------------------------------------------------
 
   @Test
@@ -773,7 +769,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU5: reviewSimulation non-owner → 403 (X-003)
+  // reviewSimulation non-owner → 403
   // -------------------------------------------------------------------------
 
   @Test

@@ -37,7 +37,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Use case: confirm a VALIDATED ImportBatch (IMP-005, ADR-F6-001).
+ * Use case: confirm a VALIDATED ImportBatch.
  *
  * <p>Single {@link Transactional} boundary on {@link #confirm}. All calls to {@link
  * CreateCourseUseCase} and {@link CreateCourseRequirementUseCase} run inside this transaction
@@ -45,7 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
  * out of this method, rolls back the entire transaction, and leaves the batch in VALIDATED status.
  *
  * <p>Idempotency record is saved INSIDE the transaction so a rolled-back attempt leaves no orphan
- * record (ADR-F6-001 pitfall (b)).
+ * record.
  *
  * <p>Framework-free except for {@code @Transactional} — wired by {@code ImportsConfiguration}.
  */
@@ -96,7 +96,7 @@ public class ConfirmImportService implements ConfirmImportUseCase {
    * <p>This method is annotated {@code @Transactional} (default REQUIRED). All curriculum write
    * use-cases that are called inside this method JOIN this transaction because their persistence
    * adapters use REQUIRED propagation. Any exception propagates and rolls back the entire
-   * transaction — zero partial commits (Decision #2 / INV-03).
+   * transaction — zero partial commits.
    */
   @Override
   @Transactional
@@ -124,12 +124,12 @@ public class ConfirmImportService implements ConfirmImportUseCase {
             .orElseThrow(() -> new ImportBatchNotFoundException(command.importId()));
 
     // ----------------------------------------------------------------
-    // 3. Assignment guard — STAFF only; ADMIN bypasses (INV-06)
+    // 3. Assignment guard — STAFF only; ADMIN bypasses
     // ----------------------------------------------------------------
     enforceAssignmentGuard(command, batch);
 
     // ----------------------------------------------------------------
-    // 4. Optimistic-lock check (ADR-010): expectedVersion must match stored version
+    // 4. Optimistic-lock check: expectedVersion must match stored version
     // ----------------------------------------------------------------
     if (batch.getVersion() != command.expectedVersion()) {
       throw new ObjectOptimisticLockingFailureException(
@@ -141,7 +141,7 @@ public class ConfirmImportService implements ConfirmImportUseCase {
     }
 
     // ----------------------------------------------------------------
-    // 5. Domain guard: only VALIDATED is confirmable (INV-01, INV-02)
+    // 5. Domain guard: only VALIDATED is confirmable.
     //    ImportBatch.markConfirmed() will throw ImportBatchNotConfirmableException
     //    if status is INVALID or CONFIRMED.
     // ----------------------------------------------------------------
@@ -173,7 +173,7 @@ public class ConfirmImportService implements ConfirmImportUseCase {
         command.idempotencyKey(), OPERATION, command.requestHash(), 200, responseBodyJson);
 
     // ----------------------------------------------------------------
-    // 10. Audit entry (IMPORT_CONFIRMED, IMP-011, SC-011-B)
+    // 10. Audit entry (IMPORT_CONFIRMED)
     // ----------------------------------------------------------------
     auditRecorder.record(
         new RecordAuditEventCommand(
@@ -196,17 +196,17 @@ public class ConfirmImportService implements ConfirmImportUseCase {
   /**
    * Replay all validated rows for the given kind through the appropriate write use-case.
    *
-   * <p>COURSES → {@link CreateCourseUseCase} with initialStatus=INACTIVE (NFR-003). REQUIREMENTS →
-   * {@link CreateCourseRequirementUseCase} (cross-batch cycle re-check runs inside the real service
-   * against the live graph). OFFERINGS → {@link CreateOfferingUseCase} — rows are first GROUPED by
-   * {@code (course_id, period, option_label)} so that multiple rows representing different weekly
-   * sessions of the same schedule option are submitted as ONE {@link CreateOfferingCommand} with
-   * multiple {@link CreateOfferingCommand.SessionDraft}s (QAL-IMP-001 / DEBT-F6-002). Each group →
-   * exactly one {@code CreateOfferingUseCase} call.
+   * <p>COURSES → {@link CreateCourseUseCase} with initialStatus=INACTIVE (imported courses land
+   * inactive/non-published). REQUIREMENTS → {@link CreateCourseRequirementUseCase} (cross-batch
+   * cycle re-check runs inside the real service against the live graph). OFFERINGS → {@link
+   * CreateOfferingUseCase} — rows are first GROUPED by {@code (course_id, period, option_label)} so
+   * that multiple rows representing different weekly sessions of the same schedule option are
+   * submitted as ONE {@link CreateOfferingCommand} with multiple {@link
+   * CreateOfferingCommand.SessionDraft}s. Each group → exactly one {@code CreateOfferingUseCase}
+   * call.
    *
-   * <p>Any exception from a use-case propagates directly — no catch-and-continue (all-or-nothing
-   * per Decision #2). The caller's {@code @Transactional} boundary catches the exception and rolls
-   * back.
+   * <p>Any exception from a use-case propagates directly — no catch-and-continue (all-or-nothing).
+   * The caller's {@code @Transactional} boundary catches the exception and rolls back.
    *
    * @param batch the VALIDATED ImportBatch whose rows to replay
    * @param command the confirm command (carries actorId and planId via batch)
@@ -296,7 +296,7 @@ public class ConfirmImportService implements ConfirmImportUseCase {
 
     // Idempotency key derived from the GROUP key (not row index) — deterministic per group.
     // A retried confirm regenerates the same key for the same group → hits idempotency replay
-    // in CreateOfferingService rather than double-creating (ADR-F6-001).
+    // in CreateOfferingService rather than double-creating.
     UUID groupIdempotencyKey =
         UUID.nameUUIDFromBytes(groupKey.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     String groupHash = "import-group:" + groupKey;
@@ -318,8 +318,8 @@ public class ConfirmImportService implements ConfirmImportUseCase {
   /**
    * Map a COURSES row to a {@link CreateCourseCommand} and call {@link CreateCourseUseCase}.
    *
-   * <p>NFR-003: initialStatus is set to "INACTIVE" so imported courses land INACTIVE/non-published.
-   * Auto-publish is FORBIDDEN (RN-122).
+   * <p>initialStatus is set to "INACTIVE" so imported courses land inactive/non-published.
+   * Auto-publish is forbidden.
    *
    * <p>Per-row idempotency key: derived deterministically from the batch id + row index. This
    * ensures a retried confirm (same importId, same rows) does not double-create courses, and a
@@ -366,7 +366,7 @@ public class ConfirmImportService implements ConfirmImportUseCase {
             credits,
             weeklyHours,
             semesters,
-            "INACTIVE"); // NFR-003: imported courses land INACTIVE (not ACTIVE/published)
+            "INACTIVE"); // imported courses land INACTIVE (not ACTIVE/published)
 
     createCourseUseCase.createCourse(courseCommand);
   }
@@ -375,9 +375,8 @@ public class ConfirmImportService implements ConfirmImportUseCase {
    * Map a REQUIREMENTS row to a {@link CreateCourseRequirementCommand} and call {@link
    * CreateCourseRequirementUseCase}.
    *
-   * <p>The cross-batch cycle re-check (WU3 carry-forward SUGGESTION): the curriculum {@link
-   * CreateCourseRequirementUseCase} implementation already re-validates acyclicity against the REAL
-   * persisted graph (loading all requirements for the plan via {@code
+   * <p>The curriculum {@link CreateCourseRequirementUseCase} implementation already re-validates
+   * acyclicity against the REAL persisted graph (loading all requirements for the plan via {@code
    * SaveCourseRequirementPort#findAllByPlanId}). Since we call this use-case inside this confirm
    * transaction, the persisted graph is the live state — including any rows written earlier in this
    * same confirm loop. This gives us the cross-batch cycle re-check for free, without extra code

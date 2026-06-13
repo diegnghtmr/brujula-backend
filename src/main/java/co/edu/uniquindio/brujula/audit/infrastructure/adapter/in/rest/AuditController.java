@@ -20,11 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>Maps query parameters to the SearchAuditEventsPort and translates application-layer DTOs to
  * generated model DTOs. Enforces role-based authorization via {@code @PreAuthorize}.
  *
- * <p>Fase-2 note: {@code /staff/audit-events} requires {@code programId} per the contract but
- * program-scoped filtering (BOLA staff→program) is deferred to Fase 2. In Fase 1 the programId
- * param is accepted and passed through but no program-assignment check is enforced.
+ * <p>The {@code /staff/audit-events} endpoint accepts a {@code programId} param per the contract,
+ * but program-scoped filtering (staff→program assignment check) is deferred; the param is passed
+ * through without enforcement.
  *
- * <p>ARQ-001: no domain type imports — uses only application-layer DTOs ({@link AuditEventItem}).
+ * <p>No domain type imports — uses only application-layer DTOs ({@link AuditEventItem}).
  */
 @RestController
 class AuditController implements AuditApi {
@@ -69,8 +69,8 @@ class AuditController implements AuditApi {
           Integer size,
           @Nullable List<String> sort) {
 
-    // Fase-2 note: program-scoped filtering (staff→program assignment BOLA) is deferred.
-    // In Fase 1 STAFF sees events filtered only by action/time — no program assignment check.
+    // Program-scoped filtering (staff→program assignment) is deferred.
+    // STAFF sees events filtered only by action/time — no program assignment check.
     int pageNum = page != null ? page : 0;
     int pageSize = size != null ? size : 20;
 
@@ -80,8 +80,7 @@ class AuditController implements AuditApi {
   }
 
   // -------------------------------------------------------------------------
-  // DTO mappers (confined to this adapter, ARQ-005)
-  // No domain type imports — ARQ-001 compliant.
+  // DTO mappers (confined to this adapter)
   // -------------------------------------------------------------------------
 
   private co.edu.uniquindio.brujula.generated.model.AuditEventPage toDto(AuditEventPage page) {

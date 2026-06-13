@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * DEBT-F7-003: covers uncovered branches in programcatalog/domain classes.
+ * Covers uncovered branches in programcatalog/domain classes.
  *
  * <p>Targets: AcademicProgram.validate null-id, equals identity and wrong-type branches; Journey
  * equals identity and wrong-type branches; StudyPlan null programId, null name, equals branches.

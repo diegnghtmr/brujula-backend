@@ -7,8 +7,8 @@ import java.util.UUID;
  *
  * <p>Returned by {@link
  * co.edu.uniquindio.brujula.curriculum.application.port.in.ListCourseRequirementsQuery} to REST
- * adapters. Includes all CUR-002 fields including the optional {@code confidence} and {@code
- * inferred} metadata (ADR-F2-004, CROSS-001 extension).
+ * adapters. Includes all fields including the optional {@code confidence} and {@code inferred}
+ * metadata.
  *
  * <p>No Spring/framework imports.
  *

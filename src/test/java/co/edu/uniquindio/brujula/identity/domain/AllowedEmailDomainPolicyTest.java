@@ -9,9 +9,7 @@ import org.junit.jupiter.api.Test;
 /**
  * RED → GREEN domain unit tests for AllowedEmailDomainPolicy.
  *
- * <p>Pure JUnit 5 — zero Spring context. RN-007: institutional domain validation.
- *
- * <p>Satisfies: S1-B-2, Spec §Allowed Email Domains §Identity Provisioning domain invariant.
+ * <p>Pure JUnit 5 — zero Spring context. Validates institutional domain enforcement.
  */
 class AllowedEmailDomainPolicyTest {
 
@@ -56,7 +54,7 @@ class AllowedEmailDomainPolicyTest {
 
   @Test
   void empty_allowed_domains_throws_on_construction() {
-    // Domain invariant: empty allowed-domain set is invalid (Spec §Allowed Email Domains)
+    // Domain invariant: empty allowed-domain set is invalid
     assertThatThrownBy(() -> new AllowedEmailDomainPolicy(Set.of()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("allowedDomains");

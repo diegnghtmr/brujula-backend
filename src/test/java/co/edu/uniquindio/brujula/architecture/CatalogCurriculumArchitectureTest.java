@@ -8,38 +8,36 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
 /**
- * FINAL integrity sweep — CROSS-002: consolidated ArchUnit coverage for the {@code programcatalog}
- * and {@code curriculum} modules (Fase 2, Spring Modulith + ArchUnit).
+ * Consolidated ArchUnit coverage for the {@code programcatalog} and {@code curriculum} modules
+ * (Spring Modulith + ArchUnit).
  *
- * <h2>Coverage summary for the two new modules</h2>
+ * <h2>Coverage summary for the two modules</h2>
  *
  * <h3>Rules in this file</h3>
  *
  * <ul>
- *   <li>{@link #curriculum_does_not_depend_on_identity} — ARQ-008 / CROSS-002: curriculum boundary
- *       denylist (identity module)
- *   <li>{@link #curriculum_does_not_depend_on_administration} — ARQ-008 / CROSS-002: curriculum
- *       boundary denylist (administration module)
- *   <li>{@link #curriculum_does_not_depend_on_jpa_entities_of_programcatalog} — CROSS-002:
- *       curriculum may reference programcatalog application-layer types only (no JPA entity
- *       leakage)
+ *   <li>{@link #curriculum_does_not_depend_on_identity} — curriculum boundary denylist (identity
+ *       module)
+ *   <li>{@link #curriculum_does_not_depend_on_administration} — curriculum boundary denylist
+ *       (administration module)
+ *   <li>{@link #curriculum_does_not_depend_on_jpa_entities_of_programcatalog} — curriculum may
+ *       reference programcatalog application-layer types only (no JPA entity leakage)
  * </ul>
  *
  * <h3>Rules confirmed in sibling tests (no duplication)</h3>
  *
  * <ul>
- *   <li>ARQ-001 (REST adapters do not access domain) — {@code ArchitectureRulesTest}
- *   <li>ARQ-006b (JPA entities are package-private) — {@code ArchitectureRulesTest}
- *   <li>ARQ-007 programcatalog boundary denylist — {@code ProgramCatalogBoundaryTest}
- *   <li>ARQ-002 / ADR-F2-006 PrerequisiteAcyclicityService purity — {@code
- *       PrerequisiteAcyclicityServicePurityTest}
+ *   <li>REST adapters do not access domain — {@code ArchitectureRulesTest}
+ *   <li>JPA entities are package-private — {@code ArchitectureRulesTest}
+ *   <li>programcatalog boundary denylist — {@code ProgramCatalogBoundaryTest}
+ *   <li>PrerequisiteAcyclicityService purity — {@code PrerequisiteAcyclicityServicePurityTest}
  *   <li>Spring Modulith {@code verify()} (authoritative positive allowlist for both modules) —
  *       {@code ModularityTest}
  * </ul>
  *
  * <p>Together with {@code ModularityTest.verifyModularStructure()}, this class provides complete
- * CROSS-002 coverage: {@code programcatalog} depends only on {@code sharedkernel + audit}; {@code
- * curriculum} depends only on {@code sharedkernel + audit + programcatalog}.
+ * module boundary coverage: {@code programcatalog} depends only on {@code sharedkernel + audit};
+ * {@code curriculum} depends only on {@code sharedkernel + audit + programcatalog}.
  */
 @AnalyzeClasses(
     packages = "co.edu.uniquindio.brujula.curriculum",
@@ -52,18 +50,18 @@ class CatalogCurriculumArchitectureTest {
       "co.edu.uniquindio.brujula.programcatalog..infrastructure.adapter.out.persistence..";
 
   /**
-   * CROSS-002 / ARQ-008 — only the curriculum REST adapter (infrastructure.adapter.in.rest) may
-   * import {@code identity} module classes; application and domain layers must not.
+   * Only the curriculum REST adapter (infrastructure.adapter.in.rest) may import {@code identity}
+   * module classes; application and domain layers must not.
    *
-   * <p>WU5 (Fase 6) adds write endpoints to {@code CurriculumController} that resolve the actor
-   * UUID via {@link co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery}.
-   * The controller lives in {@code infrastructure.adapter.in.rest} — the only layer permitted to
-   * cross this boundary (mirrors the offering module's pattern). Application services and domain
-   * objects must remain identity-free.
+   * <p>Write endpoints in {@code CurriculumController} resolve the actor UUID via {@link
+   * co.edu.uniquindio.brujula.identity.application.port.in.GetCurrentUserQuery}. The controller
+   * lives in {@code infrastructure.adapter.in.rest} — the only layer permitted to cross this
+   * boundary (mirrors the offering module's pattern). Application services and domain objects must
+   * remain identity-free.
    *
    * <p>The authoritative positive constraint is {@code ModularityTest.verifyModularStructure()},
-   * backed by the updated {@code allowedDependencies} declaration in {@code
-   * co.edu.uniquindio.brujula.curriculum.package-info} ({@code identity::api}).
+   * backed by the {@code allowedDependencies} declaration in {@code
+   * co.edu.uniquindio.brujula.curriculum.package-info}.
    */
   @ArchTest
   static final ArchRule curriculum_does_not_depend_on_identity =
@@ -81,7 +79,7 @@ class CatalogCurriculumArchitectureTest {
                   + "resolution in write endpoints); application and domain layers must not");
 
   /**
-   * CROSS-002 / ARQ-008 — {@code curriculum} must not import {@code administration} module classes.
+   * {@code curriculum} must not import {@code administration} module classes.
    *
    * <p>Symmetric to {@link #curriculum_does_not_depend_on_identity}. The administration module owns
    * staff/user-management logic; curriculum has no business coupling to it.
@@ -99,11 +97,11 @@ class CatalogCurriculumArchitectureTest {
                   + "any administration dependency is a boundary violation");
 
   /**
-   * CROSS-002 — {@code curriculum} must not access {@code programcatalog} JPA entities directly.
+   * {@code curriculum} must not access {@code programcatalog} JPA entities directly.
    *
    * <p>Even though {@code curriculum} is allowed to depend on {@code programcatalog} (via its
    * application-layer ports and DTOs), it must never import programcatalog's internal persistence
-   * classes. Cross-module JPA entity access is forbidden by ARQ-006 and ARQ-006b.
+   * classes. Cross-module JPA entity access is forbidden by the adapter-boundary convention.
    *
    * <p>Curriculum accesses programcatalog concepts only via {@code application.dto}, {@code
    * application.port.in}, and {@code application.port.out} — never via JPA entities.

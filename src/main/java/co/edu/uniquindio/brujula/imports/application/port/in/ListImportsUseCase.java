@@ -4,12 +4,12 @@ import co.edu.uniquindio.brujula.imports.application.dto.ImportPageView;
 import co.edu.uniquindio.brujula.imports.application.dto.ListImportsQuery;
 
 /**
- * Input port: list imports for the calling actor (IMP-003).
+ * Input port: list imports for the calling actor.
  *
  * <p>STAFF actors receive only batches belonging to their assigned programs. ADMIN actors receive
  * all batches.
  *
- * <p>Published in the imports module. No Spring/JPA imports (ARQ-003).
+ * <p>Published in the imports module. No Spring/JPA imports.
  */
 public interface ListImportsUseCase {
 

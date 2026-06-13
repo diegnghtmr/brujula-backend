@@ -1,7 +1,7 @@
 -- V015__create_progress_tables.sql
 -- Forward-only migration. NEVER edit this file after it is committed.
--- Creates BOTH progress tables so WU2 (subscription) and WU3 (course attempt) share one migration.
--- Design: ADR-F3-010. Contract alignment: NO is_primary column (observation #1630).
+-- Creates BOTH progress tables so subscription and course attempt share one migration.
+-- Contract alignment: NO is_primary column.
 
 -- Schema 'progress' was created in V001__create_schemas.sql
 
@@ -23,7 +23,7 @@ CREATE TABLE progress.student_program_subscription (
     CONSTRAINT student_program_subscription_pk PRIMARY KEY (id)
 );
 
--- Composite index for listing active subscriptions per student (SUB-2-LIST, cap guard)
+-- Composite index for listing active subscriptions per student
 CREATE INDEX idx_subscription_user_status
     ON progress.student_program_subscription (user_id, status);
 
@@ -36,7 +36,7 @@ CREATE TABLE progress.course_attempt (
     course_id       UUID         NOT NULL,
     status          TEXT         NOT NULL,
     final_grade     NUMERIC(3,1),          -- nullable: CANCELLED has no grade
-    period_id       UUID,                   -- opaque, nullable (ADR-F3-009): no FK
+    period_id       UUID,                   -- opaque, nullable: no FK
     journey_code    TEXT         NOT NULL,
     registered_at   TIMESTAMPTZ  NOT NULL DEFAULT now(),
     version         BIGINT       NOT NULL DEFAULT 0,
@@ -60,6 +60,6 @@ CREATE TABLE progress.course_attempt (
     )
 );
 
--- Composite index for bulk attempt loading and effective-status grouping (ADR-F3-010)
+-- Composite index for bulk attempt loading and effective-status grouping
 CREATE INDEX idx_attempt_sub_course_status
     ON progress.course_attempt (subscription_id, course_id, status);

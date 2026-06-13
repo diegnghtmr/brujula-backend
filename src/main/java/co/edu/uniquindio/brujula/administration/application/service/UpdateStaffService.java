@@ -13,13 +13,13 @@ import java.util.UUID;
 /**
  * Use case: update a staff account's status (activate / deactivate).
  *
- * <p>Takes a status name string so callers do not need to import the domain enum (ARQ-001). Returns
- * {@link StaffAccountView} (application-layer DTO).
+ * <p>Takes a status name string so callers do not need to import the domain enum. Returns {@link
+ * StaffAccountView} (application-layer DTO).
  *
- * <p>Records a {@code STAFF_DEACTIVATED} audit event when a staff account is deactivated (Spec
- * §Audit Log, RNF-SEG-007 synchronous).
+ * <p>Records a {@code STAFF_DEACTIVATED} audit event when a staff account is deactivated
+ * (synchronous).
  *
- * <p>Framework-free. Satisfies: Design §2.2 UpdateStaffUseCase.
+ * <p>Framework-free.
  */
 public class UpdateStaffService implements UpdateStaffUseCase {
 

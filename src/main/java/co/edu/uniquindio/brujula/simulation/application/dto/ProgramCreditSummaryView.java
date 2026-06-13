@@ -9,7 +9,7 @@ import java.util.UUID;
  * <p>One entry per programId declared in the simulation. selectedCredits may be 0 for programs with
  * no active selections.
  *
- * <p>ARQ-001: plain String/UUID/primitive types only. No domain entities.
+ * <p>Plain String/UUID/primitive types only. No domain entities.
  *
  * @param programId program UUID
  * @param programName resolved program name (from ProgramNameReadPort — REAL, not placeholder)

@@ -13,10 +13,10 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Per-kind validator for OFFERINGS import rows (IMP-008, IMP-002).
+ * Per-kind validator for OFFERINGS import rows.
  *
- * <p>Validates each row against the OFFERINGS column mapping (ADR-014). Produces {@link
- * ImportIssue} entries with error codes from the spec vocabulary. Framework-free.
+ * <p>Validates each row against the OFFERINGS column mapping. Produces {@link ImportIssue} entries
+ * with error codes from the spec vocabulary. Framework-free.
  *
  * <p>Wired as a plain bean in {@link
  * co.edu.uniquindio.brujula.imports.infrastructure.configuration.ImportsConfiguration}.
@@ -35,10 +35,9 @@ public class OfferingsValidator {
    *
    * <p>Multiple rows sharing the same {@code (course, option_label)} are VALID when they carry
    * different weekday/time combinations — they represent multiple weekly sessions of the same
-   * schedule option (QAL-IMP-001 / DEBT-F6-002). A conflict exists when two rows within the same
-   * {@code (course, option_label, day)} group have overlapping half-open time intervals {@code
-   * [start, end)}. Touching endpoints (e.g. 08:00-10:00 and 10:00-12:00) are NOT a conflict
-   * (DEBT-F7-002).
+   * schedule option. A conflict exists when two rows within the same {@code (course, option_label,
+   * day)} group have overlapping half-open time intervals {@code [start, end)}. Touching endpoints
+   * (e.g. 08:00-10:00 and 10:00-12:00) are NOT a conflict.
    *
    * @param rows list of import rows
    * @return map of row index → issues for that row
@@ -171,7 +170,7 @@ public class OfferingsValidator {
               "status '%s' is not valid. Allowed: %s".formatted(status, VALID_STATUSES)));
     }
 
-    // Session-level interval-overlap detection (DEBT-F7-002).
+    // Session-level interval-overlap detection.
     // Group key: (course, option_label, day). Within each group, no two sessions may have
     // overlapping half-open intervals [start, end). Touching endpoints are NOT a conflict.
     // Overlap condition: newStart < existingEnd  &&  newEnd > existingStart.

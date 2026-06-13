@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 /**
  * Spring Data JPA repository for {@link StudentProgramSubscriptionJpaEntity}.
  *
- * <p>Package-private per ARQ-006b. Only the {@link SubscriptionPersistenceAdapter} depends on this.
+ * <p>Package-private. Only the {@link SubscriptionPersistenceAdapter} depends on this.
  */
 interface SubscriptionJpaRepository
     extends JpaRepository<StudentProgramSubscriptionJpaEntity, UUID> {
@@ -22,7 +22,7 @@ interface SubscriptionJpaRepository
    * Acquires a row-level {@code SELECT ... FOR UPDATE} lock on all ACTIVE subscriptions of a
    * student.
    *
-   * <p>FIX-W1 (TOCTOU): called inside the same {@code @Transactional} create flow, BEFORE counting.
+   * <p>TOCTOU guard: called inside the same {@code @Transactional} create flow, BEFORE counting.
    * Any concurrent transaction trying to INSERT a new ACTIVE row for the same userId will block
    * until this transaction commits or rolls back, serialising concurrent creates and preventing the
    * cap=2 invariant from being violated under load.

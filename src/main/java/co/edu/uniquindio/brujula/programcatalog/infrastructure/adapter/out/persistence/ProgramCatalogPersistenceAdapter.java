@@ -11,10 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA-backed adapter implementing {@link LoadProgramPort}.
  *
- * <p>Package-private per ARQ-006. Delegates to {@link AcademicProgramJpaRepository} and {@link
+ * <p>Package-private. Delegates to {@link AcademicProgramJpaRepository} and {@link
  * CatalogPersistenceMapper} for domain ↔ entity conversion.
- *
- * <p>Satisfies: CAT-001, Phase 1 WU4 persistence adapters.
  */
 @Component
 class ProgramCatalogPersistenceAdapter implements LoadProgramPort {

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Spring Data JPA repository for staff-program assignments.
  *
- * <p>Package-private (ARQ-006, ARQ-006b).
+ * <p>Package-private.
  */
 interface StaffProgramAssignmentJpaRepository
     extends JpaRepository<StaffProgramAssignmentJpaEntity, UUID> {

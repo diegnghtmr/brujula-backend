@@ -7,12 +7,12 @@ import java.util.UUID;
 /**
  * Application-layer DTO for a CourseAttempt (returned by use cases, serialized for idempotency).
  *
- * <p>Includes courseName for the REST response contract. ARQ-001: no domain types in application
- * DTOs — status is expressed as a plain {@code String} (the enum name). Services pass {@code
+ * <p>Includes courseName for the REST response contract. No domain types in application DTOs —
+ * status is expressed as a plain {@code String} (the enum name). Services pass {@code
  * attempt.getStatus().name()}.
  *
- * <p>FIX-S1 (WU4): replaced domain {@code AttemptStatus status} component with plain {@code String
- * statusName} so that this DTO has zero domain-type references.
+ * <p>Replaced domain {@code AttemptStatus status} component with plain {@code String statusName} so
+ * that this DTO has zero domain-type references.
  *
  * @param id attempt UUID
  * @param subscriptionId owning subscription UUID

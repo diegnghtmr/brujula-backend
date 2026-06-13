@@ -50,7 +50,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU5 controller slice tests for the 5 curriculum write endpoints.
+ * Controller slice tests for the 5 curriculum write endpoints.
  *
  * <p>Tests:
  *
@@ -64,12 +64,10 @@ import org.springframework.web.context.WebApplicationContext;
  *   <li>updateCourseRequirement → 200; requirement not found → 404; stale version → 409
  * </ul>
  *
- * <p>DEBT-F6-001 load-bearing: the $.code assertions (OPTIMISTIC_LOCK_CONFLICT,
- * IDEMPOTENCY_KEY_CONFLICT, PREREQUISITE_CYCLE) prove the scoped {@code CurriculumExceptionHandler}
- * wins over any global advice for these exceptions when thrown by CurriculumController. If any
- * other module's handler intercepts first and does NOT set $.code, these assertions fail.
- *
- * <p>Satisfies: WU5-T5.4, CUR-001/CUR-002/CUR-003, SC-009-B/SC-009-C, IMP-009.
+ * <p>The $.code assertions (OPTIMISTIC_LOCK_CONFLICT, IDEMPOTENCY_KEY_CONFLICT, PREREQUISITE_CYCLE)
+ * prove the scoped {@code CurriculumExceptionHandler} wins over any global advice for these
+ * exceptions when thrown by CurriculumController. If any other module's handler intercepts first
+ * and does NOT set $.code, these assertions fail.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest {
@@ -149,8 +147,8 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
   }
 
   /**
-   * DEBT-F6-001 load-bearing: $.code=IDEMPOTENCY_KEY_CONFLICT proves CurriculumExceptionHandler
-   * wins for IdempotencyKeyConflictException thrown from CurriculumController's createCourse.
+   * Load-bearing: $.code=IDEMPOTENCY_KEY_CONFLICT proves CurriculumExceptionHandler wins for
+   * IdempotencyKeyConflictException thrown from CurriculumController's createCourse.
    */
   @Test
   void idempotency_conflict_returns_409_with_code_on_create_course() throws Exception {
@@ -172,7 +170,7 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
                 .with(csrf())
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isConflict())
-        // DEBT-F6-001: CurriculumExceptionHandler MUST set $.code; if a global handler wins
+        // CurriculumExceptionHandler MUST set $.code; if a global handler wins
         // without setProperty("code"), this assertion fails — the test IS the proof
         .andExpect(jsonPath("$.code").value("IDEMPOTENCY_KEY_CONFLICT"));
   }
@@ -236,8 +234,8 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
   }
 
   /**
-   * DEBT-F6-001 load-bearing: $.code=OPTIMISTIC_LOCK_CONFLICT proves CurriculumExceptionHandler
-   * wins for OptimisticLockingFailureException from updateCourse.
+   * Load-bearing: $.code=OPTIMISTIC_LOCK_CONFLICT proves CurriculumExceptionHandler wins for
+   * OptimisticLockingFailureException from updateCourse.
    */
   @Test
   void stale_version_returns_409_with_lock_conflict_code_on_update_course() throws Exception {
@@ -254,7 +252,7 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
                 .with(csrf())
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isConflict())
-        // DEBT-F6-001: load-bearing assertion
+        // Load-bearing assertion
         .andExpect(jsonPath("$.code").value("OPTIMISTIC_LOCK_CONFLICT"));
   }
 
@@ -371,9 +369,9 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
   }
 
   /**
-   * DEBT-F6-001 load-bearing: $.code=PREREQUISITE_CYCLE proves CurriculumExceptionHandler wins for
-   * PrerequisiteCycleException thrown from createCourseRequirement. Also covers IMP-007 cycle
-   * detection at the HTTP layer.
+   * Load-bearing: $.code=PREREQUISITE_CYCLE proves CurriculumExceptionHandler wins for
+   * PrerequisiteCycleException thrown from createCourseRequirement. Covers cycle detection at the
+   * HTTP layer.
    */
   @Test
   void cycle_detected_returns_422_with_prerequisite_cycle_code() throws Exception {
@@ -395,7 +393,7 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
                 .with(csrf())
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isUnprocessableEntity())
-        // DEBT-F6-001 + IMP-007: load-bearing assertion for cycle detection HTTP mapping
+        // Load-bearing assertion for cycle detection HTTP mapping
         .andExpect(jsonPath("$.code").value("PREREQUISITE_CYCLE"));
   }
 
@@ -461,7 +459,7 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
         .andExpect(jsonPath("$.version").value(1L));
   }
 
-  /** DEBT-F6-001 load-bearing: $.code=OPTIMISTIC_LOCK_CONFLICT for updateCourseRequirement. */
+  /** Load-bearing: $.code=OPTIMISTIC_LOCK_CONFLICT for updateCourseRequirement. */
   @Test
   void stale_version_returns_409_with_lock_conflict_code_on_update_requirement() throws Exception {
     when(getCurrentUserQuery.getCurrentUserBySubject(any())).thenReturn(aStaffUserProfile());
@@ -481,8 +479,8 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
   }
 
   /**
-   * FIX 2 load-bearing: cycle introduced via update path → 422 + $.code=PREREQUISITE_CYCLE. If
-   * cycle detection is removed from UpdateCourseRequirementService, the mock never throws and this
+   * Load-bearing: cycle introduced via update path → 422 + $.code=PREREQUISITE_CYCLE. If cycle
+   * detection is removed from UpdateCourseRequirementService, the mock never throws and this
    * assertion fails.
    */
   @Test
@@ -501,7 +499,7 @@ class CurriculumWriteControllerSliceTest extends AbstractPostgresIntegrationTest
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STAFF"))))
         .andExpect(status().isUnprocessableEntity())
         // Load-bearing: proves CurriculumExceptionHandler maps PrerequisiteCycleException to 422
-        // with $.code=PREREQUISITE_CYCLE on the update path (FIX 2 — IMP-007 gap)
+        // with $.code=PREREQUISITE_CYCLE on the update path
         .andExpect(jsonPath("$.code").value("PREREQUISITE_CYCLE"));
   }
 

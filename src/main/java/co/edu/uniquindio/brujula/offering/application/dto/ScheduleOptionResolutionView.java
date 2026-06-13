@@ -12,7 +12,7 @@ import java.util.UUID;
  * @param scheduleOptionId the schedule option UUID
  * @param offeringId the parent offering UUID
  * @param courseId opaque reference to curriculum::Course
- * @param courseName denormalized course name snapshot (WU4 stores this in SimulationSelection)
+ * @param courseName denormalized course name snapshot (stored in SimulationSelection)
  * @param programId opaque reference to programcatalog::Program
  * @param periodId opaque reference to the period
  * @param label schedule option label

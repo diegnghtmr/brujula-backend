@@ -8,7 +8,7 @@ import java.util.UUID;
  *
  * <p>Delegates to {@code progress::api.GetStudentCourseHistoryQuery}. Pure read — no mutation.
  *
- * <p>Named by need (ARQ-001). Implemented by {@code ProgressReadAdapter}.
+ * <p>Named by need. Implemented by {@code ProgressReadAdapter}.
  */
 public interface ProgressReadPort {
 

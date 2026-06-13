@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3 domain unit tests for {@link Simulation}.
+ * Domain unit tests for {@link Simulation}.
  *
  * <p>Covers: name invariant, programIds invariant (1..2 unique), rename, markDeleted.
  */

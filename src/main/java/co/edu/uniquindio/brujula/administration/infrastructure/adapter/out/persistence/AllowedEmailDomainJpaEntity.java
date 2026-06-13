@@ -8,8 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * JPA entity mapping to {@code administration.allowed_email_domain} (Flyway V003). Package-private
- * (ARQ-006).
+ * JPA entity mapping to {@code administration.allowed_email_domain} (Flyway V003). Package-private.
  */
 @Entity
 @Table(name = "allowed_email_domain", schema = "administration")

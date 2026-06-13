@@ -6,11 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/**
- * WU2-T01 RED: domain tests for {@link Subscription} aggregate.
- *
- * <p>Covers: SUB-1-HP, SUB-3-PLAN-NO-ACK.
- */
+/** Domain tests for {@link Subscription} aggregate. */
 class SubscriptionTest {
 
   private final UUID userId = UUID.randomUUID();

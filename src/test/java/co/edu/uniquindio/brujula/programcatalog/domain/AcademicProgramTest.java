@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU2-1.1 RED: AcademicProgram invariant tests.
+ * AcademicProgram invariant tests.
  *
  * <p>Asserts: name non-blank; faculty non-blank; status defaults to ACTIVE; version initializes to
  * 0.

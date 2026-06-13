@@ -27,9 +27,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3-T11 RED+GREEN: use case unit tests for {@link DeleteCourseAttemptService}.
+ * Use case unit tests for {@link DeleteCourseAttemptService}.
  *
- * <p>Covers: PRG-4-HP (delete attempt, audit event).
+ * <p>Covers: delete attempt, audit event.
  */
 class DeleteCourseAttemptServiceTest {
 

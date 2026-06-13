@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test;
  * Mockito unit tests for {@link PlanMallaAssemblyService}.
  *
  * <p>Validates: grouping by recommended semester, journey filtering, INACTIVE course exclusion,
- * ordering of semester buckets, requirement edges per course (CUR-008 §2), no N+1 on requirements,
- * and graduation requirements advisory text (CUR-008 §3).
+ * ordering of semester buckets, requirement edges per course, no N+1 on requirements, and
+ * graduation requirements advisory text.
  */
 class PlanMallaAssemblyServiceTest {
 
@@ -197,7 +197,7 @@ class PlanMallaAssemblyServiceTest {
   }
 
   // ---------------------------------------------------------------------------
-  // FIX-1 (C1, CUR-008 §2): Each course must carry its requirement edges
+  // Each course must carry its requirement edges
   // ---------------------------------------------------------------------------
 
   @Test
@@ -285,7 +285,7 @@ class PlanMallaAssemblyServiceTest {
   }
 
   // ---------------------------------------------------------------------------
-  // FIX-2 (C2, CUR-008 §3): graduationRequirements advisory field
+  // graduationRequirements advisory field
   // ---------------------------------------------------------------------------
 
   @Test
@@ -301,7 +301,7 @@ class PlanMallaAssemblyServiceTest {
 
   @Test
   void assemble_graduation_requirements_references_suficiencia_lengua() {
-    // CUR-008 §3: must mention suficiencia en lengua extranjera and Cátedra Multidisciplinar
+    // Must mention suficiencia en lengua extranjera and Cátedra Multidisciplinar
     UUID planId = UUID.randomUUID();
     when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of());
     when(loadCourseRequirementPort.loadByTargetCourseIds(anyList())).thenReturn(List.of());

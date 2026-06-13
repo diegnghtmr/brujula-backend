@@ -8,11 +8,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3-T02 RED: unit tests for {@link CourseAttempt} domain aggregate.
+ * Unit tests for {@link CourseAttempt} domain aggregate.
  *
- * <p>Scenarios: PRG-1-GRADE-MISMATCH, PRG-1-CANCELLED-WITH-GRADE, and grade-status coherence rules.
+ * <p>Scenarios: grade-status mismatch, cancelled-with-grade, and grade-status coherence rules.
  *
- * <p>FIX-W4: periodId is contract-REQUIRED (non-null, per OpenAPI CourseAttempt and
+ * <p>periodId is contract-REQUIRED (non-null, per OpenAPI CourseAttempt and
  * CourseAttemptCreateRequest required fields). All {@code register()} calls must supply a non-null
  * periodId; the domain now enforces this with {@link NullPointerException}.
  */
@@ -20,7 +20,7 @@ class CourseAttemptTest {
 
   private final SubscriptionId subscriptionId = SubscriptionId.generate();
   private final UUID courseId = UUID.randomUUID();
-  // FIX-W4: use a fixed test periodId instead of null
+  // Use a fixed test periodId instead of null
   private final UUID testPeriodId = UUID.fromString("00000000-0000-4000-a000-000000000001");
 
   @Test
@@ -171,9 +171,8 @@ class CourseAttemptTest {
   }
 
   /**
-   * FIX-W4: periodId is contract-REQUIRED (non-null). Null must be rejected at the domain level.
-   * See: OpenAPI CourseAttempt.required includes periodId; ADR-F3-009 said "opaque OPTIONAL" but
-   * the contract wins per decision #1630.
+   * periodId is contract-REQUIRED (non-null). Null must be rejected at the domain level. OpenAPI
+   * CourseAttempt.required includes periodId; the contract wins.
    */
   @Test
   void register_with_null_period_id_throws_null_pointer_exception() {
@@ -229,7 +228,7 @@ class CourseAttemptTest {
   void update_changes_status_and_grade() {
     Grade originalGrade = new Grade(new BigDecimal("2.0"));
     AttemptId id = AttemptId.generate();
-    // reconstitute is still nullable (DB may have old rows without periodId from before FIX-W4)
+    // reconstitute is still nullable (DB may have old rows without periodId)
     CourseAttempt attempt =
         CourseAttempt.reconstitute(
             id,

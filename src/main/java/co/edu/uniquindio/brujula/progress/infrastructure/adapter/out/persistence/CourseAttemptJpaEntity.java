@@ -12,11 +12,11 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code progress.course_attempt} (created by Flyway V015).
  *
- * <p>Package-private per ARQ-006b. This stub allows V015 Flyway validation to pass. Full
- * application code for CourseAttempt (repositories, ports, use cases) is implemented in WU3.
+ * <p>Package-private. This stub allows Flyway validation to pass. Full application code for
+ * CourseAttempt (repositories, ports, use cases) is implemented separately.
  *
- * <p>WU3 note: WU3-SEAM — CourseAttempt domain/use-cases land in WU3. This entity is the
- * persistence-side placeholder ensuring the table is mapped. Do NOT add business logic here.
+ * <p>This entity is the persistence-side placeholder ensuring the table is mapped. Do NOT add
+ * business logic here.
  */
 @Entity
 @Table(name = "course_attempt", schema = "progress")

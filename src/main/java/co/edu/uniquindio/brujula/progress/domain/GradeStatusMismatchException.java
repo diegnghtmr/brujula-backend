@@ -2,7 +2,7 @@ package co.edu.uniquindio.brujula.progress.domain;
 
 /**
  * Thrown when the combination of {@link AttemptStatus} and {@link Grade} violates the
- * grade-coherence rule (ADR-F3-002):
+ * grade-coherence rule:
  *
  * <ul>
  *   <li>PASSED requires a non-null grade in [3.0, 5.0].
@@ -10,7 +10,7 @@ package co.edu.uniquindio.brujula.progress.domain;
  *   <li>CANCELLED requires a null grade.
  * </ul>
  *
- * <p>Maps to HTTP 422 Unprocessable Entity (PRG-1-GRADE-MISMATCH, PRG-1-CANCELLED-WITH-GRADE).
+ * <p>Maps to HTTP 422 Unprocessable Entity.
  */
 public class GradeStatusMismatchException extends RuntimeException {
 

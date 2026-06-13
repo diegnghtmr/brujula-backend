@@ -18,24 +18,17 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * RED → GREEN integration tests for the Fase 1 SecurityFilterChain.
- *
- * <p>Tests are RED when the Fase 0 permissive security stub is in place. They turn GREEN after the
- * Fase 1 {@code SecurityConfiguration} replaces the stub chain.
+ * Integration tests for the SecurityFilterChain.
  *
  * <p>Scenarios covered:
  *
  * <ul>
- *   <li>RF-AUT-001 — unauthenticated request to protected resource → 401 (or redirect, handled as
- *       4xx).
- *   <li>RF-AUT-002 — STUDENT cannot access {@code /admin/**} → 403.
- *   <li>RF-AUT-002 — ADMIN can access {@code /admin/**} → not 403.
- *   <li>RNF-SEG-004 — POST without {@code X-XSRF-TOKEN} header → 403 (CSRF rejected).
- *   <li>RNF-SEG-004 — Safe GET without CSRF header → allowed (CSRF not checked on safe methods).
+ *   <li>Unauthenticated request to protected resource → 401 (or redirect, handled as 4xx).
+ *   <li>STUDENT cannot access {@code /admin/**} → 403.
+ *   <li>ADMIN can access {@code /admin/**} → not 403.
+ *   <li>POST without {@code X-XSRF-TOKEN} header → 403 (CSRF rejected).
+ *   <li>Safe GET without CSRF header → allowed (CSRF not checked on safe methods).
  * </ul>
- *
- * <p>Satisfies: S1-A-8, Spec §OIDC Login Flow §CSRF Protection §Role-Based Authorization.
- * ADR-F1-001, ADR-F1-002.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
@@ -50,7 +43,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // RF-AUT-001: Unauthenticated requests are rejected
+  // Unauthenticated requests are rejected
   // -------------------------------------------------------------------------
 
   @Test
@@ -79,7 +72,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // RF-AUT-002: Role-based access control
+  // Role-based access control
   // -------------------------------------------------------------------------
 
   @Test
@@ -93,7 +86,7 @@ class SecurityConfigIntegrationTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void admin_can_access_admin_endpoint() throws Exception {
-    // The controller doesn't exist yet (WU-B/C), so we expect 404 NOT 403.
+    // The controller doesn't exist yet, so we expect 404 NOT 403.
     // Spring Security passes it through; 404 confirms the filter chain allowed it.
     mockMvc
         .perform(

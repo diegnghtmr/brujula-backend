@@ -8,10 +8,10 @@ import java.util.UUID;
  * Domain object representing a student's selection of a schedule option within a simulation.
  *
  * <p>Stores a snapshot of the offering state at selection time ({@code selectedOfferingVersion},
- * {@code offeringStatus}, {@code sessions}) to support staleness detection (STALE-001).
+ * {@code offeringStatus}, {@code sessions}) to support staleness detection.
  *
- * <p>Framework-free — no Spring/JPA annotations (ARQ-002). Lifecycle is ACTIVE or DELETED (soft
- * delete). INV-004 applies: CURRENT/OUTDATED are never persisted here.
+ * <p>Framework-free — no Spring/JPA annotations. Lifecycle is ACTIVE or DELETED (soft delete).
+ * CURRENT/OUTDATED are never persisted here.
  */
 public class SimulationSelection {
 
@@ -28,7 +28,7 @@ public class SimulationSelection {
   /** Snapshot of offering status at selection time. */
   private final String offeringStatus;
 
-  /** Snapshot of the offering version at selection time (for STALE-001). */
+  /** Snapshot of the offering version at selection time (for staleness detection). */
   private final long selectedOfferingVersion;
 
   /** Denormalised snapshot of schedule sessions (JSONB in persistence). */
@@ -133,9 +133,8 @@ public class SimulationSelection {
   }
 
   /**
-   * Return a new selection with a refreshed offering snapshot (used by reviewSimulation,
-   * STALE-002). Bumps {@code selectedOfferingVersion} to the current version and updates the
-   * sessions snapshot.
+   * Return a new selection with a refreshed offering snapshot (used by reviewSimulation). Bumps
+   * {@code selectedOfferingVersion} to the current version and updates the sessions snapshot.
    *
    * @param currentOfferingVersion the live offering version
    * @param currentSessions fresh session snapshot from the offering module

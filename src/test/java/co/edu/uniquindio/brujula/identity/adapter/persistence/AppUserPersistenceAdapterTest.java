@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
  * real schema. Verifies: save/load round-trip, findByOidcSubject, unique constraint on oidcSubject,
  * unique constraint on email.
  *
- * <p>Satisfies: S1-B-6, Design §2.1 adapter.out.persistence.
+ * <p>Verifies: save/load round-trip, findByOidcSubject, unique constraints.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class AppUserPersistenceAdapterTest extends AbstractPostgresIntegrationTest {

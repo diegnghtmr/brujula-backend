@@ -6,13 +6,12 @@ import java.util.UUID;
  * Thrown when a student attempts to subscribe to a plan that is not ACTIVE (e.g. ARCHIVED or
  * DRAFT).
  *
- * <p>Spec: SUB-1-INACTIVE-PLAN — "The referenced plan MUST be ACTIVE; a ARCHIVED plan rejected with
- * HTTP 422."
+ * <p>The referenced plan MUST be ACTIVE; an ARCHIVED plan is rejected with HTTP 422.
  *
  * <p>Maps to HTTP 422 Unprocessable Entity via {@link
  * co.edu.uniquindio.brujula.progress.infrastructure.configuration.ProgressExceptionHandler}.
  *
- * <p>No Spring/JPA imports (ARQ-002). Framework-free domain exception.
+ * <p>No Spring/JPA imports. Framework-free domain exception.
  */
 public class InactivePlanException extends RuntimeException {
 

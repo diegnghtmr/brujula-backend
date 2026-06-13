@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Typed identity value object for the {@link CourseRequirement} aggregate.
  *
- * <p>Immutable (record). No Spring/JPA imports (ARQ-002).
+ * <p>Immutable (record). No Spring/JPA imports.
  */
 public record CourseRequirementId(UUID value) {
 

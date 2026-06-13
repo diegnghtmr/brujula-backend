@@ -8,7 +8,7 @@ import java.util.List;
  * <p>Compiler-enforced — either the selection is {@link Allowed} (no blocking notices) or {@link
  * Blocked} (at least one blocking notice). Both carry warnings for transparency.
  *
- * <p>Pure domain sealed interface — no Spring/JPA (ARQ-002, ADR-F4-004).
+ * <p>Pure domain sealed interface — no Spring/JPA.
  */
 public sealed interface ValidationOutcome
     permits ValidationOutcome.Allowed, ValidationOutcome.Blocked {

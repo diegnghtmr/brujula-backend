@@ -6,7 +6,7 @@ import co.edu.uniquindio.brujula.progress.application.dto.UpdateSubscriptionComm
 /**
  * Input port: update a subscription (plan and/or journey change).
  *
- * <p>Enforces acknowledgeHistoryImpact gate and optimistic locking. ARQ-003.
+ * <p>Enforces acknowledgeHistoryImpact gate and optimistic locking.
  */
 public interface UpdateSubscriptionUseCase {
 

@@ -11,10 +11,9 @@ import java.util.UUID;
 /**
  * Use case: manage allowed email domains (list, add, remove).
  *
- * <p>Records an {@code ALLOWED_DOMAIN_DELETED} audit event when a domain is removed (Spec §Audit
- * Log, RNF-SEG-007 synchronous).
+ * <p>Records an {@code ALLOWED_DOMAIN_DELETED} audit event when a domain is removed (synchronous).
  *
- * <p>Framework-free. Satisfies: Design §2.2, Spec §Allowed Email Domains.
+ * <p>Framework-free.
  */
 public class ManageAllowedEmailDomainsService implements ManageAllowedEmailDomainsUseCase {
 

@@ -20,14 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * REST adapter integration tests for CurriculumController (Phase 4, WU4).
+ * REST adapter integration tests for CurriculumController.
  *
  * <p>Tests: GET /courses/{id} → 200/404, GET /courses/{id}/requirements → 200, GET
  * /plans/{planId}/courses → 200 (with role filtering), GET /plans/{planId}/sequential-tracks → 200,
  * GET /plans/{planId}/degree-work-modalities → 200.
  *
- * <p>Uses Testcontainers PostgreSQL + Flyway + spring-security-test (oidcLogin). Satisfies:
- * CUR-001/CUR-003/CUR-005/CUR-006 REST adapters.
+ * <p>Uses Testcontainers PostgreSQL + Flyway + spring-security-test (oidcLogin).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class CurriculumControllerTest extends AbstractPostgresIntegrationTest {
@@ -240,7 +239,7 @@ class CurriculumControllerTest extends AbstractPostgresIntegrationTest {
                 .param("journeyCode", "DIURNA")
                 .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
         .andExpect(status().isOk())
-        // graduationRequirements must be present and non-empty (CUR-008 §3)
+        // graduationRequirements must be present and non-empty
         .andExpect(jsonPath("$.graduationRequirements").isString())
         .andExpect(jsonPath("$.graduationRequirements").isNotEmpty())
         // Semester 2 must exist (Programación I → Lógica de Programación edge is seeded there)

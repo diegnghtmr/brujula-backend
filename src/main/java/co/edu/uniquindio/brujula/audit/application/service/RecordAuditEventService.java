@@ -11,7 +11,7 @@ import co.edu.uniquindio.brujula.audit.domain.AuditEvent;
  * <p>Framework-free — wired by infrastructure configuration. Implements the {@link AuditRecorder}
  * SPI so all modules that inject {@code AuditRecorder} use this service via Spring DI.
  *
- * <p>Satisfies: Design §2.3, Spec §Audit Log (RNF-SEG-007 synchronous recording).
+ * <p>Records audit events synchronously (append-only).
  */
 public class RecordAuditEventService implements AuditRecorder {
 

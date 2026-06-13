@@ -9,7 +9,7 @@
  * co.edu.uniquindio.brujula.progress.application.port.in.api.GetStudentCourseHistoryQuery} is
  * exposed here. Mutation use-cases (CreateSubscriptionUseCase, CreateCourseAttemptUseCase, etc.)
  * and internal read queries (GetSubscriptionQuery, GetCourseAttemptQuery, etc.) remain in the
- * parent package {@code port.in} which carries NO named interface (INV-001, ADR-F4-002).
+ * parent package {@code port.in} which carries NO named interface.
  *
  * <p>Progress's own REST controllers import from {@code port.in} directly (same module — no named
  * interface restriction applies to intra-module access).

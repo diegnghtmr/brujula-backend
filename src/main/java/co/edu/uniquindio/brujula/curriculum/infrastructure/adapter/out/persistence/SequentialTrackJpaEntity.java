@@ -17,8 +17,8 @@ import java.util.UUID;
  * JPA entity mapping to {@code curriculum.sequential_track} (V011) plus {@code
  * gatekeeper_course_id} column (V014).
  *
- * <p>Package-private per ARQ-006. Levels are eagerly loaded and ordered by level number. Optimistic
- * locking via {@code @Version} (DB-006/DT-014).
+ * <p>Package-private. Levels are eagerly loaded and ordered by level number. Optimistic locking via
+ * {@code @Version}.
  */
 @Entity
 @Table(name = "sequential_track", schema = "curriculum")

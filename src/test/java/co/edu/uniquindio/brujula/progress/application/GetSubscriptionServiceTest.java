@@ -20,11 +20,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * WU2-T11 RED+GREEN: list and get subscription use case tests.
- *
- * <p>Covers: SUB-2-LIST, SUB-2-GET, SUB-2-BOLA.
- */
+/** List and get subscription use case tests. */
 class GetSubscriptionServiceTest {
 
   private LoadSubscriptionPort loadSubscriptionPort;
@@ -35,7 +31,7 @@ class GetSubscriptionServiceTest {
   @BeforeEach
   void setUp() {
     loadSubscriptionPort = mock(LoadSubscriptionPort.class);
-    // WU3-FIX: catalog ports are now required; use mocks that return null-safe defaults
+    // Catalog ports are now required; use mocks that return null-safe defaults
     GetProgramQuery getProgramQuery = mock(GetProgramQuery.class);
     GetStudyPlanQuery getStudyPlanQuery = mock(GetStudyPlanQuery.class);
     ListJourneysQuery listJourneysQuery = mock(ListJourneysQuery.class);

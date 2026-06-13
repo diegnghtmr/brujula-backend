@@ -24,9 +24,9 @@ import org.springframework.web.context.WebApplicationContext;
  *
  * <p>STRICT TDD: tests written RED before the guard is implemented.
  *
- * <p>Spec: "Unverified user cannot access academic functions" (§App-Driven Registration, S2-E). A
- * user with onboardingState=PENDING_VERIFICATION MUST be blocked (403) from /api/v1/academic/**.
- * ACTIVE users are NOT blocked by this rule.
+ * <p>Spec: "Unverified user cannot access academic functions". A user with
+ * onboardingState=PENDING_VERIFICATION MUST be blocked (403) from /api/v1/academic/**. ACTIVE users
+ * are NOT blocked by this rule.
  *
  * <p>Authorization mechanism (Option B — authority-based, no DB hit per request): {@code
  * IdentityOidcUserService} adds {@code ONBOARDING_ACTIVE} authority when {@code
@@ -42,11 +42,9 @@ import org.springframework.web.context.WebApplicationContext;
  * clean (just one more requestMatcher rule). - Avoids importing identity module internals into
  * sharedkernel (Modulith safe: authority name is a String constant, not a domain type).
  *
- * <p>Test seam: no real /api/v1/academic/** endpoints exist yet (Fase 2). The test asserts the
- * authorization DECISION via the HTTP status: 403 for PENDING, not-403 for ACTIVE. A 404 from an
- * ACTIVE user is acceptable and expected (endpoint does not exist yet).
- *
- * <p>Satisfies: S2-E, Spec §Unverified user cannot access academic functions, RN-008.
+ * <p>Test seam: no real /api/v1/academic/** endpoints exist yet. The test asserts the authorization
+ * DECISION via the HTTP status: 403 for PENDING, not-403 for ACTIVE. A 404 from an ACTIVE user is
+ * acceptable and expected (endpoint does not exist yet).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
@@ -93,7 +91,7 @@ class AcademicEndpointGuardTest extends AbstractPostgresIntegrationTest {
         .andExpect(
             result -> {
               int status = result.getResponse().getStatus();
-              // 404 is fine (endpoint doesn't exist yet in Fase 1).
+              // 404 is fine (endpoint doesn't exist yet).
               // Must NOT be 403 (that would mean the verification guard is wrongly blocking
               // ACTIVE).
               assertThat(status)

@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * Average grade per academic period, computed by {@link ProgressSummaryCalculator}.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  *
  * @param periodId the opaque period UUID
  * @param estimatedAverage the arithmetic mean of PASSED/FAILED grades in this period

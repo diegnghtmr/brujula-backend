@@ -17,7 +17,7 @@ import java.util.UUID;
  * JPA entity mapping to {@code curriculum.sequential_track_level_option} (created by Flyway V011).
  *
  * <p>PK is composite: {@code (level_id, course_id)}. Mapped via {@code @EmbeddedId}.
- * Package-private per ARQ-006.
+ * Package-private.
  */
 @Entity
 @Table(name = "sequential_track_level_option", schema = "curriculum")

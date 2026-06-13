@@ -25,7 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * WU1-TDD: Integration tests for the OfferingPersistenceAdapter using V016+V017 seeded data.
+ * Integration tests for the OfferingPersistenceAdapter using V016+V017 seeded data.
  *
  * <p>Uses the real Flyway-migrated PostgreSQL database (via AbstractPostgresIntegrationTest). Tests
  * verify that:

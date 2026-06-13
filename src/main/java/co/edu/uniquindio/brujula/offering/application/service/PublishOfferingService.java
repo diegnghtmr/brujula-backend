@@ -33,7 +33,7 @@ import java.util.UUID;
  *   <li>New key → execute, persist idempotency record, record audit event
  * </ul>
  *
- * <p>Intensity advisory (OFFW-005, OFFW-006):
+ * <p>Intensity advisory:
  *
  * <ul>
  *   <li>For each schedule option, compare {@code option.weeklyHours()} against {@code
@@ -42,14 +42,14 @@ import java.util.UUID;
  *   <li>This is ADVISORY: it NEVER returns 422 or blocks publication. Always returns 200 + flag.
  *   <li>This is NOT a no-op: the comparison is performed against the REAL curricular data from
  *       {@code curriculum::api}. Any shortcut that always sets the flag to false/null would be a
- *       regression (DEBT-F4-005 re-introduction).
+ *       regression.
  * </ul>
  *
  * <p>{@code course_offering.version} is incremented at flush time by the JPA @Version mechanism.
  * The returned view's version MUST be strictly greater than {@code command.expectedVersion()} —
- * this is the staleness activation invariant (OFFW-006, DEBT-F4-003 closure).
+ * this is the staleness activation invariant.
  *
- * <p>Framework-free — wired by {@code OfferingConfiguration}. Satisfies: OFFW-005, OFFW-006.
+ * <p>Framework-free — wired by {@code OfferingConfiguration}.
  */
 public class PublishOfferingService implements PublishOfferingUseCase {
 
@@ -113,7 +113,7 @@ public class PublishOfferingService implements PublishOfferingUseCase {
     //    Returns managed post-flush domain object with @Version incremented.
     CourseOffering saved = saveOfferingPort.save(withExpectedVersion);
 
-    // 6. ADVISORY intensity check (NEVER blocks — see class Javadoc for DEBT-F4-005 guard)
+    // 6. ADVISORY intensity check (NEVER blocks)
     boolean intensityWarning = computeIntensityWarning(saved);
 
     // 7. Build the view
@@ -124,7 +124,7 @@ public class PublishOfferingService implements PublishOfferingUseCase {
     idempotencyStorePort.save(
         command.idempotencyKey(), OPERATION, command.requestHash(), 200, responseBodyJson);
 
-    // 9. Record audit event (RNF-SEG-007 synchronous, same transaction)
+    // 9. Record audit event (synchronous, same transaction)
     auditRecorder.record(
         new RecordAuditEventCommand(
             command.actorId(),
@@ -140,7 +140,7 @@ public class PublishOfferingService implements PublishOfferingUseCase {
   }
 
   /**
-   * Advisory intensity check (OFFW-005, OFFW-006).
+   * Advisory intensity check.
    *
    * <p>Queries {@code curriculum::api} for the course's curricular weekly hours and compares each
    * schedule option's computed weekly hours. Returns {@code true} if ANY option's hours differ from

@@ -5,13 +5,13 @@ import co.edu.uniquindio.brujula.imports.application.dto.ImportSummary;
 
 /**
  * Input port: confirm a VALIDATED ImportBatch, atomically replaying all stored rows through the
- * appropriate write use-cases (IMP-005).
+ * appropriate write use-cases.
  *
  * <p>The confirm operation is annotated {@code @Transactional} in its service implementation. All
- * row writes are performed inside a single physical transaction (ADR-F6-001). Any failure on any
- * row propagates and rolls back ALL writes — no partial commits (Decision #2 / INV-03).
+ * row writes are performed inside a single physical transaction. Any failure on any row propagates
+ * and rolls back ALL writes — no partial commits.
  *
- * <p>Published in the imports module application layer. No Spring/JPA imports (ARQ-003).
+ * <p>Published in the imports module application layer. No Spring/JPA imports.
  */
 public interface ConfirmImportUseCase {
 
@@ -28,7 +28,7 @@ public interface ConfirmImportUseCase {
    *   <li>Domain guard — only VALIDATED batches are confirmable → 409 for INVALID/CONFIRMED
    *   <li>Atomic row replay (inside the {@code @Transactional} boundary): COURSES → {@code
    *       CreateCourseUseCase}; REQUIREMENTS → {@code CreateCourseRequirementUseCase}; OFFERINGS →
-   *       deferred to WU7 (throws UnsupportedOperationException)
+   *       not yet supported (throws UnsupportedOperationException)
    *   <li>Mark batch CONFIRMED, persist
    *   <li>Record audit entry IMPORT_CONFIRMED
    *   <li>Store idempotency record (inside the TX)

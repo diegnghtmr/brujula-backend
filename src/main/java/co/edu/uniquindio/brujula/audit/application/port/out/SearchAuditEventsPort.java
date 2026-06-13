@@ -8,7 +8,7 @@ import org.springframework.lang.Nullable;
  * Output port: queries audit events with optional filters.
  *
  * <p>Used by the global admin read side and the staff scoped read side. Program-scoped filtering
- * for STAFF is a Fase-2 concern; in Fase 1 the programId filter is passed as-is to the query.
+ * for STAFF is deferred; the programId filter is passed as-is to the query.
  */
 public interface SearchAuditEventsPort {
 

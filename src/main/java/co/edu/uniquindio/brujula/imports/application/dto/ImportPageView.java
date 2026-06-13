@@ -6,7 +6,7 @@ import java.util.List;
  * Application-layer DTO for a paginated list of ImportSummary views.
  *
  * <p>Returned by {@code ListImportsQueryService} and mapped to the generated ImportPage at the REST
- * boundary. No Spring/domain imports (ARQ-001).
+ * boundary. No Spring/domain imports.
  *
  * @param content page content
  * @param page current page index (0-based)

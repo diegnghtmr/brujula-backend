@@ -32,8 +32,7 @@ import org.junit.jupiter.api.Test;
 /**
  * TDD RED → GREEN: unit tests for {@link CreateCourseService}.
  *
- * <p>Covers: happy path (creates, saves, records audit), idempotency replay, key conflict. WU5 –
- * T5.1 (CUR-001, IMP-009, SC-009-A).
+ * <p>Covers: happy path (creates, saves, records audit), idempotency replay, key conflict.
  */
 class CreateCourseServiceTest {
 

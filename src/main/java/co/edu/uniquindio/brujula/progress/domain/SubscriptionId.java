@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Value object: identity of a {@link Subscription} aggregate.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public record SubscriptionId(UUID value) {
 

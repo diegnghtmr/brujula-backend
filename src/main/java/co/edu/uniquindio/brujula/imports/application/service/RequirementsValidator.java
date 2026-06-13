@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Per-kind validator for REQUIREMENTS import rows (IMP-007, IMP-002).
+ * Per-kind validator for REQUIREMENTS import rows.
  *
- * <p>Validates each row against the REQUIREMENTS column mapping (ADR-014) and detects:
+ * <p>Validates each row against the REQUIREMENTS column mapping and detects:
  *
  * <ul>
  *   <li>Missing or unknown destination/required course references
@@ -21,10 +21,10 @@ import java.util.Set;
  * </ul>
  *
  * <p>NOTE: At import-validation time, course UUIDs are not yet available (we only have
- * official_code / name strings from the file). Resolution to UUIDs happens at confirm time (WU6).
- * This validator performs structural and intra-batch cycle detection on the string representation.
- * For full graph cycle detection including existing DB requirements, the confirm service re-checks
- * with real UUIDs.
+ * official_code / name strings from the file). Resolution to UUIDs happens at confirm time. This
+ * validator performs structural and intra-batch cycle detection on the string representation. For
+ * full graph cycle detection including existing DB requirements, the confirm service re-checks with
+ * real UUIDs.
  *
  * <p>Uses {@link ImportCycleDetector} (module-local) instead of {@code
  * curriculum.domain.PrerequisiteAcyclicityService} to respect the {@code imports} module boundary
@@ -44,8 +44,8 @@ public class RequirementsValidator {
   /**
    * Validate all rows in a REQUIREMENTS batch.
    *
-   * <p>Uses a local {@link ImportCycleDetector} to detect intra-batch cycles (SC-007-B) without DB
-   * lookups and without coupling to the curriculum domain layer.
+   * <p>Uses a local {@link ImportCycleDetector} to detect intra-batch cycles without DB lookups and
+   * without coupling to the curriculum domain layer.
    *
    * @param rows list of import rows
    * @return map of row index → issues for that row

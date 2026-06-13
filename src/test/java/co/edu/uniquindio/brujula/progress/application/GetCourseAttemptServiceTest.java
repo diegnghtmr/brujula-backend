@@ -27,9 +27,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3-T09 RED+GREEN: use case unit tests for {@link GetCourseAttemptService}.
+ * Use case unit tests for {@link GetCourseAttemptService}.
  *
- * <p>Covers: PRG-2-LIST (list with subscription filter), PRG-2-BOLA (cross-student access blocked).
+ * <p>Covers: list with subscription filter, cross-student access blocked.
  */
 class GetCourseAttemptServiceTest {
 
@@ -61,7 +61,7 @@ class GetCourseAttemptServiceTest {
     CourseAttemptView view = sut.getCourseAttempt(attempt.getId().value(), actorId);
 
     assertThat(view.id()).isEqualTo(attempt.getId().value());
-    assertThat(view.statusName()).isEqualTo("PASSED"); // FIX-S1: plain String
+    assertThat(view.statusName()).isEqualTo("PASSED"); // plain String
   }
 
   @Test

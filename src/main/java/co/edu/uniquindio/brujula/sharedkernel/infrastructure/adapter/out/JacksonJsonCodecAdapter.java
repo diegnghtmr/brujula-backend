@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
  * parser in {@code CreateStaffService} was misplaced in the application layer and did not escape
  * control characters correctly.
  *
- * <p>Jackson handles all RFC 8259 §7 escaping (backslash, double-quote, control characters
+ * <p>Jackson handles all RFC 8259 escaping (backslash, double-quote, control characters
  * U+0000–U+001F) correctly by default.
  *
  * <p><strong>Dual-ObjectMapper notice (W-002):</strong> This adapter intentionally uses the {@code
@@ -28,8 +28,8 @@ import org.springframework.stereotype.Component;
  * present in serialized views (e.g. {@code LocalTime} in schedule sessions) roundtrip correctly
  * through the Jackson 2 codec without throwing {@code InvalidDefinitionException}.
  *
- * <p>Package-private (ARQ-006b — infrastructure adapter internals are not public). Registered as a
- * Spring {@code @Component} for auto-detection. Design: ADR-F3-001.
+ * <p>Package-private (infrastructure adapter internals are not public). Registered as a Spring
+ * {@code @Component} for auto-detection. Design: ADR-F3-001.
  */
 @Component
 class JacksonJsonCodecAdapter implements JsonCodecPort {

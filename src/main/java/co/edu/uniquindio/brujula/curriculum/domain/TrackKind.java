@@ -6,7 +6,7 @@ package co.edu.uniquindio.brujula.curriculum.domain;
  * <p>Maps to the {@code kind} column CHECK constraint in V011: {@code 'PERSONAL_ELECTIVE' |
  * 'DEEPENING'}.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public enum TrackKind {
   PERSONAL_ELECTIVE,

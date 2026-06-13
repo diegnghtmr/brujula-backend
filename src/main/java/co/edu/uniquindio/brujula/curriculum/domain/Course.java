@@ -11,17 +11,17 @@ import java.util.UUID;
  * <p>Represents a single course within a study plan. Invariants enforced via factory methods:
  *
  * <ul>
- *   <li>{@code credits} must be ≥ 0 (a 0-credit administrative course is allowed per CUR-001).
+ *   <li>{@code credits} must be ≥ 0 (a 0-credit administrative course is allowed).
  *   <li>{@code name} must not be null or blank.
  *   <li>{@code recommendedSemesters} list must not be null (may be empty).
  *   <li>{@code planId} and {@code programId} must not be null.
  * </ul>
  *
  * <p>Status defaults to {@link CourseStatus#ACTIVE}. Version initializes to {@code 0}. {@code
- * officialCode} is null on creation and set by {@link OfficialCodeMinter} at seed time
- * (ADR-F2-005). UUIDs remain the primary key (RN-024/025).
+ * officialCode} is null on creation and set by {@link OfficialCodeMinter} at seed time UUIDs remain
+ * the primary key.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public final class Course {
 

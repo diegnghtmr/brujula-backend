@@ -3,7 +3,7 @@ package co.edu.uniquindio.brujula.curriculum.domain;
 /**
  * Type of a course requirement (prerequisite edge).
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  *
  * <ul>
  *   <li>{@link #COURSE_PASSED} — the student must have approved a specific course.

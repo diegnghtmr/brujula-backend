@@ -11,9 +11,8 @@ import java.util.UUID;
 /**
  * Use case implementation: list requirements for a course.
  *
- * <p>Returns all requirement fields including {@code confidence} and {@code inferred} metadata
- * (ADR-F2-004, CROSS-001 schema extension). No filtering by status in Fase 2. No Spring annotations
- * — wired via infrastructure configuration (ARQ-002).
+ * <p>Returns all requirement fields including {@code confidence} and {@code inferred} metadata No
+ * filtering by status is applied. No Spring annotations — wired via infrastructure configuration.
  */
 public class ListCourseRequirementsService implements ListCourseRequirementsQuery {
 

@@ -32,12 +32,10 @@ import org.springframework.stereotype.Component;
  *       the domain role.
  * </ol>
  *
- * <p>The returned authorities use the G3-verified pattern: {@code new
- * SimpleGrantedAuthority("ROLE_X")} so that {@code hasRole("ADMIN")} etc. work correctly with
- * {@code @EnableMethodSecurity} (Security-7 facts, obs #1548).
+ * <p>Authorities use {@code new SimpleGrantedAuthority("ROLE_X")} so that {@code hasRole("ADMIN")}
+ * etc. work correctly with {@code @EnableMethodSecurity}.
  *
- * <p>Wired into {@code SecurityConfiguration} in WU-B (replaces the default OidcUserService).
- * Satisfies: S1-B-5, Design §2.1 IdentityOidcUserService.
+ * <p>Wired into {@code SecurityConfiguration} (replaces the default OidcUserService).
  */
 @Component
 public class IdentityOidcUserService implements OAuth2UserService<OidcUserRequest, OidcUser> {
@@ -61,8 +59,8 @@ public class IdentityOidcUserService implements OAuth2UserService<OidcUserReques
     ProvisionCommand command = claimsMapper.toCommand(oidcUser);
     AppUser appUser = provisionUseCase.provision(command);
 
-    // 3. Build Spring Security authorities from the domain role and onboarding state (G3 pattern).
-    // S2-E: ONBOARDING_ACTIVE authority is included only for ACTIVE users.
+    // 3. Build Spring Security authorities from the domain role and onboarding state.
+    // ONBOARDING_ACTIVE authority is included only for ACTIVE users.
     // PENDING_VERIFICATION users will NOT have this authority → /api/v1/academic/** is blocked.
     Collection<GrantedAuthority> authorities =
         buildAuthorities(appUser.role(), appUser.onboardingState());
@@ -86,19 +84,19 @@ public class IdentityOidcUserService implements OAuth2UserService<OidcUserReques
    *
    * <ul>
    *   <li>{@code ROLE_STUDENT}, {@code ROLE_STAFF}, or {@code ROLE_ADMIN} (from domain Role).
-   *   <li>{@code ONBOARDING_ACTIVE} — included ONLY when onboardingState == ACTIVE (S2-E guard).
+   *   <li>{@code ONBOARDING_ACTIVE} — included ONLY when onboardingState == ACTIVE.
    *       PENDING_VERIFICATION users lack this authority and are blocked from /api/v1/academic/**.
    * </ul>
    *
    * <p>Authority is refreshed on each login: when a PENDING_VERIFICATION user verifies their email,
    * the next OIDC login activates their account and this method includes ONBOARDING_ACTIVE in the
-   * new session's authorities (sync-on-login pattern, obs #1574).
+   * new session's authorities (sync-on-login pattern).
    */
   private Collection<GrantedAuthority> buildAuthorities(
       Role role, OnboardingState onboardingState) {
     List<GrantedAuthority> authorities = new ArrayList<>();
     authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
-    // S2-E: Add ONBOARDING_ACTIVE only for fully verified/active users.
+    // Add ONBOARDING_ACTIVE only for fully verified/active users.
     // Keycloak-provisioned users (OIDC login) start with ACTIVE; self-registered students
     // start with PENDING_VERIFICATION and gain this authority after email verification.
     if (onboardingState == OnboardingState.ACTIVE) {

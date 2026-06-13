@@ -6,9 +6,9 @@ import java.util.List;
 /**
  * Input port: list all active journeys.
  *
- * <p>Backs {@code GET /journeys} (CAT-003). Only active journeys are returned.
+ * <p>Backs {@code GET /journeys}. Only active journeys are returned.
  *
- * <p>No Spring/framework imports (ARQ-003).
+ * <p>No Spring/framework imports.
  */
 public interface ListJourneysQuery {
 

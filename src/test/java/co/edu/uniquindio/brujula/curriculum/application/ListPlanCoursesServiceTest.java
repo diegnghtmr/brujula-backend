@@ -19,11 +19,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-4.1 RED: Verifies ListPlanCoursesService delegates to LoadCoursePort, filters ARCHIVED
- * courses when callerRole=STUDENT, and returns mapped CourseView list.
+ * Verifies ListPlanCoursesService delegates to LoadCoursePort, filters ARCHIVED courses when
+ * callerRole=STUDENT, and returns mapped CourseView list.
  *
- * <p>FIX-2 (WARNING-2): INACTIVE courses must also be hidden from STUDENT (per CourseStatus
- * Javadoc). STAFF and ADMIN see all statuses including INACTIVE.
+ * <p>INACTIVE courses must also be hidden from STUDENT (per CourseStatus Javadoc). STAFF and ADMIN
+ * see all statuses including INACTIVE.
  */
 class ListPlanCoursesServiceTest {
 
@@ -157,7 +157,7 @@ class ListPlanCoursesServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // FIX-2 (WARNING-2): INACTIVE must be hidden from STUDENT, visible to STAFF/ADMIN
+  // INACTIVE must be hidden from STUDENT, visible to STAFF/ADMIN
   // -------------------------------------------------------------------------
 
   @Test
@@ -268,7 +268,7 @@ class ListPlanCoursesServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // FIX-4 (W2): null and unknown callerRole must be treated as unprivileged (allowlist)
+  // null and unknown callerRole must be treated as unprivileged (allowlist)
   // -------------------------------------------------------------------------
 
   @Test

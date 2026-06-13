@@ -1,7 +1,7 @@
 spring:
   application:
     name: brujula-backend
-  # Multipart upload limits (IMP-001, NFR-002, NFR-004).
+  # Multipart upload limits.
   # max-file-size matches the imports.maxFileSizeBytes default (5 MB).
   # max-request-size adds 1 MB headroom for multipart form-field overhead.
   servlet:
@@ -19,9 +19,9 @@ spring:
   session:
     store-type: jdbc
     jdbc:
-      # G1 RESOLVED: Spring Session 4 qualified table-name for schema-prefixed tables.
+      # Spring Session 4 requires a qualified table-name for schema-prefixed tables.
       # The property key is spring.session.jdbc.table-name; value uses schema.TABLE_NAME format.
-      # initialize-schema=never because Flyway owns the DDL (V006, DB-002/003, ADR-F1-004).
+      # initialize-schema=never because Flyway owns the DDL.
       table-name: "platform.SPRING_SESSION"
       initialize-schema: never
   security:
@@ -68,22 +68,21 @@ management:
     health:
       probes:
         enabled: true
-      # QAL-ADV-001 / DEC-10 (WU1): do not expose instance-level details (datasource URLs,
-      # stack traces) to unauthenticated clients in non-local profiles. Local profile overrides
-      # this back to 'always' for developer convenience.
+      # Do not expose instance-level details (datasource URLs, stack traces) to unauthenticated
+      # clients in non-local profiles. Local profile overrides this back to 'always' for
+      # developer convenience.
       show-details: when_authorized
 
-# Brújula Keycloak Admin API configuration (S2-A slice-2 additions)
+# Brújula Keycloak Admin API configuration.
 # These properties configure the KeycloakAdminApiAdapter used for app-driven student registration.
 # All secrets MUST be provided via environment variables — never committed as real values.
-# G4 RESOLVED: service-account client brujula-registration-svc added to realm-export.json (Slice 2).
 brujula:
   # Frontend SPA base URL used for post-login redirects (OAuth2 success handler) and
   # email/recovery link landing pages. Override per environment via BRUJULA_FRONTEND_BASE_URL.
   frontend:
     base-url: "${BRUJULA_FRONTEND_BASE_URL:http://localhost:5173}"
   registration:
-    # G6 RESOLVED: Consent terms/version source = configuration properties (Slice 2, S2-B-0).
+    # Consent terms/version source = configuration properties.
     # Version bumps require only a config change and restart (no code release).
     # The client sends acceptedTerms/acceptedDataProcessing booleans; the backend records the
     # CONFIGURED current version as evidence — versions are not client-supplied per this contract.
@@ -93,7 +92,7 @@ brujula:
     # Must be registered as a valid redirect URI for the SPA client in the realm.
     # Composed from brujula.frontend.base-url so there is a single source of truth for the host.
     verify-redirect-uri: "${brujula.frontend.base-url}/verify-email"
-    # SPA landing URI for Keycloak's password recovery redirect (OPTION A, S2-D).
+    # SPA landing URI for Keycloak's password recovery redirect.
     # Keycloak redirects the user here after they complete the password reset on Keycloak's page.
     # Composed from brujula.frontend.base-url so there is a single source of truth for the host.
     recovery-redirect-uri: "${brujula.frontend.base-url}/reset-password"

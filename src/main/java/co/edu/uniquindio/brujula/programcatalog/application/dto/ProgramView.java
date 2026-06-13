@@ -5,13 +5,13 @@ import java.util.UUID;
 /**
  * Application-layer DTO for an AcademicProgram read view.
  *
- * <p>Returned by query services to REST adapters (ARQ-001 — controllers do not touch domain). No
+ * <p>Returned by query services to REST adapters — controllers do not touch domain. No
  * Spring/framework imports.
  *
  * @param id the program UUID
  * @param name the program name
  * @param faculty the faculty owning this program
  * @param status the program status string (ACTIVE, INACTIVE, ARCHIVED)
- * @param version optimistic lock version (DT-014)
+ * @param version optimistic lock version
  */
 public record ProgramView(UUID id, String name, String faculty, String status, long version) {}

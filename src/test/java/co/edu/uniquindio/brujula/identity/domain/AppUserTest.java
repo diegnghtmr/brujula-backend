@@ -9,13 +9,11 @@ import org.junit.jupiter.api.Test;
 /**
  * RED → GREEN domain unit tests for AppUser aggregate.
  *
- * <p>Pure JUnit 5 + AssertJ — zero Spring context (ARQ-002).
+ * <p>Pure JUnit 5 + AssertJ — zero Spring context.
  *
  * <p>Invariants tested: oidcSubject required, email required, name required, default role STUDENT,
  * onboardingState PENDING on create, optimistic version starts at 0, status ACTIVE on first
  * provisioning.
- *
- * <p>Satisfies: S1-B-1, Spec §Identity Provisioning, Design §2.1.
  */
 class AppUserTest {
 

@@ -12,13 +12,13 @@ import java.util.UUID;
  * <p>Invariants:
  *
  * <ul>
- *   <li>programIds must have 1 or 2 elements (INV-002).
+ *   <li>programIds must have 1 or 2 elements.
  *   <li>programIds must be unique (contract {@code uniqueItems}).
  *   <li>name must be non-blank and <= 120 chars.
- *   <li>Lifecycle status is ACTIVE or DELETED (INV-004: CURRENT/OUTDATED never persisted).
+ *   <li>Lifecycle status is ACTIVE or DELETED (CURRENT/OUTDATED are never persisted).
  * </ul>
  *
- * <p>Framework-free — no Spring/JPA annotations (ARQ-002).
+ * <p>Framework-free — no Spring/JPA annotations.
  */
 public class Simulation {
 

@@ -16,7 +16,7 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code offering.course_offering} (created by Flyway V016).
  *
- * <p>Package-private per ARQ-006b. Cascade ALL / LAZY fetch for schedule options.
+ * <p>Package-private. Cascade ALL / LAZY fetch for schedule options.
  */
 @Entity
 @Table(name = "course_offering", schema = "offering")
@@ -26,7 +26,7 @@ class CourseOfferingJpaEntity {
   @Column(name = "id", nullable = false, updatable = false)
   private UUID id;
 
-  /** Opaque cross-schema reference — no FK (ADR-F3-009). */
+  /** Opaque cross-schema reference — no FK. */
   @Column(name = "course_id", nullable = false)
   private UUID courseId;
 
@@ -34,7 +34,7 @@ class CourseOfferingJpaEntity {
   @Column(name = "course_name", nullable = false)
   private String courseName;
 
-  /** Opaque cross-schema reference — no FK (ADR-F3-009). */
+  /** Opaque cross-schema reference — no FK. */
   @Column(name = "program_id", nullable = false)
   private UUID programId;
 

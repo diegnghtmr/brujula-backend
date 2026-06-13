@@ -31,7 +31,6 @@
 --    );
 --
 -- No schema change. No domain/code change. Data-only.
--- Satisfies: ADR-F3-004 (HARD edge rule).
 
 -- Edge 1: Matemáticas Discretas ← Álgebra Lineal
 UPDATE curriculum.course_requirement

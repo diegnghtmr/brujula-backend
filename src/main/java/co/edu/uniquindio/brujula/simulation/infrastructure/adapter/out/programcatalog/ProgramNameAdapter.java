@@ -7,12 +7,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * Anti-corruption adapter: bridges simulation's {@link ProgramNameReadPort} to programcatalog's
- * published {@code programcatalog::api} named interface (INV-001).
+ * published {@code programcatalog::api} named interface.
  *
  * <p>Returns the program's display name. The simulation application layer and domain never see
- * programcatalog types (ARQ-002).
+ * programcatalog types.
  *
- * <p>Package-private per ARQ-006b. Wired by {@code SimulationConfiguration}.
+ * <p>Package-private. Wired by {@code SimulationConfiguration}.
  */
 @Component
 class ProgramNameAdapter implements ProgramNameReadPort {

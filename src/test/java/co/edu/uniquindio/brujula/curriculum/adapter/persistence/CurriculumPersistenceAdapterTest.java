@@ -32,8 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
  * sequential track load (with/without kind filter, gatekeeper_course_id), degree work modality
  * load.
  *
- * <p>Uses Testcontainers PostgreSQL + Flyway for a real schema. Satisfies:
- * CUR-001/CUR-003/CUR-005/CUR-006, Design §Phase-2 WU4-2.x.
+ * <p>Uses Testcontainers PostgreSQL + Flyway for a real schema.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class CurriculumPersistenceAdapterTest extends AbstractPostgresIntegrationTest {

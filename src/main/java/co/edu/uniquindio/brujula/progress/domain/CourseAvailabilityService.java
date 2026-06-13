@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
  * Domain service: computes the {@link CourseAvailability} for each course in a plan.
  *
  * <p>Pure function — no Spring beans, no ports, no I/O. All inputs are passed in; this service only
- * performs in-memory computation (ADR-F3-004). Mirrors {@code PrerequisiteAcyclicityService}
- * purity. Enforced by {@code ProgressDomainPurityTest}.
+ * performs in-memory computation. Mirrors {@code PrerequisiteAcyclicityService} purity. Enforced by
+ * {@code ProgressDomainPurityTest}.
  *
- * <p>Algorithm per ADR-F3-004:
+ * <p>Algorithm:
  *
  * <ol>
  *   <li>If the course already has an effective declared status (PASSED/FAILED/CANCELLED), that
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  *       entries are included in the {@code unmetRequirements} list for UI rendering.
  * </ol>
  *
- * <p>Satisfies: AVL-1-HP, AVL-1-BLOCKED, AVL-1-SOFT-PREREQ, AVL-1-PASSED-COURSE.
+ * <p>Handles HARD-prereq blocking, SOFT-prereq advisory warnings, and passed-course short-circuit.
  */
 public class CourseAvailabilityService {
 
@@ -86,10 +86,9 @@ public class CourseAvailabilityService {
       for (CourseRequirementEdge edge : courseEdges) {
         UUID requiredCourseId = edge.requiredCourseId();
         if (requiredCourseId == null) {
-          // TODO (FIX-S2): MINIMUM_CREDITS and CONFIGURABLE edges with no specific requiredCourseId
-          // are silently skipped here. A future implementation should evaluate credit totals
-          // against
-          // the threshold value stored in the edge (out of WU4 scope; ADR-F3 deferred).
+          // TODO: MINIMUM_CREDITS and CONFIGURABLE edges with no specific requiredCourseId are
+          // silently skipped. A future implementation should evaluate credit totals against the
+          // threshold value stored in the edge.
           continue;
         }
 

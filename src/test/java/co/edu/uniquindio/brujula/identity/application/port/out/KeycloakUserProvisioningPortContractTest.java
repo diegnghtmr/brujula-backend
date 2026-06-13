@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Uses a {@link FakeKeycloakProvisioningAdapter} in-memory stub to verify the port interface
  * compiles, has the correct method signatures, and delegates correctly. No Spring context needed —
- * pure JUnit 5 test (ARQ-002, application layer framework-free).
+ * pure JUnit 5 test (application layer is framework-free).
  *
  * <p>Strict TDD RED phase: this test was written BEFORE the port interface existed.
  */

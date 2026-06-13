@@ -3,11 +3,11 @@
 -- !! PROVISIONAL / NON-OFFICIAL !!
 -- Source: Plan 21, Acuerdo C.A. 075/2017, 163 cr, 57 courses, 10 sem DIURNA.
 -- NOCTURNA 11-semester distribution is INFERRED (topological re-binning from
--- institutional planilla — human-approved 2026-06-06 per #1610, treated as inferred).
+-- institutional planilla — human-approved, treated as inferred).
 -- Prerequisite edges: ALTA-confidence edges (malla/user-confirmed) → inferred=false;
 -- MEDIA-confidence edges → inferred=true.
 --
--- Satisfies: CAT-002/003, CUR-001/002/003/004/005/006/007, Design §5 V012
+-- Satisfies: Program catalog and curriculum specs
 -- official_code minting: {PROG}-S{diurna_sem}-{SLUG}
 --   PROG=ISC, SLUG = accent-fold(name) → strip non-alnum → UPPERCASE
 --
@@ -325,7 +325,7 @@ INSERT INTO curriculum.course (id, plan_id, program_id, official_code, name, typ
 -- ============================================================
 -- 6. Course recommended semesters
 --    DIURNA: official semesters from Plan 21 malla
---    NOCTURNA: approved inferred distribution (11 sem, #1607/#1610)
+--    NOCTURNA: approved inferred distribution (11 sem)
 -- ============================================================
 
 -- Semester I courses (DIURNA=1, NOCTURNA=1)
@@ -400,7 +400,7 @@ INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, sem
 -- Semester V courses
 -- DIURNA=5
 -- NOCTURNA: Estadística=5, T.Grafos=5, Seg.Lengua II=5, Estructuras=5
---           Ing.Software I=6 (moved per #1607), Infra.Computacional=6 (moved per #1607)
+--           Ing.Software I=6 (moved, inferred), Infra.Computacional=6 (moved, inferred)
 INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, semester) VALUES
 ('c0050000-0000-4000-a000-000000000001', 'DIURNA', 5),
 ('c0050000-0000-4000-a000-000000000002', 'DIURNA', 5),
@@ -414,9 +414,9 @@ INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, sem
 ('c0050000-0000-4000-a000-000000000002', 'NOCTURNA', 5),
 ('c0050000-0000-4000-a000-000000000003', 'NOCTURNA', 5),
 ('c0050000-0000-4000-a000-000000000004', 'NOCTURNA', 5),
--- Ing.Software I moved from diurna V to nocturna VI (#1607 inferred)
+-- Ing.Software I moved from diurna V to nocturna VI (inferred)
 ('c0050000-0000-4000-a000-000000000005', 'NOCTURNA', 6),
--- Infra.Computacional moved from diurna V to nocturna VI (#1607 inferred)
+-- Infra.Computacional moved from diurna V to nocturna VI (inferred)
 ('c0050000-0000-4000-a000-000000000006', 'NOCTURNA', 6);
 
 -- Semester VI courses
@@ -485,7 +485,7 @@ INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, sem
 ('c0080000-0000-4000-a000-000000000001', 'NOCTURNA', 9),
 -- TLF: prereq = Seminario.Investigación(N8) → N7? WAIT - Sem.Inv is in N8, TLF must be > N8.
 -- But TLF's prereq from prereqs.md = Teoría de Grafos (N5 diurna, N5 nocturna).
--- However looking at the approved nocturna distribution in #1607: TLF→sem 7.
+-- However looking at the approved nocturna distribution: TLF→sem 7.
 -- WAIT: I need to re-check. The oficial prereq doc says TLF ← Teoría de Grafos (ALTA, malla).
 -- The plan doc says TLF ← Seminario de Investigación (in the official JSON).
 -- We use the prerrequisitos-inferidos.md as AUTHORITATIVE: TLF ← Teoría de Grafos (ALTA, malla, confirmed by user).
@@ -518,10 +518,10 @@ INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, sem
 -- Wait: Admin.Proyectos is at N10 and IA requires Admin.Proyectos → IA must be > N10.
 -- IA prereq from prerrequisitos.md: "Administración de Proyectos; Análisis de Algoritmos"
 -- Both in N9 and N10 respectively... Admin.Proyectos(N10), Análisis.Alg(N9).
--- But IA is currently set to N10 in #1607 table. Admin.Proyectos is also N10.
+-- But IA is currently set to N10 in the approved table. Admin.Proyectos is also N10.
 -- That creates a forward dependency! IA(N10) requires Admin.Proyectos(N10) — same semester is OK
 -- (semester ordering: required_sem <= target_sem). So N10 <= N10 is fine. ✓
--- But wait: let me re-read the spec. From #1607: IA is N10, Admin.Proyectos is N10.
+-- But wait: let me re-read the spec. IA is N10, Admin.Proyectos is N10.
 -- The validation is: required_course.semester <= target_course.semester.
 -- Admin.Proyectos(N10) <= IA(N10) → 10 <= 10 → OK. ✓
 -- Análisis.Algoritmos(N9) <= IA(N10) → 9 <= 10 → OK. ✓
@@ -532,12 +532,12 @@ INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, sem
 ('c0090000-0000-4000-a000-000000000004', 'NOCTURNA', 10),
 -- Prof.IV: prereq = Prof.II(N9) + line gatekeeper → N10 OK
 ('c0090000-0000-4000-a000-000000000005', 'NOCTURNA', 10),
--- Admin: no prereq → N9 (#1607)
+-- Admin: no prereq → N9
 ('c0090000-0000-4000-a000-000000000006', 'NOCTURNA', 9);
 
 -- Semester X courses
 -- DIURNA=10
--- NOCTURNA: Trabajo de Grado=11, EFP II & III = flexible (2, per #1607), Cátedra=graduation_req (10), Ética=11
+-- NOCTURNA: Trabajo de Grado=11, EFP II & III = flexible (2, inferred), Cátedra=graduation_req (10), Ética=11
 INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, semester) VALUES
 ('c0100000-0000-4000-a000-000000000001', 'DIURNA', 10),
 ('c0100000-0000-4000-a000-000000000002', 'DIURNA', 10),
@@ -548,7 +548,7 @@ INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, sem
 INSERT INTO curriculum.course_recommended_semester (course_id, journey_code, semester) VALUES
 -- Trabajo de Grado: prereq = Prof.III(N10) + Prof.IV(N10) → N11 OK
 ('c0100000-0000-4000-a000-000000000001', 'NOCTURNA', 11),
--- EFP II & III: flexible from sem 2 in nocturna (placed at 2 per #1607)
+-- EFP II & III: flexible from sem 2 in nocturna (placed at 2, inferred)
 ('c0100000-0000-4000-a000-000000000002', 'NOCTURNA', 2),
 ('c0100000-0000-4000-a000-000000000003', 'NOCTURNA', 2),
 -- Cátedra Multidisciplinar: graduation req, placed at N10
