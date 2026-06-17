@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
@@ -32,9 +31,7 @@ class GitignoreRulesTest {
 
     // Guard: we must be inside a git work tree
     Process p =
-        new ProcessBuilder("git", "rev-parse", "--show-toplevel")
-            .redirectErrorStream(true)
-            .start();
+        new ProcessBuilder("git", "rev-parse", "--show-toplevel").redirectErrorStream(true).start();
     boolean finished = p.waitFor(5, TimeUnit.SECONDS);
     assumeTrue(finished && p.exitValue() == 0, "Not inside a git work tree — skipping");
 
@@ -94,13 +91,13 @@ class GitignoreRulesTest {
 
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
-  /**
-   * Asserts that the given relative path is ignored by git (exit code 0 from git check-ignore).
-   */
+  /** Asserts that the given relative path is ignored by git (exit code 0 from git check-ignore). */
   private void assertIgnored(String relativePath) throws IOException, InterruptedException {
     int exitCode = runCheckIgnore(relativePath);
     assertThat(exitCode)
-        .as("Expected '%s' to be IGNORED by .gitignore but git check-ignore returned %d", relativePath, exitCode)
+        .as(
+            "Expected '%s' to be IGNORED by .gitignore but git check-ignore returned %d",
+            relativePath, exitCode)
         .isEqualTo(0);
   }
 
@@ -132,8 +129,7 @@ class GitignoreRulesTest {
 
   private static boolean isCommandAvailable(String command) {
     try {
-      Process p =
-          new ProcessBuilder("which", command).redirectErrorStream(true).start();
+      Process p = new ProcessBuilder("which", command).redirectErrorStream(true).start();
       return p.waitFor(3, TimeUnit.SECONDS) && p.exitValue() == 0;
     } catch (Exception e) {
       return false;

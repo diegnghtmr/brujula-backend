@@ -241,8 +241,22 @@ tasks.named("check") {
 // ============================================================
 // Test configuration
 // ============================================================
+// Opt-in task for the real round-trip integration test (requires age + pg_dump + psql on PATH).
+// NOT wired into check — run explicitly: ./gradlew roundTripTest
+tasks.register<Test>("roundTripTest") {
+    description = "Runs @Tag(\"requires-age\") round-trip backup/restore integration tests. Requires age, pg_dump, psql, and Docker on PATH."
+    group = "verification"
+    useJUnitPlatform {
+        includeTags("requires-age")
+    }
+    shouldRunAfter(tasks.test)
+}
+
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // Exclude the real round-trip IT so ./gradlew check stays green without age installed
+        excludeTags("requires-age")
+    }
     // Testcontainers stability: run test JVM forks sequentially so that each Spring
     // ApplicationContext spin-up gets a fresh, non-contested Postgres container.
     // Without this, parallel forks reuse cached JDBC URLs pointing to dead containers
