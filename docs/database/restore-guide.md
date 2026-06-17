@@ -125,8 +125,8 @@ a leftover that must be deleted and investigated.
 | `psql: error: ... relation "..." does not exist` | Schema not built | Run the app (or `./gradlew flywayMigrate`) against the target DB first, then re-run restore |
 | `psql: error: ERROR: duplicate key value` | Database already contains data | Drop all data (`TRUNCATE ... CASCADE`) or restore into a fresh empty DB with schema |
 | `ERROR: 'age' is not on PATH` | age not installed or not on PATH | Install age and confirm `which age` / `where age` resolves |
-| `ERROR: Required variable 'AGE_PRIVATE_KEY_PATH' is missing` | `.env` not configured | Copy `.env.example` to `.env` and fill in `AGE_PRIVATE_KEY_PATH` |
-| `ERROR: Key file not found at '...'` | Private key file missing | Place `brujula-key.txt` at the path set in `AGE_PRIVATE_KEY_PATH` |
+| `ERROR: Required variable 'AGE_PRIVATE_KEY_PATH' is missing or empty in .env.` | `.env` not configured | Copy `.env.example` to `.env` and fill in `AGE_PRIVATE_KEY_PATH` |
+| `ERROR: Private key file not found at '...'` | Private key file missing | Place `brujula-key.txt` at the path set in `AGE_PRIVATE_KEY_PATH` |
 | Script exits with code `1` (psql non-zero mid-import) | Partial failure — `ON_ERROR_STOP=1` halted on error | Check psql stderr output, fix the schema issue, and re-run from scratch |
 
 ### Restoring on a different machine
