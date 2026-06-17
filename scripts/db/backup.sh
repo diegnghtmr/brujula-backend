@@ -14,7 +14,8 @@
 #
 # Requires:
 #   - .env file with DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD,
-#     AGE_PUBLIC_KEY, AGE_PRIVATE_KEY_PATH
+#     AGE_PUBLIC_KEY. (AGE_PRIVATE_KEY_PATH also lives in .env, but it is used
+#     by restore.sh — encrypting a backup needs only the public key.)
 #   - age (https://github.com/FiloSottile/age) on PATH
 #   - pg_dump (PostgreSQL 18.4+) on PATH
 #
@@ -81,6 +82,8 @@ check_var DB_NAME
 check_var DB_USER
 check_var DB_PASSWORD
 check_var AGE_PUBLIC_KEY
+# AGE_PRIVATE_KEY_PATH is intentionally NOT checked here: encryption uses only
+# the public key. Validating the private key is restore.sh's responsibility.
 
 if [ "$preflight_error" -ne 0 ]; then
   exit 3
