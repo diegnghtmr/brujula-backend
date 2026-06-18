@@ -283,6 +283,18 @@ tasks.test {
     // (HikariPool interruption on context cache miss). maxParallelForks=1 is the
     // standard Testcontainers fix for single-machine developer builds.
     maxParallelForks = 1
+    // CI memory stability: a single sequential JVM worker runs every test, and each distinct
+    // @MockitoBean combination spins up a new Spring ApplicationContext (each with its own
+    // HikariPool + Testcontainers handle). Without bounds, those contexts accumulate until the
+    // worker's footprint plus the Postgres containers exhausts the runner's RAM and the kernel
+    // kills the process mid-run ("Could not complete execution for Gradle Test Executor 1") —
+    // a non-deterministic OOM that passes on a plain rerun. Two explicit caps make it deterministic:
+    //   1. An explicit max heap so the JVM does not grab the default (~25% of host RAM) and
+    //      contend with Docker for the rest.
+    //   2. A bounded Spring context cache (default 32) so evicted contexts are closed and release
+    //      their pools + containers instead of piling up for the whole run.
+    maxHeapSize = "3g"
+    systemProperty("spring.test.context.cache.maxSize", "16")
     // Reduce HikariCP pool size in tests to avoid "too many clients already" when multiple
     // Spring ApplicationContext instances (each with distinct @MockitoBean combinations) share
     // a single Testcontainers PostgreSQL container. Default pool=10 × N contexts can exceed
