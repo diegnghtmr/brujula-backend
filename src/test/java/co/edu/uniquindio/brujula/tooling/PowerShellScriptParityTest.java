@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -22,10 +23,13 @@ import org.junit.jupiter.api.io.TempDir;
  * same pg_dump flags, same filename pattern, same exit-code semantics, and same temp-file cleanup
  * guarantee.
  *
- * <p>All tests are guarded with {@code assumeTrue(pwshOnPath())} so they SKIP cleanly on Linux CI
- * where {@code pwsh} is not installed. The green gate does not prove the .ps1 files ran — that is
- * verified on Windows dev machines or a pwsh-equipped runner.
+ * <p>Tagged {@code requires-pwsh} and EXCLUDED from the default {@code ./gradlew check} gate. The
+ * .ps1 scripts target Windows; GitHub-hosted Linux runners ship PowerShell Core, so an {@code
+ * assumeTrue(pwshOnPath())} guard alone would let these run against the bash mock stubs on Linux
+ * and fail. Run them explicitly on a Windows machine via {@code ./gradlew powershellParityTest}.
+ * The green gate does not prove the .ps1 files ran — that is verified on Windows.
  */
+@Tag("requires-pwsh")
 class PowerShellScriptParityTest {
 
   @TempDir Path work;

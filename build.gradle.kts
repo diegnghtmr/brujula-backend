@@ -257,10 +257,25 @@ tasks.register<Test>("roundTripTest") {
     environment("TESTCONTAINERS_RYUK_DISABLED", System.getenv("TESTCONTAINERS_RYUK_DISABLED") ?: "false")
 }
 
+// Opt-in task for the Windows PowerShell parity tests (require pwsh; the .ps1 scripts target
+// Windows). NOT wired into check — run explicitly on Windows: ./gradlew powershellParityTest
+tasks.register<Test>("powershellParityTest") {
+    description = "Runs @Tag(\"requires-pwsh\") PowerShell backup/restore parity tests. Requires pwsh (intended for Windows)."
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform {
+        includeTags("requires-pwsh")
+    }
+    shouldRunAfter(tasks.test)
+}
+
 tasks.test {
     useJUnitPlatform {
-        // Exclude the real round-trip IT so ./gradlew check stays green without age installed
-        excludeTags("requires-age")
+        // Exclude the real round-trip IT (needs age) and the PowerShell parity tests (target
+        // Windows; GitHub Linux runners ship pwsh and would run them against bash mock stubs and
+        // fail) so ./gradlew check stays green on a Linux runner.
+        excludeTags("requires-age", "requires-pwsh")
     }
     // Testcontainers stability: run test JVM forks sequentially so that each Spring
     // ApplicationContext spin-up gets a fresh, non-contested Postgres container.
