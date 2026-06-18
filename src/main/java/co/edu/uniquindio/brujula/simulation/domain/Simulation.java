@@ -12,8 +12,8 @@ import java.util.UUID;
  * <p>Invariants:
  *
  * <ul>
- *   <li>programIds must have 1 or 2 elements (INV-002).
- *   <li>programIds must be unique (contract {@code uniqueItems}).
+ *   <li>scopeEntries: 1..4 (programId, journeyCode) pairs; pairs must be unique (INV-002-v2).
+ *   <li>At most 2 distinct programIds across all scope entries (INV-002-v2).
  *   <li>name must be non-blank and <= 120 chars.
  *   <li>Lifecycle status is ACTIVE or DELETED (INV-004: CURRENT/OUTDATED never persisted).
  * </ul>
@@ -27,6 +27,7 @@ public class Simulation {
   private String name;
   private final UUID periodId;
   private final List<UUID> programIds;
+  private final List<SimulationScopeEntry> scopeEntries;
   private SimulationLifecycle lifecycleStatus;
   private final Instant createdAt;
   private Instant updatedAt;
@@ -39,6 +40,7 @@ public class Simulation {
       String name,
       UUID periodId,
       List<UUID> programIds,
+      List<SimulationScopeEntry> scopeEntries,
       SimulationLifecycle lifecycleStatus,
       Instant createdAt,
       Instant updatedAt,
@@ -48,6 +50,7 @@ public class Simulation {
     this.name = name;
     this.periodId = periodId;
     this.programIds = new ArrayList<>(programIds);
+    this.scopeEntries = new ArrayList<>(scopeEntries);
     this.lifecycleStatus = lifecycleStatus;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
@@ -55,20 +58,36 @@ public class Simulation {
   }
 
   /**
-   * Factory: create a new simulation.
+   * Factory: create a new simulation from scope entries.
    *
-   * <p>Validates invariants: name non-blank, 1..2 unique programIds.
+   * <p>Validates invariants: name non-blank, 1..4 unique (programId, journeyCode) pairs, at most 2
+   * distinct programIds.
    */
   public static Simulation create(
-      SimulationId id, UUID ownerId, String name, UUID periodId, List<UUID> programIds) {
+      SimulationId id,
+      UUID ownerId,
+      String name,
+      UUID periodId,
+      List<SimulationScopeEntry> scopeEntries) {
     Objects.requireNonNull(id, "id required");
     Objects.requireNonNull(ownerId, "ownerId required");
     Objects.requireNonNull(periodId, "periodId required");
     validateName(name);
-    validateProgramIds(programIds);
+    validateScopeEntries(scopeEntries);
+    List<UUID> derivedProgramIds =
+        scopeEntries.stream().map(SimulationScopeEntry::programId).distinct().toList();
     Instant now = Instant.now();
     return new Simulation(
-        id, ownerId, name, periodId, programIds, SimulationLifecycle.ACTIVE, now, now, 0L);
+        id,
+        ownerId,
+        name,
+        periodId,
+        derivedProgramIds,
+        scopeEntries,
+        SimulationLifecycle.ACTIVE,
+        now,
+        now,
+        0L);
   }
 
   /**
@@ -81,12 +100,22 @@ public class Simulation {
       String name,
       UUID periodId,
       List<UUID> programIds,
+      List<SimulationScopeEntry> scopeEntries,
       SimulationLifecycle lifecycleStatus,
       Instant createdAt,
       Instant updatedAt,
       long version) {
     return new Simulation(
-        id, ownerId, name, periodId, programIds, lifecycleStatus, createdAt, updatedAt, version);
+        id,
+        ownerId,
+        name,
+        periodId,
+        programIds,
+        scopeEntries,
+        lifecycleStatus,
+        createdAt,
+        updatedAt,
+        version);
   }
 
   // -------------------------------------------------------------------------
@@ -125,15 +154,27 @@ public class Simulation {
     }
   }
 
-  private static void validateProgramIds(List<UUID> programIds) {
-    Objects.requireNonNull(programIds, "programIds required");
-    if (programIds.isEmpty() || programIds.size() > 2) {
+  private static void validateScopeEntries(List<SimulationScopeEntry> entries) {
+    Objects.requireNonNull(entries, "scopeEntries required");
+    if (entries.isEmpty()) {
       throw new IllegalArgumentException(
-          "programIds must have 1 or 2 elements, got: " + programIds.size());
+          "scopeEntries must have at least 1 (programId, journeyCode) pair");
     }
-    long distinct = programIds.stream().distinct().count();
-    if (distinct != programIds.size()) {
-      throw new IllegalArgumentException("programIds must be unique");
+    if (entries.size() > 4) {
+      throw new IllegalArgumentException(
+          "scopeEntries must have at most 4 (programId, journeyCode) pairs, got: "
+              + entries.size());
+    }
+    long distinctPairs = entries.stream().distinct().count();
+    if (distinctPairs != entries.size()) {
+      throw new IllegalArgumentException(
+          "scopeEntries (programId, journeyCode) pairs must be unique");
+    }
+    long distinctPrograms =
+        entries.stream().map(SimulationScopeEntry::programId).distinct().count();
+    if (distinctPrograms > 2) {
+      throw new IllegalArgumentException(
+          "scopeEntries must reference at most 2 distinct programs, got: " + distinctPrograms);
     }
   }
 
@@ -157,8 +198,22 @@ public class Simulation {
     return periodId;
   }
 
+  /** Returns the distinct programIds derived from scope entries. Backward-compatible accessor. */
   public List<UUID> getProgramIds() {
     return List.copyOf(programIds);
+  }
+
+  /**
+   * Returns the distinct programIds derived from scope entries (canonical name aligned with the
+   * record accessor convention used in tests and views).
+   */
+  public List<UUID> programIds() {
+    return List.copyOf(programIds);
+  }
+
+  /** Returns an immutable copy of the (programId, journeyCode) scope entries. */
+  public List<SimulationScopeEntry> getScopeEntries() {
+    return List.copyOf(scopeEntries);
   }
 
   public SimulationLifecycle getLifecycleStatus() {

@@ -25,7 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * WU1-TDD: Integration tests for the OfferingPersistenceAdapter using V016+V017 seeded data.
+ * WU1-TDD: Integration tests for the OfferingPersistenceAdapter using V016+V022 seeded data.
  *
  * <p>Uses the real Flyway-migrated PostgreSQL database (via AbstractPostgresIntegrationTest). Tests
  * verify that:
@@ -218,8 +218,8 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void getOfferingReturnRealCourseName() {
-    // Cálculo Diferencial offering
-    UUID calculoOfferingId = UUID.fromString("00000001-0000-4001-a000-000000000001");
+    // Cálculo Diferencial offering loaded from the 2026-2 XLSX catalog (V022).
+    UUID calculoOfferingId = UUID.fromString("02200014-0000-4001-a000-000000000014");
     OfferingDetailView detail = getOfferingQuery.getOffering(calculoOfferingId);
 
     assertThat(detail.courseName())
@@ -253,7 +253,7 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void getOfferingDetailHasNonNullVersion() {
-    UUID calculoOfferingId = UUID.fromString("00000001-0000-4001-a000-000000000001");
+    UUID calculoOfferingId = UUID.fromString("02200014-0000-4001-a000-000000000014");
     OfferingDetailView detail = getOfferingQuery.getOffering(calculoOfferingId);
 
     assertThat(detail.version())
@@ -265,7 +265,7 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void getOfferingScheduleOptionsHaveVersion() {
-    UUID calculoOfferingId = UUID.fromString("00000001-0000-4001-a000-000000000001");
+    UUID calculoOfferingId = UUID.fromString("02200014-0000-4001-a000-000000000014");
     OfferingDetailView detail = getOfferingQuery.getOffering(calculoOfferingId);
 
     assertThat(detail.scheduleOptions())
@@ -284,7 +284,7 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void getOfferingScheduleOptionsHaveOfferingId() {
-    UUID calculoOfferingId = UUID.fromString("00000001-0000-4001-a000-000000000001");
+    UUID calculoOfferingId = UUID.fromString("02200014-0000-4001-a000-000000000014");
     OfferingDetailView detail = getOfferingQuery.getOffering(calculoOfferingId);
 
     assertThat(detail.scheduleOptions())
@@ -306,8 +306,8 @@ class OfferingPersistenceAdapterIT extends AbstractPostgresIntegrationTest {
 
   @Test
   void resolveScheduleOptionReturnsRealCourseName() {
-    // Use the Cálculo Diferencial DIURNA option
-    UUID calculoOptionId = UUID.fromString("00000001-0000-4002-a000-000000000001");
+    // Use the Cálculo Diferencial DIURNA option loaded from the 2026-2 XLSX catalog (V022).
+    UUID calculoOptionId = UUID.fromString("02200014-0000-4002-a000-000000000014");
     ScheduleOptionResolutionView resolution =
         resolveScheduleOptionQuery.resolveScheduleOption(calculoOptionId);
 

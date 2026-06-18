@@ -2,6 +2,7 @@ package co.edu.uniquindio.brujula.simulation.application.service;
 
 import co.edu.uniquindio.brujula.simulation.application.dto.ProgramCreditSummaryView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationValidationView;
 import co.edu.uniquindio.brujula.simulation.application.dto.ValidationNoticeView;
@@ -228,6 +229,9 @@ public class GetSimulationService implements GetSimulationQuery {
         simulation.getPeriodId(),
         periodName,
         simulation.getProgramIds(),
+        simulation.getScopeEntries().stream()
+            .map(e -> new SimulationScopeEntryDto(e.programId(), e.journeyCode()))
+            .toList(),
         status.name(),
         simulation.getCreatedAt(),
         simulation.getUpdatedAt(),

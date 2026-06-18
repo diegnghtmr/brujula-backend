@@ -112,7 +112,7 @@ class SimulationExceptionHandlerScopeTest extends AbstractPostgresIntegrationTes
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"name":"Scope Test Sim","periodId":"%s","programIds":["%s"]}
+                    {"name":"Scope Test Sim","periodId":"%s","selections":[{"programId":"%s","journeyCode":"DIURNA"}]}
                     """
                         .formatted(periodId, programId)))
         .andExpect(status().isConflict())

@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import co.edu.uniquindio.brujula.simulation.application.dto.ProgramCreditSummaryView;
 import co.edu.uniquindio.brujula.simulation.application.dto.ScheduleOptionResolutionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationValidationView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.GetSimulationQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.out.CreditLimitPort;
@@ -99,6 +100,7 @@ class ReviewSimulationServiceTest {
         "Test Sim",
         PERIOD_ID,
         List.of(PROGRAM_A),
+        List.of(),
         SimulationLifecycle.ACTIVE,
         Instant.now(),
         Instant.now(),
@@ -147,6 +149,7 @@ class ReviewSimulationServiceTest {
         PERIOD_ID,
         "2026-2",
         List.of(PROGRAM_A),
+        List.of(new SimulationScopeEntryDto(PROGRAM_A, "DIURNA")),
         "CURRENT",
         Instant.now(),
         Instant.now(),

@@ -4,6 +4,7 @@ import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationP
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationPort;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationLifecycle;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationScopeEntry;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,18 +24,24 @@ import org.springframework.transaction.annotation.Transactional;
 class SimulationPersistenceAdapter implements LoadSimulationPort, SaveSimulationPort {
 
   private final SimulationJpaRepository repository;
+  private final SimulationScopeJpaRepository scopeRepository;
   private final SimulationPersistenceMapper mapper;
 
   SimulationPersistenceAdapter(
-      SimulationJpaRepository repository, SimulationPersistenceMapper mapper) {
+      SimulationJpaRepository repository,
+      SimulationScopeJpaRepository scopeRepository,
+      SimulationPersistenceMapper mapper) {
     this.repository = repository;
+    this.scopeRepository = scopeRepository;
     this.mapper = mapper;
   }
 
   @Override
   @Transactional(readOnly = true)
   public Optional<Simulation> loadById(UUID simulationId) {
-    return repository.findById(simulationId).map(mapper::toDomain);
+    return repository
+        .findById(simulationId)
+        .map(entity -> mapper.toDomain(entity, scopeRepository.findByIdSimulationId(simulationId)));
   }
 
   @Override
@@ -50,7 +57,10 @@ class SimulationPersistenceAdapter implements LoadSimulationPort, SaveSimulation
       entityPage =
           repository.findByOwnerIdAndStatus(ownerId, SimulationLifecycle.ACTIVE.name(), pageable);
     }
-    return entityPage.stream().map(mapper::toDomain).toList();
+    return entityPage.stream()
+        .map(
+            entity -> mapper.toDomain(entity, scopeRepository.findByIdSimulationId(entity.getId())))
+        .toList();
   }
 
   @Override
@@ -69,6 +79,22 @@ class SimulationPersistenceAdapter implements LoadSimulationPort, SaveSimulation
     SimulationJpaEntity saved = repository.save(entity);
     // Flush so @Version is incremented before we read it back
     repository.flush();
-    return mapper.toDomain(repository.findById(saved.getId()).orElseThrow());
+
+    // Persist scope entries: delete-then-insert to handle updates cleanly
+    UUID simulationId = saved.getId();
+    scopeRepository.deleteBySimulationId(simulationId);
+    List<SimulationScopeEntry> scopeEntries = simulation.getScopeEntries();
+    if (scopeEntries != null && !scopeEntries.isEmpty()) {
+      List<SimulationScopeJpaEntity> scopeRows =
+          scopeEntries.stream()
+              .map(e -> new SimulationScopeJpaEntity(simulationId, e.programId(), e.journeyCode()))
+              .toList();
+      scopeRepository.saveAll(scopeRows);
+      scopeRepository.flush();
+    }
+
+    List<SimulationScopeJpaEntity> persistedScope =
+        scopeRepository.findByIdSimulationId(simulationId);
+    return mapper.toDomain(repository.findById(simulationId).orElseThrow(), persistedScope);
   }
 }

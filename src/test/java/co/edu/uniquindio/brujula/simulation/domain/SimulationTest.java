@@ -10,7 +10,10 @@ import org.junit.jupiter.api.Test;
 /**
  * WU3 domain unit tests for {@link Simulation}.
  *
- * <p>Covers: name invariant, programIds invariant (1..2 unique), rename, markDeleted.
+ * <p>Covers: name invariant, scope entries (INV-002-v2), rename, markDeleted.
+ *
+ * <p>Updated from WU3-original: create() now accepts {@link SimulationScopeEntry} list instead of a
+ * plain {@code List<UUID>}.
  */
 class SimulationTest {
 
@@ -19,11 +22,19 @@ class SimulationTest {
   private final UUID programId1 = UUID.randomUUID();
   private final UUID programId2 = UUID.randomUUID();
 
+  private SimulationScopeEntry entry1() {
+    return new SimulationScopeEntry(programId1, "DIURNA");
+  }
+
+  private SimulationScopeEntry entry2() {
+    return new SimulationScopeEntry(programId2, "DIURNA");
+  }
+
   @Test
   void create_with_valid_data_succeeds() {
     Simulation sim =
         Simulation.create(
-            SimulationId.generate(), ownerId, "Mi simulación 2026", periodId, List.of(programId1));
+            SimulationId.generate(), ownerId, "Mi simulación 2026", periodId, List.of(entry1()));
     assertThat(sim.getName()).isEqualTo("Mi simulación 2026");
     assertThat(sim.getLifecycleStatus()).isEqualTo(SimulationLifecycle.ACTIVE);
     assertThat(sim.getProgramIds()).containsExactly(programId1);
@@ -38,12 +49,13 @@ class SimulationTest {
             ownerId,
             "Dos programas",
             periodId,
-            List.of(programId1, programId2));
+            List.of(entry1(), entry2()));
     assertThat(sim.getProgramIds()).hasSize(2);
   }
 
   @Test
-  void create_with_three_programs_throws() {
+  void create_with_three_distinct_programs_throws() {
+    UUID p3 = UUID.randomUUID();
     assertThatThrownBy(
             () ->
                 Simulation.create(
@@ -51,26 +63,33 @@ class SimulationTest {
                     ownerId,
                     "Too many",
                     periodId,
-                    List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())))
+                    List.of(
+                        new SimulationScopeEntry(programId1, "DIURNA"),
+                        new SimulationScopeEntry(programId2, "DIURNA"),
+                        new SimulationScopeEntry(p3, "DIURNA"))))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("1 or 2");
+        .hasMessageContaining("2 distinct programs");
   }
 
   @Test
-  void create_with_zero_programs_throws() {
+  void create_with_zero_entries_throws() {
     assertThatThrownBy(
             () -> Simulation.create(SimulationId.generate(), ownerId, "Empty", periodId, List.of()))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("1 or 2");
+        .hasMessageContaining("at least 1");
   }
 
   @Test
-  void create_with_duplicate_program_ids_throws() {
-    UUID dup = UUID.randomUUID();
+  void create_with_duplicate_scope_entries_throws() {
+    var entry = new SimulationScopeEntry(programId1, "DIURNA");
     assertThatThrownBy(
             () ->
                 Simulation.create(
-                    SimulationId.generate(), ownerId, "Duplicates", periodId, List.of(dup, dup)))
+                    SimulationId.generate(),
+                    ownerId,
+                    "Duplicates",
+                    periodId,
+                    List.of(entry, entry)))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("unique");
   }
@@ -80,7 +99,7 @@ class SimulationTest {
     assertThatThrownBy(
             () ->
                 Simulation.create(
-                    SimulationId.generate(), ownerId, "  ", periodId, List.of(programId1)))
+                    SimulationId.generate(), ownerId, "  ", periodId, List.of(entry1())))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("blank");
   }
@@ -91,7 +110,7 @@ class SimulationTest {
     assertThatThrownBy(
             () ->
                 Simulation.create(
-                    SimulationId.generate(), ownerId, longName, periodId, List.of(programId1)))
+                    SimulationId.generate(), ownerId, longName, periodId, List.of(entry1())))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("120");
   }
@@ -100,7 +119,7 @@ class SimulationTest {
   void rename_updates_name_and_preserves_version_until_persisted() {
     Simulation sim =
         Simulation.create(
-            SimulationId.generate(), ownerId, "Original Name", periodId, List.of(programId1));
+            SimulationId.generate(), ownerId, "Original Name", periodId, List.of(entry1()));
     sim.rename("New Name");
     assertThat(sim.getName()).isEqualTo("New Name");
     // Version is managed by JPA @Version; domain object reflects 0 until persisted
@@ -109,7 +128,7 @@ class SimulationTest {
   @Test
   void rename_to_blank_throws() {
     Simulation sim =
-        Simulation.create(SimulationId.generate(), ownerId, "Name", periodId, List.of(programId1));
+        Simulation.create(SimulationId.generate(), ownerId, "Name", periodId, List.of(entry1()));
     assertThatThrownBy(() -> sim.rename("")).isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -117,16 +136,16 @@ class SimulationTest {
   void markDeleted_changes_lifecycle_to_deleted() {
     Simulation sim =
         Simulation.create(
-            SimulationId.generate(), ownerId, "To delete", periodId, List.of(programId1));
+            SimulationId.generate(), ownerId, "To delete", periodId, List.of(entry1()));
     sim.markDeleted();
     assertThat(sim.getLifecycleStatus()).isEqualTo(SimulationLifecycle.DELETED);
   }
 
   @Test
-  void programIds_are_defensive_copy() {
-    List<UUID> ids = new java.util.ArrayList<>(List.of(programId1));
-    Simulation sim = Simulation.create(SimulationId.generate(), ownerId, "Safe", periodId, ids);
-    ids.add(programId2); // mutate original list
-    assertThat(sim.getProgramIds()).hasSize(1); // domain object not affected
+  void scopeEntries_are_defensive_copy() {
+    var entries = new java.util.ArrayList<>(List.of(entry1()));
+    Simulation sim = Simulation.create(SimulationId.generate(), ownerId, "Safe", periodId, entries);
+    entries.add(entry2()); // mutate original list
+    assertThat(sim.getScopeEntries()).hasSize(1); // domain object not affected
   }
 }
