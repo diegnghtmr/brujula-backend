@@ -12,7 +12,7 @@ import java.util.UUID;
  *
  * <p>An ImportBatch is created through one of the static factory methods ({@link #validated} or
  * {@link #invalid}) and transitions from VALIDATED → CONFIRMED via {@link #markConfirmed()}.
- * INVALID batches are terminal — they cannot be confirmed (INV-02).
+ * INVALID batches are terminal — they cannot be confirmed.
  *
  * <p>The {@code validatedRows} payload stores the parsed row data as a list of {@link ImportRow}
  * records so that the confirm operation can replay them without re-parsing the original file. JSONB
@@ -21,12 +21,12 @@ import java.util.UUID;
  * <p>Invariants enforced:
  *
  * <ul>
- *   <li>INV-01 — A CONFIRMED batch cannot be re-confirmed.
- *   <li>INV-02 — An INVALID batch cannot be confirmed.
+ *   <li>A CONFIRMED batch cannot be re-confirmed.
+ *   <li>An INVALID batch cannot be confirmed.
  *   <li>validRows ≤ totalRows (structural invariant on construction).
  * </ul>
  *
- * <p>Pure domain class — zero framework annotations (ARQ-002).
+ * <p>Pure domain class — zero framework annotations.
  */
 public class ImportBatch {
 
@@ -35,7 +35,7 @@ public class ImportBatch {
    *
    * <p>Increment this constant whenever the {@link ImportRow} / {@link ImportIssue} structures
    * change in a breaking way. The persistence adapter compares this value against the {@code
-   * schema_version} column at load time and rejects mismatches (NFR-006).
+   * schema_version} column at load time and rejects mismatches.
    */
   public static final int CURRENT_SCHEMA_VERSION = 1;
 
@@ -211,8 +211,8 @@ public class ImportBatch {
    * <p>Enforces:
    *
    * <ul>
-   *   <li>INV-01 — throws if already CONFIRMED
-   *   <li>INV-02 — throws if INVALID
+   *   <li>Throws if already CONFIRMED
+   *   <li>Throws if INVALID
    * </ul>
    *
    * @throws ImportBatchNotConfirmableException if the batch is not in VALIDATED status

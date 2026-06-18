@@ -8,8 +8,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-TDD RED: ScheduleSession compact constructor invariant (endsAt > startsAt) and overlaps()
- * boundary tests.
+ * ScheduleSession compact constructor invariant (endsAt &gt; startsAt) and overlaps() boundary
+ * tests.
  */
 class ScheduleSessionTest {
 

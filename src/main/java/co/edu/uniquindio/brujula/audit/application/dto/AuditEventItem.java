@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Application-layer DTO for a single audit event record.
  *
- * <p>Used in read-side queries. Keeps the REST adapter free of domain type imports (ARQ-001).
+ * <p>Used in read-side queries. Keeps the REST adapter free of domain type imports.
  */
 public record AuditEventItem(
     UUID id,

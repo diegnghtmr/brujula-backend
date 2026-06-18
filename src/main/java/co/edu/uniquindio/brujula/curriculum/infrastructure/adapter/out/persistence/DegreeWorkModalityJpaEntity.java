@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code curriculum.degree_work_modality} (created by Flyway V011).
  *
- * <p>Package-private per ARQ-006. Optimistic locking via {@code @Version} (DB-006/DT-014).
+ * <p>Package-private. Optimistic locking via {@code @Version}.
  */
 @Entity
 @Table(name = "degree_work_modality", schema = "curriculum")

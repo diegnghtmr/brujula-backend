@@ -19,17 +19,16 @@ import org.junit.jupiter.api.Test;
 /**
  * TDD T1.1 — Domain invariant tests for ImportBatch aggregate.
  *
- * <p>Tests are written RED first (no implementation exists). Covers INV-01, INV-02, INV-04,
- * NFR-006, IMP-001, IMP-002.
+ * <p>Tests are written RED first (no implementation exists).
  */
 class ImportBatchTest {
 
   private static final UUID PROGRAM_ID = UUID.randomUUID();
   private static final UUID PLAN_ID = UUID.randomUUID();
 
-  // ---- INV-01, INV-02: confirm guards ----
+  // ---- Confirm guards ----
 
-  /** INV-01: A CONFIRMED batch cannot be re-confirmed. */
+  /** A CONFIRMED batch cannot be re-confirmed. */
   @Test
   void confirmed_batch_cannot_be_reconfirmed() {
     ImportBatch batch = validatedBatch(5, 5, List.of());
@@ -40,7 +39,7 @@ class ImportBatchTest {
         .hasMessageContaining("CONFIRMED");
   }
 
-  /** INV-02: An INVALID batch cannot be confirmed. */
+  /** An INVALID batch cannot be confirmed. */
   @Test
   void invalid_batch_cannot_be_confirmed() {
     ImportBatch batch =
@@ -52,7 +51,7 @@ class ImportBatchTest {
   }
 
   /**
-   * INV-04: Validated rows carry no published status — status field is ImportStatus, not any
+   * Validated rows carry no published status — status field is ImportStatus, not any
    * offering/course status.
    */
   @Test
@@ -63,7 +62,7 @@ class ImportBatchTest {
     assertThat(batch.getStatus()).isNotNull();
   }
 
-  /** NFR-006: schemaVersion is set on construction and is positive. */
+  /** schemaVersion is set on construction and is positive. */
   @Test
   void schema_version_is_set_on_construction() {
     ImportBatch batch = validatedBatch(3, 3, List.of());

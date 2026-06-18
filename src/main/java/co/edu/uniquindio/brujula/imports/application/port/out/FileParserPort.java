@@ -13,8 +13,8 @@ import java.util.List;
  * headers, macros, unparseable JSON) are returned as a non-empty {@link
  * ParseResult#structuralIssues()} list; callers treat this as a file-level rejection.
  *
- * <p>Framework-free interface (ARQ-002/003). Parser adapters are {@code @Component}-annotated in
- * infrastructure and selected at runtime by the service.
+ * <p>Framework-free interface. Parser adapters are {@code @Component}-annotated in infrastructure
+ * and selected at runtime by the service.
  */
 public interface FileParserPort {
 

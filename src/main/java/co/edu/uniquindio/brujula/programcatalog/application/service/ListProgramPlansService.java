@@ -11,9 +11,8 @@ import java.util.UUID;
 /**
  * Use case implementation: list study plans for an academic program.
  *
- * <p>Filters DRAFT and ARCHIVED plans when the caller is a STUDENT (CAT-002). STAFF and ADMIN see
- * all statuses. No Spring annotations — wiring is handled in the infrastructure configuration layer
- * (ARQ-002).
+ * <p>Filters DRAFT and ARCHIVED plans when the caller is a STUDENT. STAFF and ADMIN see all
+ * statuses. No Spring annotations — wiring is handled in the infrastructure configuration layer.
  */
 public class ListProgramPlansService implements ListProgramPlansQuery {
 
@@ -38,8 +37,7 @@ public class ListProgramPlansService implements ListProgramPlansQuery {
    *
    * <p>Uses an ALLOWLIST for privileged access: only {@code "STAFF"} and {@code "ADMIN"} may see
    * DRAFT and ARCHIVED plans. Everything else — including {@code null} and unknown role strings —
-   * is treated as unprivileged and sees only ACTIVE plans (CAT-002: unauthenticated =
-   * student-level).
+   * is treated as unprivileged and sees only ACTIVE plans (unauthenticated = student-level).
    */
   private boolean isVisible(StudyPlan plan, String callerRole) {
     if (isPrivilegedRole(callerRole)) {

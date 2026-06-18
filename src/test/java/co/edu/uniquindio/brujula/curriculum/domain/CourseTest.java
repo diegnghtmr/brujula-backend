@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/** WU1-1.7 RED: Verifies Course aggregate invariants. */
+/** Verifies Course aggregate invariants. */
 class CourseTest {
 
   private final CourseId courseId = CourseId.generate();

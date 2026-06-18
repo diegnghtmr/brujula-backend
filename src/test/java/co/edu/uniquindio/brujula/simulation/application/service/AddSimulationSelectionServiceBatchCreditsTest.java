@@ -38,15 +38,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * DEBT-F7-001 — Batch-credits regression test for {@link AddSimulationSelectionService}.
+ * Batch-credits regression test for {@link AddSimulationSelectionService}.
  *
- * <p>TDD RED: Asserts that {@code coursesCredits(Set<UUID>)} is called <strong>exactly
- * once</strong> for the accumulated-passed-credits computation instead of once-per-passed-course
- * (O(N) loop at step 10).
+ * <p>Asserts that {@code coursesCredits(Set<UUID>)} is called <strong>exactly once</strong> for the
+ * accumulated-passed-credits computation instead of once-per-passed-course (O(N) loop at step 10).
  *
  * <p>Also asserts credit-sum correctness: 30 passed courses × 3 credits = 90 accumulated credits. A
- * threshold-based assertion confirms the credit gate fires correctly above/below 90 — matching the
- * pattern established in {@link GetSimulationServiceQueryCountTest} for WU3b.
+ * threshold-based assertion confirms the credit gate fires correctly above/below 90.
  */
 class AddSimulationSelectionServiceBatchCreditsTest {
 
@@ -95,9 +93,9 @@ class AddSimulationSelectionServiceBatchCreditsTest {
   }
 
   /**
-   * DEBT-F7-001-A1: 30 passed courses → batch credits method called exactly once.
+   * 30 passed courses → batch credits method called exactly once.
    *
-   * <p>This test will FAIL (RED) until {@code addSelection} step 10 is refactored to use {@code
+   * <p>This test will FAIL until {@code addSelection} step 10 is refactored to use {@code
    * coursesCredits(Set<UUID>)} instead of the per-course {@code courseCredits(UUID)} loop.
    */
   @Test
@@ -183,7 +181,7 @@ class AddSimulationSelectionServiceBatchCreditsTest {
   }
 
   /**
-   * DEBT-F7-001-A2: Credit-value correctness — 30 × 3 = 90 accumulated credits.
+   * Credit-value correctness — 30 × 3 = 90 accumulated credits.
    *
    * <p>Seeds 30 passed courses × 3 credits each = 90 accumulated credits. Asserts that:
    *

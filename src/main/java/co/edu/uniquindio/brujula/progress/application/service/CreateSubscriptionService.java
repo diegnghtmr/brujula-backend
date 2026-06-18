@@ -35,10 +35,10 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>Duplicate guard: the uniqueness key is (programId + referenceJourneyCode). Same program +
  *       same journey is rejected as a duplicate; same program + different journey is allowed.
  *   <li>Idempotency via sharedkernel {@link IdempotencyStorePort}.
- *   <li>Audit via {@link AuditRecorder} (CROSS-4).
+ *   <li>Audit via {@link AuditRecorder}.
  * </ul>
  *
- * <p>Framework-free — wired by {@code ProgressConfiguration}. Satisfies: SUB-1, CROSS-1, CROSS-4.
+ * <p>Framework-free — wired by {@code ProgressConfiguration}.
  */
 public class CreateSubscriptionService implements CreateSubscriptionUseCase {
 
@@ -82,7 +82,7 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
     }
 
     // 2. Cap enforcement (contract #1630 — revised).
-    // FIX-W1: acquire a row-level write lock on existing active subscriptions BEFORE any check.
+    // Acquire a row-level write lock on existing active subscriptions BEFORE any check.
     // This serialises concurrent creates per-student and prevents the TOCTOU race.
     //
     // Business rule: the cap is on DISTINCT PROGRAMS (careers), not on total active rows.
@@ -108,9 +108,9 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
       throw new DuplicateProgramSubscriptionException(command.actorId(), command.programId());
     }
 
-    // 3b. FIX-W3 (SUB-1-INACTIVE-PLAN): validate the plan is ACTIVE via anti-corruption facade.
+    // 3b. Validate the plan is ACTIVE via anti-corruption facade.
     // ValidatePlanStatusPort wraps GetStudyPlanQuery from programcatalog without crossing the
-    // Spring Modulith named-interface boundary from the application layer (ARQ-006b).
+    // Spring Modulith named-interface boundary from the application layer.
     String planStatus = validatePlanStatusPort.getPlanStatus(command.planId());
     if (!"ACTIVE".equalsIgnoreCase(planStatus)) {
       throw new InactivePlanException(command.planId(), planStatus);
@@ -133,7 +133,7 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
     idempotencyStorePort.save(
         command.idempotencyKey(), OPERATION, command.requestHash(), 201, responseBodyJson);
 
-    // 6. Audit (CROSS-4: SUBSCRIPTION_CREATED)
+    // 6. Audit (SUBSCRIPTION_CREATED)
     auditRecorder.record(
         new RecordAuditEventCommand(
             command.actorId(),
@@ -151,7 +151,7 @@ public class CreateSubscriptionService implements CreateSubscriptionUseCase {
   private SubscriptionView toView(Subscription subscription) {
     // programName and planName are not resolved at creation time (no catalog port injected here).
     // The REST adapter / dedicated query service resolves names for responses.
-    // TODO(WU4): resolve program/plan/journey names like GetSubscriptionService
+    // TODO: resolve program/plan/journey names like GetSubscriptionService
     return new SubscriptionView(
         subscription.getId().value(),
         subscription.getProgramId(),

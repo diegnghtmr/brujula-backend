@@ -6,12 +6,12 @@ import java.util.stream.Collectors;
 /**
  * Domain service: validates an email address against the allowed institutional domain list.
  *
- * <p>RN-007 — only emails whose domain exactly matches one of the allowed entries are permitted.
- * Subdomain emails (e.g. {@code @sub.uniquindio.edu.co}) are NOT allowed unless the subdomain is
- * explicitly in the list. Matching is case-insensitive.
+ * <p>Only emails whose domain exactly matches one of the allowed entries are permitted. Subdomain
+ * emails (e.g. {@code @sub.uniquindio.edu.co}) are NOT allowed unless the subdomain is explicitly
+ * in the list. Matching is case-insensitive.
  *
- * <p>Framework-free (ARQ-002). Instantiated by the application service with the current allowed
- * domains loaded from {@link LoadAllowedDomainsPort}.
+ * <p>Framework-free. Instantiated by the application service with the current allowed domains
+ * loaded from {@link LoadAllowedDomainsPort}.
  */
 public final class AllowedEmailDomainPolicy {
 

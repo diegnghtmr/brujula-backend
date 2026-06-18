@@ -24,7 +24,7 @@ import org.springframework.web.client.RestClient;
  * Credentials are set in {@code application.yaml} ({@code actuator}/{@code actuator}); this test
  * passes them via {@link RestClient} default headers.
  *
- * <p>Establishes the web-test pattern for Fase 1 feature tests.
+ * <p>Establishes the web-test pattern for feature tests.
  */
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

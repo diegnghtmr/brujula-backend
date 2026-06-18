@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA-backed adapter implementing {@link LoadDegreeWorkModalityPort}.
  *
- * <p>Package-private per ARQ-006. Satisfies: CUR-006, Phase 2 WU4 persistence adapters.
+ * <p>Package-private. Satisfies: CUR-006.
  */
 @Component
 class DegreeWorkModalityPersistenceAdapter implements LoadDegreeWorkModalityPort {

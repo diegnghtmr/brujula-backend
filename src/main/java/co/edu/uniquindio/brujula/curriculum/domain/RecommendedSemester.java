@@ -13,7 +13,7 @@ package co.edu.uniquindio.brujula.curriculum.domain;
  *   <li>{@code semester} must be ≥ 1 (semesters are 1-based, positive integers).
  * </ul>
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public record RecommendedSemester(String journeyCode, int semester) {
 

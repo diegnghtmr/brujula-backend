@@ -10,7 +10,7 @@ import java.util.List;
  * Use case implementation: list all active journeys.
  *
  * <p>Delegates to {@link LoadJourneyPort#loadAllActive()} — the port is responsible for returning
- * only active journeys. No Spring annotations — wired via infrastructure configuration (ARQ-002).
+ * only active journeys. No Spring annotations — wired via infrastructure configuration.
  */
 public class ListJourneysService implements ListJourneysQuery {
 

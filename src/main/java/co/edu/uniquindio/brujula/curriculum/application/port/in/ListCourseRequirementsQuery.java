@@ -7,10 +7,10 @@ import java.util.UUID;
 /**
  * Input port: list all requirements for a given course.
  *
- * <p>Backs {@code GET /courses/{courseId}/requirements} (CUR-002). Returns all requirement types
- * including confidence and inferred fields (ADR-F2-004, CROSS-001 schema extension).
+ * <p>Backs {@code GET /courses/{courseId}/requirements}. Returns all requirement types including
+ * confidence and inferred fields.
  *
- * <p>No Spring/framework imports (ARQ-003 — all port.in interfaces must be interfaces).
+ * <p>No Spring/framework imports.
  */
 public interface ListCourseRequirementsQuery {
 

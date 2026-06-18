@@ -38,8 +38,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *   <li>No-enumeration proof: known and unknown both complete without exception
  * </ul>
  *
- * <p>Satisfies: S2-D, Spec §password recovery, RNF-SEG-006 no user enumeration, OPTION A
- * (Keycloak-native reset page — no backend confirm endpoint).
+ * <p>No user enumeration enforced (OPTION A: Keycloak-native reset page — no backend confirm
+ * endpoint).
  */
 @ExtendWith(MockitoExtension.class)
 class InitiatePasswordRecoveryServiceTest {

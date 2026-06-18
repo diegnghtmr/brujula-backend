@@ -16,7 +16,7 @@ import java.util.UUID;
  * {@link StudyPlanNotFoundException} (maps to HTTP 404) if the plan is not found or not visible to
  * the caller.
  *
- * <p>No Spring annotations — wired via infrastructure configuration (ARQ-002).
+ * <p>No Spring annotations — wired via infrastructure configuration.
  */
 public class GetStudyPlanService implements GetStudyPlanQuery {
 

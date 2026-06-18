@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3-T01 RED: unit tests for {@link Grade} value object.
+ * Unit tests for {@link Grade} value object.
  *
  * <p>Scenarios: valid bounds [0.0–5.0], {@code passing()} ≥ 3.0, rejects negatives and &gt; 5.0.
  */

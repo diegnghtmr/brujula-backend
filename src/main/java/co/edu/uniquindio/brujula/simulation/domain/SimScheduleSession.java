@@ -7,8 +7,8 @@ import java.util.Objects;
  * Simulation-local value object for a single time slot.
  *
  * <p>Mirrors offering's ScheduleSession shape but kept in the simulation domain to preserve
- * boundary purity (ARQ-002, INV-001). Offering domain types are NOT imported here. Mapping from
- * {@code ScheduleSessionView} happens at the application/adapter edge.
+ * boundary purity. Offering domain types are NOT imported here. Mapping from {@code
+ * ScheduleSessionView} happens at the application/adapter edge.
  *
  * @param day weekday string (e.g. "MONDAY", "WEDNESDAY") — stored as String to avoid coupling to
  *     offering's Weekday enum
@@ -32,7 +32,7 @@ public record SimScheduleSession(String day, LocalTime startsAt, LocalTime endsA
    *
    * <p>Overlap condition (strict inequality): {@code startsAt < other.endsAt && endsAt >
    * other.startsAt}. Touching intervals (e.g. one ends exactly when the other starts) are NOT
-   * considered overlapping per spec VAL-003 ("adjacent, non-overlapping" scenario is allowed).
+   * considered overlapping ("adjacent, non-overlapping" scenario is allowed).
    *
    * @param other the other session
    * @return true iff the sessions are on the same day AND their time ranges overlap

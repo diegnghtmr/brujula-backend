@@ -2,7 +2,7 @@
 --
 -- Module: programcatalog
 -- Schema: catalog
--- Satisfies: CAT-001, CAT-002, CAT-003, Design §5 V010
+-- Satisfies: Program catalog spec
 --
 -- Tables:
 --   catalog.academic_program  — academic programs (aggregate with optimistic lock)
@@ -30,7 +30,7 @@ COMMENT ON TABLE  catalog.academic_program IS 'Academic programs offered by the 
 COMMENT ON COLUMN catalog.academic_program.name IS 'Official program name.';
 COMMENT ON COLUMN catalog.academic_program.faculty IS 'Faculty that owns the program.';
 COMMENT ON COLUMN catalog.academic_program.status IS 'Program lifecycle status: ACTIVE | INACTIVE | ARCHIVED.';
-COMMENT ON COLUMN catalog.academic_program.version IS 'Optimistic locking version counter (DB-006/DT-014).';
+COMMENT ON COLUMN catalog.academic_program.version IS 'Optimistic locking version counter.';
 
 -- -------------------------------------------------------------------------
 -- journey
@@ -75,7 +75,7 @@ COMMENT ON COLUMN catalog.study_plan.program_id IS 'FK to catalog.academic_progr
 COMMENT ON COLUMN catalog.study_plan.status IS 'Plan lifecycle: DRAFT | ACTIVE | ARCHIVED.';
 COMMENT ON COLUMN catalog.study_plan.total_credits IS 'Total credits required to complete this plan (must be > 0).';
 COMMENT ON COLUMN catalog.study_plan.reference_year IS 'Reference year for the plan version (e.g. 2016).';
-COMMENT ON COLUMN catalog.study_plan.version IS 'Optimistic locking version counter (DB-006/DT-014).';
+COMMENT ON COLUMN catalog.study_plan.version IS 'Optimistic locking version counter.';
 
 -- -------------------------------------------------------------------------
 -- program_journey (M:N association)

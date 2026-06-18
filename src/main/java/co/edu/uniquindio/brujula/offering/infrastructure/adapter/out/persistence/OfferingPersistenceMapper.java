@@ -14,8 +14,8 @@ import java.util.Set;
 /**
  * Mapper: {@link CourseOfferingJpaEntity} ↔ {@link CourseOffering} domain entity.
  *
- * <p>Package-private per ARQ-006b. Pure translation — no business logic. Supports both read
- * (toDomain) and write (toJpaEntity) directions.
+ * <p>Package-private. Pure translation — no business logic. Supports both read (toDomain) and write
+ * (toJpaEntity) directions.
  */
 class OfferingPersistenceMapper {
 
@@ -27,8 +27,6 @@ class OfferingPersistenceMapper {
    * option.setOffering(parent)}, {@code session.setOption(option)}). Sets {@code version} from the
    * domain object so Hibernate's {@code @Version} optimistic-lock detection fires correctly on
    * update.
-   *
-   * <p>Satisfies: OFFW-003, OFFW-004.
    */
   CourseOfferingJpaEntity toJpaEntity(CourseOffering domain) {
     CourseOfferingJpaEntity entity = new CourseOfferingJpaEntity();

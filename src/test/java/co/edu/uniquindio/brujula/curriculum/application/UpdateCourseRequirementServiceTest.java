@@ -38,10 +38,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
  *
  * <p>Load-bearing tests: each assertion will fail if the behaviour it covers is removed or broken.
  * Covers: requirement not found → CourseRequirementNotFoundException; optimistic lock propagates;
- * success → audit recorded + view reflects update; cycle detection on update path (IMP-007 gap
- * fix).
- *
- * <p>WU5 – T5.2 fix (CUR-003, IMP-007, SC-009-C, DEBT-F6-001 verification).
+ * success → audit recorded + view reflects update; cycle detection on update path.
  */
 class UpdateCourseRequirementServiceTest {
 
@@ -132,7 +129,7 @@ class UpdateCourseRequirementServiceTest {
     assertThat(result.type()).isEqualTo("SEQUENCE");
     assertThat(result.requiredCourseId()).isEqualTo(newRequiredCourseId);
     assertThat(result.simultaneityAllowed()).isTrue();
-    // Load-bearing FIX 1: version must be present in view
+    // Load-bearing: version must be present in view
     assertThat(result.version()).isEqualTo(2L);
 
     // Load-bearing: audit MUST be recorded; if removed, this fails
@@ -294,12 +291,12 @@ class UpdateCourseRequirementServiceTest {
     assertThat(result.targetCourseId()).isEqualTo(targetCourseId);
     assertThat(result.requiredCredits()).isEqualTo(10);
     assertThat(result.type()).isEqualTo("MINIMUM_CREDITS");
-    // Load-bearing FIX 1: version present
+    // Load-bearing: version present
     assertThat(result.version()).isEqualTo(1L);
   }
 
   // -------------------------------------------------------------------------
-  // FIX 2: Cycle detection on update path (IMP-007 gap)
+  // Cycle detection on update path
   // -------------------------------------------------------------------------
 
   /**

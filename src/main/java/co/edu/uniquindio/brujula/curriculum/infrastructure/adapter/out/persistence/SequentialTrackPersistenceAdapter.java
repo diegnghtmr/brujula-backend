@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA-backed adapter implementing {@link LoadSequentialTrackPort}.
  *
- * <p>Package-private per ARQ-006. Satisfies: CUR-005, Phase 2 WU4 persistence adapters.
+ * <p>Package-private. Satisfies: CUR-005.
  */
 @Component
 class SequentialTrackPersistenceAdapter implements LoadSequentialTrackPort {

@@ -8,11 +8,10 @@ import java.util.UUID;
 /**
  * Input port: retrieve a single course by its ID.
  *
- * <p>Backs {@code GET /courses/{courseId}} (CUR-001).
+ * <p>Backs {@code GET /courses/{courseId}}.
  *
- * <p>No Spring/framework imports (ARQ-003 — all port.in interfaces must be interfaces). Accepts
- * plain {@link UUID} (not a domain VO) so REST adapters do not need to import domain types
- * (ARQ-001).
+ * <p>No Spring/framework imports. Accepts plain {@link UUID} (not a domain VO) so REST adapters do
+ * not need to import domain types.
  */
 public interface GetCourseQuery {
 

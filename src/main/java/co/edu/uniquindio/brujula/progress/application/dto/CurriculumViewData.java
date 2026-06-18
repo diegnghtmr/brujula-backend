@@ -9,7 +9,7 @@ import java.util.UUID;
  *
  * <p>Returned by {@link
  * co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionCurriculumQuery}. No domain
- * type imports (ARQ-001).
+ * type imports.
  *
  * @param subscriptionId the subscription UUID
  * @param referenceJourneyCode journey code (e.g. "DIURNA")

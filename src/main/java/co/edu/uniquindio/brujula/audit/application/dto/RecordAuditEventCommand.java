@@ -5,8 +5,7 @@ import java.util.UUID;
 /**
  * Command DTO for recording an audit event.
  *
- * <p>Lives in {@code application.dto} (not port.in) to comply with ARQ-003 (port.in must be
- * interfaces only).
+ * <p>Lives in {@code application.dto} (not port.in) because port.in must contain interfaces only.
  *
  * @param actorId the internal user ID performing the action
  * @param actorRole role at time of action: STUDENT | STAFF | ADMIN

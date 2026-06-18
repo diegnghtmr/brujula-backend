@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link SimulationValidationService} — orchestration and partitioning.
  *
- * <p>WU4a tests use the deprecated 5-param overload. WU4b tests use the 7-param overload to
+ * <p>Earlier tests use the deprecated 5-param overload. Later tests use the 7-param overload to
  * exercise the full rule set.
  */
 class SimulationValidationServiceTest {
@@ -144,7 +144,7 @@ class SimulationValidationServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4b: Duplicate selection (SIMULATION_DUPLICATE_SELECTION)
+  // Duplicate selection (SIMULATION_DUPLICATE_SELECTION)
   // -------------------------------------------------------------------------
 
   @Test
@@ -171,7 +171,7 @@ class SimulationValidationServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4b: Archived offering (SIMULATION_ARCHIVED_OFFERING)
+  // Archived offering (SIMULATION_ARCHIVED_OFFERING)
   // -------------------------------------------------------------------------
 
   @Test
@@ -208,7 +208,7 @@ class SimulationValidationServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4b: Sequential track ordering (SIMULATION_SEQUENTIAL_ORDER)
+  // Sequential track ordering (SIMULATION_SEQUENTIAL_ORDER)
   // -------------------------------------------------------------------------
 
   @Test
@@ -246,7 +246,7 @@ class SimulationValidationServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4b: Soft-prereq warning (SIMULATION_SOFT_PREREQ_WARNING)
+  // Soft-prereq warning (SIMULATION_SOFT_PREREQ_WARNING)
   // -------------------------------------------------------------------------
 
   @Test
@@ -313,7 +313,7 @@ class SimulationValidationServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4b: Multiple blockers collected (no short-circuit)
+  // Multiple blockers collected (no short-circuit)
   // -------------------------------------------------------------------------
 
   @Test

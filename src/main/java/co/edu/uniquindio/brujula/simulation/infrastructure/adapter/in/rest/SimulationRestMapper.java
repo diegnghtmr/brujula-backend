@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 /**
  * Maps between simulation application-layer views and generated API models.
  *
- * <p>Package-private per ARQ-006b.
+ * <p>Package-private.
  */
 @Component
 class SimulationRestMapper {
@@ -113,7 +113,7 @@ class SimulationRestMapper {
 
     result.setSelectedOfferingVersion(view.selectedOfferingVersion());
 
-    // Map warnings (WU4a: always empty)
+    // Map warnings (always empty at this stage)
     List<ValidationNotice> warningModels =
         view.warnings() != null
             ? view.warnings().stream()

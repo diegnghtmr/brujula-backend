@@ -7,7 +7,7 @@ import java.util.Optional;
  * Domain service: resolves the effective declared {@link AttemptStatus} for a course from a list of
  * multiple attempts.
  *
- * <p>Rule (ADR-F3-006): the effective status is the most favorable:
+ * <p>The effective status is the most favorable:
  *
  * <ol>
  *   <li>Any PASSED attempt ⇒ {@code Optional.of(PASSED)} (regardless of subsequent FAILED or
@@ -15,7 +15,7 @@ import java.util.Optional;
  *   <li>Any FAILED attempt (and no PASSED) ⇒ {@code Optional.of(FAILED)}.
  *   <li>Only CANCELLED attempts ⇒ {@code Optional.of(CANCELLED)}.
  *   <li>No attempts ⇒ {@code Optional.empty()} — caller decides how to interpret "not attempted"
- *       (FIX-W2: removed the PENDING sentinel; PENDING is not in the contract enum).
+ *       PENDING was removed as it was a sentinel value not in the contract enum.
  * </ol>
  *
  * <p>Pure function (no ports, no Spring). Unit-tested in {@code EffectiveAttemptResolverTest}.

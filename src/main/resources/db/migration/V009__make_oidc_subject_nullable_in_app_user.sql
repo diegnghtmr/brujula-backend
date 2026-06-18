@@ -2,14 +2,13 @@
 --
 -- Module: identity
 -- Schema: identity
--- Satisfies: Spec §Self-registration (self-registered students have no OIDC subject until first login);
---            Design §3 V009; S2-B-1.
+-- Satisfies: Self-registration spec (self-registered students have no OIDC subject until first login)
 --
 -- Context:
---   V002 defined oidc_subject as NOT NULL — all users were OIDC-provisioned (Slice 1).
---   Slice 2 introduces AppUser.register() for self-registration: these users start in
---   PENDING_VERIFICATION state with null oidcSubject. The subject is assigned on first OIDC login
---   (sync-on-login, S2-B-4) when Keycloak provides the sub claim.
+--   V002 defined oidc_subject as NOT NULL — all users were OIDC-provisioned.
+--   Self-registration introduces AppUser.register(): these users start in PENDING_VERIFICATION
+--   state with null oidcSubject. The subject is assigned on first OIDC login (sync-on-login)
+--   when Keycloak provides the sub claim.
 --
 -- Changes:
 --   • DROP the NOT NULL constraint on oidc_subject (allow null for self-registered students).

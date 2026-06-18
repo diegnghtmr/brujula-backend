@@ -4,13 +4,13 @@ package co.edu.uniquindio.brujula.identity.application.port.out;
  * Output port: provisions and manages users in Keycloak via the Admin REST API.
  *
  * <p>Port placement decision: identity module. Student registration creates a Keycloak user tightly
- * coupled to {@code identity.domain.AppUser}. The {@code RegisterStudentService} (S2-B) lives in
- * {@code identity.application.service} and is the primary consumer of this port. Keeping the port
- * in {@code identity} avoids a new cross-module dependency from {@code identity} → {@code
+ * coupled to {@code identity.domain.AppUser}. {@code RegisterStudentService} lives in {@code
+ * identity.application.service} and is the primary consumer of this port. Keeping the port in
+ * {@code identity} avoids a new cross-module dependency from {@code identity} → {@code
  * administration.port.out}. The adapter implementing this port lives in {@code
  * identity.infrastructure.adapter.out.client}.
  *
- * <p>Keycloak-native verification flow (architecture decision, obs #1574):
+ * <p>Keycloak-native verification flow:
  *
  * <ul>
  *   <li>Registration: {@link #createUser} → emailVerified=false, then {@link
@@ -22,7 +22,7 @@ package co.edu.uniquindio.brujula.identity.application.port.out;
  *       [UPDATE_PASSWORD]; Keycloak handles the reset page natively.
  * </ul>
  *
- * <p>Framework-free (ARQ-002): no Spring/Jakarta imports allowed at this layer.
+ * <p>Framework-free: no Spring/Jakarta imports allowed at this layer.
  */
 public interface KeycloakUserProvisioningPort {
 
@@ -69,9 +69,9 @@ public interface KeycloakUserProvisioningPort {
   /**
    * Resend the email verification action for a user identified by email.
    *
-   * <p>Used by the email-verification resend endpoint (S2-C). Looks up the Keycloak user by email,
-   * then triggers {@code execute-actions-email ["VERIFY_EMAIL", "UPDATE_PASSWORD"]} (OPTION A). If
-   * no user is found in Keycloak, returns silently (no user enumeration).
+   * <p>Used by the email-verification resend endpoint. Looks up the Keycloak user by email, then
+   * triggers {@code execute-actions-email ["VERIFY_EMAIL", "UPDATE_PASSWORD"]}. If no user is found
+   * in Keycloak, returns silently (no user enumeration).
    *
    * @param email the institutional email of the user to look up in Keycloak
    * @param redirectUri the SPA landing URI to redirect after verification

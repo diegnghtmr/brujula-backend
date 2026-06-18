@@ -10,11 +10,11 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportStatus;
  * <p>Covers:
  *
  * <ul>
- *   <li>INV-01 — cannot re-confirm an already CONFIRMED batch
- *   <li>INV-02 — cannot confirm an INVALID batch
+ *   <li>Cannot re-confirm an already CONFIRMED batch
+ *   <li>Cannot confirm an INVALID batch
  * </ul>
  *
- * <p>Pure domain exception — zero framework annotations (ARQ-002).
+ * <p>Pure domain exception — zero framework annotations.
  */
 public class ImportBatchNotConfirmableException extends RuntimeException {
 

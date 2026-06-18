@@ -41,11 +41,8 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * REST adapter: offering catalogue endpoints ({@code /periods}, {@code /offerings/**}).
  *
- * <p>Implements the generated {@link OfferingsApi} contract-first interface (ARQ-001).
- * Package-private per ARQ-006b. Read endpoints (GET /periods, GET /offerings, GET /offerings/{id})
- * are accessible by STUDENT role. Staff write endpoints implemented in WU2.
- *
- * <p>Satisfies: OFF-001, OFF-002, OFF-003, API-001, OFFW-003, OFFW-004.
+ * <p>Implements the generated {@link OfferingsApi} contract-first interface. Package-private. Read
+ * endpoints (GET /periods, GET /offerings, GET /offerings/{id}) are accessible by STUDENT role.
  */
 @RestController
 class OfferingController implements OfferingsApi {
@@ -109,7 +106,7 @@ class OfferingController implements OfferingsApi {
       Integer page,
       Integer size,
       @Nullable List<String> sort) {
-    // OFFW-007: pass caller role so the service routes to the correct persistence query
+    // Pass caller role so the service routes to the correct persistence query
     String callerRole = resolveCallerRole();
     ListOfferingsCriteria criteria =
         new ListOfferingsCriteria(
@@ -137,7 +134,7 @@ class OfferingController implements OfferingsApi {
   }
 
   // -------------------------------------------------------------------------
-  // Staff write endpoints (WU2)
+  // Staff write endpoints
   // -------------------------------------------------------------------------
 
   @Override
@@ -206,12 +203,12 @@ class OfferingController implements OfferingsApi {
   }
 
   // -------------------------------------------------------------------------
-  // Private helpers — ARQ-001 compliant (application DTOs only)
+  // Private helpers — application DTOs only
   // -------------------------------------------------------------------------
 
   /**
-   * Resolve the caller's role from the Spring Security context for OFFW-007 routing. Returns the
-   * first ROLE_ authority (STAFF/ADMIN/STUDENT) or null if not determinable.
+   * Resolve the caller's role from the Spring Security context for persistence query routing.
+   * Returns the first ROLE_ authority (STAFF/ADMIN/STUDENT) or null if not determinable.
    */
   private String resolveCallerRole() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();

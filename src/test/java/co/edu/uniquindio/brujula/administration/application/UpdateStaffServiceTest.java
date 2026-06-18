@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link UpdateStaffService} (strict TDD, zero Spring).
  *
- * <p>Spec §Audit Log: "staff deactivate" must be audited with action STAFF_DEACTIVATED.
+ * <p>"staff deactivate" must be audited with action STAFF_DEACTIVATED.
  */
 class UpdateStaffServiceTest {
 

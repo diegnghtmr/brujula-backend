@@ -6,7 +6,7 @@ import java.util.UUID;
  * Output port: resolve the display name of an academic program.
  *
  * <p>Delegates to {@code programcatalog::api.GetProgramQuery}. The simulation domain never sees
- * programcatalog types (ARQ-002, INV-001). Named by need (ARQ-001).
+ * programcatalog types. Named by need.
  *
  * <p>Used by {@code AddSimulationSelectionService} to populate {@code
  * ProgramCreditLimit.programName} with the real program name instead of a placeholder (CRITICAL-2

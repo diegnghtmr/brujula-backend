@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
- * WU2-T07 RED: persistence adapter integration tests for subscriptions.
+ * Persistence adapter integration tests for subscriptions.
  *
  * <p>Uses {@link AbstractPostgresIntegrationTest} ({@code @SpringBootTest}). Validates save, load,
  * soft-delete, and active-count queries against the real V015 schema.
@@ -107,7 +107,7 @@ class SubscriptionPersistenceAdapterTest extends AbstractPostgresIntegrationTest
   }
 
   // -------------------------------------------------------------------------
-  // FIX-W4 RED (S3): save → modify → save → reload asserts version increments to 1
+  // Save → modify → save → reload asserts version increments to 1
   // -------------------------------------------------------------------------
 
   @Test

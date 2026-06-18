@@ -31,9 +31,8 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link CreateStaffService} (TDD, zero Spring).
  *
  * <p>Tests cover: happy path creation, idempotency replay, idempotency conflict, domain validation.
- * Wired against the generalized {@link IdempotencyStorePort} from {@code sharedkernel} (ADR-F3-001)
- * and {@link JsonCodecPort} (FIX-1: resolves WARNING-001, moves JSON I/O out of the application
- * layer). Scenario: CROSS-8-RELO.
+ * Wired against the generalized {@link IdempotencyStorePort} from {@code sharedkernel} and {@link
+ * JsonCodecPort} (moves JSON I/O out of the application layer).
  */
 class CreateStaffServiceTest {
 

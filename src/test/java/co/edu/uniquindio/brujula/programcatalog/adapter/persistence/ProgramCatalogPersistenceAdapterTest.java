@@ -30,8 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Covers: program load-all + load-by-id, study plan load-by-programId + load-by-id, journey
  * load-all-active. Tests directly through the port interfaces.
  *
- * <p>Uses Testcontainers PostgreSQL + Flyway for a real schema. Satisfies: CAT-001/CAT-002/CAT-003,
- * Design §Phase-1 WU4-1.x.
+ * <p>Uses Testcontainers PostgreSQL + Flyway for a real schema.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class ProgramCatalogPersistenceAdapterTest extends AbstractPostgresIntegrationTest {

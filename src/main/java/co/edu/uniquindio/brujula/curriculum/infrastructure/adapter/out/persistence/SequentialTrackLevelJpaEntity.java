@@ -16,7 +16,7 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code curriculum.sequential_track_level} (created by Flyway V011).
  *
- * <p>Package-private per ARQ-006. Contains ordered level options via {@link
+ * <p>Package-private. Contains ordered level options via {@link
  * SequentialTrackLevelOptionJpaEntity}.
  */
 @Entity

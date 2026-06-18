@@ -90,7 +90,7 @@ class XlsxParserAdapterTest {
   }
 
   /**
-   * T3.1: formula cell is read as cached string value (NOT evaluated). ADR-F6-004: we never call
+   * T3.1: formula cell is read as cached string value (NOT evaluated). We never call
    * FormulaEvaluator — the result should be the cached string value set at file-creation time.
    * Since we create the cell with setCellFormula, no cached value exists yet — the adapter returns
    * empty string (not an error, validator decides later if the field is required).
@@ -116,7 +116,7 @@ class XlsxParserAdapterTest {
   }
 
   /**
-   * T3.1 (IMP-001, SC-001-I, NFR-004): empty file raises EMPTY_FILE structural issue.
+   * T3.1: empty file raises EMPTY_FILE structural issue.
    *
    * <p>Covers the zero-byte early-exit guard in {@code parse()}.
    */
@@ -129,8 +129,8 @@ class XlsxParserAdapterTest {
   }
 
   /**
-   * T3.1 (IMP-001, SC-001-I, NFR-004): XLSX file containing a vbaProject.bin OPC part raises
-   * MACROS_NOT_ALLOWED (load-bearing test for {@code containsMacroParts(OPCPackage)}).
+   * T3.1: XLSX file containing a vbaProject.bin OPC part raises MACROS_NOT_ALLOWED (load-bearing
+   * test for {@code containsMacroParts(OPCPackage)}).
    *
    * <p>Construction: build a valid XLSX using XSSFWorkbook, then inject a {@code xl/vbaProject.bin}
    * entry into the ZIP archive using standard Java ZIP I/O. The resulting bytes are a valid ZIP/OPC

@@ -36,8 +36,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * ACTIVE user → unchanged regardless of email_verified. (4) email_verified field absent (null) →
  * treated as false (no transition).
  *
- * <p>Satisfies: S2-B-4, Spec §Email verification confirm endpoint triggers Keycloak action,
- * Architecture decision: sync-on-login (obs #1574).
+ * <p>Architecture decision: sync-on-login pattern (email_verified flag drives state transition).
  */
 @ExtendWith(MockitoExtension.class)
 class SyncOnLoginTest {

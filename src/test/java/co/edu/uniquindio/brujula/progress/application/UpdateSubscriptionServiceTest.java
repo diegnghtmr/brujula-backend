@@ -23,11 +23,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * WU2-T12 RED+GREEN: update subscription use case tests.
- *
- * <p>Covers: SUB-3-JOURNEY, SUB-3-PLAN-WITH-ACK, SUB-3-PLAN-NO-ACK, BOLA.
- */
+/** Update subscription use case tests. */
 class UpdateSubscriptionServiceTest {
 
   private LoadSubscriptionPort loadSubscriptionPort;
@@ -66,9 +62,8 @@ class UpdateSubscriptionServiceTest {
     verify(auditRecorder).record(any());
   }
 
-  // FIX-W3 RED: SUB-3-PLAN-WITH-ACK happy path — hasAttempts=true + ack=true → plan change
-  // succeeds,
-  // version increments, no attempt rows deleted/mutated (DP-009 guarantee).
+  // Plan change with ack happy path — hasAttempts=true + ack=true → plan change succeeds,
+  // version increments, no attempt rows deleted/mutated.
   @Test
   void plan_change_with_ack_and_attempts_succeeds_spec_sub3_plan_with_ack() {
     UUID subId = UUID.randomUUID();
@@ -78,7 +73,7 @@ class UpdateSubscriptionServiceTest {
     Subscription sub =
         Subscription.create(SubscriptionId.of(subId), userId, programId, oldPlanId, "DIURNA");
     when(loadSubscriptionPort.loadById(subId)).thenReturn(Optional.of(sub));
-    // Mock hasAttempts=true — spec SUB-3-PLAN-WITH-ACK: subscription with 3 existing attempts
+    // Mock hasAttempts=true — subscription with 3 existing attempts
     when(loadSubscriptionPort.hasAttempts(subId)).thenReturn(true);
 
     // Simulate persistence returning subscription with incremented version (DB @Version)
@@ -110,7 +105,7 @@ class UpdateSubscriptionServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // FIX-W4 RED: returned view must carry the DB-incremented version (SUB-3-JOURNEY)
+  // Returned view must carry the DB-incremented version
   // -------------------------------------------------------------------------
 
   @Test
@@ -140,7 +135,7 @@ class UpdateSubscriptionServiceTest {
 
     SubscriptionView result = sut.updateSubscription(command);
 
-    // FIX-W4: the response version MUST be the incremented value (1), not the pre-save value (0)
+    // The response version MUST be the incremented value (1), not the pre-save value (0)
     assertThat(result.version()).isEqualTo(1L);
     assertThat(result.referenceJourneyCode()).isEqualTo("NOCTURNA");
   }

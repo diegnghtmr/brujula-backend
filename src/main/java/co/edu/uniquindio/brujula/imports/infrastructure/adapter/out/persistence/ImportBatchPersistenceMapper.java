@@ -17,17 +17,16 @@ import java.util.Map;
 /**
  * Maps between {@link ImportBatch} domain aggregates and {@link ImportBatchJpaEntity}.
  *
- * <p>JSONB serialization strategy (ADR-F6-002): {@code validatedRows} and {@code issues} are stored
- * as JSON strings in the {@code validated_rows_json} and {@code issues_json} columns.
- * Deserialization uses a dedicated Jackson {@link ObjectMapper} to avoid coupling with the
- * HTTP-layer Jackson 3 mapper. No framework annotations required here — the mapper is instantiated
- * by the persistence adapter.
+ * <p>JSONB serialization strategy: {@code validatedRows} and {@code issues} are stored as JSON
+ * strings in the {@code validated_rows_json} and {@code issues_json} columns. Deserialization uses
+ * a dedicated Jackson {@link ObjectMapper} to avoid coupling with the HTTP-layer Jackson 3 mapper.
+ * No framework annotations required here — the mapper is instantiated by the persistence adapter.
  *
- * <p>Schema version guard (NFR-006): {@link #toDomain} checks the stored {@code schema_version}
- * against {@link ImportBatch#CURRENT_SCHEMA_VERSION} and throws {@link
- * SchemaVersionMismatchException} if they differ.
+ * <p>Schema version guard: {@link #toDomain} checks the stored {@code schema_version} against
+ * {@link ImportBatch#CURRENT_SCHEMA_VERSION} and throws {@link SchemaVersionMismatchException} if
+ * they differ.
  *
- * <p>Package-private per ARQ-006b.
+ * <p>Package-private.
  */
 class ImportBatchPersistenceMapper {
 
@@ -41,7 +40,7 @@ class ImportBatchPersistenceMapper {
    *     ImportBatch#CURRENT_SCHEMA_VERSION}
    */
   ImportBatch toDomain(ImportBatchJpaEntity entity) {
-    // NFR-006: schema version guard
+    // Schema version guard
     if (entity.getSchemaVersion() != ImportBatch.CURRENT_SCHEMA_VERSION) {
       throw new SchemaVersionMismatchException(
           ImportBatchId.of(entity.getId()),

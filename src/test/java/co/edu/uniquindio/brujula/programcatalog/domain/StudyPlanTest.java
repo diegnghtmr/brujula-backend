@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU2-1.3 RED: StudyPlan invariant tests.
+ * StudyPlan invariant tests.
  *
  * <p>Asserts: totalCredits > 0; status defaults to DRAFT; version field exists. Also covers Journey
  * aggregate basic properties.

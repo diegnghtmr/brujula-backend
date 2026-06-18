@@ -11,8 +11,6 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Covers: factory methods produce correct status/version defaults; type-specific field
  * requirements enforced.
- *
- * <p>WU5 – T5.2 (domain portion).
  */
 class CourseRequirementWriteTest {
 

@@ -35,8 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
  *   <li>archive persists ARCHIVED status
  *   <li>stale-version save throws OptimisticLockingFailureException
  * </ul>
- *
- * Satisfies: CUR-001, CUR-002, SC-009-C, SC-009-D, WU5-T5.3.
  */
 @SpringBootTest
 @Transactional

@@ -13,8 +13,7 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code administration.staff_account} (Flyway V003).
  *
- * <p>Optimistic locking via {@code @Version} (DB-006). Package-private — no cross-module access
- * (ARQ-006).
+ * <p>Optimistic locking via {@code @Version}. Package-private — no cross-module access.
  */
 @Entity
 @Table(name = "staff_account", schema = "administration")

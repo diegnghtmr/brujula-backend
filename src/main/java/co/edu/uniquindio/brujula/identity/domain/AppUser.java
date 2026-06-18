@@ -8,11 +8,11 @@ import java.util.UUID;
  * AppUser — the central aggregate of the identity module.
  *
  * <p>Represents a provisioned user whose identity is backed by Keycloak OIDC. Zero Spring/JPA
- * imports (ARQ-002). All invariants are enforced in factory methods and business methods.
+ * imports. All invariants are enforced in factory methods and business methods.
  *
- * <p>Design §2.1: id, oidcSubject, email, fullName, Role VO, AccountStatus, OnboardingState,
- * consent fields (termsVersion, privacyVersion, consentTimestamp), onboardingCompleted (legacy),
- * version (optimistic lock). Email is immutable post-create.
+ * <p>Fields: id, oidcSubject, email, fullName, Role VO, AccountStatus, OnboardingState, consent
+ * fields (termsVersion, privacyVersion, consentTimestamp), onboardingCompleted (legacy), version
+ * (optimistic lock). Email is immutable post-create.
  *
  * <p>Three factory methods:
  *
@@ -27,7 +27,7 @@ import java.util.UUID;
  *
  * <ul>
  *   <li>{@link #captureConsent} — records consent evidence on a registered user.
- *   <li>{@link #activate} — transitions PENDING_VERIFICATION → ACTIVE (sync-on-login, #1574).
+ *   <li>{@link #activate} — transitions PENDING_VERIFICATION → ACTIVE (sync-on-login).
  * </ul>
  */
 public final class AppUser {
@@ -43,7 +43,7 @@ public final class AppUser {
   private final boolean onboardingCompleted; // legacy field — kept for backward compat
   private final long version;
 
-  // Slice 2 additions (V008 columns)
+  // Fields added for self-registration flow
   private OnboardingState onboardingState;
   private Instant consentTimestamp;
   private String termsVersion;
@@ -111,7 +111,7 @@ public final class AppUser {
   }
 
   // -------------------------------------------------------------------------
-  // Factory: self-registration (Slice 2, S2-B)
+  // Factory: self-registration
   // -------------------------------------------------------------------------
 
   /**
@@ -148,7 +148,7 @@ public final class AppUser {
   // -------------------------------------------------------------------------
 
   /**
-   * Reconstitute an AppUser from persistence (Slice 1 compat — no consent fields).
+   * Reconstitute an AppUser from persistence (no consent fields — backward compat overload).
    *
    * <p>No default logic applied — every field is explicit. Uses ACTIVE as default onboardingState
    * for backward compat with existing OIDC-provisioned rows.
@@ -178,7 +178,7 @@ public final class AppUser {
   }
 
   /**
-   * Reconstitute an AppUser from persistence with all Slice 2 fields.
+   * Reconstitute an AppUser from persistence with full fields including consent evidence.
    *
    * <p>Full reconstitution including consent evidence and onboardingState.
    */
@@ -267,7 +267,7 @@ public final class AppUser {
    * OnboardingState#ACTIVE}.
    *
    * <p>Called by {@code ProvisionUserOnLoginService} when the OIDC login carries {@code
-   * email_verified=true} (sync-on-login pattern, obs #1574). Idempotent: no-op if already ACTIVE.
+   * email_verified=true} (sync-on-login pattern). Idempotent: no-op if already ACTIVE.
    */
   public void activate() {
     if (this.onboardingState == OnboardingState.PENDING_VERIFICATION) {

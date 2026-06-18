@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU2-TDD: OFFW-007 — listOfferings DRAFT filter widening for STAFF/ADMIN.
+ * listOfferings DRAFT filter widening for STAFF/ADMIN.
  *
  * <p>Tests:
  *
@@ -97,7 +97,7 @@ class OfferingListDraftFilterSliceTest extends AbstractPostgresIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].status").value("DRAFT"));
 
-    // OFFW-007 routing regression guard: assert criteria carries STAFF as privileged caller.
+    // Routing regression guard: assert criteria carries STAFF as privileged caller.
     // A bug that always called the student path would still return 200 but this capture fails.
     ArgumentCaptor<ListOfferingsCriteria> captor = forClass(ListOfferingsCriteria.class);
     verify(listOfferingsQuery).listOfferings(captor.capture());
@@ -122,7 +122,7 @@ class OfferingListDraftFilterSliceTest extends AbstractPostgresIntegrationTest {
         .andExpect(jsonPath("$.totalElements").value(0))
         .andExpect(jsonPath("$.content").isEmpty());
 
-    // OFFW-007 routing regression guard: assert criteria carries STUDENT as non-privileged caller.
+    // Routing regression guard: assert criteria carries STUDENT as non-privileged caller.
     // A routing regression that always called the staff path would pass the response assertions
     // above but fail here when the mock returns empty regardless.
     ArgumentCaptor<ListOfferingsCriteria> captor = forClass(ListOfferingsCriteria.class);

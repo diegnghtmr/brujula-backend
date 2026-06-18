@@ -10,9 +10,7 @@ import org.springframework.lang.Nullable;
  * Input port: query staff accounts.
  *
  * <p>Returns application-layer DTOs ({@link StaffAccountView}) and accepts a status name string so
- * REST adapters do not need to import domain types (ARQ-001).
- *
- * <p>Satisfies: Design §2.2 GetStaffQuery/ListStaffQuery.
+ * REST adapters do not need to import domain types.
  */
 public interface ListStaffQuery {
 

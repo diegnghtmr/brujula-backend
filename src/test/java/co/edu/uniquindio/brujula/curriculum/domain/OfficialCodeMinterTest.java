@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-2.1 RED: Verifies OfficialCodeMinter determinism, accent-folding, non-alnum stripping, code
- * format, and uniqueness for similar-name courses.
+ * Verifies OfficialCodeMinter determinism, accent-folding, non-alnum stripping, code format, and
+ * uniqueness for similar-name courses.
  */
 class OfficialCodeMinterTest {
 
@@ -64,8 +64,7 @@ class OfficialCodeMinterTest {
 
   @Test
   void distinctCodesForSameProgSameSemSimilarNames() {
-    // FIX-3 (WARNING-3): real collision risk — same program, same semester, suffix-differentiated
-    // names
+    // Real collision risk — same program, same semester, suffix-differentiated names:
     // "ISC", 2, "Programación I"  → slug "PROGRAMACIONI"  → ISC-S2-PROGRAMACIONI
     // "ISC", 2, "Programación II" → slug "PROGRAMACIONII" → ISC-S2-PROGRAMACIONII
     // These MUST be distinct; this test locks in the behavior so a future slug change that

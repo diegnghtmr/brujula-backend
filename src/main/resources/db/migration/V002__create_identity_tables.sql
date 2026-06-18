@@ -2,7 +2,7 @@
 --
 -- Module: identity
 -- Schema: identity
--- Satisfies: Spec §Identity Provisioning (RN-006, RN-009), Design §3 V002
+-- Satisfies: Identity Provisioning spec
 
 CREATE TABLE IF NOT EXISTS identity.app_user (
     id              UUID        NOT NULL DEFAULT gen_random_uuid(),

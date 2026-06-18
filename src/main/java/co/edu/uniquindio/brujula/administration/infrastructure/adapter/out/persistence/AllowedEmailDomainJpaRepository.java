@@ -3,7 +3,7 @@ package co.edu.uniquindio.brujula.administration.infrastructure.adapter.out.pers
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-/** Spring Data JPA repository for allowed email domains. Package-private (ARQ-006). */
+/** Spring Data JPA repository for allowed email domains. Package-private. */
 interface AllowedEmailDomainJpaRepository extends JpaRepository<AllowedEmailDomainJpaEntity, UUID> {
 
   boolean existsByDomain(String domain);

@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * QAL-ADV-001 — Regression scope tests for {@code IdentityExceptionHandler}.
+ * Regression scope tests for {@code IdentityExceptionHandler}.
  *
  * <p>Asserts the per-module response contract for module-specific exceptions (status code). {@code
  * basePackages} scoping is defence-in-depth; {@code @Order(HIGHEST_PRECEDENCE)} is the primary
@@ -35,8 +35,8 @@ import org.springframework.web.context.WebApplicationContext;
  * There is no {@code $.code} to assert here per spec, so status assertion is the load-bearing
  * check.
  *
- * <p>T-WU1.3 (identity): verifies identity controller → {@code IdentityExceptionHandler} maps
- * {@link EmailAlreadyRegisteredException} to HTTP 409.
+ * <p>Verifies identity controller → {@code IdentityExceptionHandler} maps {@link
+ * EmailAlreadyRegisteredException} to HTTP 409.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class IdentityExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest {
@@ -55,9 +55,8 @@ class IdentityExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest 
   }
 
   /**
-   * T-WU1.3 (identity) — QAL-ADV-001: identity controller throwing {@link
-   * EmailAlreadyRegisteredException} MUST return HTTP 409 from {@code IdentityExceptionHandler}
-   * (scoped to the identity REST package).
+   * Identity controller throwing {@link EmailAlreadyRegisteredException} MUST return HTTP 409 from
+   * {@code IdentityExceptionHandler} (scoped to the identity REST package).
    *
    * <p>This is a status-level contract test. {@link EmailAlreadyRegisteredException} is
    * module-specific (not sharedkernel), so there is no {@code $.code} to assert per spec. If a

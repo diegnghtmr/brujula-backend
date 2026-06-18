@@ -15,10 +15,10 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code curriculum.course} (created by Flyway V011).
  *
- * <p>Package-private per ARQ-006. Schema-qualified table annotation following the Fase-1 identity
- * pattern (Boot 4.0.3 / Hibernate 6.x confirmed working).
+ * <p>Package-private. Schema-qualified table annotation following the identity module pattern (Boot
+ * 4.0.3 / Hibernate 6.x confirmed working).
  *
- * <p>Optimistic locking via {@code @Version} on the {@code version} column (DB-006/DT-014).
+ * <p>Optimistic locking via {@code @Version} on the {@code version} column.
  */
 @Entity
 @Table(name = "course", schema = "curriculum")
@@ -110,7 +110,7 @@ class CourseJpaEntity {
     return recommendedSemesters;
   }
 
-  // Setters for the write path (CUR-001 / WU5)
+  // Setters for the write path (CUR-001)
   void setId(UUID id) {
     this.id = id;
   }

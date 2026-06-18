@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Use case implementation: get a single course by ID.
  *
  * <p>Throws {@link CourseNotFoundException} (maps to HTTP 404) if the course is not found. No
- * Spring annotations — wired via infrastructure configuration (ARQ-002).
+ * Spring annotations — wired via infrastructure configuration.
  */
 public class GetCourseService implements GetCourseQuery {
 

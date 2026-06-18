@@ -37,20 +37,19 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * REST adapter: imports module endpoints ({@code /staff/imports}).
  *
- * <p>Implements the generated {@link ImportsApi} contract-first interface (ARQ-001).
- * Package-private per ARQ-006b.
+ * <p>Implements the generated {@link ImportsApi} contract-first interface. Package-private.
  *
- * <p>WU4 scope:
+ * <p>Endpoints:
  *
  * <ul>
- *   <li>POST /staff/imports — multipart upload (IMP-001)
- *   <li>GET /staff/imports — list with program-scoping (IMP-003)
- *   <li>GET /staff/imports/{importId} — get single batch (IMP-004)
- *   <li>POST /staff/imports/{importId}/confirmation — stub (WU6)
+ *   <li>POST /staff/imports — multipart upload
+ *   <li>GET /staff/imports — list with program-scoping
+ *   <li>GET /staff/imports/{importId} — get single batch
+ *   <li>POST /staff/imports/{importId}/confirmation — confirm
  * </ul>
  *
- * <p>ARQ-001: uses only generated.model.* + application.dto.* at the REST boundary — no domain
- * types leak through.
+ * <p>Uses only generated.model.* + application.dto.* at the REST boundary — no domain types leak
+ * through.
  */
 @RestController
 class ImportsController implements ImportsApi {
@@ -78,7 +77,7 @@ class ImportsController implements ImportsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST /staff/imports — upload import file (IMP-001)
+  // POST /staff/imports — upload import file
   // -------------------------------------------------------------------------
 
   @Override
@@ -126,7 +125,7 @@ class ImportsController implements ImportsApi {
   }
 
   // -------------------------------------------------------------------------
-  // GET /staff/imports — list imports (IMP-003)
+  // GET /staff/imports — list imports
   // -------------------------------------------------------------------------
 
   @Override
@@ -154,7 +153,7 @@ class ImportsController implements ImportsApi {
   }
 
   // -------------------------------------------------------------------------
-  // GET /staff/imports/{importId} — get single import (IMP-004)
+  // GET /staff/imports/{importId} — get single import
   // -------------------------------------------------------------------------
 
   @Override
@@ -167,7 +166,7 @@ class ImportsController implements ImportsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST /staff/imports/{importId}/confirmation — confirm (WU6, IMP-005)
+  // POST /staff/imports/{importId}/confirmation — confirm
   // -------------------------------------------------------------------------
 
   @Override
@@ -199,7 +198,7 @@ class ImportsController implements ImportsApi {
   }
 
   // -------------------------------------------------------------------------
-  // Private helpers — ARQ-001 compliant (application DTOs / generated model only)
+  // Private helpers — application DTOs / generated model only
   // -------------------------------------------------------------------------
 
   /** Resolve current user profile from the Spring Security context. */

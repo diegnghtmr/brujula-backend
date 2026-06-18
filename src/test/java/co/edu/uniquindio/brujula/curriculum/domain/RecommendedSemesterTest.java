@@ -6,8 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-1.5 RED: Verifies RecommendedSemester is immutable, rejects null journeyCode, and rejects
- * semester ≤ 0.
+ * Verifies RecommendedSemester is immutable, rejects null journeyCode, and rejects semester ≤ 0.
  */
 class RecommendedSemesterTest {
 

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-/** WU1-1.3 RED: Verifies all 4 RequirementType enum values exist. */
+/** Verifies all 4 RequirementType enum values exist. */
 class RequirementTypeTest {
 
   @Test

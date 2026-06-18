@@ -4,12 +4,12 @@ import co.edu.uniquindio.brujula.imports.application.dto.ImportSummary;
 import java.util.UUID;
 
 /**
- * Input port: retrieve a single import batch by id (IMP-004).
+ * Input port: retrieve a single import batch by id.
  *
  * <p>STAFF actors are restricted to batches belonging to their assigned programs (403 otherwise).
  * ADMIN actors may retrieve any batch.
  *
- * <p>Published in the imports module. No Spring/JPA imports (ARQ-003).
+ * <p>Published in the imports module. No Spring/JPA imports.
  */
 public interface GetImportUseCase {
 

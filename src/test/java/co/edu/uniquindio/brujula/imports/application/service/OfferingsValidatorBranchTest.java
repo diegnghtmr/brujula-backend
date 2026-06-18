@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * DEBT-F7-003: covers missing branches in {@link OfferingsValidator}.
+ * Covers missing branches in {@link OfferingsValidator}.
  *
  * <p>Specifically: missing option_label, missing status, invalid status value, missing end_time,
  * missing start_time, malformed start_time, malformed end_time, valid row with end equal to start

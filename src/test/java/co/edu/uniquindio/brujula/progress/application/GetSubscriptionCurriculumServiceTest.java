@@ -34,17 +34,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU4-T04 RED: unit tests for {@link GetSubscriptionCurriculumService}.
+ * Unit tests for {@link GetSubscriptionCurriculumService}.
  *
  * <p>Scenarios:
  *
  * <ul>
- *   <li>AVL-1-BOLA: another student's subscription → 404.
- *   <li>happy path: curriculum view organized by semester with correct progressStatus.
- *   <li>N+1 absence: verify single call to AssemblePlanMallaQuery.
+ *   <li>Cross-student subscription access → 404.
+ *   <li>Happy path: curriculum view organized by semester with correct progressStatus.
+ *   <li>No N+1: verify single call to AssemblePlanMallaQuery.
  * </ul>
  *
- * <p>FIX-S1: {@code ListJourneysQuery} is now mocked; journey name assertion added.
+ * <p>{@code ListJourneysQuery} is mocked; journey name assertion added.
  */
 class GetSubscriptionCurriculumServiceTest {
 
@@ -61,7 +61,7 @@ class GetSubscriptionCurriculumServiceTest {
   private static final UUID PROGRAM_ID = UUID.randomUUID();
   private static final UUID COURSE_1 = UUID.randomUUID();
   private static final UUID COURSE_2 = UUID.randomUUID();
-  // FIX-S1: expected human-readable journey name from catalog
+  // Expected human-readable journey name from catalog
   private static final UUID JOURNEY_ID = UUID.randomUUID();
 
   @BeforeEach
@@ -71,7 +71,7 @@ class GetSubscriptionCurriculumServiceTest {
     assemblePlanMallaQuery = mock(AssemblePlanMallaQuery.class);
     listJourneysQuery = mock(ListJourneysQuery.class);
 
-    // FIX-S1: stub journey name resolution (DIURNA → "Jornada Diurna")
+    // Stub journey name resolution (DIURNA → "Jornada Diurna")
     when(listJourneysQuery.listJourneys())
         .thenReturn(
             List.of(
@@ -84,7 +84,7 @@ class GetSubscriptionCurriculumServiceTest {
   }
 
   // -----------------------------------------------------------------------
-  // AVL-1-BOLA: another student's subscription → 404
+  // Another student's subscription → 404
   // -----------------------------------------------------------------------
 
   @Test
@@ -134,7 +134,7 @@ class GetSubscriptionCurriculumServiceTest {
     CurriculumViewData result = sut.getSubscriptionCurriculum(SUBSCRIPTION_ID, STUDENT_ID);
 
     assertThat(result.subscriptionId()).isEqualTo(SUBSCRIPTION_ID);
-    // FIX-S1: journey name must be human-readable, not the raw code
+    // Journey name must be human-readable, not the raw code
     assertThat(result.referenceJourneyCode()).isEqualTo("DIURNA");
     assertThat(result.referenceJourneyName()).isEqualTo("Jornada Diurna");
     assertThat(result.semesters()).hasSize(1);

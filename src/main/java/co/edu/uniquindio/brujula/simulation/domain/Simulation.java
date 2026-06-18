@@ -15,10 +15,10 @@ import java.util.UUID;
  *   <li>scopeEntries: 1..4 (programId, journeyCode) pairs; pairs must be unique (INV-002-v2).
  *   <li>At most 2 distinct programIds across all scope entries (INV-002-v2).
  *   <li>name must be non-blank and <= 120 chars.
- *   <li>Lifecycle status is ACTIVE or DELETED (INV-004: CURRENT/OUTDATED never persisted).
+ *   <li>Lifecycle status is ACTIVE or DELETED (CURRENT/OUTDATED are never persisted).
  * </ul>
  *
- * <p>Framework-free — no Spring/JPA annotations (ARQ-002).
+ * <p>Framework-free — no Spring/JPA annotations.
  */
 public class Simulation {
 

@@ -8,7 +8,7 @@ import java.util.Optional;
  * <p>Code: {@code SIMULATION_COURSE_ALREADY_PASSED}.
  *
  * <p>Package-private — only used by {@link SimulationValidationService}. Pure Java, no Spring/JPA
- * (ARQ-002, ADR-F4-004).
+ * (ADR-F4-004).
  */
 class AlreadyPassedRule {
 

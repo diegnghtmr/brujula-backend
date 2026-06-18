@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA persistence adapter for the {@code allowed_email_domain} table (Flyway V003).
  *
- * <p>Implements {@link SaveAllowedEmailDomainPort}. Package-private (ARQ-006).
+ * <p>Implements {@link SaveAllowedEmailDomainPort}. Package-private.
  */
 @Component
 class AllowedEmailDomainPersistenceAdapter implements SaveAllowedEmailDomainPort {

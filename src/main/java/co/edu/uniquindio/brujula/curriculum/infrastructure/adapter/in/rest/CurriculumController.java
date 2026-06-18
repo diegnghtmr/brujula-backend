@@ -68,10 +68,9 @@ import org.springframework.web.bind.annotation.RestController;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * REST adapter implementing the generated {@link CurriculumApi} interface (contract-first,
- * ARQ-001).
+ * REST adapter implementing the generated {@link CurriculumApi} interface (contract-first).
  *
- * <p>Implements read-only curriculum endpoints for Phase 4+5 WU4:
+ * <p>Implements read-only curriculum endpoints:
  *
  * <ul>
  *   <li>GET /courses/{courseId} — getCourse (CUR-001)
@@ -79,16 +78,15 @@ import tools.jackson.databind.ObjectMapper;
  *   <li>GET /plans/{planId}/courses — listPlanCourses (CUR-001)
  *   <li>GET /plans/{planId}/sequential-tracks — listSequentialTracks (CUR-005)
  *   <li>GET /plans/{planId}/degree-work-modalities — listDegreeWorkModalities (CUR-006)
- *   <li>GET /plans/{planId}/malla — getPlanMalla (ADR-F2-001)
+ *   <li>GET /plans/{planId}/malla — getPlanMalla
  * </ul>
  *
  * <p>Staff write endpoints (createCourse, updateCourse, archiveCourse, createCourseRequirement,
  * updateCourseRequirement, deleteCourseRequirement, createStudyPlan, changeStudyPlanStatus,
  * createSequentialTrack, updateSequentialTrack, createDegreeWorkModality, updateDegreeWorkModality,
- * updateStudyPlan) return HTTP 501 NOT_IMPLEMENTED (out of scope for Fase 2 WU4).
+ * updateStudyPlan) return HTTP 501 NOT_IMPLEMENTED (out of scope for the current delivery).
  *
- * <p>ARQ-001: no domain types imported — only application DTOs and generated model types.
- * Package-private per ARQ-006.
+ * <p>No domain types imported — only application DTOs and generated model types. Package-private.
  */
 @RestController
 class CurriculumController implements CurriculumApi {
@@ -99,7 +97,7 @@ class CurriculumController implements CurriculumApi {
   private final ListSequentialTracksQuery listSequentialTracksQuery;
   private final ListDegreeWorkModalitiesQuery listDegreeWorkModalitiesQuery;
   private final AssemblePlanMallaQuery assemblePlanMallaQuery;
-  // Write use cases (WU5)
+  // Write use cases
   private final CreateCourseUseCase createCourseUseCase;
   private final UpdateCourseUseCase updateCourseUseCase;
   private final ArchiveCourseUseCase archiveCourseUseCase;
@@ -205,7 +203,7 @@ class CurriculumController implements CurriculumApi {
     return ResponseEntity.ok(result);
   }
 
-  /** ADR-F2-001: assemble the plan malla (curricular grid) for a given journey. */
+  /** Assemble the plan malla (curricular grid) for a given journey. */
   @Override
   public ResponseEntity<PlanMalla> getPlanMalla(String journeyCode, UUID planId) {
     PlanMallaView view = assemblePlanMallaQuery.assemblePlanMalla(planId, journeyCode);
@@ -213,7 +211,7 @@ class CurriculumController implements CurriculumApi {
   }
 
   // ---------------------------------------------------------------------------
-  // Write endpoints (WU5 — implemented)
+  // Write endpoints (implemented)
   // ---------------------------------------------------------------------------
 
   /** CUR-001: create a new course (idempotent). STAFF/ADMIN only. */
@@ -443,7 +441,7 @@ class CurriculumController implements CurriculumApi {
   }
 
   // ---------------------------------------------------------------------------
-  // DTO mappers: application DTOs → generated model (ARQ-005)
+  // DTO mappers: application DTOs → generated model
   // ---------------------------------------------------------------------------
 
   private Course toCourseDto(CourseView view) {

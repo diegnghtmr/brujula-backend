@@ -46,9 +46,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU4-TDD: Controller slice security and exception-mapping tests for imports endpoints.
+ * Controller slice security and exception-mapping tests for imports endpoints.
  *
- * <p>Tests (IMP-001, IMP-003, IMP-004, IMP-012, NFR-004):
+ * <p>Tests:
  *
  * <ul>
  *   <li>POST /staff/imports — STUDENT → 403; STAFF assigned → 201 + Location; STAFF unassigned →
@@ -104,7 +104,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void upload_multipart_returns_201_with_location_header() throws Exception {
-    // IMP-003, SC-003-A, T4.1
     stubStaffProfile();
     ImportSummary summary = validatedSummary("COURSES");
     when(uploadImportUseCase.upload(any())).thenReturn(summary);
@@ -131,7 +130,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void upload_by_unassigned_staff_returns_403() throws Exception {
-    // SC-001-D, INV-06
     stubStaffProfile();
     when(uploadImportUseCase.upload(any()))
         .thenThrow(ImportAccessDeniedException.notAssignedToProgram(PROGRAM_ID));
@@ -175,7 +173,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void idempotency_replay_same_key_same_hash_returns_201_with_same_summary() throws Exception {
-    // SC-001-E — idempotent retry returns the same summary
     stubStaffProfile();
     ImportSummary summary = validatedSummary("COURSES");
     when(uploadImportUseCase.upload(any())).thenReturn(summary);
@@ -199,7 +196,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void upload_idempotency_conflict_returns_409() throws Exception {
-    // SC-001-F
     stubStaffProfile();
     UUID idempotencyKey = UUID.randomUUID();
     when(uploadImportUseCase.upload(any()))
@@ -222,7 +218,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void upload_wrong_file_type_returns_415() throws Exception {
-    // SC-001-B
     stubStaffProfile();
     when(uploadImportUseCase.upload(any()))
         .thenThrow(new UnsupportedFileTypeException("text/csv", "data.csv"));
@@ -245,7 +240,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void upload_oversize_file_returns_413() throws Exception {
-    // SC-001-C
     stubStaffProfile();
     when(uploadImportUseCase.upload(any()))
         .thenThrow(new FileSizeExceededException(6_000_000L, 5_242_880L));
@@ -267,7 +261,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void upload_invalid_batch_returns_201_with_invalid_status() throws Exception {
-    // SC-002-C — even INVALID batches return 201
     stubStaffProfile();
     ImportSummary invalidSummary = invalidSummary("COURSES");
     when(uploadImportUseCase.upload(any())).thenReturn(invalidSummary);
@@ -312,7 +305,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void list_imports_returns_200_with_page() throws Exception {
-    // IMP-003, T4.1
     stubStaffProfile();
     ImportPageView pageView =
         new ImportPageView(List.of(validatedSummary("COURSES")), 0, 20, 1L, 1);
@@ -331,7 +323,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void list_imports_returns_200_empty_for_staff_with_no_assigned_programs() throws Exception {
-    // SC-003-C
     stubStaffProfile();
     ImportPageView emptyPage = new ImportPageView(List.of(), 0, 20, 0L, 0);
     when(listImportsUseCase.list(any())).thenReturn(emptyPage);
@@ -347,7 +338,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void list_imports_admin_sees_all() throws Exception {
-    // IMP-003: ADMIN sees all batches
     stubAdminProfile();
     ImportPageView pageView =
         new ImportPageView(
@@ -368,7 +358,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void get_import_by_id_returns_200_with_summary() throws Exception {
-    // IMP-004, SC-004-A, T4.1
     stubStaffProfile();
     ImportSummary summary = validatedSummary("COURSES");
     when(getImportUseCase.get(eq(IMPORT_ID), anyString(), anyString())).thenReturn(summary);
@@ -384,7 +373,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void get_import_not_found_returns_404() throws Exception {
-    // SC-004-C, IMP-012 SC-012-B
     stubStaffProfile();
     when(getImportUseCase.get(eq(IMPORT_ID), anyString(), anyString()))
         .thenThrow(new ImportBatchNotFoundException(IMPORT_ID));
@@ -399,7 +387,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void get_import_unassigned_program_returns_403() throws Exception {
-    // SC-004-B
     stubStaffProfile();
     when(getImportUseCase.get(eq(IMPORT_ID), anyString(), anyString()))
         .thenThrow(ImportAccessDeniedException.notAssignedToProgram(PROGRAM_ID));
@@ -418,7 +405,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void confirm_import_returns_200_on_success() throws Exception {
-    // SC-005-A, T6.4
     stubStaffProfile();
     ImportSummary confirmed = confirmedSummary();
     when(confirmImportUseCase.confirm(any())).thenReturn(confirmed);
@@ -440,7 +426,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void confirm_stale_version_returns_409() throws Exception {
-    // SC-005-B, IMP-012 SC-012-A, T6.4
     stubStaffProfile();
     when(confirmImportUseCase.confirm(any()))
         .thenThrow(new ObjectOptimisticLockingFailureException(Object.class, IMPORT_ID));
@@ -461,7 +446,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void confirm_invalid_batch_returns_409() throws Exception {
-    // SC-005-C, T6.4
     stubStaffProfile();
     when(confirmImportUseCase.confirm(any()))
         .thenThrow(
@@ -485,7 +469,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void confirm_unassigned_staff_returns_403() throws Exception {
-    // SC-005-F, T6.4
     stubStaffProfile();
     when(confirmImportUseCase.confirm(any()))
         .thenThrow(ImportAccessDeniedException.notAssignedToProgram(PROGRAM_ID));
@@ -527,7 +510,6 @@ class ImportsControllerTest extends AbstractPostgresIntegrationTest {
 
   @Test
   void confirm_offerings_kind_returns_200_confirmed() throws Exception {
-    // IMP-008, SC-008-A, T7.3 — WU7: OFFERINGS confirm is now fully implemented
     stubStaffProfile();
     ImportSummary confirmed = confirmedOfferingsSummary();
     when(confirmImportUseCase.confirm(any())).thenReturn(confirmed);

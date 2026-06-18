@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 /**
  * TDD unit tests for {@link AcademicPeriod} write factory methods.
  *
- * <p>Phase 1 — domain write methods (OFFW-001, OFFW-002). Pure Java, zero Spring/JPA.
+ * <p>Domain write methods — pure Java, zero Spring/JPA.
  */
 class AcademicPeriodTest {
 

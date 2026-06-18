@@ -14,7 +14,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** WU2-2.5 RED: Verifies ListJourneysService returns only active journeys (CAT-003). */
+/** Verifies ListJourneysService returns only active journeys. */
 class ListJourneysServiceTest {
 
   private LoadJourneyPort loadJourneyPort;

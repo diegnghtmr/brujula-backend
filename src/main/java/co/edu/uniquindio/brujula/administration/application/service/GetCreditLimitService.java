@@ -8,25 +8,24 @@ import java.util.UUID;
  * Application service: returns the configured credit limit for a (programId, periodId) pair.
  *
  * <p>When no explicit limit has been persisted, falls back to the system default of 23 credits
- * (ADR-013, ADR-F4-006, spec API-002 — "default 23, range minimum 1, maximum 60").
+ * (range minimum 1, maximum 60).
  *
  * <p>If a persisted override is outside the valid range [1, 60], an {@link IllegalStateException}
- * is thrown immediately — a misconfigured value must never silently propagate to WU4's validation
+ * is thrown immediately — a misconfigured value must never silently propagate to the validation
  * engine.
  *
- * <p>Framework-free: no Spring or JPA dependencies in this class (ARQ-002). Wired via {@code @Bean}
- * in {@link
+ * <p>Framework-free: no Spring or JPA dependencies in this class. Wired via {@code @Bean} in {@link
  * co.edu.uniquindio.brujula.administration.infrastructure.configuration.AdministrationConfiguration}.
  */
 public class GetCreditLimitService implements GetCreditLimitQuery {
 
-  /** System default credit limit when no explicit override has been configured (ADR-013). */
+  /** System default credit limit when no explicit override has been configured. */
   private static final int DEFAULT_CREDIT_LIMIT = 23;
 
-  /** Minimum allowed credit limit (inclusive), per spec API-002. */
+  /** Minimum allowed credit limit (inclusive). */
   private static final int MIN_CREDIT_LIMIT = 1;
 
-  /** Maximum allowed credit limit (inclusive), per spec API-002. */
+  /** Maximum allowed credit limit (inclusive). */
   private static final int MAX_CREDIT_LIMIT = 60;
 
   private final LoadCreditLimitPort loadCreditLimitPort;

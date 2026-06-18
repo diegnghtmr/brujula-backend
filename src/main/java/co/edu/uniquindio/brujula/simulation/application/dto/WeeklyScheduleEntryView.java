@@ -8,7 +8,7 @@ import java.util.UUID;
  * <p>Produced by the REST mapper from {@link
  * co.edu.uniquindio.brujula.simulation.domain.WeeklyScheduleEntry}.
  *
- * <p>ARQ-001: plain String/UUID/primitive types only.
+ * <p>Plain String/UUID/primitive types only.
  *
  * @param day weekday string (e.g. "MONDAY")
  * @param startsAt HH:mm start time string

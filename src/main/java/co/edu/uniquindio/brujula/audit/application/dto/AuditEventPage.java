@@ -5,8 +5,7 @@ import java.util.List;
 /**
  * Paginated result of audit events for the read-side query.
  *
- * <p>Contains {@link AuditEventItem} DTOs so that REST adapters do not need to import domain types
- * (ARQ-001).
+ * <p>Contains {@link AuditEventItem} DTOs so that REST adapters do not need to import domain types.
  *
  * @param items the audit events on this page
  * @param page zero-based page number

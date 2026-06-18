@@ -17,7 +17,7 @@ import java.util.UUID;
  * JPA entity mapping to {@code curriculum.course_recommended_semester} (created by Flyway V011).
  *
  * <p>PK is composite: {@code (course_id, journey_code)}. Mapped via {@code @EmbeddedId}.
- * Package-private per ARQ-006.
+ * Package-private.
  */
 @Entity
 @Table(name = "course_recommended_semester", schema = "curriculum")
@@ -48,7 +48,7 @@ class CourseRecommendedSemesterJpaEntity {
     return semester;
   }
 
-  // Setters for the write path (CUR-001 / WU5)
+  // Setters for the write path (CUR-001)
   void setId(CourseRecommendedSemesterId id) {
     this.id = id;
   }

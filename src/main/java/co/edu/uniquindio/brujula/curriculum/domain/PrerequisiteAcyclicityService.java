@@ -22,10 +22,10 @@ import java.util.UUID;
  *
  * <p>Both checks are merged into a single {@link #validate} pass.
  *
- * <p>ADR-F2-006: This service is framework-free — ZERO imports from {@code org.springframework} or
- * {@code jakarta.persistence}. ArchUnit test {@code WU1-3.5} enforces this at build time.
+ * <p>This service is framework-free — ZERO imports from {@code org.springframework} or {@code
+ * jakarta.persistence}. ArchUnit enforces this at build time.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public class PrerequisiteAcyclicityService {
 

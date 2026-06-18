@@ -28,15 +28,12 @@ import java.util.Set;
  *   <li>New key → execute, persist idempotency record, record audit event
  * </ul>
  *
- * <p>Wired against the generalized {@link IdempotencyStorePort} from {@code sharedkernel}
- * (ADR-F3-001). JSON (de)serialization of {@link StaffAccountView} is delegated to {@link
- * JsonCodecPort} — the port is infrastructure-backed by Jackson (FIX-1: resolves WARNING-001 and
- * WARNING-003). This class is clean of any JSON string-bashing.
+ * <p>Wired against the generalized {@link IdempotencyStorePort} from {@code sharedkernel}. JSON
+ * (de)serialization of {@link StaffAccountView} is delegated to {@link JsonCodecPort} — the port is
+ * infrastructure-backed by Jackson. This class is clean of any JSON string-bashing.
  *
  * <p>Returns {@link StaffAccountView} (application-layer DTO) so port callers do not need to import
- * domain types (ARQ-001). Framework-free — wired by infrastructure configuration.
- *
- * <p>Satisfies: Design §2.2, §4, Spec §Idempotent Create.
+ * domain types. Framework-free — wired by infrastructure configuration.
  */
 public class CreateStaffService implements CreateStaffUseCase {
 
@@ -79,7 +76,7 @@ public class CreateStaffService implements CreateStaffUseCase {
       return jsonCodecPort.fromJson(stored.responseBodyJson(), StaffAccountView.class);
     }
 
-    // 2. Validate allowed email domain (RN-007, RNF-SEG-006 dual enforcement)
+    // 2. Validate allowed email domain
     Set<String> allowedDomains = loadAllowedEmailDomainsPort.loadAllowedDomains();
     var policy = new AllowedEmailDomainPolicy(allowedDomains);
     if (!policy.isAllowed(command.email())) {
@@ -98,7 +95,7 @@ public class CreateStaffService implements CreateStaffUseCase {
     idempotencyStorePort.save(
         command.idempotencyKey(), OPERATION, command.requestHash(), 201, responseBodyJson);
 
-    // 6. Record audit event (RNF-SEG-007 synchronous, same transaction)
+    // 6. Record audit event (synchronous, same transaction)
     auditRecorder.record(
         new RecordAuditEventCommand(
             command.actorId(),

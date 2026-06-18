@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Value object: strongly-typed identity for an ImportBatch aggregate.
  *
- * <p>Pure domain type — zero framework annotations (ARQ-002).
+ * <p>Pure domain type — zero framework annotations.
  */
 public record ImportBatchId(UUID value) {
 

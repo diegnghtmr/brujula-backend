@@ -3,7 +3,7 @@ package co.edu.uniquindio.brujula.imports.domain.exception;
 /**
  * Thrown when an uploaded file has an unsupported content-type or extension.
  *
- * <p>Maps to HTTP 415 Unsupported Media Type at the controller layer (WU4).
+ * <p>Maps to HTTP 415 Unsupported Media Type at the controller layer.
  */
 public class UnsupportedFileTypeException extends RuntimeException {
 

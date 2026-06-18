@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Driven adapter: JPA-backed persistence for course attempts.
  *
- * <p>Implements {@link LoadCourseAttemptPort} and {@link SaveCourseAttemptPort}. Package-private
- * per ARQ-006b. Optimistic locking is handled by JPA {@code @Version}; Spring translates {@code
+ * <p>Implements {@link LoadCourseAttemptPort} and {@link SaveCourseAttemptPort}. Package-private.
+ * Optimistic locking is handled by JPA {@code @Version}; Spring translates {@code
  * OptimisticLockException} into {@code OptimisticLockingFailureException} which the REST exception
  * handler maps to 409.
  */

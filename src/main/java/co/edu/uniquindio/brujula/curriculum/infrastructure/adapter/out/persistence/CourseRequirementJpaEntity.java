@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code curriculum.course_requirement} (created by Flyway V011).
  *
- * <p>Package-private per ARQ-006. Optimistic locking via {@code @Version} (DB-006/DT-014).
+ * <p>Package-private. Optimistic locking via {@code @Version}.
  */
 @Entity
 @Table(name = "course_requirement", schema = "curriculum")
@@ -91,7 +91,7 @@ class CourseRequirementJpaEntity {
     return version;
   }
 
-  // Setters for the write path (CUR-003 / WU5)
+  // Setters for the write path (CUR-003)
   void setId(UUID id) {
     this.id = id;
   }

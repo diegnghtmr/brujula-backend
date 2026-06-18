@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <p>Verifies that {@code audit.audit_event} exists with required columns, JSONB fields, and
  * indexes. Fails until the migration file exists.
  *
- * <p>Satisfies: S1-A-4, Spec §Audit Log (RN-010, RNF-SEG-007), Design §3 V004.
+ * <p>Verifies audit schema: required columns, JSONB fields, and indexes.
  */
 @SpringBootTest
 class FlywayV004AuditTablesTest extends AbstractPostgresIntegrationTest {

@@ -7,9 +7,9 @@ import java.util.UUID;
  * Sim-local record describing the sequential-track ordering constraint for a PERSONAL_ELECTIVE or
  * DEEPENING course.
  *
- * <p>Mapped from curriculum::api {@code SequentialTrackView} at the adapter edge (ARQ-002,
- * INV-001). If the candidate course is in a sequential track and that track has a {@code
- * gatekeeperCourseId}, the student must have passed that gatekeeper before adding the course.
+ * <p>Mapped from curriculum::api {@code SequentialTrackView} at the adapter edge. If the candidate
+ * course is in a sequential track and that track has a {@code gatekeeperCourseId}, the student must
+ * have passed that gatekeeper before adding the course.
  *
  * @param courseId the course being validated
  * @param courseType the course type string (e.g. "DEEPENING", "PERSONAL_ELECTIVE", "REQUIRED")

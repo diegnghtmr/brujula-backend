@@ -7,10 +7,10 @@ import java.util.UUID;
 /**
  * Input port: list all courses for a given study plan.
  *
- * <p>Backs {@code GET /plans/{planId}/courses} (CUR-001). When {@code callerRole} is {@code
- * STUDENT}, ARCHIVED courses are hidden from results.
+ * <p>Backs {@code GET /plans/{planId}/courses}. When {@code callerRole} is {@code STUDENT},
+ * ARCHIVED courses are hidden from results.
  *
- * <p>No Spring/framework imports (ARQ-003 — all port.in interfaces must be interfaces).
+ * <p>No Spring/framework imports.
  */
 public interface ListPlanCoursesQuery {
 

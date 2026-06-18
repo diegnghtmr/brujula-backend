@@ -9,7 +9,7 @@ import co.edu.uniquindio.brujula.audit.application.dto.RecordAuditEventCommand;
  * natural inbound entry point for external callers. Other modules depend on this interface via
  * Spring injection — they MUST NOT import the concrete service or any persistence adapter.
  *
- * <p>Satisfies: Design §2.3 AuditRecorder, Spec §Audit Log (TRD §6.3 Todos→audit).
+ * <p>Synchronous recording in the same transaction as the mutating action.
  */
 public interface AuditRecorder {
 

@@ -5,13 +5,13 @@ import java.util.UUID;
 /**
  * Output port: validate that a study plan is in a given status.
  *
- * <p>FIX-W3 (SUB-1-INACTIVE-PLAN): the application service must not depend directly on {@code
+ * <p>The application service must not depend directly on {@code
  * programcatalog.application.port.in.GetStudyPlanQuery} to avoid violating Spring Modulith
  * named-interface boundaries. This port is a local anti-corruption facade that wraps the
  * programcatalog port and is implemented in the infrastructure layer.
  *
- * <p>No Spring/JPA imports (ARQ-003 — application layer is framework-free). The implementation
- * lives in {@code progress.infrastructure.adapter.out.programcatalog}.
+ * <p>No Spring/JPA imports — application layer is framework-free. The implementation lives in
+ * {@code progress.infrastructure.adapter.out.programcatalog}.
  */
 public interface ValidatePlanStatusPort {
 

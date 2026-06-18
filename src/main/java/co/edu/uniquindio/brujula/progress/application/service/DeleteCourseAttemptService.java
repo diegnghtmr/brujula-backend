@@ -12,11 +12,11 @@ import co.edu.uniquindio.brujula.progress.domain.Subscription;
 import java.util.UUID;
 
 /**
- * Use case: delete a course attempt (PRG-4).
+ * Use case: delete a course attempt.
  *
  * <p>Enforces BOLA ownership and records an audit event (COURSE_ATTEMPT_DELETED).
  *
- * <p>Framework-free — wired by {@code ProgressConfiguration}. Satisfies: PRG-4, CROSS-4.
+ * <p>Framework-free — wired by {@code ProgressConfiguration}.
  */
 public class DeleteCourseAttemptService implements DeleteCourseAttemptUseCase {
 
@@ -51,7 +51,7 @@ public class DeleteCourseAttemptService implements DeleteCourseAttemptUseCase {
       throw new AttemptNotFoundException(attemptId);
     }
 
-    // Audit BEFORE delete (CROSS-4: COURSE_ATTEMPT_DELETED)
+    // Audit BEFORE delete (COURSE_ATTEMPT_DELETED)
     auditRecorder.record(
         new RecordAuditEventCommand(
             actorId,

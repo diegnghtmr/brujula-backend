@@ -16,7 +16,7 @@ import java.util.UUID;
  * <p>Also reused by WU5 for building {@code ProgramCreditSummaryView} — kept general.
  *
  * <p>Public — also used by {@code GetSimulationService} (WU5: build ProgramCreditSummaryView). Pure
- * Java, no Spring/JPA (ARQ-002, ADR-F4-004).
+ * Java, no Spring/JPA (ADR-F4-004).
  */
 public class CreditSummaryCalculator {
 

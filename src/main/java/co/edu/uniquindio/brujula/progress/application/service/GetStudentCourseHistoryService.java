@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Application service: read-only student course history query for cross-module consumers.
  *
  * <p>Reuses {@link EffectiveAttemptResolver} and the existing {@link LoadCourseAttemptPort} and
- * {@link LoadSubscriptionPort} — ZERO change to progress domain behavior (ADR-F4-002).
+ * {@link LoadSubscriptionPort} — ZERO change to progress domain behavior.
  *
  * <p>Algorithm:
  *
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  *   <li>Group by courseId and resolve the effective status per course.
  * </ol>
  *
- * <p>Framework-free: no Spring or JPA dependencies (ARQ-002). Wired via {@code @Bean} in {@link
+ * <p>Framework-free: no Spring or JPA dependencies. Wired via {@code @Bean} in {@link
  * co.edu.uniquindio.brujula.progress.infrastructure.configuration.ProgressConfiguration}.
  */
 public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQuery {

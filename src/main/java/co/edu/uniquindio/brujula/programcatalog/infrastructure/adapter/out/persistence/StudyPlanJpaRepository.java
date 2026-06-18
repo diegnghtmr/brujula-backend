@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Spring Data JPA repository for {@link StudyPlanJpaEntity}.
  *
- * <p>Package-private per ARQ-006.
+ * <p>Package-private.
  */
 interface StudyPlanJpaRepository extends JpaRepository<StudyPlanJpaEntity, UUID> {
 

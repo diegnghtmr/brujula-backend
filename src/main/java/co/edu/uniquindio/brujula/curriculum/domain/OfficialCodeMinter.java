@@ -12,13 +12,13 @@ import java.util.Objects;
  *   <li>{@code PROG} — program abbreviation (e.g. ISC, LM); provided by the caller.
  *   <li>{@code sem} — the diurna recommended semester (1-based integer).
  *   <li>{@code SLUG} — uppercase, accent-folded, non-alphanumeric-stripped token derived from the
- *       course name (ADR-F2-005).
+ *       course name.
  * </ul>
  *
  * <p>Deterministic: same name + program + semester always yields the same code. UUIDs remain the
- * primary key; official codes are for human readability (RN-024/025).
+ * primary key; official codes are for human readability.
  *
- * <p>No Spring/JPA imports (ARQ-002). Pure Java domain service.
+ * <p>No Spring/JPA imports. Pure Java domain service.
  */
 public class OfficialCodeMinter {
 

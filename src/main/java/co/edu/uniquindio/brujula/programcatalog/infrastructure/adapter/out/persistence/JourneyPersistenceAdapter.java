@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA-backed adapter implementing {@link LoadJourneyPort}.
  *
- * <p>Package-private per ARQ-006. Satisfies: CAT-003, Phase 1 WU4 persistence adapters.
+ * <p>Package-private.
  */
 @Component
 class JourneyPersistenceAdapter implements LoadJourneyPort {

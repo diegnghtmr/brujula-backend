@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Spring Data JPA repository for {@link SequentialTrackJpaEntity}.
  *
- * <p>Package-private per ARQ-006.
+ * <p>Package-private.
  */
 interface SequentialTrackJpaRepository extends JpaRepository<SequentialTrackJpaEntity, UUID> {
 

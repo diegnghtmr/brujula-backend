@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * An unmet prerequisite for a course in the availability computation.
  *
- * <p>Used by {@link CourseAvailabilityService}. No Spring/JPA imports (ARQ-002).
+ * <p>Used by {@link CourseAvailabilityService}. No Spring/JPA imports.
  *
  * @param requiredCourseId the prerequisite course UUID
  * @param type the requirement type (e.g. COURSE_PASSED, SEQUENCE)

@@ -5,7 +5,7 @@ package co.edu.uniquindio.brujula.curriculum.domain;
  *
  * <p>Maps to the {@code status} column CHECK constraint in V011: {@code 'ACTIVE' | 'ARCHIVED'}.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public enum DegreeWorkModalityStatus {
   ACTIVE,

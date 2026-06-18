@@ -10,9 +10,9 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.library.Architectures;
 
 /**
- * ArchUnit baseline ruleset enforcing ARQ-001 through ARQ-008.
+ * ArchUnit baseline ruleset for hexagonal architecture boundary enforcement.
  *
- * <p>Rules run on the empty Fase 0 skeleton. All should pass with zero violations.
+ * <p>All rules should pass with zero violations.
  */
 @AnalyzeClasses(
     packages = "co.edu.uniquindio.brujula",
@@ -22,8 +22,8 @@ class ArchitectureRulesTest {
   private static final String BASE_PKG = "co.edu.uniquindio.brujula";
 
   /**
-   * ARQ-001 — Controllers must not access domain classes directly. Controllers may only call
-   * application port/in interfaces.
+   * Controllers must not access domain classes directly. Controllers may only call application
+   * port/in interfaces.
    */
   @ArchTest
   static final ArchRule ARQ_001_controllers_do_not_access_domain_directly =
@@ -35,8 +35,8 @@ class ArchitectureRulesTest {
           .resideInAPackage("..domain..");
 
   /**
-   * ARQ-002 — Domain classes are framework-free. Domain must not depend on Spring, Jakarta
-   * Persistence, servlet types, or generated API model DTOs.
+   * Domain classes are framework-free. Domain must not depend on Spring, Jakarta Persistence,
+   * servlet types, or generated API model DTOs.
    *
    * <p>package-info files are excluded because they carry package-level annotations (e.g.
    * {@code @NamedInterface}) that are module-structure metadata, not domain logic.
@@ -58,16 +58,16 @@ class ArchitectureRulesTest {
               "..adapter..");
 
   /**
-   * ARQ-003 — Application port/in interfaces must be interfaces (not classes or enums). All
-   * use-case entry points are interfaces.
+   * Application port/in interfaces must be interfaces (not classes or enums). All use-case entry
+   * points are interfaces.
    */
   @ArchTest
   static final ArchRule ARQ_003_application_ports_in_are_interfaces =
       classes().that().resideInAPackage("..application.port.in..").should().beInterfaces();
 
   /**
-   * ARQ-004 — Application layer must not depend on persistence adapters. Application depends on
-   * port.out interfaces, not on concrete adapter implementations.
+   * Application layer must not depend on persistence adapters. Application depends on port.out
+   * interfaces, not on concrete adapter implementations.
    */
   @ArchTest
   static final ArchRule ARQ_004_application_does_not_depend_on_persistence_adapters =
@@ -79,8 +79,8 @@ class ArchitectureRulesTest {
           .resideInAPackage("..adapter.out.persistence..");
 
   /**
-   * ARQ-005 — Generated API DTOs must not leak into application or domain layers. Generated model
-   * DTOs are confined to infrastructure/adapter/in/rest adapters.
+   * Generated API DTOs must not leak into application or domain layers. Generated model DTOs are
+   * confined to infrastructure/adapter/in/rest adapters.
    */
   @ArchTest
   static final ArchRule ARQ_005_generated_dtos_confined_to_adapters =
@@ -92,8 +92,8 @@ class ArchitectureRulesTest {
           .resideInAPackage("..generated..");
 
   /**
-   * ARQ-006 — No cross-module access to internal persistence adapters. A module's
-   * adapter.out.persistence sub-packages are internal; other modules may not import them.
+   * No cross-module access to internal persistence adapters. A module's adapter.out.persistence
+   * sub-packages are internal; other modules may not import them.
    */
   @ArchTest
   static final ArchRule ARQ_006_no_cross_module_persistence_access =
@@ -107,8 +107,8 @@ class ArchitectureRulesTest {
           .resideInAPackage("..adapter.out.persistence..");
 
   /**
-   * ARQ-007 — Covered by ModularityTest (Spring Modulith verify()). Listed here for traceability.
-   * This ArchTest serves as documentation marker; the actual enforcement is in ModularityTest.
+   * Module cycle enforcement is covered by ModularityTest (Spring Modulith verify()). This ArchTest
+   * serves as a documentation marker; the actual enforcement is in ModularityTest.
    */
   @ArchTest
   static final ArchRule ARQ_007_no_module_cycles_see_modularity_test =
@@ -124,12 +124,12 @@ class ArchitectureRulesTest {
                   + " ModularityTest");
 
   /**
-   * ARQ-008 — Layered architecture: domain is innermost, application next, infrastructure
-   * outermost. Infrastructure may depend on application; application may depend on domain; domain
-   * depends on nothing outside itself.
+   * Layered architecture: domain is innermost, application next, infrastructure outermost.
+   * Infrastructure may depend on application; application may depend on domain; domain depends on
+   * nothing outside itself.
    *
-   * <p>allowEmptyShould(true) is required for the Fase 0 empty skeleton — no implementation classes
-   * exist yet in domain/application/infrastructure. Fase 1 removes this allowance.
+   * <p>allowEmptyShould(true) is set to avoid failures when a layer has no implementation classes
+   * yet.
    */
   @ArchTest
   static final ArchRule ARQ_008_layered_architecture =
@@ -150,14 +150,13 @@ class ArchitectureRulesTest {
           .allowEmptyShould(true);
 
   /**
-   * ARQ-006b — JPA entities must be package-private (not public).
+   * JPA entities must be package-private (not public).
    *
-   * <p>Strengthens the ARQ-006 convention that adapter internals (JPA entities) are never public.
+   * <p>Strengthens the convention that adapter internals (JPA entities) are never public.
    * Package-private entities prevent accidental access from other modules and enforce the adapter
    * boundary (hexagonal architecture: only the persistence adapter touches JPA entities directly).
    *
    * <p>All 10 existing entities (programcatalog: 3, curriculum: 7) must pass this rule.
-   * Machine-enforced from FIX-6 / S1 of the WU4 verify cycle.
    */
   @ArchTest
   static final ArchRule ARQ_006b_jpa_entities_must_not_be_public =
@@ -169,13 +168,10 @@ class ArchitectureRulesTest {
           .because("JPA entities are adapter internals and must be package-private (ARQ-006)");
 
   /**
-   * ARQ-009 — Domain and application layers must not access external client adapters. {@code
+   * Domain and application layers must not access external client adapters. {@code
    * adapter.out.client} packages contain driven adapters that call external services (e.g. Keycloak
    * Admin API). Only infrastructure/configuration classes may wire these adapters; domain and
    * application depend only on port interfaces, never on concrete client implementations.
-   *
-   * <p>Added in Slice 2 to guard the KeycloakAdminApiAdapter boundary after S2-A introduced the
-   * {@code identity.infrastructure.adapter.out.client} package.
    */
   @ArchTest
   static final ArchRule ARQ_009_no_domain_or_application_access_to_client_adapters =

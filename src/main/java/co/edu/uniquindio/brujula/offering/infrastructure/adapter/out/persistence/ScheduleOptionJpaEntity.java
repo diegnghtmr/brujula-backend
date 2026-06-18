@@ -18,7 +18,7 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code offering.schedule_option} (created by Flyway V016).
  *
- * <p>Package-private per ARQ-006b.
+ * <p>Package-private.
  */
 @Entity
 @Table(name = "schedule_option", schema = "offering")

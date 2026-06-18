@@ -11,13 +11,10 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * WU2-T05 RED: Flyway V015 creates {@code progress.student_program_subscription} and {@code
+ * Flyway V015 creates {@code progress.student_program_subscription} and {@code
  * progress.course_attempt} tables with correct columns, constraints, and indexes.
  *
- * <p>Uses {@link AbstractPostgresIntegrationTest} (not {@code @DataJpaTest} — mirrors Fase-2
- * V011/V014 test style).
- *
- * <p>Satisfies: ADR-F3-010, WU2-T05/T06 tasks.
+ * <p>Uses {@link AbstractPostgresIntegrationTest} (not {@code @DataJpaTest}).
  */
 @SpringBootTest
 class FlywayV015ProgressTablesTest extends AbstractPostgresIntegrationTest {

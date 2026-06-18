@@ -40,7 +40,8 @@ import org.springframework.web.context.WebApplicationContext;
  * <p>Verifies: ADMIN 201 / STAFF 403 for createPeriod; ADMIN 200 / STAFF 403 for updatePeriod;
  * idempotency-conflict 409; name-dupe 409; stale-version 409; period-not-found 404.
  *
- * <p>Satisfies: OFFW-001, OFFW-002, OFFW-008 (phase 7, WU1).
+ * <p>Covers: period creation and update security, idempotency conflict, name-dupe, stale-version,
+ * period-not-found.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class AdministrationPeriodControllerSliceTest extends AbstractPostgresIntegrationTest {

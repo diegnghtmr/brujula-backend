@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA persistence adapter for staff-program assignment reads.
  *
- * <p>Implements {@link LoadStaffProgramAssignmentsPort}. Read-only in Fase 6 — the write lifecycle
- * (assigning/revoking programs) is deferred to Fase 2.
+ * <p>Implements {@link LoadStaffProgramAssignmentsPort}. Read-only — the write lifecycle
+ * (assigning/revoking programs) is deferred.
  *
- * <p>Package-private (ARQ-006, ARQ-006b).
+ * <p>Package-private.
  */
 @Component
 class StaffProgramAssignmentPersistenceAdapter implements LoadStaffProgramAssignmentsPort {

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link ScheduleClashDetector}.
  *
- * <p>Pure domain — no Spring, no mocks (ARQ-002, ADR-F4-004).
+ * <p>Pure domain — no Spring, no mocks.
  */
 class ScheduleClashDetectorTest {
 

@@ -30,13 +30,13 @@ import java.util.UUID;
  *
  * <p>Implements AVL-2. Bulk-loads the plan malla via the curriculum published port (ONE call),
  * bulk-loads attempts (ONE call), resolves effective statuses, delegates to {@link
- * ProgressSummaryCalculator}. Zero N+1 queries (ADR-F3-005). BOLA-guarded (CROSS-2). Includes
- * CROSS-6 disclaimer.
+ * ProgressSummaryCalculator}. Zero N+1 queries. BOLA-guarded. Includes autodeclared-data
+ * disclaimer.
  *
  * <p>Maps domain {@link ProgressSummaryData} to application {@link ProgressSummaryView} before
- * returning, so REST adapters do not reference domain types (ARQ-001).
+ * returning, so REST adapters do not reference domain types.
  *
- * <p>FIX-W2: resolves the human-readable program name via {@link GetProgramQuery} so that {@link
+ * <p>Resolves the human-readable program name via {@link GetProgramQuery} so that {@link
  * ProgressSummaryView#programName()} contains the real program name instead of a UUID.
  *
  * <p>No Spring/framework imports — wired via ProgressConfiguration.
@@ -72,7 +72,7 @@ public class GetSubscriptionProgressService implements GetSubscriptionProgressQu
             .filter(s -> s.getUserId().equals(userId))
             .orElseThrow(() -> new SubscriptionNotFoundException(subscriptionId));
 
-    // FIX-W2: resolve human-readable program name via programcatalog published port
+    // Resolve human-readable program name via programcatalog published port
     String programName = resolveProgramName(subscription.getProgramId());
 
     // --- Bulk-load 1: Plan malla (ONE call, no N+1) ---
@@ -134,7 +134,7 @@ public class GetSubscriptionProgressService implements GetSubscriptionProgressQu
   }
 
   // -------------------------------------------------------------------------
-  // Mapping: domain ProgressSummaryData → application ProgressSummaryView (ARQ-001)
+  // Mapping: domain ProgressSummaryData → application ProgressSummaryView
   // -------------------------------------------------------------------------
 
   private ProgressSummaryView toView(
@@ -165,9 +165,9 @@ public class GetSubscriptionProgressService implements GetSubscriptionProgressQu
   // -------------------------------------------------------------------------
 
   /**
-   * FIX-W2: resolves the human-readable program name from the programcatalog published port. Falls
-   * back to the programId string representation if the program cannot be found (defensive: avoids a
-   * hard 500 for a non-critical display field).
+   * Resolves the human-readable program name from the programcatalog published port. Falls back to
+   * the programId string representation if the program cannot be found (defensive: avoids a hard
+   * 500 for a non-critical display field).
    */
   private String resolveProgramName(UUID programId) {
     try {

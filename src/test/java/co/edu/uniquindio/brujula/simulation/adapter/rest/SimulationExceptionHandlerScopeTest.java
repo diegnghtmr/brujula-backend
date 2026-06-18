@@ -38,14 +38,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * QAL-ADV-001 — Regression scope tests for {@code SimulationExceptionHandler}.
+ * Regression scope tests for {@code SimulationExceptionHandler}.
  *
  * <p>Asserts the per-module response contract for shared exceptions (status + {@code $.code}).
  * {@code basePackages} scoping is defence-in-depth; {@code @Order(HIGHEST_PRECEDENCE)} is the
  * primary correctness guarantee. These tests catch contract regressions (missing {@code $.code},
  * wrong status), not {@code basePackages} removal while handlers remain behaviorally identical.
  *
- * <p>T-WU1.1: verifies simulation controller → {@code SimulationExceptionHandler} maps {@link
+ * <p>Verifies simulation controller → {@code SimulationExceptionHandler} maps {@link
  * IdempotencyKeyConflictException} to HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -83,9 +83,8 @@ class SimulationExceptionHandlerScopeTest extends AbstractPostgresIntegrationTes
   }
 
   /**
-   * T-WU1.1 — QAL-ADV-001-S2: simulation controller throwing {@link
-   * IdempotencyKeyConflictException} MUST return HTTP 409 with {@code $.code =
-   * "IDEMPOTENCY_KEY_CONFLICT"}.
+   * Simulation controller throwing {@link IdempotencyKeyConflictException} MUST return HTTP 409
+   * with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
    *
    * <p>Asserting {@code $.code} makes this test load-bearing: it will fail if any handler in the
    * chain omits the {@code code} property, regardless of {@code basePackages} state.
@@ -120,8 +119,8 @@ class SimulationExceptionHandlerScopeTest extends AbstractPostgresIntegrationTes
   }
 
   /**
-   * T-WU1.1 (anti-shadowing) — verifies the full response contract for simulation-specific
-   * exceptions handled by {@code SimulationExceptionHandler}.
+   * Anti-shadowing: verifies the full response contract for simulation-specific exceptions handled
+   * by {@code SimulationExceptionHandler}.
    *
    * <p>Asserts HTTP 404 status for {@code SimulationNotFoundException}. This handler does not set
    * {@code $.code} for not-found responses (by design, no code property is needed per spec);

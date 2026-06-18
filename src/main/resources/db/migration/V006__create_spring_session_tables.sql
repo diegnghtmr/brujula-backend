@@ -2,9 +2,9 @@
 --
 -- Module: sharedkernel (platform schema)
 -- Schema: platform
--- Satisfies: Spec §Session Persistence (ADR-007, RNF-SEG-003/004), Design §3 V006
--- Note: spring.session.jdbc.initialize-schema=never — Flyway is the sole DDL source (DB-002/003).
---       spring.session.jdbc.table-name=platform.SPRING_SESSION resolves G1.
+-- Satisfies: Session Persistence spec
+-- Note: spring.session.jdbc.initialize-schema=never — Flyway is the sole DDL source.
+--       spring.session.jdbc.table-name=platform.SPRING_SESSION for schema-prefixed access.
 --
 -- Source: canonical Spring Session JDBC DDL for PostgreSQL (spring-session-jdbc 4.0.2
 --         org/springframework/session/jdbc/schema-postgresql.sql) adapted to use

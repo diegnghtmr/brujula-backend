@@ -28,7 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU4a application unit tests for {@link RemoveSimulationSelectionService}.
+ * Application unit tests for {@link RemoveSimulationSelectionService}.
  *
  * <p>Covers: happy path (soft delete), simulation not found → 404, non-owner → 403, selection not
  * found → 404, selection belongs to different simulation → 404.

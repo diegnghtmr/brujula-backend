@@ -35,8 +35,7 @@ import org.junit.jupiter.api.Test;
  * TDD RED → GREEN: unit tests for {@link CreateCourseRequirementService}.
  *
  * <p>Covers: happy path saves and records audit; cycle detection rejects with {@link
- * PrerequisiteCycleException}; idempotency replay; idempotency conflict. WU5 – T5.2 (CUR-003,
- * IMP-007).
+ * PrerequisiteCycleException}; idempotency replay; idempotency conflict.
  */
 class CreateCourseRequirementServiceTest {
 

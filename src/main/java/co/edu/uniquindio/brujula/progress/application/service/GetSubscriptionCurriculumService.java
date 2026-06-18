@@ -34,9 +34,9 @@ import java.util.UUID;
  * <p>Implements AVL-1. Bulk-loads the plan malla via the curriculum published port (ONE call),
  * bulk-loads attempts (ONE call), resolves effective statuses via {@link EffectiveAttemptResolver},
  * computes availability via {@link CourseAvailabilityService}, then maps to application DTOs. Zero
- * N+1 queries (ADR-F3-005). BOLA-guarded (CROSS-2).
+ * N+1 queries. BOLA-guarded.
  *
- * <p>FIX-S1: resolves the human-readable journey name via {@link ListJourneysQuery} so that {@link
+ * <p>Resolves the human-readable journey name via {@link ListJourneysQuery} so that {@link
  * CurriculumViewData#referenceJourneyName()} contains "Jornada Diurna"/"Jornada Nocturna" instead
  * of the raw code ("DIURNA"/"NOCTURNA").
  *
@@ -160,7 +160,7 @@ public class GetSubscriptionCurriculumService implements GetSubscriptionCurricul
       semesters.add(new CurriculumSemesterData(bucket.recommendedSemester(), courseDtos));
     }
 
-    // FIX-S1: resolve human-readable journey name from programcatalog
+    // Resolve human-readable journey name from programcatalog
     String journeyCode = subscription.getReferenceJourneyCode();
     String journeyName = resolveJourneyName(journeyCode);
 
@@ -168,7 +168,7 @@ public class GetSubscriptionCurriculumService implements GetSubscriptionCurricul
   }
 
   // -------------------------------------------------------------------------
-  // FIX-S1: resolve human-readable journey name from programcatalog
+  // Resolve human-readable journey name from programcatalog
   // -------------------------------------------------------------------------
 
   /**

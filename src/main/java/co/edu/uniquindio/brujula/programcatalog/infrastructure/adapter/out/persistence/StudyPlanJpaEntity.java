@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * JPA entity mapping to the {@code catalog.study_plan} table (created by Flyway V010).
  *
- * <p>Package-private per ARQ-006. Optimistic locking via {@code @Version} (DB-006/DT-014).
+ * <p>Package-private. Optimistic locking via {@code @Version}.
  */
 @Entity
 @Table(name = "study_plan", schema = "catalog")

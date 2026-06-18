@@ -34,11 +34,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU4-T06 RED+GREEN: unit tests for {@link GetSubscriptionProgressService}.
+ * Unit tests for {@link GetSubscriptionProgressService}.
  *
- * <p>Scenarios: AVL-2-HP, AVL-2-NO-ATTEMPTS, CROSS-6-DISCLAIMER, ownership guard.
+ * <p>Scenarios: happy path, zero attempts, disclaimer always present, ownership guard.
  *
- * <p>FIX-W2: {@code GetProgramQuery} is now mocked; programName assertion added.
+ * <p>{@code GetProgramQuery} is mocked; programName assertion added.
  */
 class GetSubscriptionProgressServiceTest {
 
@@ -55,7 +55,7 @@ class GetSubscriptionProgressServiceTest {
   private static final UUID PROGRAM_ID = UUID.randomUUID();
   private static final UUID COURSE_1 = UUID.randomUUID();
   private static final UUID COURSE_2 = UUID.randomUUID();
-  // FIX-W2: expected human-readable program name from catalog
+  // Expected human-readable program name from catalog
   private static final String PROGRAM_NAME = "Ingeniería de Sistemas y Computación";
 
   @BeforeEach
@@ -65,7 +65,7 @@ class GetSubscriptionProgressServiceTest {
     assemblePlanMallaQuery = mock(AssemblePlanMallaQuery.class);
     getProgramQuery = mock(GetProgramQuery.class);
 
-    // FIX-W2: stub program name resolution
+    // Stub program name resolution
     when(getProgramQuery.getProgram(PROGRAM_ID))
         .thenReturn(new ProgramView(PROGRAM_ID, PROGRAM_NAME, "Engineering", "ACTIVE", 0L));
 
@@ -75,7 +75,7 @@ class GetSubscriptionProgressServiceTest {
   }
 
   // -----------------------------------------------------------------------
-  // AVL-1-BOLA: ownership guard
+  // Ownership guard
   // -----------------------------------------------------------------------
 
   @Test
@@ -88,7 +88,7 @@ class GetSubscriptionProgressServiceTest {
   }
 
   // -----------------------------------------------------------------------
-  // AVL-2-NO-ATTEMPTS: zero attempts
+  // Zero attempts
   // -----------------------------------------------------------------------
 
   @Test
@@ -100,7 +100,7 @@ class GetSubscriptionProgressServiceTest {
 
     ProgressSummaryView result = sut.getSubscriptionProgress(SUBSCRIPTION_ID, STUDENT_ID);
 
-    // FIX-W2: programName must be the human-readable catalog name, not a UUID
+    // programName must be the human-readable catalog name, not a UUID
     assertThat(result.programName()).isEqualTo(PROGRAM_NAME);
     assertThat(result.approvedCredits()).isEqualTo(0.0);
     assertThat(result.progressPercentage()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -110,7 +110,7 @@ class GetSubscriptionProgressServiceTest {
   }
 
   // -----------------------------------------------------------------------
-  // AVL-2-HP: mixed attempts
+  // Mixed attempts
   // -----------------------------------------------------------------------
 
   @Test
@@ -156,7 +156,7 @@ class GetSubscriptionProgressServiceTest {
   }
 
   // -----------------------------------------------------------------------
-  // CROSS-6-DISCLAIMER: non-empty disclaimer always present
+  // Non-empty disclaimer always present
   // -----------------------------------------------------------------------
 
   @Test

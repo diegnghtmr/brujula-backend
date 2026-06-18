@@ -3,7 +3,7 @@ package co.edu.uniquindio.brujula.curriculum.domain;
 /**
  * Classification of a course within a curricular plan.
  *
- * <p>No Spring/JPA imports (ARQ-002). Mirrors the CourseType enum in the OpenAPI contract.
+ * <p>No Spring/JPA imports. Mirrors the CourseType enum in the OpenAPI contract.
  *
  * <ul>
  *   <li>{@link #REQUIRED} — mandatory course within the core curriculum track.

@@ -5,7 +5,7 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
 /**
  * Output port: persist a simulation selection.
  *
- * <p>Named by need (ARQ-001). Implemented by {@code SimulationPersistenceAdapter}.
+ * <p>Named by need. Implemented by {@code SimulationPersistenceAdapter}.
  */
 public interface SaveSimulationSelectionPort {
 

@@ -13,13 +13,13 @@ import java.util.UUID;
  *   <li>PrerequisiteEvaluator — checks whether required prerequisite courses were passed
  * </ul>
  *
- * <p>ZERO mutation to progress domain behavior — this is a read-only projection port (ADR-F4-002).
+ * <p>ZERO mutation to progress domain behavior — this is a read-only projection port.
  *
  * <p>Published via {@code @NamedInterface("api")} in {@code port/in/api/package-info.java}.
- * Cross-module consumers (e.g. simulation) must access this port ONLY through {@code progress::api}
- * (INV-001, ADR-F4-002).
+ * Cross-module consumers (e.g. simulation) must access this port ONLY through {@code
+ * progress::api}.
  *
- * <p>ARQ-001: method signatures use only UUID and String primitives — no domain entities.
+ * <p>Method signatures use only UUID and String primitives — no domain entities.
  */
 public interface GetStudentCourseHistoryQuery {
 

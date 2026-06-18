@@ -11,14 +11,14 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
- * JPA entity mapping to {@code imports.import_batch} (created by Flyway V019).
+ * JPA entity mapping to {@code imports.import_batch}.
  *
- * <p>Package-private per ARQ-006b. The two JSONB columns ({@code validatedRowsJson} and {@code
- * issuesJson}) are mapped via {@link JdbcTypeCode}{@code (SqlTypes.JSON)} which instructs Hibernate
- * to treat the column as a JSONB type at the PostgreSQL level.
+ * <p>Package-private. The two JSONB columns ({@code validatedRowsJson} and {@code issuesJson}) are
+ * mapped via {@link JdbcTypeCode}{@code (SqlTypes.JSON)} which instructs Hibernate to treat the
+ * column as a JSONB type at the PostgreSQL level.
  *
- * <p>Optimistic locking is handled by {@code @Version} on {@code version}. Schema-version guard
- * (NFR-006) is implemented in the mapper / adapter layer.
+ * <p>Optimistic locking is handled by {@code @Version} on {@code version}. Schema-version guard is
+ * implemented in the mapper / adapter layer.
  */
 @Entity
 @Table(name = "import_batch", schema = "imports")
@@ -49,7 +49,7 @@ class ImportBatchJpaEntity {
   @Column(name = "valid_rows", nullable = false)
   private int validRows;
 
-  /** JSONB payload: serialized {@code List<ImportRow>} for confirm replay (ADR-F6-002). */
+  /** JSONB payload: serialized {@code List<ImportRow>} for confirm replay. */
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "validated_rows_json", columnDefinition = "jsonb", nullable = false)
   private String validatedRowsJson;

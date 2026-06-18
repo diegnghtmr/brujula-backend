@@ -9,13 +9,10 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
 /**
- * WU1-T01 RED → GREEN: ADR-F3-001 — sharedkernel.IdempotencyStorePort boundary enforcement.
+ * sharedkernel.IdempotencyStorePort boundary enforcement.
  *
- * <p>Asserts that {@code sharedkernel.application.port.out.IdempotencyStorePort} exists, is an
- * interface, and imports nothing from any module domain (zero coupling to administration or any
- * other bounded context).
- *
- * <p>Satisfies: CROSS-7, CROSS-8, ADR-F3-001.
+ * <p>Asserts that {@code sharedkernel.application.port.out.IdempotencyStorePort} is an interface
+ * and imports nothing from any module domain (zero coupling to any bounded context).
  */
 @AnalyzeClasses(
     packages = "co.edu.uniquindio.brujula.sharedkernel",
@@ -23,8 +20,8 @@ import com.tngtech.archunit.lang.ArchRule;
 class SharedKernelBoundaryTest {
 
   /**
-   * ADR-F3-001 — IdempotencyStorePort must be an interface (not a class or enum). Declared in
-   * sharedkernel application port.out to serve as a cross-module output port.
+   * IdempotencyStorePort must be an interface (not a class or enum). Declared in sharedkernel
+   * application port.out to serve as a cross-module output port.
    */
   @ArchTest
   static final ArchRule sharedkernel_idempotency_port_is_an_interface =
@@ -38,7 +35,7 @@ class SharedKernelBoundaryTest {
                   + " (ARQ-003 extended to sharedkernel ports)");
 
   /**
-   * ADR-F3-001 — IdempotencyStorePort must not import any administration domain classes.
+   * IdempotencyStorePort must not import any administration domain classes.
    *
    * <p>A pure relocation of the typed port was impossible (it was coupled to StaffAccount); the
    * generalized opaque-JSON contract removes all module-domain coupling.
@@ -56,8 +53,8 @@ class SharedKernelBoundaryTest {
                   + " each caller owns its own (de)serialization");
 
   /**
-   * ADR-F3-001 — sharedkernel must not depend on any other module domain. Its {@code
-   * allowedDependencies = {}} means it imports only {@code java.*} in port interfaces.
+   * sharedkernel must not depend on any other module domain. Its {@code allowedDependencies = {}}
+   * means it imports only {@code java.*} in port interfaces.
    */
   @ArchTest
   static final ArchRule sharedkernel_ports_do_not_depend_on_module_domains =

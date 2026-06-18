@@ -15,7 +15,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * DEBT-F7-003: covers uncovered accessor and factory methods in imports/domain/exception package.
+ * Covers uncovered accessor and factory methods in imports/domain/exception package.
  *
  * <p>These exceptions are thrown in real use cases; their accessor fields are consumed by the
  * controller exception handler and by the test assertions that verify the correct error data is

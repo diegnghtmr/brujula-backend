@@ -10,8 +10,8 @@ import java.util.UUID;
  * co.edu.uniquindio.brujula.imports.application.service.UploadImportService}: actor identity,
  * idempotency key, file content, and target program/plan/period references.
  *
- * <p>Application DTO — NOT the generated REST model (WU4 maps from MultipartFile + request params
- * to this command). No Spring/JPA imports (ARQ-002).
+ * <p>Application DTO — NOT the generated REST model (the REST adapter maps from MultipartFile +
+ * request params to this command). No Spring/JPA imports.
  */
 public record UploadImportCommand(
     /** Idempotency key from the Idempotency-Key header. */

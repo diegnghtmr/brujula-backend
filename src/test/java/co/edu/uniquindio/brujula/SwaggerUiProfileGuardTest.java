@@ -33,8 +33,8 @@ class SwaggerUiProfileGuardTest {
    * <p>Uses a real PostgreSQL container (via AbstractPostgresIntegrationTest) because the full
    * Spring context is needed to load springdoc auto-configuration.
    *
-   * <p>Fase 1 note: The local profile uses static Keycloak provider URIs (not issuer-uri discovery)
-   * so tests can boot without a running Keycloak instance. See application.yaml §spring.security.
+   * <p>The local profile uses static Keycloak provider URIs (not issuer-uri discovery) so tests can
+   * boot without a running Keycloak instance. See application.yaml spring.security.
    */
   @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
   @ActiveProfiles("local")

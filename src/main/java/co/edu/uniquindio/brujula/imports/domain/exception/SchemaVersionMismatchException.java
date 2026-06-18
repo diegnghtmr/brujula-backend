@@ -4,14 +4,14 @@ import co.edu.uniquindio.brujula.imports.domain.model.ImportBatchId;
 
 /**
  * Thrown when an ImportBatch is loaded from persistence and its stored {@code schema_version} does
- * not match the current application's expected version (NFR-006).
+ * not match the current application's expected version.
  *
  * <p>This guards against attempting to confirm a batch whose JSONB payload was written under an
  * older (incompatible) schema, which would cause silent data corruption.
  *
  * <p>Error code: {@code SCHEMA_VERSION_MISMATCH}
  *
- * <p>Pure domain exception — zero framework annotations (ARQ-002).
+ * <p>Pure domain exception — zero framework annotations.
  */
 public class SchemaVersionMismatchException extends RuntimeException {
 

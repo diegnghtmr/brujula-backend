@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Command DTO for the optimistic-lock {@code updatePeriod} use case.
  *
- * <p>Plain types only (no domain VOs) per ARQ-001. NOT idempotent.
+ * <p>Plain types only (no domain VOs). NOT idempotent.
  *
  * @param periodId the target period UUID
  * @param actorId authenticated ADMIN user ID

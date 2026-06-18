@@ -16,12 +16,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * FIX-3 (W1): persistence-level optimistic lock conflict test for StudyPlan (CAT-002).
+ * Persistence-level optimistic lock conflict test for StudyPlan.
  *
  * <p>Validates that saving a stale {@link StudyPlanJpaEntity} (version=0 when the DB is already at
- * version=1) raises {@link ObjectOptimisticLockingFailureException} — covering the CAT-002
- * "concurrent update → HTTP 409" invariant at the persistence layer without requiring a write
- * endpoint (all return 501 in Fase 2 WU4 scope).
+ * version=1) raises {@link ObjectOptimisticLockingFailureException} — covering the "concurrent
+ * update → HTTP 409" invariant at the persistence layer without requiring a write endpoint.
  *
  * <p>Runs inside the same package as {@link StudyPlanJpaEntity} to access the package-private
  * class.

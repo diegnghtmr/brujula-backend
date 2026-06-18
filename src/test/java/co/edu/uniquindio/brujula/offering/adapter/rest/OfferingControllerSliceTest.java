@@ -35,7 +35,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU1-TDD: REST slice tests for offering endpoints.
+ * REST slice tests for offering endpoints.
  *
  * <p>Tests:
  *

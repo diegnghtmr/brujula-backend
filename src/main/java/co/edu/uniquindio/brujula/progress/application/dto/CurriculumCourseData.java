@@ -8,7 +8,7 @@ import java.util.UUID;
  * Application-layer DTO: a single course in the curriculum view with its computed availability.
  *
  * <p>Status is passed as a plain String (the enum name, e.g. "AVAILABLE", "BLOCKED") to avoid
- * domain type leakage into the application DTO layer. ARQ-001.
+ * domain type leakage into the application DTO layer.
  *
  * @param courseId the course UUID
  * @param officialCode nullable course code

@@ -21,22 +21,21 @@ import java.util.stream.Collectors;
  * <p>Loads all courses for the plan in one indexed query, filters to ACTIVE status, then groups by
  * recommended semester for the requested journey code — entirely in-memory. Requirement edges are
  * bulk-loaded via a single {@link LoadCourseRequirementPort#loadByTargetCourseIds} call (no N+1 per
- * course) and attached to each course summary (CUR-008 §2, ADR-F2-001).
+ * course) and attached to each course summary.
  *
- * <p>A static advisory {@code graduationRequirements} string is populated per CUR-008 §3 — this is
- * informational copy only; no graduation_gate entity is modelled in Fase 2.
+ * <p>A static advisory {@code graduationRequirements} string is included in every response —
+ * informational copy only; no graduation_gate entity is modelled.
  *
- * <p>No Spring annotations — wiring is handled in the infrastructure configuration layer (ARQ-002).
+ * <p>No Spring annotations — wiring is handled in the infrastructure configuration layer.
  */
 public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
 
   /**
-   * Static graduation advisory text included in every malla response (CUR-008 §3).
+   * Static graduation advisory text included in every malla response.
    *
    * <p>Applies to all programs: both Sistemas and Lenguas share the same two graduation gates
    * (suficiencia en lengua extranjera + Cátedra Multidisciplinar) according to Universidad del
-   * Quindío curricular regulations in force at the time of Fase 2 implementation. User-facing copy
-   * in neutral professional Spanish.
+   * Quindío curricular regulations. User-facing copy in neutral professional Spanish.
    */
   static final String GRADUATION_REQUIREMENTS_ADVISORY =
       "Para optar al título de grado se requiere acreditar suficiencia en lengua extranjera "
@@ -67,7 +66,7 @@ public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
                         .anyMatch(rs -> journeyCode.equals(rs.journeyCode())))
             .toList();
 
-    // Bulk-load all requirement edges for the active courses — single query, no N+1 (ADR-F2-001)
+    // Bulk-load all requirement edges for the active courses — single query, no N+1
     List<UUID> activeCourseIds = activeCourses.stream().map(c -> c.id().value()).toList();
     List<CourseRequirement> allRequirements =
         loadCourseRequirementPort.loadByTargetCourseIds(activeCourseIds);

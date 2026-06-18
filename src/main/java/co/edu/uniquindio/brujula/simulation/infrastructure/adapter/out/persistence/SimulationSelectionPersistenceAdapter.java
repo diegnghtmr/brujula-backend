@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
  * JPA-backed adapter implementing {@link LoadSimulationSelectionPort} and {@link
  * SaveSimulationSelectionPort}.
  *
- * <p>Package-private per ARQ-006b.
+ * <p>Package-private.
  */
 @Component
 @Transactional

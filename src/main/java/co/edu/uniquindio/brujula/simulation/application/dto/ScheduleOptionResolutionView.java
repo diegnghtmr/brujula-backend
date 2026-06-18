@@ -10,7 +10,7 @@ import java.util.UUID;
  * <p>Returned by {@link
  * co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort#resolveScheduleOption(UUID)}.
  * Kept in the simulation application layer so that the domain and application layers have ZERO
- * dependency on {@code offering::api-dto} types (ARQ-002, INV-001).
+ * dependency on {@code offering::api-dto} types.
  *
  * <p>Mapping from {@code offering.application.dto.ScheduleOptionResolutionView} happens in {@code
  * OfferingReadAdapter} (infrastructure, which IS allowed to import offering::api-dto).

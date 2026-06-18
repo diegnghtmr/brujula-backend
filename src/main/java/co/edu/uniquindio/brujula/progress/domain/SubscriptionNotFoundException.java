@@ -6,7 +6,7 @@ import java.util.UUID;
  * Thrown when a subscription cannot be found by ID (or belongs to a different student — BOLA).
  *
  * <p>Maps to HTTP 404 Not Found. Ownership violations return 404 (not 403) to avoid revealing
- * subscription existence to unauthorized callers (OWASP BOLA, ADR-F3-011).
+ * subscription existence to unauthorized callers (OWASP BOLA).
  */
 public class SubscriptionNotFoundException extends RuntimeException {
 

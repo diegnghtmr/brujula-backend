@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <p>Verifies that {@code platform.idempotency_record} exists with composite PK {@code
  * (idempotency_key, operation)} and all required columns. Fails until the migration file exists.
  *
- * <p>Satisfies: S1-A-5, Spec §Idempotent Create (ADR-009, TRD §13), Design §3 V005.
+ * <p>Verifies idempotency table: composite PK on (idempotency_key, operation) and required columns.
  */
 @SpringBootTest
 class FlywayV005IdempotencyTableTest extends AbstractPostgresIntegrationTest {

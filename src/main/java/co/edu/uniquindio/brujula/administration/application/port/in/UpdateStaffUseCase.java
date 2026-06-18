@@ -7,9 +7,7 @@ import java.util.UUID;
  * Input port: update a staff account status (activate / deactivate).
  *
  * <p>Takes a status name string and returns {@link StaffAccountView} (application-layer DTO) so
- * REST adapters do not import domain types (ARQ-001).
- *
- * <p>Satisfies: Design §2.2 UpdateStaffUseCase, Spec §Admin Staff Account Management.
+ * REST adapters do not import domain types.
  */
 public interface UpdateStaffUseCase {
 

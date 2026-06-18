@@ -9,15 +9,14 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU4-T02 RED: unit tests for {@link ProgressSummaryCalculator}.
+ * Unit tests for {@link ProgressSummaryCalculator}.
  *
  * <p>Scenarios:
  *
  * <ul>
- *   <li>AVL-2-HP: credits math (approved, pending, percentage), passedCourses,
- *       pendingFailedCourses.
- *   <li>AVL-2-NO-ATTEMPTS: zero attempts → 0 approved, 0%, null average.
- *   <li>CROSS-6-DISCLAIMER: disclaimer is non-empty string.
+ *   <li>Credits math (approved, pending, percentage), passedCourses, pendingFailedCourses.
+ *   <li>Zero attempts → 0 approved, 0%, null average.
+ *   <li>Disclaimer is non-empty string.
  *   <li>averagesByPeriod grouping.
  *   <li>progressPercentage=0.0 when totalPlanCredits=0.
  * </ul>
@@ -27,7 +26,7 @@ class ProgressSummaryCalculatorTest {
   private final ProgressSummaryCalculator sut = new ProgressSummaryCalculator();
 
   // -----------------------------------------------------------------------
-  // AVL-2-HP: mixed attempts
+  // Mixed attempts
   // -----------------------------------------------------------------------
 
   @Test
@@ -67,7 +66,7 @@ class ProgressSummaryCalculatorTest {
   }
 
   // -----------------------------------------------------------------------
-  // AVL-2-NO-ATTEMPTS: zero attempts
+  // Zero attempts
   // -----------------------------------------------------------------------
 
   @Test
@@ -89,7 +88,7 @@ class ProgressSummaryCalculatorTest {
   }
 
   // -----------------------------------------------------------------------
-  // CROSS-6-DISCLAIMER: disclaimer non-empty
+  // Disclaimer non-empty
   // -----------------------------------------------------------------------
 
   @Test

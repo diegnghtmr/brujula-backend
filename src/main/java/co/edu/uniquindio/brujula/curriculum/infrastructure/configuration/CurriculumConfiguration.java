@@ -28,9 +28,9 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>Bridges domain/application (framework-free) into the Spring container. Infrastructure adapters
  * are auto-detected via {@code @Component}; application services are registered here to maintain
- * explicit wiring (ARQ-002).
+ * explicit wiring.
  *
- * <p>Wired services (read-only curriculum query use cases — Phase 2/4/5 WU4):
+ * <p>Wired services (read-only curriculum query use cases):
  *
  * <ul>
  *   <li>{@link GetCourseService} — CUR-001 get single course by ID
@@ -38,10 +38,10 @@ import org.springframework.context.annotation.Configuration;
  *   <li>{@link ListCourseRequirementsService} — CUR-003 list requirements for a course
  *   <li>{@link ListSequentialTracksService} — CUR-005 list sequential tracks for a plan
  *   <li>{@link ListDegreeWorkModalitiesService} — CUR-006 list degree work modalities for a plan
- *   <li>{@link PlanMallaAssemblyService} — ADR-F2-001 plan malla assembly
+ *   <li>{@link PlanMallaAssemblyService} — plan malla assembly
  * </ul>
  *
- * <p>Wired services (write curriculum command use cases — Phase 6 WU5):
+ * <p>Wired services (write curriculum command use cases):
  *
  * <ul>
  *   <li>{@link CreateCourseService} — CUR-001 create course (idempotent)
@@ -89,7 +89,7 @@ class CurriculumConfiguration {
     return new PlanMallaAssemblyService(loadCoursePort, loadCourseRequirementPort);
   }
 
-  // ---- Write use cases (WU5) ----
+  // ---- Write use cases ----
 
   @Bean
   CreateCourseService createCourseService(

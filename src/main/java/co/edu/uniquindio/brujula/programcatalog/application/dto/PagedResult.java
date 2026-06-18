@@ -5,11 +5,11 @@ import java.util.List;
 /**
  * Generic paginated result container.
  *
- * <p>Framework-free pagination wrapper returned by list query services (CAT-001). No
- * Spring/framework imports.
+ * <p>Framework-free pagination wrapper returned by list query services. No Spring/framework
+ * imports.
  *
  * <p>Field names match the OpenAPI contract's {@code PageMeta} schema: {@code size} (items per
- * page), {@code totalPages} (computed). WU4 REST adapter maps this directly to the generated {@code
+ * page), {@code totalPages} (computed). REST adapter maps this directly to the generated {@code
  * ProgramPage}/{@code PageMeta}.
  *
  * @param <T> the element type

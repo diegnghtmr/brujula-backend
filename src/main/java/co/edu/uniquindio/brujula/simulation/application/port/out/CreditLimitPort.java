@@ -8,7 +8,7 @@ import java.util.UUID;
  * <p>Delegates to {@code administration::api.GetCreditLimitQuery}. Default is 23 when no explicit
  * limit is configured (ADR-013, ADR-F4-006).
  *
- * <p>Named by need (ARQ-001). Implemented by {@code CreditLimitAdapter}.
+ * <p>Named by need. Implemented by {@code CreditLimitAdapter}.
  */
 public interface CreditLimitPort {
 

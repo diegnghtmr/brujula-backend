@@ -22,8 +22,8 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * Security + REST integration tests for GET /me and GET /me/activity.
  *
- * <p>Uses G3-verified pattern: {@code oidcLogin().authorities(new
- * SimpleGrantedAuthority("ROLE_X"))} for authenticated requests. Tests cover:
+ * <p>Uses {@code oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_X"))} for authenticated
+ * requests. Tests cover:
  *
  * <ul>
  *   <li>Unauthenticated → 401/redirect
@@ -31,8 +31,6 @@ import org.springframework.web.context.WebApplicationContext;
  *   <li>Authenticated STUDENT → 200 on /me/activity
  *   <li>BOLA: /me uses session principal, not request parameter
  * </ul>
- *
- * <p>Satisfies: S1-B-7, S1-B-8, Spec §Personal Profile and Activity §Per-Resource Authorization.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class ProfileApiSecurityTest extends AbstractPostgresIntegrationTest {

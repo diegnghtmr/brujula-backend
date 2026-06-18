@@ -21,7 +21,7 @@ import java.util.UUID;
  * <p>Implements both {@link GetCourseAttemptQuery} and {@link ListMyCourseAttemptsQuery}. Enforces
  * BOLA ownership via subscription lookup.
  *
- * <p>Framework-free — wired by {@code ProgressConfiguration}. Satisfies: PRG-2.
+ * <p>Framework-free — wired by {@code ProgressConfiguration}.
  */
 public class GetCourseAttemptService implements GetCourseAttemptQuery, ListMyCourseAttemptsQuery {
 
@@ -91,11 +91,11 @@ public class GetCourseAttemptService implements GetCourseAttemptQuery, ListMyCou
         attempt.getId().value(),
         attempt.getSubscriptionId().value(),
         attempt.getCourseId(),
-        "N/A", // courseName resolved by WU4
+        "N/A", // courseName resolved by query service
         attempt.getPeriodId(),
-        null, // periodName resolved by WU4
+        null, // periodName resolved by query service
         attempt.getJourneyCode(),
-        attempt.getStatus().name(), // FIX-S1: plain String, no domain type in application DTO
+        attempt.getStatus().name(), // plain String, no domain type in application DTO
         gradeValue,
         attempt.getRegisteredAt(),
         attempt.getVersion());
