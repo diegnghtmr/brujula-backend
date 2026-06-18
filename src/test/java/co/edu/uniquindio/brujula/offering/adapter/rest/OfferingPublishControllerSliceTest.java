@@ -41,7 +41,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU3-TDD: Controller slice security and exception-mapping tests for publishOffering.
+ * Controller slice security and exception-mapping tests for publishOffering.
  *
  * <p>Tests:
  *
@@ -55,8 +55,6 @@ import org.springframework.web.context.WebApplicationContext;
  *   <li>Successful publish DRAFT→ARCHIVED with no options → 200
  *   <li>Offering not found → 404
  * </ul>
- *
- * <p>Satisfies: OFFW-005, OFFW-008, WU3 Phase 8.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class OfferingPublishControllerSliceTest extends AbstractPostgresIntegrationTest {

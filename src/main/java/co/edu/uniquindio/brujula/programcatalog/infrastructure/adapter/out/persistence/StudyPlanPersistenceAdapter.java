@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * JPA-backed adapter implementing {@link LoadStudyPlanPort}.
  *
- * <p>Package-private per ARQ-006. Satisfies: CAT-002, Phase 1 WU4 persistence adapters.
+ * <p>Package-private.
  */
 @Component
 class StudyPlanPersistenceAdapter implements LoadStudyPlanPort {

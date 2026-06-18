@@ -2,8 +2,7 @@
  * Identity module — student account lifecycle, email verification, and authentication seam.
  *
  * <p>Allowed outbound dependencies: {@code sharedkernel}, {@code audit}, {@code generated}
- * (OpenAPI-generated API interfaces and model DTOs; confined to infrastructure adapters per
- * ARQ-005).
+ * (OpenAPI-generated API interfaces and model DTOs; confined to infrastructure adapters).
  *
  * <p>Sub-packages {@code application.port.in}, {@code application.dto}, and {@code domain} are
  * exposed via {@code @NamedInterface} so that other modules (e.g. administration) may inject {@code

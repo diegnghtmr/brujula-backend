@@ -7,7 +7,7 @@ import java.util.UUID;
  *
  * @param id the offering UUID
  * @param courseId opaque reference to curriculum::Course
- * @param courseName resolved course name ("N/A" until WU2 curriculum wiring)
+ * @param courseName resolved course name
  * @param programId opaque reference to programcatalog::Program
  * @param periodId opaque reference to the period
  * @param status offering status string (e.g. "PRELIMINARY", "FINAL")

@@ -4,15 +4,14 @@
 -- each require a different prerequisite course before a student can enrol in Profundización I/II.
 -- The per-line gatekeeper cannot be modeled as a universal course_requirement edge on the shared
 -- Profundización I/II slot courses (which would incorrectly force IS I on all 3 lines).
--- Solution: add a nullable gatekeeper_course_id FK on sequential_track (ADR-F2-003, CUR-005).
+-- Solution: add a nullable gatekeeper_course_id FK on sequential_track.
 --
 -- Source of truth for gatekeepers:
 --   Ingeniería del Software y HCI  → Ingeniería de Software I         (PDF oficial 2026-2)
 --   Infraestructura de T.I.         → Administración de Infraestructura de TI (PDF oficial 2026-2)
 --   Gestión de la Información       → Bases de Datos I                 (PDF oficial 2026-2)
 --
--- Satisfies: C1 + W3 from WU3-batch-3b verify report (#1611); ADR-F2-003; CUR-005.
--- Fase 2 scope: data modeling only — no runtime enforcement (non-goal per design).
+-- Data modeling only — no runtime enforcement (non-goal per design).
 
 -- ============================================================
 -- 1. Add gatekeeper_course_id column (nullable, FK to curriculum.course)

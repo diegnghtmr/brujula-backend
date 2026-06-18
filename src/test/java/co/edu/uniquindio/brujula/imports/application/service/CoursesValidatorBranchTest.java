@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * DEBT-F7-003: covers missing branches in {@link CoursesValidator}.
+ * Covers missing branches in {@link CoursesValidator}.
  *
  * <p>Specifically: missing/empty credits field, missing/empty weekly_hours field, missing/empty
  * recommended_semester field, missing/empty type field, non-numeric weekly_hours, non-numeric

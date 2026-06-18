@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <p>Verifies that {@code identity.app_user} is created with all required columns, constraints, and
  * indexes after the full Flyway migration run. Fails until the migration file exists.
  *
- * <p>Satisfies: S1-A-2, Spec §Identity Provisioning (RN-006, RN-009), Design §3 V002.
+ * <p>Verifies identity provisioning schema: required columns, unique constraints.
  */
 @SpringBootTest
 class FlywayV002IdentityTablesTest extends AbstractPostgresIntegrationTest {

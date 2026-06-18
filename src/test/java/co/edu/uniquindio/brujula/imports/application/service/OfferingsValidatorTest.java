@@ -9,7 +9,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link OfferingsValidator} (T3.2). */
+/** Unit tests for {@link OfferingsValidator}. */
 class OfferingsValidatorTest {
 
   private OfferingsValidator validator;
@@ -19,7 +19,7 @@ class OfferingsValidatorTest {
     validator = new OfferingsValidator();
   }
 
-  /** T3.2: end_before_start produces END_BEFORE_START error. */
+  /** end_before_start produces END_BEFORE_START error. */
   @Test
   void end_before_start_produces_error() {
     ImportRow row =
@@ -42,7 +42,7 @@ class OfferingsValidatorTest {
         .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("END_BEFORE_START"));
   }
 
-  /** T3.2: missing period produces PERIOD_NOT_FOUND error. */
+  /** missing period produces PERIOD_NOT_FOUND error. */
   @Test
   void period_not_found_produces_period_not_found_error() {
     ImportRow row =
@@ -65,7 +65,7 @@ class OfferingsValidatorTest {
         .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("PERIOD_NOT_FOUND"));
   }
 
-  /** T3.2: invalid day produces INVALID_DAY error. */
+  /** invalid day produces INVALID_DAY error. */
   @Test
   void invalid_day_produces_error() {
     ImportRow row =
@@ -88,7 +88,7 @@ class OfferingsValidatorTest {
         .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("INVALID_DAY"));
   }
 
-  /** T3.2: valid offering row produces no issues. */
+  /** valid offering row produces no issues. */
   @Test
   void valid_offering_row_produces_no_issues() {
     ImportRow row =
@@ -109,7 +109,7 @@ class OfferingsValidatorTest {
     assertThat(issueMap).doesNotContainKey(0);
   }
 
-  /** W1/S2: malformed course (non-UUID) produces INVALID_COURSE_REFERENCE error. */
+  /** Malformed course (non-UUID) produces INVALID_COURSE_REFERENCE error. */
   @Test
   void malformed_course_uuid_produces_invalid_course_reference_error() {
     ImportRow row =
@@ -132,7 +132,7 @@ class OfferingsValidatorTest {
         .anySatisfy(issue -> assertThat(issue.code()).isEqualTo("INVALID_COURSE_REFERENCE"));
   }
 
-  /** W1/S2: valid UUID course value produces no course-related issues. */
+  /** Valid UUID course value produces no course-related issues. */
   @Test
   void valid_uuid_course_produces_no_course_issues() {
     ImportRow row =
@@ -154,10 +154,9 @@ class OfferingsValidatorTest {
   }
 
   /**
-   * WU4-T1 (RED→GREEN): same (course, option_label) on DIFFERENT weekdays must be VALID. These are
-   * two weekly sessions of the same schedule option — NOT a duplicate. Before the fix, the
-   * seenOptionPairs guard emits DUPLICATE_OPTION_IN_BATCH on the second row. After the fix, both
-   * rows pass with zero issues.
+   * Same (course, option_label) on DIFFERENT weekdays must be VALID. These are two weekly sessions
+   * of the same schedule option — NOT a duplicate. Before the fix, the seenOptionPairs guard emits
+   * DUPLICATE_OPTION_IN_BATCH on the second row. After the fix, both rows pass with zero issues.
    */
   @Test
   void same_option_label_different_day_is_valid_multi_session() {
@@ -197,9 +196,9 @@ class OfferingsValidatorTest {
   }
 
   /**
-   * WU4-T2 (RED→GREEN): same (course, option_label, day, start_time) is a TRUE duplicate session
-   * within the same option. Must produce DUPLICATE_SESSION_IN_OPTION error. Two rows for the same
-   * option at the same time is a scheduling conflict.
+   * Same (course, option_label, day, start_time) is a TRUE duplicate session within the same
+   * option. Must produce DUPLICATE_SESSION_IN_OPTION error. Two rows for the same option at the
+   * same time is a scheduling conflict.
    */
   @Test
   void same_option_label_same_day_same_time_is_duplicate_session_error() {
@@ -240,12 +239,12 @@ class OfferingsValidatorTest {
   }
 
   // -------------------------------------------------------------------------
-  // DEBT-F7-002: interval-overlap detection within same (course, option, day)
+  // Interval-overlap detection within same (course, option, day)
   // -------------------------------------------------------------------------
 
   /**
-   * DEBT-F7-002-T1 (RED→GREEN): same (course, option_label, day), times 08:00-10:00 vs 09:00-11:00
-   * — partial overlap → DUPLICATE_SESSION_IN_OPTION on the second row.
+   * Same (course, option_label, day), times 08:00-10:00 vs 09:00-11:00 — partial overlap →
+   * DUPLICATE_SESSION_IN_OPTION on the second row.
    */
   @Test
   void overlapping_sessions_same_option_same_day_produces_duplicate_error() {
@@ -287,8 +286,8 @@ class OfferingsValidatorTest {
   }
 
   /**
-   * DEBT-F7-002-T2 (RED→GREEN): same (course, option_label, day), times 08:00-10:00 vs 10:00-12:00
-   * — adjacent (touching endpoints, half-open intervals) → BOTH valid (no error).
+   * Same (course, option_label, day), times 08:00-10:00 vs 10:00-12:00 — adjacent (touching
+   * endpoints, half-open intervals) → BOTH valid (no error).
    */
   @Test
   void adjacent_sessions_same_option_same_day_are_valid() {
@@ -329,8 +328,8 @@ class OfferingsValidatorTest {
   }
 
   /**
-   * DEBT-F7-002-T3 (preserve existing): same (course, option_label, day, start_time, end_time)
-   * exact duplicate → DUPLICATE_SESSION_IN_OPTION. Existing behaviour preserved.
+   * Same (course, option_label, day, start_time, end_time) exact duplicate →
+   * DUPLICATE_SESSION_IN_OPTION. Existing behaviour preserved.
    */
   @Test
   void exact_duplicate_session_same_option_same_day_produces_error() {
@@ -370,8 +369,8 @@ class OfferingsValidatorTest {
   }
 
   /**
-   * DEBT-F7-002-T4: overlapping times on DIFFERENT days → BOTH valid. Overlap is only flagged
-   * within the same (course, option_label, day) group.
+   * Overlapping times on DIFFERENT days → BOTH valid. Overlap is only flagged within the same
+   * (course, option_label, day) group.
    */
   @Test
   void overlapping_times_different_days_same_option_are_valid() {
@@ -412,8 +411,8 @@ class OfferingsValidatorTest {
   }
 
   /**
-   * DEBT-F7-002-T5: overlapping times on same day but DIFFERENT option_labels → BOTH valid. Overlap
-   * detection is scoped to the same option group.
+   * Overlapping times on same day but DIFFERENT option_labels → BOTH valid. Overlap detection is
+   * scoped to the same option group.
    */
   @Test
   void overlapping_times_different_option_labels_same_day_are_valid() {
@@ -454,8 +453,8 @@ class OfferingsValidatorTest {
   }
 
   /**
-   * DEBT-F7-002-T6: fully-contained interval — row0 08:00-11:00, row1 09:00-09:30 on the same
-   * (course, option_label, day) → DUPLICATE_SESSION_IN_OPTION on row1.
+   * Fully-contained interval — row0 08:00-11:00, row1 09:00-09:30 on the same (course,
+   * option_label, day) → DUPLICATE_SESSION_IN_OPTION on row1.
    *
    * <p>Exercises the case where one session is completely enclosed by another, confirming the
    * half-open overlap condition {@code newStart < existingEnd && newEnd > existingStart} catches
@@ -501,8 +500,8 @@ class OfferingsValidatorTest {
   }
 
   /**
-   * WU4-T3 (RED→GREEN): 3 rows same (course, option_label) on MON, WED, FRI → all valid. This is
-   * the core multi-session grouping scenario.
+   * 3 rows same (course, option_label) on MON, WED, FRI → all valid. This is the core multi-session
+   * grouping scenario.
    */
   @Test
   void three_sessions_same_option_different_days_all_valid() {

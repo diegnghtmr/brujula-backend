@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Output port: read-side operations for {@link Subscription}.
  *
- * <p>ARQ-003: application layer depends on this interface, not on concrete persistence adapters.
+ * <p>Application layer depends on this interface, not on concrete persistence adapters.
  */
 public interface LoadSubscriptionPort {
 
@@ -57,8 +57,7 @@ public interface LoadSubscriptionPort {
   /**
    * Check whether the subscription has any associated course attempt records.
    *
-   * <p>Used by the plan-change gate to determine if acknowledgeHistoryImpact is required
-   * (ADR-F3-007).
+   * <p>Used by the plan-change gate to determine if acknowledgeHistoryImpact is required.
    *
    * @param subscriptionId the subscription UUID
    * @return true if at least one course attempt exists for this subscription
@@ -68,7 +67,7 @@ public interface LoadSubscriptionPort {
   /**
    * Acquire a row-level write lock on all ACTIVE subscriptions of a student and return them.
    *
-   * <p>FIX-W1: must be called (and the result discarded) at the START of the create-subscription
+   * <p>Must be called (and the result discarded) at the START of the create-subscription
    * transaction, BEFORE counting. This serialises concurrent create requests per-student and
    * prevents the TOCTOU race that allows cap=2 to be exceeded.
    *

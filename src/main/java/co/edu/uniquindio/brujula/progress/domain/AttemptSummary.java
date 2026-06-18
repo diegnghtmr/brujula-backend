@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * Lightweight summary of a course attempt used by {@link ProgressSummaryCalculator}.
  *
- * <p>Contains only the data needed for credit/average calculation. No Spring/JPA imports (ARQ-002).
+ * <p>Contains only the data needed for credit/average calculation. No Spring/JPA imports.
  *
  * @param courseId the course UUID
  * @param status declared attempt status

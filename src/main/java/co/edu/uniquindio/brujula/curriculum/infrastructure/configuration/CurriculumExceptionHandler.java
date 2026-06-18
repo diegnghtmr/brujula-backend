@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Maps curriculum domain exceptions to HTTP problem responses (RFC 9457).
  *
  * <p>Lives in infrastructure.configuration (not adapter.in.rest) so that it may reference domain
- * exception types without violating ARQ-001, while still being picked up by Spring's
- * {@code @ControllerAdvice} scan. Infrastructure is permitted to depend on domain (ARQ-008).
+ * exception types while still being picked up by Spring's {@code @ControllerAdvice} scan.
+ * Infrastructure is permitted to depend on domain.
  *
  * <p>Scoped to the curriculum REST package with {@link Ordered#HIGHEST_PRECEDENCE} to prevent
- * cross-module handler hijacking for shared exceptions like {@link IdempotencyKeyConflictException}
- * (DEBT-F6-001 pattern).
+ * cross-module handler hijacking for shared exceptions like {@link
+ * IdempotencyKeyConflictException}.
  *
  * <p>Exception → HTTP mapping:
  *

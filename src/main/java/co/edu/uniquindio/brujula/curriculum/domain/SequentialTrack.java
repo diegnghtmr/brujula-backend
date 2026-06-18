@@ -16,10 +16,10 @@ import java.util.UUID;
  * passed before enrolling in level 1 of this track (DEEPENING tracks only; nullable for
  * PERSONAL_ELECTIVE tracks and DEEPENING tracks without a defined prereq).
  *
- * <p>Status is a read-only aggregate — no write use cases for this aggregate in Fase 2.
+ * <p>Read-only aggregate — no write use cases for this aggregate in the current scope.
  * {@code @Version} is persisted for future optimistic-lock support.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public final class SequentialTrack {
 

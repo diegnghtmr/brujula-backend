@@ -3,7 +3,7 @@ package co.edu.uniquindio.brujula.identity.domain;
 /**
  * Base class for domain exceptions thrown within the identity module.
  *
- * <p>Framework-free (ARQ-002). Infrastructure adapters map these to appropriate HTTP responses.
+ * <p>Framework-free. Infrastructure adapters map these to appropriate HTTP responses.
  */
 public class DomainException extends RuntimeException {
 

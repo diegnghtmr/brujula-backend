@@ -15,27 +15,26 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Maps administration-module application exceptions to HTTP problem responses (RFC 9457).
  *
  * <p>Lives in {@code infrastructure.configuration} (not {@code adapter.in.rest}) so that it may
- * reference application exception types without violating ARQ-001. Infrastructure may depend on
- * application layer (ARQ-008).
+ * reference application exception types. Infrastructure may depend on the application layer.
  *
  * <ul>
  *   <li>{@link StaffNotFoundException} → 404 Not Found
  *   <li>{@link IdempotencyKeyConflictException} → 409 Conflict
- *   <li>{@link OptimisticLockingFailureException} → 409 Conflict (OFFW-002 period update)
+ *   <li>{@link OptimisticLockingFailureException} → 409 Conflict (period update)
  *   <li>{@link DataIntegrityViolationException} → 409 Conflict (period name duplicate, unique
  *       constraint {@code academic_period_name_uq})
  * </ul>
  *
- * <p>Exception visibility note (ADR-0 task 6.3): {@code PeriodNotFoundException} (offering domain)
- * is handled by {@code OfferingExceptionHandler} (global {@code @RestControllerAdvice}) which
- * already maps it to 404 — no duplication needed here. Spring/DAL exceptions ({@link
- * OptimisticLockingFailureException}, {@link DataIntegrityViolationException}) are framework types
- * already visible in the infrastructure layer of any module.
+ * <p>{@code PeriodNotFoundException} (offering domain) is handled by {@code
+ * OfferingExceptionHandler} (global {@code @RestControllerAdvice}) which already maps it to 404 —
+ * no duplication needed here. Spring/DAL exceptions ({@link OptimisticLockingFailureException},
+ * {@link DataIntegrityViolationException}) are framework types already visible in the
+ * infrastructure layer of any module.
  *
- * <p>QAL-ADV-001 (WU1): scoped to the administration REST adapter package so that shared exceptions
- * (e.g. {@link IdempotencyKeyConflictException}) are always resolved by this handler and never
- * intercepted by a foreign module advice. Controllers are package-private; {@code basePackages}
- * string is used instead of {@code assignableTypes}. Template from {@code ImportsExceptionHandler}.
+ * <p>Scoped to the administration REST adapter package so that shared exceptions (e.g. {@link
+ * IdempotencyKeyConflictException}) are always resolved by this handler and never intercepted by a
+ * foreign module advice. Controllers are package-private; {@code basePackages} string is used
+ * instead of {@code assignableTypes}.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(

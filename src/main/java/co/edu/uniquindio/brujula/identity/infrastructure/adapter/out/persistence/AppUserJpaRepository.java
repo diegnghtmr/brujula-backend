@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * Spring Data JPA repository for {@link AppUserJpaEntity}.
  *
  * <p>Internal to the identity persistence adapter. Must not be accessed from outside {@code
- * identity.infrastructure.adapter.out.persistence} (ARQ-006).
+ * identity.infrastructure.adapter.out.persistence}.
  */
 interface AppUserJpaRepository extends JpaRepository<AppUserJpaEntity, UUID> {
 

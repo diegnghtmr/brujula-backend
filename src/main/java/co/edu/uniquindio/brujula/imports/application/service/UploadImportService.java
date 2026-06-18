@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Use case implementation: upload and validate an import file (IMP-001, IMP-002, IMP-011).
+ * Use case implementation: upload and validate an import file.
  *
  * <p>Pipeline:
  *
@@ -36,7 +36,7 @@ import java.util.UUID;
  *   <li>File type guard (415 for unsupported)
  *   <li>File size guard (413 for too large)
  *   <li>Required-parameter guard (400 for missing planId/periodId)
- *   <li>Assignment guard — STAFF only (403 for unassigned or INACTIVE account) [WARNING-1 closure]
+ *   <li>Assignment guard — STAFF only (403 for unassigned or INACTIVE account)
  *   <li>Parse (select FileParserPort by content-type/filename)
  *   <li>Validate (per-kind validator)
  *   <li>Persist ImportBatch (SaveImportBatchPort)
@@ -109,7 +109,7 @@ public class UploadImportService implements UploadImportUseCase {
     // 4. Required-parameter guard
     validateRequiredParameters(command, resolvedKind);
 
-    // 5. Assignment guard (STAFF only, WARNING-1 closure)
+    // 5. Assignment guard (STAFF only)
     enforceAssignmentGuard(command);
 
     // 6. Parse
@@ -154,7 +154,7 @@ public class UploadImportService implements UploadImportUseCase {
     idempotencyStorePort.save(
         command.idempotencyKey(), OPERATION, command.requestHash(), 201, responseBodyJson);
 
-    // 11. Audit (only on successful upload, not on 403/415/413 — SC-011-A, SC-011-C)
+    // 11. Audit (only on successful upload, not on 403/415/413)
     auditRecorder.record(
         new RecordAuditEventCommand(
             command.actorId(),
@@ -204,22 +204,22 @@ public class UploadImportService implements UploadImportUseCase {
   }
 
   /**
-   * Enforces the assignment guard for STAFF actors (IMP-010, INV-06, WARNING-1 closure).
+   * Enforces the assignment guard for STAFF actors.
    *
    * <p>ADMIN actors bypass this check entirely. STAFF actors must: (1) have an ACTIVE StaffAccount,
    * (2) be assigned to the target program.
    *
    * <p>Uses {@link StaffAssignmentPort#resolveActiveStaffId(String)} — INACTIVE accounts return
-   * empty → 403, closing WARNING-1.
+   * empty → 403.
    *
-   * @throws ImportAccessDeniedException if access is denied (→ 403 in WU4)
+   * @throws ImportAccessDeniedException if access is denied (→ 403)
    */
   private void enforceAssignmentGuard(UploadImportCommand command) {
     if ("ADMIN".equalsIgnoreCase(command.actorRole())) {
-      return; // ADMIN bypasses assignment check (SC-001-J)
+      return; // ADMIN bypasses assignment check
     }
 
-    // STAFF: resolve ACTIVE staff account only (WARNING-1 closure)
+    // STAFF: resolve ACTIVE staff account only
     Optional<UUID> staffId = staffAssignmentPort.resolveActiveStaffId(command.actorEmail());
     if (staffId.isEmpty()) {
       throw ImportAccessDeniedException.inactiveOrUnknownActor(command.actorEmail());

@@ -11,10 +11,10 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code administration.staff_program_assignment} (Flyway V003).
  *
- * <p>Read-only from application perspective in Fase 6 (write lifecycle deferred to Fase 2).
- * Optimistic locking via {@code @Version} (DB-006).
+ * <p>Read-only from application perspective (write lifecycle deferred). Optimistic locking via
+ * {@code @Version}.
  *
- * <p>Package-private — no cross-module access (ARQ-006, ARQ-006b).
+ * <p>Package-private — no cross-module access.
  */
 @Entity
 @Table(name = "staff_program_assignment", schema = "administration")

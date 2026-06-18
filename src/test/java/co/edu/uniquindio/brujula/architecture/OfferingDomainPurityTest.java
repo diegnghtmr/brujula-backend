@@ -8,7 +8,7 @@ import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
 /**
- * WU1-TDD RED: ArchUnit test verifying the offering domain is framework-free (ARQ-002).
+ * ArchUnit test verifying the offering domain is framework-free.
  *
  * <p>No Spring or JPA annotations/classes may reside in {@code offering.domain}.
  */

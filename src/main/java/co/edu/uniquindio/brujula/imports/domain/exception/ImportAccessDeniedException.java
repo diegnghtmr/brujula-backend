@@ -6,7 +6,7 @@ import java.util.UUID;
  * Thrown when a STAFF actor attempts to access an import operation for a program they are not
  * assigned to, or when the actor's StaffAccount is INACTIVE.
  *
- * <p>Maps to HTTP 403 Forbidden at the controller layer (WU4). Covers: SC-001-D, INV-06, IMP-010.
+ * <p>Maps to HTTP 403 Forbidden at the controller layer.
  */
 public class ImportAccessDeniedException extends RuntimeException {
 

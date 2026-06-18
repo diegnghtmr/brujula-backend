@@ -18,7 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU2-2.1 RED: Verifies ListProgramsService returns paginated results and filters by status.
+ * Verifies ListProgramsService returns paginated results and filters by status.
  *
  * <p>When statusFilter is "ACTIVE", only ACTIVE programs are returned. When statusFilter is null,
  * all programs are returned.

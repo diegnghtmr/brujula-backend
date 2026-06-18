@@ -13,10 +13,9 @@ import java.util.UUID;
  *
  * <p>Delegates to {@code curriculum::api.ListCourseRequirementsQuery}, {@code
  * curriculum::api.GetCourseQuery}, and {@code curriculum::api.ListSequentialTracksQuery}. Maps
- * curriculum DTOs to sim-local records, keeping the simulation domain boundary pure (ARQ-002,
- * INV-001).
+ * curriculum DTOs to sim-local records, keeping the simulation domain boundary pure.
  *
- * <p>Named by need (ARQ-001). Implemented by {@code CurriculumReadAdapter}.
+ * <p>Named by need. Implemented by {@code CurriculumReadAdapter}.
  */
 public interface CurriculumReadPort {
 

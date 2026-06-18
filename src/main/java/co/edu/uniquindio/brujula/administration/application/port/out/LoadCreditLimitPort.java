@@ -8,9 +8,9 @@ import java.util.UUID;
  *
  * <p>This is an SPI — not published to other modules. The implementation either queries a
  * persistence store or returns empty when no explicit override has been configured. The application
- * service applies the default of 23 when this port returns empty (ADR-013, ADR-F4-006).
+ * service applies the default of 23 when this port returns empty.
  *
- * <p>ARQ-001: method uses only UUID and boxed Integer — no domain entities or JPA types.
+ * <p>Method uses only UUID and boxed Integer — no domain entities or JPA types.
  */
 public interface LoadCreditLimitPort {
 

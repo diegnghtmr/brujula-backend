@@ -36,22 +36,21 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>Framework-free application services are registered here for explicit constructor injection.
  * Persistence adapters are auto-detected via {@code @Component}. All port.out adapters are injected
- * as interfaces — never concrete adapter classes (ARQ-006).
+ * as interfaces — never concrete adapter classes.
  *
  * <p>Wires:
  *
  * <ul>
- *   <li>{@link ListPeriodsService} — implements {@link ListPeriodsQuery} (OFF-001)
+ *   <li>{@link ListPeriodsService} — implements {@link ListPeriodsQuery}
  *   <li>{@link GetOfferingService} — implements {@link ListOfferingsQuery} + {@link
- *       GetOfferingQuery} (OFF-002, OFF-003)
- *   <li>{@link ResolvePeriodService} — implements {@link ResolvePeriodQuery} (OFF-004)
+ *       GetOfferingQuery}
+ *   <li>{@link ResolvePeriodService} — implements {@link ResolvePeriodQuery}
  *   <li>{@link ResolveScheduleOptionService} — implements {@link ResolveScheduleOptionQuery}
- *       (OFF-004)
- *   <li>{@link CreatePeriodService} — implements {@link CreatePeriodUseCase} (OFFW-001)
- *   <li>{@link UpdatePeriodService} — implements {@link UpdatePeriodUseCase} (OFFW-002)
- *   <li>{@link CreateOfferingService} — implements {@link CreateOfferingUseCase} (OFFW-003)
- *   <li>{@link UpdateOfferingService} — implements {@link UpdateOfferingUseCase} (OFFW-004)
- *   <li>{@link PublishOfferingService} — implements {@link PublishOfferingUseCase} (OFFW-005)
+ *   <li>{@link CreatePeriodService} — implements {@link CreatePeriodUseCase}
+ *   <li>{@link UpdatePeriodService} — implements {@link UpdatePeriodUseCase}
+ *   <li>{@link CreateOfferingService} — implements {@link CreateOfferingUseCase}
+ *   <li>{@link UpdateOfferingService} — implements {@link UpdateOfferingUseCase}
+ *   <li>{@link PublishOfferingService} — implements {@link PublishOfferingUseCase}
  * </ul>
  */
 @Configuration

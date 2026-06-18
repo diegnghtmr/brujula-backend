@@ -5,8 +5,8 @@ import java.util.UUID;
 /**
  * Application-layer read-side projection for a staff account.
  *
- * <p>Used in paginated list results so REST adapters do not need to import domain types (ARQ-001).
- * The {@code status} field is the string name of the {@code
+ * <p>Used in paginated list results so REST adapters do not need to import domain types. The {@code
+ * status} field is the string name of the {@code
  * co.edu.uniquindio.brujula.administration.domain.StaffAccountStatus} enum.
  *
  * @param id the staff account UUID

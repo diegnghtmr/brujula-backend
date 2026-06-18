@@ -18,11 +18,11 @@ import org.springframework.stereotype.Component;
 
 /**
  * Anti-corruption adapter: bridges simulation's {@link CurriculumReadPort} to curriculum's
- * published {@code curriculum::api} named interface (INV-001).
+ * published {@code curriculum::api} named interface.
  *
  * <p>Maps {@code CourseRequirementView} to sim-local {@link PrereqRequirement} records and resolves
- * sequential-track predecessor info for VAL-008 (SIMULATION_SEQUENTIAL_ORDER). The simulation
- * domain never sees curriculum types (ARQ-002).
+ * sequential-track predecessor info for SIMULATION_SEQUENTIAL_ORDER. The simulation domain never
+ * sees curriculum types.
  */
 @Component
 class CurriculumReadAdapter implements CurriculumReadPort {
@@ -66,7 +66,7 @@ class CurriculumReadAdapter implements CurriculumReadPort {
   }
 
   /**
-   * Batch credits lookup via curriculum::api.GetCourseQuery.getCourses (QAL-PERF-002).
+   * Batch credits lookup via curriculum::api.GetCourseQuery.getCourses.
    *
    * <p>Issues a single batch read to curriculum instead of one call per course ID. Course IDs not
    * found in curriculum are absent from the returned map.

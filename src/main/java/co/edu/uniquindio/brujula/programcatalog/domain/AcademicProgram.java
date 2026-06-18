@@ -14,9 +14,9 @@ import java.util.Objects;
  * </ul>
  *
  * <p>Status defaults to {@link ProgramStatus#ACTIVE}. Version initializes to {@code 0}. Carries
- * {@code @Version} in the JPA entity (DT-014 / DB-006).
+ * {@code @Version} in the JPA entity for optimistic locking.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public final class AcademicProgram {
 

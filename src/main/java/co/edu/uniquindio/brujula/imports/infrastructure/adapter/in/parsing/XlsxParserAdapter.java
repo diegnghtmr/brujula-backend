@@ -23,9 +23,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
 /**
- * XLSX parser adapter — reads XLSX files using Apache POI 5.4.1 (ADR-F6-004).
+ * XLSX parser adapter — reads XLSX files using Apache POI 5.4.1.
  *
- * <p>Security constraints (ADR-F6-004):
+ * <p>Security constraints:
  *
  * <ul>
  *   <li>NEVER calls FormulaEvaluator — formula cells are read as their cached string value or
@@ -49,8 +49,8 @@ class XlsxParserAdapter implements FileParserPort {
   private static final String XLSM_CONTENT_TYPE = "application/vnd.ms-excel.sheet.macroEnabled.12";
 
   /**
-   * Default column headers per kind (ADR-014 default template). These are the expected header names
-   * in the first row of the XLSX file.
+   * Default column headers per kind. These are the expected header names in the first row of the
+   * XLSX file.
    */
   private static final Map<ImportKind, List<String>> EXPECTED_HEADERS;
 
@@ -126,7 +126,7 @@ class XlsxParserAdapter implements FileParserPort {
       // Cannot detect magic; proceed and let POI handle it
     }
 
-    // Step 3: open as OPCPackage and check for VBA macro parts (macro safety ADR-F6-004)
+    // Step 3: open as OPCPackage and check for VBA macro parts (macro safety)
     try (OPCPackage pkg = OPCPackage.open(new ByteArrayInputStream(fileBytes))) {
       boolean hasMacros = containsMacroParts(pkg);
       if (hasMacros) {
@@ -266,9 +266,9 @@ class XlsxParserAdapter implements FileParserPort {
   /**
    * Converts a cell to its string representation.
    *
-   * <p>ADR-F6-004 safety: NEVER calls FormulaEvaluator. Formula cells are read as their cached
-   * string value (set by the application that last saved the file). If no cached value is
-   * available, an empty string is returned — the validator will flag the missing value.
+   * <p>NEVER calls FormulaEvaluator. Formula cells are read as their cached string value (set by
+   * the application that last saved the file). If no cached value is available, an empty string is
+   * returned — the validator will flag the missing value.
    */
   private String cellToString(Cell cell) {
     if (cell == null) return "";
@@ -284,7 +284,7 @@ class XlsxParserAdapter implements FileParserPort {
       }
       case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
       case FORMULA -> {
-        // NEVER evaluate — read cached string value (ADR-F6-004)
+        // NEVER evaluate — read cached string value
         try {
           yield cell.getStringCellValue();
         } catch (Exception e) {

@@ -31,11 +31,9 @@ import org.springframework.web.context.WebApplicationContext;
  *       OidcUserAuthority} with realm_access.
  * </ul>
  *
- * <p>This test establishes the reusable pattern for all WU-B..D security tests. When the OIDC user
- * service (WU-B S1-B-5) is wired, this test must still pass — the {@code oidcLogin()} mock bypasses
- * the OIDC provider, so tests are independent of live Keycloak.
- *
- * <p>Satisfies: S1-B-4, Design §9, Spec §Role-Based Authorization (RNF-SEG-005).
+ * <p>This test establishes the reusable pattern for security tests. When the OIDC user service is
+ * wired, this test must still pass — the {@code oidcLogin()} mock bypasses the OIDC provider, so
+ * tests are independent of live Keycloak.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SecurityMockOidcLoginShapeTest extends AbstractPostgresIntegrationTest {
@@ -98,9 +96,9 @@ class SecurityMockOidcLoginShapeTest extends AbstractPostgresIntegrationTest {
    *   <li>{@code hasRole("ADMIN")} rejects {@code ROLE_STAFF} — proving specificity.
    * </ol>
    *
-   * <p>This is the canonical G3 resolution: use {@code SimpleGrantedAuthority("ROLE_X")} with
-   * {@code oidcLogin().authorities(...)} for all Spring Security 7 + {@code @EnableMethodSecurity}
-   * tests. The WU-B OIDC user service must produce authorities in the same {@code ROLE_X} shape.
+   * <p>This is the canonical resolution: use {@code SimpleGrantedAuthority("ROLE_X")} with {@code
+   * oidcLogin().authorities(...)} for all Spring Security 7 + {@code @EnableMethodSecurity} tests.
+   * The OIDC user service must produce authorities in the same {@code ROLE_X} shape.
    */
   @Test
   void oidc_login_authority_shape_role_staff_semantics_correct() throws Exception {

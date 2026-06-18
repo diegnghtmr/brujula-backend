@@ -241,8 +241,42 @@ tasks.named("check") {
 // ============================================================
 // Test configuration
 // ============================================================
+// Opt-in task for the real round-trip integration test (requires age + pg_dump + psql on PATH).
+// NOT wired into check — run explicitly: ./gradlew roundTripTest
+tasks.register<Test>("roundTripTest") {
+    description = "Runs @Tag(\"requires-age\") round-trip backup/restore integration tests. Requires age, pg_dump, psql, and Docker on PATH."
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform {
+        includeTags("requires-age")
+    }
+    shouldRunAfter(tasks.test)
+    // Pass Docker socket to forked JVM for Testcontainers
+    environment("DOCKER_HOST", System.getenv("DOCKER_HOST") ?: "unix:///var/run/docker.sock")
+    environment("TESTCONTAINERS_RYUK_DISABLED", System.getenv("TESTCONTAINERS_RYUK_DISABLED") ?: "false")
+}
+
+// Opt-in task for the Windows PowerShell parity tests (require pwsh; the .ps1 scripts target
+// Windows). NOT wired into check — run explicitly on Windows: ./gradlew powershellParityTest
+tasks.register<Test>("powershellParityTest") {
+    description = "Runs @Tag(\"requires-pwsh\") PowerShell backup/restore parity tests. Requires pwsh (intended for Windows)."
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform {
+        includeTags("requires-pwsh")
+    }
+    shouldRunAfter(tasks.test)
+}
+
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // Exclude the real round-trip IT (needs age) and the PowerShell parity tests (target
+        // Windows; GitHub Linux runners ship pwsh and would run them against bash mock stubs and
+        // fail) so ./gradlew check stays green on a Linux runner.
+        excludeTags("requires-age", "requires-pwsh")
+    }
     // Testcontainers stability: run test JVM forks sequentially so that each Spring
     // ApplicationContext spin-up gets a fresh, non-contested Postgres container.
     // Without this, parallel forks reuse cached JDBC URLs pointing to dead containers

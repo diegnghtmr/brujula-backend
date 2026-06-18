@@ -33,14 +33,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * QAL-ADV-001 — Regression scope tests for {@code ProgressExceptionHandler}.
+ * Regression scope tests for {@code ProgressExceptionHandler}.
  *
  * <p>Asserts the per-module response contract for shared exceptions (status + {@code $.code}).
  * {@code basePackages} scoping is defence-in-depth; {@code @Order(HIGHEST_PRECEDENCE)} is the
  * primary correctness guarantee. These tests catch contract regressions (missing {@code $.code},
  * wrong status), not {@code basePackages} removal while handlers remain behaviorally identical.
  *
- * <p>T-WU1.2: verifies progress controller → {@code ProgressExceptionHandler} maps {@link
+ * <p>Verifies progress controller → {@code ProgressExceptionHandler} maps {@link
  * IdempotencyKeyConflictException} to HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -73,9 +73,8 @@ class ProgressExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest 
   }
 
   /**
-   * T-WU1.2 — QAL-ADV-001-S2: progress controller throwing {@link IdempotencyKeyConflictException}
-   * MUST return HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"} via {@code
-   * ProgressExceptionHandler}.
+   * Progress controller throwing {@link IdempotencyKeyConflictException} MUST return HTTP 409 with
+   * {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"} via {@code ProgressExceptionHandler}.
    *
    * <p>Asserting {@code $.code} makes this test load-bearing: it will fail if any handler in the
    * chain omits the {@code code} property, regardless of {@code basePackages} state.
@@ -107,8 +106,8 @@ class ProgressExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest 
   }
 
   /**
-   * T-WU1.1 (progress side) — verifies the full response contract when the progress subscription
-   * endpoint throws {@link IdempotencyKeyConflictException}.
+   * Verifies the full response contract when the progress subscription endpoint throws {@link
+   * IdempotencyKeyConflictException}.
    *
    * <p>Asserts both HTTP 409 status and {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"} so that any
    * future handler regression (missing code property or wrong status) is caught.

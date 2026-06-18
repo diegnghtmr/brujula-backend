@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
  *
  * <p>Covers: Course.create defaults, archive transition, update fields, and invariant enforcement
  * (blank name, null planId, negative credits).
- *
- * <p>WU5 – T5.1.
  */
 class CourseWriteTest {
 
@@ -36,9 +34,8 @@ class CourseWriteTest {
             4,
             Collections.emptyList());
 
-    // IMP-009 note: Course.create starts ACTIVE. For import confirm (WU6), the service
-    // passes status=ACTIVE per the existing domain model (OpenAPI CourseStatus =
-    // ACTIVE/INACTIVE/ARCHIVED).
+    // Course.create starts ACTIVE. The service passes status=ACTIVE per the existing domain model
+    // (OpenAPI CourseStatus = ACTIVE/INACTIVE/ARCHIVED).
     assertThat(course.status()).isEqualTo(CourseStatus.ACTIVE);
     assertThat(course.version()).isEqualTo(0L);
   }

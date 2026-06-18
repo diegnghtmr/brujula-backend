@@ -12,7 +12,7 @@ import java.util.UUID;
  *
  * <p>Credits and curricularWeeklyHours are nullable (some modalities are credit-free).
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public final class DegreeWorkModality {
 

@@ -18,10 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Persistence adapter for audit events.
  *
  * <p>Implements {@link SaveAuditEventPort} (append-only via JPA) and {@link SearchAuditEventsPort}
- * (read via JdbcClient for dynamic filtering). Append-only: the adapter never calls update() or
- * delete(); it delegates only to {@code jpaRepository.save()} on insert.
- *
- * <p>Satisfies: Design §2.3, Spec §Audit Log (append-only, RNF-SEG-007).
+ * (read via JdbcClient for dynamic filtering). The adapter never calls update() or delete(); it
+ * delegates only to {@code jpaRepository.save()} on insert.
  */
 @Component
 class AuditEventPersistenceAdapter implements SaveAuditEventPort, SearchAuditEventsPort {

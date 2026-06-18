@@ -9,7 +9,7 @@ import java.util.Objects;
  * <p>{@code index} is the 0-based position in the original file (1-based in error reporting).
  * {@code cells} maps column header names to raw string values.
  *
- * <p>Pure domain record — zero framework annotations (ARQ-002).
+ * <p>Pure domain record — zero framework annotations.
  */
 public record ImportRow(int index, Map<String, String> cells) {
 

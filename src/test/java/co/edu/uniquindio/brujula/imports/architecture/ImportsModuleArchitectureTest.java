@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * ArchUnit tests for the {@code imports} module (T3.4).
  *
- * <p>Enforces WU3 structural constraints:
+ * <p>Enforces structural constraints:
  *
  * <ul>
  *   <li>T3.4-A: XLSX and JSON parser adapters live in {@code infrastructure.adapter.in.parsing}

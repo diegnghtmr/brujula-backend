@@ -33,16 +33,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * QAL-ADV-001 — Regression scope tests for {@code AdministrationExceptionHandler}.
+ * Regression scope tests for {@code AdministrationExceptionHandler}.
  *
  * <p>Asserts the per-module response contract for shared exceptions (status + {@code $.code}).
  * {@code basePackages} scoping is defence-in-depth; {@code @Order(HIGHEST_PRECEDENCE)} is the
  * primary correctness guarantee. These tests catch contract regressions (missing {@code $.code},
  * wrong status), not {@code basePackages} removal while handlers remain behaviorally identical.
  *
- * <p>T-WU1.3 (administration): verifies administration controller → {@code
- * AdministrationExceptionHandler} maps {@link IdempotencyKeyConflictException} to HTTP 409 with
- * {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
+ * <p>Verifies: administration controller → {@code AdministrationExceptionHandler} maps {@link
+ * IdempotencyKeyConflictException} to HTTP 409 with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class AdministrationExceptionHandlerScopeTest extends AbstractPostgresIntegrationTest {
@@ -79,9 +78,8 @@ class AdministrationExceptionHandlerScopeTest extends AbstractPostgresIntegratio
   }
 
   /**
-   * T-WU1.3 (administration) — QAL-ADV-001: administration controller throwing {@link
-   * IdempotencyKeyConflictException} MUST return HTTP 409 with {@code $.code =
-   * "IDEMPOTENCY_KEY_CONFLICT"} from {@code AdministrationExceptionHandler}.
+   * Administration controller throwing {@link IdempotencyKeyConflictException} MUST return HTTP 409
+   * with {@code $.code = "IDEMPOTENCY_KEY_CONFLICT"} from {@code AdministrationExceptionHandler}.
    *
    * <p>Asserting {@code $.code} makes this test load-bearing: it will fail if any handler in the
    * chain omits the {@code code} property, regardless of {@code basePackages} state.

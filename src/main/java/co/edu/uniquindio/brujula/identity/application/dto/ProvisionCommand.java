@@ -5,8 +5,8 @@ import java.util.Set;
 /**
  * Command carrying the claims extracted from the Keycloak OIDC token.
  *
- * <p>Lives in {@code application.dto} (not {@code application.port.in}) to satisfy ARQ-003, which
- * requires all classes in {@code port.in} to be interfaces.
+ * <p>Lives in {@code application.dto} (not {@code application.port.in}) because port.in must
+ * contain interfaces only.
  *
  * @param oidcSubject the {@code sub} claim (stable, unique per user)
  * @param email the {@code email} claim

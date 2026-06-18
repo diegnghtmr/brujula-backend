@@ -15,9 +15,8 @@ import java.util.UUID;
  * (requires) course {@code from}. The edge direction follows the requirement relationship: if
  * course B requires course A, the edge is {@code A → B}.
  *
- * <p>This graph is used by {@link PrerequisiteAcyclicityService} to enforce the DAG invariant
- * (CUR-003, ADR-F2-006). It is rebuilt in-memory per validation; it has NO Spring/JPA imports
- * (ARQ-002).
+ * <p>This graph is used by {@link PrerequisiteAcyclicityService} to enforce the DAG invariant It is
+ * rebuilt in-memory per validation; it has NO Spring/JPA imports.
  */
 public class PrerequisiteGraph {
 

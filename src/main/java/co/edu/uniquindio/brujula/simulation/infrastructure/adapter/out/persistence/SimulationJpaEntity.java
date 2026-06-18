@@ -13,9 +13,9 @@ import org.hibernate.type.SqlTypes;
 /**
  * JPA entity mapping to {@code simulation.simulation} (created by Flyway V018).
  *
- * <p>Package-private per ARQ-006b. Optimistic locking via {@code @Version}. {@code status} stores
- * only ACTIVE/DELETED (INV-004: CURRENT/OUTDATED never persisted). {@code programIds} uses Postgres
- * {@code uuid[]} via hypersistence UUIDArrayType.
+ * <p>Package-private. Optimistic locking via {@code @Version}. {@code status} stores only
+ * ACTIVE/DELETED (CURRENT/OUTDATED are never persisted). {@code programIds} uses Postgres {@code
+ * uuid[]} via hypersistence UUIDArrayType.
  */
 @Entity
 @Table(name = "simulation", schema = "simulation")

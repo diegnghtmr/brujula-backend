@@ -7,7 +7,7 @@ import java.util.Objects;
 /**
  * Domain result of the progress summary computation by {@link ProgressSummaryCalculator}.
  *
- * <p>No Spring/JPA imports (ARQ-002). All numeric fields use {@link BigDecimal} for precision; the
+ * <p>No Spring/JPA imports. All numeric fields use {@link BigDecimal} for precision; the
  * application layer converts to {@code Double} for the generated contract response.
  *
  * @param totalPlanCredits sum of credits for all plan courses
@@ -20,7 +20,7 @@ import java.util.Objects;
  * @param estimatedHistoricalAverage arithmetic mean of all graded (PASSED/FAILED) attempts; null
  *     when no graded attempts
  * @param averagesByPeriod list of per-period averages (only graded attempts counted)
- * @param disclaimer non-empty self-declared data disclaimer (CROSS-6)
+ * @param disclaimer non-empty self-declared data disclaimer
  */
 public record ProgressSummaryData(
     double totalPlanCredits,

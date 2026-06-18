@@ -35,18 +35,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <ul>
  *   <li>(a) Confirm succeeds — batch status becomes CONFIRMED in DB.
  *   <li>(b) An offering row is persisted in {@code offering.course_offering}.
- *   <li>(c) The persisted offering status is {@code DRAFT} (NFR-003 load-bearing).
+ *   <li>(c) The persisted offering status is {@code DRAFT} (domain invariant).
  *   <li>(d) The persisted session {@code day} is {@code "MONDAY"} — proves expandDay works.
  * </ul>
  *
- * <h3>WU4-IT1 — Multi-session grouping keystone proof (QAL-IMP-001 / DEBT-F6-002)</h3>
+ * <h3>Multi-session grouping keystone proof</h3>
  *
  * <p>THE load-bearing DB-count assertion: 3 CSV rows for the same offering on MON/WED/FRI MUST
  * yield exactly <b>1</b> {@code course_offering}, <b>1</b> {@code schedule_option}, and <b>3</b>
  * {@code schedule_session} rows — NOT 3 offerings. A mock-based test would prove nothing because it
  * mocks away the grouping boundary. Only the real service chain + real DB can verify the fix.
  *
- * <h3>WU4-IT2 — Atomicity with multi-session grouping (QAL-IMP-001-S2)</h3>
+ * <h3>Atomicity with multi-session grouping</h3>
  *
  * A batch where one row fails must roll back ALL offering writes (COUNT == 0).
  *
@@ -186,7 +186,7 @@ class ConfirmImportOfferingsIT extends AbstractPostgresIntegrationTest {
         .as("(b) Exactly one CourseOffering must be persisted for the imported row")
         .isEqualTo(1);
 
-    // ---- Assert (c): offering status is DRAFT (NFR-003 load-bearing) ----------
+    // ---- Assert (c): offering status is DRAFT (domain invariant) ----------
     // CourseOffering.create() hardcodes DRAFT. This assertion fails if that invariant breaks.
     String offeringStatus =
         jdbcTemplate.queryForObject(
@@ -196,7 +196,7 @@ class ConfirmImportOfferingsIT extends AbstractPostgresIntegrationTest {
             programId,
             periodId);
     assertThat(offeringStatus)
-        .as("(c) NFR-003: persisted offering status MUST be DRAFT — domain invariant")
+        .as("(c) Persisted offering status MUST be DRAFT — domain invariant")
         .isEqualTo("DRAFT");
 
     // ---- Assert (d): session day is MONDAY (proves expandDay translation) -----
@@ -220,12 +220,12 @@ class ConfirmImportOfferingsIT extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4-IT1 — Multi-session grouping keystone: 3 rows → 1 offering, 1 option, 3 sessions
-  //   (QAL-IMP-001 / DEBT-F6-002 — THE load-bearing DB-count proof)
+  // Multi-session grouping keystone: 3 rows → 1 offering, 1 option, 3 sessions
+  //   (THE load-bearing DB-count proof)
   // -------------------------------------------------------------------------
 
   /**
-   * THE keystone test for DEBT-F6-002 fix (QAL-IMP-001-S1).
+   * Keystone test for multi-session grouping fix.
    *
    * <p>Seeds an OFFERINGS batch with 3 rows for the same course/option_label on MON, WED, FRI.
    * Drives the REAL ConfirmImportService + REAL CreateOfferingService + REAL Testcontainers DB. No
@@ -341,7 +341,7 @@ class ConfirmImportOfferingsIT extends AbstractPostgresIntegrationTest {
     // ---- Assert: confirm succeeds ------------------------------------------
     assertThat(result.status()).as("confirm() must return CONFIRMED status").isEqualTo("CONFIRMED");
 
-    // ---- THE LOAD-BEARING DB-COUNT ASSERTIONS (QAL-IMP-001-S1) -------------
+    // ---- THE LOAD-BEARING DB-COUNT ASSERTIONS --------------------------------
     // Before fix: 3 course_offering rows, 3 schedule_option rows, 3 schedule_session rows.
     // After fix:  1 course_offering row,  1 schedule_option row,  3 schedule_session rows.
 
@@ -355,7 +355,7 @@ class ConfirmImportOfferingsIT extends AbstractPostgresIntegrationTest {
     assertThat(offeringCount)
         .as(
             "(DB-1) MUST be exactly 1 course_offering — 3 CSV rows for the same "
-                + "course/option_label must be GROUPED into one offering (DEBT-F6-002 fix). "
+                + "course/option_label must be GROUPED into one offering. "
                 + "If this is 3, the grouping is NOT implemented.")
         .isEqualTo(1);
 
@@ -408,8 +408,7 @@ class ConfirmImportOfferingsIT extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // WU4-IT2 — Atomicity with multi-session grouping: invalid offering rolls back ALL
-  //   (QAL-IMP-001-S2)
+  // Atomicity with multi-session grouping: invalid offering rolls back ALL
   // -------------------------------------------------------------------------
 
   /**
@@ -534,7 +533,7 @@ class ConfirmImportOfferingsIT extends AbstractPostgresIntegrationTest {
     org.assertj.core.api.Assertions.assertThatThrownBy(() -> confirmImportUseCase.confirm(command))
         .as(
             "Confirm must throw when a row references a missing course — "
-                + "all-or-nothing (ADR-F6-001, QAL-IMP-001-S2)")
+                + "all-or-nothing transaction contract")
         .isInstanceOf(Exception.class);
 
     // ---- THE ATOMICITY ASSERTION: ZERO offering rows in DB -----------------

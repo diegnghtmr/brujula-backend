@@ -23,7 +23,7 @@ public interface LoadCourseRequirementPort {
    * Bulk load all requirements whose target course ID is in the given set.
    *
    * <p>Used by the malla assembly service to load all requirement edges for a plan in a single
-   * query (avoids N+1 per course — ADR-F2-001 budget).
+   * query (avoids N+1 per course).
    *
    * @param courseIds the set of course UUIDs whose requirements should be loaded
    * @return all requirements targeting any of the given course IDs

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/** WU1-TDD RED: WeeklyHoursCalculator.calculate() sums session durations correctly. */
+/** WeeklyHoursCalculator.calculate() sums session durations correctly. */
 class WeeklyHoursCalculatorTest {
 
   @Test

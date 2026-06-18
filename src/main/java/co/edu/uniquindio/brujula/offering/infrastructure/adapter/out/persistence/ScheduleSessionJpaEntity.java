@@ -13,7 +13,7 @@ import java.util.UUID;
 /**
  * JPA entity mapping to {@code offering.schedule_session} (created by Flyway V016).
  *
- * <p>Package-private per ARQ-006b. No @Version — sessions are cascade-replaced with options.
+ * <p>Package-private. No @Version — sessions are cascade-replaced with options.
  */
 @Entity
 @Table(name = "schedule_session", schema = "offering")

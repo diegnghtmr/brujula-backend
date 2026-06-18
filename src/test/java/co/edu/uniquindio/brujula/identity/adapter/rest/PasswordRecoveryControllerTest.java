@@ -33,7 +33,7 @@ import org.springframework.web.context.WebApplicationContext;
  *   <li>Endpoint is permitAll: unauthenticated request succeeds
  * </ul>
  *
- * <p>Satisfies: S2-D, Design §1.3 permitAll for /auth/password-recovery/**, RNF-SEG-006.
+ * <p>Endpoint is permitAll (unauthenticated request must succeed).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class PasswordRecoveryControllerTest extends AbstractPostgresIntegrationTest {
@@ -56,7 +56,7 @@ class PasswordRecoveryControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // S2-D-1: Known email → 202 Accepted
+  // Known email → 202 Accepted
   // -------------------------------------------------------------------------
 
   @Test
@@ -71,7 +71,7 @@ class PasswordRecoveryControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // S2-D-2: Unknown email → SAME 202 Accepted (no user enumeration)
+  // Unknown email → SAME 202 Accepted (no user enumeration)
   // -------------------------------------------------------------------------
 
   @Test
@@ -87,7 +87,7 @@ class PasswordRecoveryControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // S2-D-3: permitAll — unauthenticated request reaches the endpoint
+  // permitAll — unauthenticated request reaches the endpoint
   // -------------------------------------------------------------------------
 
   @Test

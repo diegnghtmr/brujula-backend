@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Driven adapter: JPA-backed persistence for the offering module — both read-side and write-side.
  *
  * <p>Implements {@link LoadPeriodPort}, {@link LoadOfferingPort}, {@link LoadScheduleOptionPort},
- * {@link SavePeriodPort}, and {@link SaveOfferingPort}. Package-private per ARQ-006b.
+ * {@link SavePeriodPort}, and {@link SaveOfferingPort}. Package-private.
  *
  * <p>Transaction strategy: class-level {@code @Transactional} (read-write) so write methods inherit
  * a writable transaction; each read method explicitly overrides with

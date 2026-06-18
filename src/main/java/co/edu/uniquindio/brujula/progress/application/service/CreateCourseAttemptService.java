@@ -28,7 +28,7 @@ import java.util.Optional;
  * (delegated to {@link CourseAttempt} domain), idempotency via sharedkernel {@link
  * IdempotencyStorePort}, audit via {@link AuditRecorder}.
  *
- * <p>Framework-free — wired by {@code ProgressConfiguration}. Satisfies: PRG-1, CROSS-1, CROSS-4.
+ * <p>Framework-free — wired by {@code ProgressConfiguration}.
  */
 public class CreateCourseAttemptService implements CreateCourseAttemptUseCase {
 
@@ -76,7 +76,7 @@ public class CreateCourseAttemptService implements CreateCourseAttemptUseCase {
             .orElseThrow(() -> new SubscriptionNotFoundException(command.subscriptionId()));
 
     if (!subscription.getUserId().equals(command.actorId())) {
-      // BOLA: return 404 to avoid revealing resource existence (spec CROSS-2, PRG-1-FOREIGN-SUB)
+      // BOLA: return 404 to avoid revealing resource existence
       throw new SubscriptionNotFoundException(command.subscriptionId());
     }
 
@@ -105,7 +105,7 @@ public class CreateCourseAttemptService implements CreateCourseAttemptUseCase {
     idempotencyStorePort.save(
         command.idempotencyKey(), OPERATION, command.requestHash(), 201, responseBodyJson);
 
-    // 7. Audit (CROSS-4: COURSE_ATTEMPT_REGISTERED)
+    // 7. Audit (COURSE_ATTEMPT_REGISTERED)
     auditRecorder.record(
         new RecordAuditEventCommand(
             command.actorId(),
@@ -126,11 +126,11 @@ public class CreateCourseAttemptService implements CreateCourseAttemptUseCase {
         attempt.getId().value(),
         attempt.getSubscriptionId().value(),
         attempt.getCourseId(),
-        "N/A", // courseName resolved by query service (WU4)
+        "N/A", // courseName resolved by query service
         attempt.getPeriodId(),
-        null, // periodName resolved by query service (WU4)
+        null, // periodName resolved by query service
         attempt.getJourneyCode(),
-        attempt.getStatus().name(), // FIX-S1: plain String, no domain type in application DTO
+        attempt.getStatus().name(), // plain String, no domain type in application DTO
         gradeValue,
         attempt.getRegisteredAt(),
         attempt.getVersion());

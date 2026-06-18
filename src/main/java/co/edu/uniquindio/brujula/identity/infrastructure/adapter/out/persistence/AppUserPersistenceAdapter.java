@@ -15,8 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Uses {@link AppUserJpaRepository} (Spring Data JPA) and {@link AppUserMapper} for domain ↔
  * entity conversion. Optimistic locking is handled by the {@code @Version} annotation on {@link
  * AppUserJpaEntity}.
- *
- * <p>Satisfies: S1-B-6, S2-B-1, Design §2.1 adapter.out.persistence.
  */
 @Component
 class AppUserPersistenceAdapter implements LoadAppUserPort, SaveAppUserPort {

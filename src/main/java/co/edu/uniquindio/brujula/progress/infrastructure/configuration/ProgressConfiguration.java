@@ -40,23 +40,23 @@ import org.springframework.context.annotation.Configuration;
  *
  * <p>Framework-free application services are registered here for explicit constructor injection.
  * Persistence adapters are auto-detected via {@code @Component}. All port.out adapters are injected
- * as interfaces — never concrete adapter classes (ARQ-006).
+ * as interfaces — never concrete adapter classes.
  *
  * <p>Wires:
  *
  * <ul>
- *   <li>{@link CreateSubscriptionService} (SUB-1, CROSS-1)
+ *   <li>{@link CreateSubscriptionService}
  *   <li>{@link GetSubscriptionService} — implements both {@code GetSubscriptionQuery} and {@code
- *       ListMySubscriptionsQuery} (SUB-2)
- *   <li>{@link UpdateSubscriptionService} (SUB-3)
- *   <li>{@link DeleteSubscriptionService} (SUB-4)
- *   <li>{@link CreateCourseAttemptService} (PRG-1, CROSS-1) [WU3]
+ *       ListMySubscriptionsQuery}
+ *   <li>{@link UpdateSubscriptionService}
+ *   <li>{@link DeleteSubscriptionService}
+ *   <li>{@link CreateCourseAttemptService}
  *   <li>{@link GetCourseAttemptService} — implements both {@code GetCourseAttemptQuery} and {@code
- *       ListMyCourseAttemptsQuery} (PRG-2) [WU3]
- *   <li>{@link UpdateCourseAttemptService} (PRG-3) [WU3]
- *   <li>{@link DeleteCourseAttemptService} (PRG-4) [WU3]
- *   <li>{@link GetSubscriptionCurriculumService} (AVL-1) [WU4]
- *   <li>{@link GetSubscriptionProgressService} (AVL-2) [WU4]
+ *       ListMyCourseAttemptsQuery}
+ *   <li>{@link UpdateCourseAttemptService}
+ *   <li>{@link DeleteCourseAttemptService}
+ *   <li>{@link GetSubscriptionCurriculumService}
+ *   <li>{@link GetSubscriptionProgressService}
  * </ul>
  *
  * <p>{@code GetCurrentUserQuery} is injected by Spring's auto-wiring into {@link
@@ -118,7 +118,7 @@ class ProgressConfiguration {
   }
 
   // -------------------------------------------------------------------------
-  // WU3: CourseAttempt beans
+  // CourseAttempt beans
   // -------------------------------------------------------------------------
 
   @Bean
@@ -173,11 +173,7 @@ class ProgressConfiguration {
   }
 
   // -------------------------------------------------------------------------
-  // WU4: Curriculum and progress summary beans
-  // -------------------------------------------------------------------------
-
-  // -------------------------------------------------------------------------
-  // WU2: Cross-module read API
+  // Curriculum, progress summary, and cross-module read API beans
   // -------------------------------------------------------------------------
 
   @Bean

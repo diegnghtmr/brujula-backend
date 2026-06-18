@@ -4,31 +4,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Pure domain orchestrator: runs all validation rules (WU4a + WU4b) against a candidate selection.
+ * Pure domain orchestrator: runs all validation rules against a candidate selection.
  *
  * <p>Evaluation order (all blocking rules run so the response lists every blocker):
  *
  * <ol>
- *   <li>{@link DuplicateSelectionRule} — SIMULATION_DUPLICATE_SELECTION (WU4b)
- *   <li>{@link ArchivedOfferingRule} — SIMULATION_ARCHIVED_OFFERING (WU4b)
- *   <li>{@link AlreadyPassedRule} — SIMULATION_COURSE_ALREADY_PASSED (WU4a)
- *   <li>{@link ScheduleClashDetector} — SIMULATION_SCHEDULE_CLASH (WU4a)
- *   <li>{@link CreditSummaryCalculator} — SIMULATION_CREDIT_LIMIT_EXCEEDED (WU4a)
- *   <li>{@link PrerequisiteEvaluator} — SIMULATION_PREREQUISITE_NOT_MET (WU4a)
- *   <li>{@link SequentialTrackEvaluator}— SIMULATION_SEQUENTIAL_ORDER (WU4b)
- *   <li>{@link MinCreditsRule} — SIMULATION_MIN_CREDITS_NOT_MET (WU4b)
+ *   <li>{@link DuplicateSelectionRule} — SIMULATION_DUPLICATE_SELECTION
+ *   <li>{@link ArchivedOfferingRule} — SIMULATION_ARCHIVED_OFFERING
+ *   <li>{@link AlreadyPassedRule} — SIMULATION_COURSE_ALREADY_PASSED
+ *   <li>{@link ScheduleClashDetector} — SIMULATION_SCHEDULE_CLASH
+ *   <li>{@link CreditSummaryCalculator} — SIMULATION_CREDIT_LIMIT_EXCEEDED
+ *   <li>{@link PrerequisiteEvaluator} — SIMULATION_PREREQUISITE_NOT_MET
+ *   <li>{@link SequentialTrackEvaluator}— SIMULATION_SEQUENTIAL_ORDER
+ *   <li>{@link MinCreditsRule} — SIMULATION_MIN_CREDITS_NOT_MET
  * </ol>
  *
  * <p>Non-blocking warnings collected after blocking rules:
  *
  * <ol>
- *   <li>{@link PrerequisiteEvaluator#collectSoftWarnings} — SIMULATION_SOFT_PREREQ_WARNING (WU4b)
+ *   <li>{@link PrerequisiteEvaluator#collectSoftWarnings} — SIMULATION_SOFT_PREREQ_WARNING
  * </ol>
  *
  * <p>All blocking rules are evaluated — they do NOT short-circuit on first failure. The caller
  * receives the complete list so the user sees every problem at once.
  *
- * <p>Pure Java — no Spring, no ports (ARQ-002, ADR-F4-004). External data injected as records.
+ * <p>Pure Java — no Spring, no ports. External data injected as records.
  */
 public class SimulationValidationService {
 
@@ -67,43 +67,43 @@ public class SimulationValidationService {
 
     // --- BLOCKING RULES ---
 
-    // Rule 1 (WU4b): Duplicate course in simulation?
+    // Rule 1: Duplicate course in simulation?
     duplicateSelectionRule.evaluate(candidate, existingSelections).ifPresent(blocking::add);
 
-    // Rule 2 (WU4b): Offering is archived?
+    // Rule 2: Offering is archived?
     archivedOfferingRule.evaluate(candidate).ifPresent(blocking::add);
 
-    // Rule 3 (WU4a): Course already passed by student?
+    // Rule 3: Course already passed by student?
     alreadyPassedRule.evaluate(candidate, passed).ifPresent(blocking::add);
 
-    // Rule 4 (WU4a): Schedule clash with existing sessions?
+    // Rule 4: Schedule clash with existing sessions?
     scheduleClashDetector.detect(candidate, existingSelections).ifPresent(blocking::add);
 
-    // Rule 5 (WU4a): Credit limit exceeded?
+    // Rule 5: Credit limit exceeded?
     if (creditLimit != null) {
       creditSummaryCalculator
           .evaluate(candidate, existingSelections, creditLimit)
           .ifPresent(blocking::add);
     }
 
-    // Rule 6 (WU4a): Official / HIGH-confidence prerequisite not met?
+    // Rule 6: Official / HIGH-confidence prerequisite not met?
     prerequisiteEvaluator.evaluate(candidate, requirements, passed).ifPresent(blocking::add);
 
-    // Rule 7 (WU4b): Sequential track ordering not met?
+    // Rule 7: Sequential track ordering not met?
     if (sequentialPredecessor != null) {
       sequentialTrackEvaluator
           .evaluate(candidate, sequentialPredecessor, passed)
           .ifPresent(blocking::add);
     }
 
-    // Rule 8 (WU4b): Per-course minimum credits prerequisite not met?
+    // Rule 8: Per-course minimum credits prerequisite not met?
     minCreditsRule
         .evaluate(candidate, requirements, accumulatedPassedCredits)
         .ifPresent(blocking::add);
 
     // --- WARNING COLLECTION ---
 
-    // Soft-prereq warnings (WU4b): inferred MEDIUM/LOW unmet prerequisites
+    // Soft-prereq warnings: inferred MEDIUM/LOW unmet prerequisites
     warnings.addAll(prerequisiteEvaluator.collectSoftWarnings(candidate, requirements, passed));
 
     return new SimulationValidationResult(blocking, warnings);
@@ -111,10 +111,10 @@ public class SimulationValidationService {
 
   /**
    * Backward-compatible overload for callers that do not yet supply sequential-track or min-credits
-   * data (used by WU4a tests and services that have not been updated yet).
+   * data.
    *
-   * @deprecated Use the full 7-parameter overload. This overload is kept for backward compatibility
-   *     during WU4b transition and will be removed when all call sites are updated.
+   * @deprecated Use the full 7-parameter overload. This overload will be removed when all call
+   *     sites are updated.
    */
   @Deprecated(forRemoval = true)
   public SimulationValidationResult validate(

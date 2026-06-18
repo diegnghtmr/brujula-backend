@@ -26,7 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU3 application unit tests for {@link UpdateSimulationService}.
+ * Application unit tests for {@link UpdateSimulationService}.
  *
  * <p>Covers: happy path rename, non-owner → 403, not-found → 404. OptimisticLockingFailureException
  * is tested at the JPA level in IT.
@@ -76,9 +76,9 @@ class UpdateSimulationServiceTest {
 
   @Test
   void rename_returns_persisted_incremented_version() {
-    // Guards the Fase-3 repeat-bug: the returned view must carry the SAVED entity's
-    // post-flush version (N+1), not the input command's stale version (N). The save port
-    // simulates the JPA @Version increment by returning a reconstituted simulation at version 1.
+    // Guards the repeat-bug: the returned view must carry the SAVED entity's post-flush version
+    // (N+1), not the input command's stale version (N). The save port simulates the JPA @Version
+    // increment by returning a reconstituted simulation at version 1.
     UUID simulationId = UUID.randomUUID();
     Simulation atVersionZero =
         Simulation.create(

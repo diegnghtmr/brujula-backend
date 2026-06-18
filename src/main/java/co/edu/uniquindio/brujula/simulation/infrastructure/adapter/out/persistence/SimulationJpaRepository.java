@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-/** Spring Data JPA repository for {@link SimulationJpaEntity}. Package-private (ARQ-006b). */
+/** Spring Data JPA repository for {@link SimulationJpaEntity}. Package-private. */
 interface SimulationJpaRepository extends JpaRepository<SimulationJpaEntity, UUID> {
 
   Page<SimulationJpaEntity> findByOwnerIdAndStatus(UUID ownerId, String status, Pageable pageable);

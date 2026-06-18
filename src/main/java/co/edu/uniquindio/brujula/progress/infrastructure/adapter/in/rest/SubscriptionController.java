@@ -32,20 +32,17 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST adapter: student subscription endpoints ({@code /me/subscriptions/**}).
  *
- * <p>Implements the generated {@link SubscriptionsApi} contract-first interface (ARQ-001).
- * Package-private per ARQ-006b. STUDENT-only; STAFF/ADMIN access is rejected via
- * {@code @PreAuthorize("hasRole('STUDENT')")} (CROSS-2).
+ * <p>Implements the generated {@link SubscriptionsApi} contract-first interface. Package-private.
+ * STUDENT-only; STAFF/ADMIN access is rejected via {@code @PreAuthorize("hasRole('STUDENT')")}.
  *
  * <p>BOLA defence: caller identity always resolved from the session principal, never from a request
- * parameter (TRD §10).
+ * parameter.
  *
  * <p>Name resolution (programName, planName, journeyName): resolved from the programcatalog
  * published ports inside {@link
- * co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService} (WU3-FIX, mirrors
- * FIX-W2). A null-safety fallback of {@code "N/A"} is kept in {@link #toDto} for defensive
- * resilience on write paths (create/update) until those services also resolve names.
- *
- * <p>Satisfies: SUB-1..4, CROSS-2, CROSS-3, CROSS-4. ARQ-001.
+ * co.edu.uniquindio.brujula.progress.application.service.GetSubscriptionService}. A null-safety
+ * fallback of {@code "N/A"} is kept in {@link #toDto} for defensive resilience on write paths
+ * (create/update) until those services also resolve names.
  */
 @RestController
 class SubscriptionController implements SubscriptionsApi {
@@ -185,13 +182,13 @@ class SubscriptionController implements SubscriptionsApi {
   }
 
   // -------------------------------------------------------------------------
-  // DTO mapper: SubscriptionView → generated Subscription model (ARQ-005)
+  // DTO mapper: SubscriptionView → generated Subscription model
   // -------------------------------------------------------------------------
 
   private Subscription toDto(SubscriptionView view) {
-    // WU3-FIX: programName/planName/journeyName are now resolved by GetSubscriptionService
-    // from the programcatalog published ports (mirrors FIX-W2). Null-safety fallback kept
-    // for defensive resilience (e.g. create/update paths where resolution is not yet applied).
+    // programName/planName/journeyName are resolved by GetSubscriptionService from the
+    // programcatalog published ports. Null-safety fallback kept for defensive resilience
+    // (e.g. create/update paths where resolution is not yet applied).
     String programName = view.programName() != null ? view.programName() : "N/A";
     String planName = view.planName() != null ? view.planName() : "N/A";
     String journeyName = view.referenceJourneyName() != null ? view.referenceJourneyName() : "N/A";
@@ -221,10 +218,10 @@ class SubscriptionController implements SubscriptionsApi {
   /**
    * SHA-256 hex digest of the deterministic request body fields.
    *
-   * <p>FIX-W5: replaces the previous {@code Objects.hash()} (32-bit int, high collision risk) with
-   * SHA-256 (256-bit), matching the approach in {@code AdministrationController.hashRequest()}. The
-   * input is a stable concatenation of programId + planId + referenceJourneyCode so that two
-   * distinct bodies always produce distinct hash values.
+   * <p>Replaces the previous {@code Objects.hash()} (32-bit int, high collision risk) with SHA-256
+   * (256-bit), matching the approach in {@code AdministrationController.hashRequest()}. The input
+   * is a stable concatenation of programId + planId + referenceJourneyCode so that two distinct
+   * bodies always produce distinct hash values.
    */
   private String computeHash(SubscriptionCreateRequest req) {
     try {

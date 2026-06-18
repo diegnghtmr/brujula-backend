@@ -41,23 +41,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * DEBT-F7-006 — Candidate-selection credits batch regression test for {@link
- * ReviewSimulationService}.
+ * Candidate-selection credits batch regression test for {@link ReviewSimulationService}.
  *
- * <p>TDD RED: Asserts that {@code coursesCredits(Set<UUID>)} is called <strong>exactly
- * once</strong> for ALL credits (both passed-course accumulation AND per-candidate credit lookup),
- * and that {@code courseCredits(UUID)} is <strong>never</strong> called during the selection loop.
+ * <p>Asserts that {@code coursesCredits(Set<UUID>)} is called <strong>exactly once</strong> for ALL
+ * credits (both passed-course accumulation AND per-candidate credit lookup), and that {@code
+ * courseCredits(UUID)} is <strong>never</strong> called during the selection loop.
  *
  * <p>Before the fix, the service calls {@code
- * curriculumReadPort.courseCredits(resolved.courseId())} once per active selection (line ~163) —
- * O(S) extra round-trips on top of the batch already performed by DEBT-F7-001. The fix folds all
- * candidate course IDs into the single {@code coursesCredits(Set)} call executed before the loop.
+ * curriculumReadPort.courseCredits(resolved.courseId())} once per active selection — O(S) extra
+ * round-trips. The fix folds all candidate course IDs into the single {@code coursesCredits(Set)}
+ * call executed before the loop.
  *
  * <p>Two test dimensions:
  *
  * <ul>
  *   <li>Query-count: N passed courses + M active selections → {@code coursesCredits(Set)} called
- *       exactly once, {@code courseCredits(UUID)} called zero times.
+ *       exactly once; {@code courseCredits(UUID)} called zero times.
  *   <li>Value correctness: each candidate selection receives the credit value from the map (not a
  *       hard-coded fallback). Candidate with 5 credits passes a credit-limit check that would fail
  *       with 0 or wrong credits; candidate with 3 credits passes correctly under its own limit.
@@ -108,11 +107,11 @@ class ReviewSimulationServiceCandidateBatchCreditsTest {
   }
 
   /**
-   * DEBT-F7-006-R1: N passed courses + M active selections → {@code coursesCredits(Set)} called
-   * exactly once; {@code courseCredits(UUID)} called zero times.
+   * N passed courses + M active selections → {@code coursesCredits(Set)} called exactly once;
+   * {@code courseCredits(UUID)} called zero times.
    *
-   * <p>This test will FAIL (RED) until the per-selection {@code courseCredits(resolved.courseId())}
-   * call at line ~163 is folded into the combined batch set.
+   * <p>This test will FAIL until the per-selection {@code courseCredits(resolved.courseId())} call
+   * is folded into the combined batch set.
    */
   @Test
   void reviewSimulation_withMultipleSelections_callsBatchMethodOnceAndNeverPerSelection() {
@@ -208,8 +207,7 @@ class ReviewSimulationServiceCandidateBatchCreditsTest {
   }
 
   /**
-   * DEBT-F7-006-R2: Candidate credit values come from the combined batch map, not from
-   * per-selection fallback.
+   * Candidate credit values come from the combined batch map, not from per-selection fallback.
    *
    * <p>Seeds two candidate selections with distinct credit values (4 and 6). The stub returns the
    * correct per-course value from the map. The credit-limit validation uses those values: a limit
@@ -371,7 +369,7 @@ class ReviewSimulationServiceCandidateBatchCreditsTest {
    *
    * <ul>
    *   <li>Counts {@code coursesCredits(Set<UUID>)} invocations.
-   *   <li>Counts {@code courseCredits(UUID)} invocations (must be 0 after DEBT-F7-006 fix).
+   *   <li>Counts {@code courseCredits(UUID)} invocations (must be 0 after batch fix).
    *   <li>Returns per-course credits from {@code perCourseCredits} map; defaults to 3.
    * </ul>
    */

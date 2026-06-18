@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Input port: get a single subscription by ID (ownership-guarded).
  *
- * <p>Returns 404 if not found or belongs to a different student (OWASP BOLA). ARQ-003.
+ * <p>Returns 404 if not found or belongs to a different student (OWASP BOLA).
  */
 public interface GetSubscriptionQuery {
 

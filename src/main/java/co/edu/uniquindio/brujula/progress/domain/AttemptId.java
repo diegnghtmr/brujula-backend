@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Value object: identity of a {@link CourseAttempt} aggregate.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public record AttemptId(UUID value) {
 

@@ -7,10 +7,10 @@ import java.util.UUID;
 /**
  * Input port: list study plans for a given academic program.
  *
- * <p>Backs {@code GET /programs/{programId}/plans} (CAT-002). When {@code callerRole} is {@code
- * STUDENT}, only ACTIVE plans are returned. DRAFT and ARCHIVED require STAFF/ADMIN role.
+ * <p>Backs {@code GET /programs/{programId}/plans}. When {@code callerRole} is {@code STUDENT},
+ * only ACTIVE plans are returned. DRAFT and ARCHIVED require STAFF/ADMIN role.
  *
- * <p>No Spring/framework imports (ARQ-003).
+ * <p>No Spring/framework imports.
  */
 public interface ListProgramPlansQuery {
 

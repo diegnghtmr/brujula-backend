@@ -10,7 +10,7 @@ import java.util.UUID;
  * prerequisite is in a higher semester than the course requiring it, which is impossible.
  *
  * <p>Maps to HTTP 422 (Unprocessable Entity) at the REST adapter layer (CUR-004). No Spring/JPA
- * imports (ARQ-002).
+ * imports.
  */
 public class SemesterOrderingViolationException extends RuntimeException {
 

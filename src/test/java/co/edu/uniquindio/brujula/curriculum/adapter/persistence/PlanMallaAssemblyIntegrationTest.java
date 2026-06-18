@@ -21,12 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <ul>
  *   <li>Assembly over the seeded Sistemas DIURNA plan returns ≥ 1 semester bucket
- *   <li>Performance: assembly completes in &lt;500ms (ADR-F2-001)
+ *   <li>Performance: assembly completes in &lt;500ms
  *   <li>All buckets contain only ACTIVE courses
  *   <li>Buckets are ordered ascending by semester
  * </ul>
  *
- * <p>Uses the Flyway-seeded Sistemas ISC data (V012). Satisfies ADR-F2-001 performance budget.
+ * <p>Uses the Flyway-seeded Sistemas ISC data (V012).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class PlanMallaAssemblyIntegrationTest extends AbstractPostgresIntegrationTest {
@@ -72,7 +72,7 @@ class PlanMallaAssemblyIntegrationTest extends AbstractPostgresIntegrationTest {
 
     PlanMallaView result = assemblePlanMallaQuery.assemblePlanMalla(planId, "NOCTURNA");
 
-    // Sistemas NOCTURNA has 11 recommended semesters (V012 seed, ADR-F2-003)
+    // Sistemas NOCTURNA has 11 recommended semesters (V012 seed)
     assertThat(result.semesterBuckets()).hasSize(11);
   }
 

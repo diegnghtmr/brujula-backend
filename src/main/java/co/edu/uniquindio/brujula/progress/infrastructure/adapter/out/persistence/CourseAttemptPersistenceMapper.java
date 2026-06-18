@@ -9,7 +9,7 @@ import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
 /**
  * Mapper: {@link CourseAttemptJpaEntity} ↔ {@link CourseAttempt} domain aggregate.
  *
- * <p>Package-private per ARQ-006b. Pure translation — no business logic.
+ * <p>Package-private. Pure translation — no business logic.
  */
 class CourseAttemptPersistenceMapper {
 

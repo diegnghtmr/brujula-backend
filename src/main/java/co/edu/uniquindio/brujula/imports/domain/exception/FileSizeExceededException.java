@@ -3,7 +3,7 @@ package co.edu.uniquindio.brujula.imports.domain.exception;
 /**
  * Thrown when an uploaded file exceeds the configured maximum size limit.
  *
- * <p>Maps to HTTP 413 Content Too Large at the controller layer (WU4).
+ * <p>Maps to HTTP 413 Content Too Large at the controller layer.
  */
 public class FileSizeExceededException extends RuntimeException {
 

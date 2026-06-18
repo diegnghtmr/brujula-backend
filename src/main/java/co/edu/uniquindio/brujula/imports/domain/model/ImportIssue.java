@@ -9,7 +9,7 @@ import java.util.Objects;
  * tied to a specific column. {@link Severity#ERROR} issues are blocking (the row is excluded from
  * {@code validRows}); {@link Severity#WARNING} issues are non-blocking.
  *
- * <p>Pure domain record — zero framework annotations (ARQ-002).
+ * <p>Pure domain record — zero framework annotations.
  */
 public record ImportIssue(int row, String column, String code, String message, Severity severity) {
 

@@ -37,7 +37,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  *   <li>Both paths return void (no exception) — identical behavior proves no enumeration
  * </ul>
  *
- * <p>Satisfies: S2-C, Spec §Email verification resend, RNF-SEG-006 no user enumeration.
+ * <p>No user enumeration enforced: both known and unknown emails return void normally.
  */
 @ExtendWith(MockitoExtension.class)
 class ResendEmailVerificationServiceTest {

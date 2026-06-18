@@ -20,11 +20,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/**
- * WU2-T13 RED+GREEN: delete subscription use case tests.
- *
- * <p>Covers: SUB-4-HAPPY, SUB-4-LAST, BOLA.
- */
+/** Delete subscription use case tests. */
 class DeleteSubscriptionServiceTest {
 
   private LoadSubscriptionPort loadSubscriptionPort;

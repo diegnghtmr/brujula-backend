@@ -11,7 +11,7 @@ import java.util.UUID;
  * <p>Corresponds to {@code curriculum.sequential_track_level} rows plus their child option rows in
  * {@code curriculum.sequential_track_level_option}.
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  *
  * @param id the level row UUID (PK in sequential_track_level)
  * @param level the sequence number (≥ 1)

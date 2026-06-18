@@ -6,7 +6,7 @@ import co.edu.uniquindio.brujula.progress.application.dto.SubscriptionView;
 /**
  * Input port: create a new subscription.
  *
- * <p>Idempotent via Idempotency-Key. Cap=2 enforced. ARQ-003: interface only.
+ * <p>Idempotent via Idempotency-Key. Cap=2 enforced. Interface only.
  */
 public interface CreateSubscriptionUseCase {
 

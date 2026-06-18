@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
  * <p>Sessions are serialized as JSONB: a JSON array of objects with keys {@code day}, {@code
  * startsAt}, {@code endsAt}.
  *
- * <p>Package-private per ARQ-006b.
+ * <p>Package-private.
  */
 @Component
 class SimulationSelectionPersistenceMapper {

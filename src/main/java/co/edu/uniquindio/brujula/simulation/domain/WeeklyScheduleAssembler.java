@@ -7,8 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Pure domain service: assembles the weekly schedule grid from all active selections (spec
- * DET-001).
+ * Pure domain service: assembles the weekly schedule grid from all active selections.
  *
  * <p>Produces one {@link WeeklyScheduleEntry} per {@link SimScheduleSession} per selection. Marks
  * {@code inClash=true} for any session that overlaps with at least one OTHER session in the full
@@ -18,7 +17,7 @@ import java.util.UUID;
  * algorithm as {@link ScheduleClashDetector} but applied across all session pairs in the entire
  * set.
  *
- * <p>Pure Java — no Spring/JPA (ARQ-002, ADR-F4-004).
+ * <p>Pure Java — no Spring/JPA.
  */
 public class WeeklyScheduleAssembler {
 

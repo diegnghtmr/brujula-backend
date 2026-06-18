@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * curriculum.sequential_track_level_option}, and {@code curriculum.degree_work_modality} exist with
  * correct columns, FKs, and indexes after migration. Fails until the migration file exists.
  *
- * <p>Satisfies: CUR-001 through CUR-007, Design §5 V011.
+ * <p>Verifies curriculum schema: columns, FKs, indexes, and CHECK constraints.
  */
 @SpringBootTest
 class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest {
@@ -528,14 +528,14 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
   }
 
   // -------------------------------------------------------------------------
-  // FIX-2 (W-002): type-coherence CHECK — COURSE_PASSED/SEQUENCE needs required_course_id
+  // Type-coherence CHECK — COURSE_PASSED/SEQUENCE needs required_course_id
   // -------------------------------------------------------------------------
 
   /**
-   * RED test (FIX-2 / W-002): asserts that inserting a row with {@code type='COURSE_PASSED'} and
-   * {@code required_course_id=NULL} is rejected by the DB-level CHECK constraint.
+   * Asserts that inserting a row with {@code type='COURSE_PASSED'} and {@code
+   * required_course_id=NULL} is rejected by the DB-level CHECK constraint.
    *
-   * <p>A COURSE_PASSED requirement without a required course is semantically invalid (CUR-003).
+   * <p>A COURSE_PASSED requirement without a required course is semantically invalid.
    */
   @Test
   void
@@ -639,12 +639,12 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
   }
 
   // -------------------------------------------------------------------------
-  // FIX-3 (S-001): UNIQUE(program_id, official_code) constraint existence + violation
+  // UNIQUE(program_id, official_code) constraint existence + violation
   // -------------------------------------------------------------------------
 
   /**
    * Asserts that the {@code course_official_code_uq} unique constraint exists on {@code
-   * curriculum.course} (ADR-F2-005).
+   * curriculum.course}.
    */
   @Test
   void curriculum_course_official_code_is_unique_per_program_constraint_exists() {
@@ -663,7 +663,7 @@ class FlywayV011CurriculumStructureTest extends AbstractPostgresIntegrationTest 
     assertThat(count)
         .as(
             "curriculum.course must have unique constraint course_official_code_uq on"
-                + " (program_id, official_code) per ADR-F2-005 (FIX-3 / S-001)")
+                + " (program_id, official_code)")
         .isEqualTo(1);
   }
 

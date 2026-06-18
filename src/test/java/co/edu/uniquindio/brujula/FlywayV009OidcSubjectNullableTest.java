@@ -19,7 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <p>The UNIQUE constraint on oidc_subject is preserved (two users cannot share the same subject
  * once assigned; null subjects do not violate the UNIQUE constraint in PostgreSQL).
  *
- * <p>Satisfies: S2-B-1 (oidc_subject nullable for self-registered students), Design §3 V009.
+ * <p>oidc_subject is nullable for self-registered students (no OIDC subject until first login).
  */
 @SpringBootTest
 class FlywayV009OidcSubjectNullableTest extends AbstractPostgresIntegrationTest {
@@ -46,10 +46,9 @@ class FlywayV009OidcSubjectNullableTest extends AbstractPostgresIntegrationTest 
   }
 
   /**
-   * W-003/S-002: PostgreSQL allows multiple NULLs in a UNIQUE column (NULLS are not compared for
-   * uniqueness by default). This is fundamental to the C-002 fix — self-registered students all
-   * have oidc_subject=NULL until their first OIDC login. Inserting two rows with NULL must not
-   * violate the unique constraint.
+   * PostgreSQL allows multiple NULLs in a UNIQUE column (NULLs are not compared for uniqueness by
+   * default). Self-registered students all have oidc_subject=NULL until their first OIDC login.
+   * Inserting two rows with NULL must not violate the unique constraint.
    *
    * <p>If the constraint were changed to UNIQUE NULLS NOT DISTINCT (Postgres 15+), this test would
    * catch the regression.

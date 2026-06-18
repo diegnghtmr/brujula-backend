@@ -9,9 +9,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * JPA entity mapping to {@code offering.academic_period} (created by Flyway V016).
+ * JPA entity mapping to {@code offering.academic_period}.
  *
- * <p>Package-private per ARQ-006b. Optimistic locking via {@code @Version}.
+ * <p>Package-private. Optimistic locking via {@code @Version}.
  */
 @Entity
 @Table(name = "academic_period", schema = "offering")

@@ -1,13 +1,13 @@
 package co.edu.uniquindio.brujula.identity.application.port.in;
 
 /**
- * Input port: resend the email verification message to a given email address (S2-C).
+ * Input port: resend the email verification message to a given email address.
  *
  * <p>Security: NO USER ENUMERATION. The operation completes silently regardless of whether the
  * email is registered or not. The caller always receives a 202 Accepted response — the existence
  * (or absence) of an account is never revealed.
  *
- * <p>Framework-free (ARQ-002, ARQ-003).
+ * <p>Framework-free.
  */
 public interface ResendEmailVerificationUseCase {
 

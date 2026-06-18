@@ -21,13 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * REST adapter integration tests for CatalogController (Phase 3, WU4).
+ * REST adapter integration tests for CatalogController.
  *
  * <p>Tests: GET /programs → 200, GET /programs/{id} → 200/404, GET /programs/{id}/plans → 200, GET
  * /plans/{planId} → 200/404, GET /journeys → 200.
  *
- * <p>Uses Testcontainers PostgreSQL + Flyway + spring-security-test (oidcLogin). Satisfies:
- * CAT-001/CAT-002/CAT-003 REST adapters.
+ * <p>Uses Testcontainers PostgreSQL + Flyway + spring-security-test (oidcLogin).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class CatalogControllerTest extends AbstractPostgresIntegrationTest {

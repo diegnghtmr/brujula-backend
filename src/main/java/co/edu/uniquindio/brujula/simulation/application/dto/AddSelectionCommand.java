@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Command: add a schedule option selection to a simulation (VAL-001).
  *
- * <p>ARQ-001: only UUID/String/boolean primitives — no domain entities.
+ * <p>Only UUID/String/boolean primitives — no domain entities.
  *
  * @param idempotencyKey UUID from Idempotency-Key header (X-001)
  * @param simulationId target simulation UUID

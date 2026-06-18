@@ -30,7 +30,7 @@ import org.springframework.dao.OptimisticLockingFailureException;
  * TDD RED → GREEN: unit tests for {@link UpdateCourseService}.
  *
  * <p>Covers: successful update returns new view, audit recorded; not found throws; stale-version
- * propagates OptimisticLockingFailureException. WU5 – T5.1 (CUR-002, SC-009-C).
+ * propagates OptimisticLockingFailureException.
  */
 class UpdateCourseServiceTest {
 

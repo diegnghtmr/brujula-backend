@@ -14,9 +14,9 @@ import java.util.UUID;
  * Use case: soft-delete a subscription.
  *
  * <p>Rejects deletion if it would leave the student with zero active subscriptions. Course attempts
- * are retained as historical data (ADR-F3-003, PRD RN-005).
+ * are retained as historical data.
  *
- * <p>Satisfies: SUB-4, CROSS-3, CROSS-4. Framework-free.
+ * <p>Framework-free.
  */
 public class DeleteSubscriptionService implements DeleteSubscriptionUseCase {
 
@@ -51,11 +51,11 @@ public class DeleteSubscriptionService implements DeleteSubscriptionUseCase {
       throw new LastActiveSubscriptionException(userId);
     }
 
-    // Soft-delete (ADR-F3-003): attempts are NOT deleted
+    // Soft-delete: attempts are NOT deleted
     subscription.softDelete();
     saveSubscriptionPort.save(subscription); // return value not needed for delete
 
-    // Audit (CROSS-4: SUBSCRIPTION_REMOVED)
+    // Audit (SUBSCRIPTION_REMOVED)
     auditRecorder.record(
         new RecordAuditEventCommand(
             userId,

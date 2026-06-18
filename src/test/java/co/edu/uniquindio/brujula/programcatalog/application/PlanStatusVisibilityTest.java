@@ -17,8 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU2-1.5 RED: Verifies ListProgramPlansService excludes DRAFT and ARCHIVED plans when
- * callerRole=STUDENT but includes all statuses for STAFF and ADMIN (CAT-002).
+ * Verifies ListProgramPlansService excludes DRAFT and ARCHIVED plans when callerRole=STUDENT but
+ * includes all statuses for STAFF and ADMIN.
  */
 class PlanStatusVisibilityTest {
 

@@ -17,8 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU1-4.5 RED: Verifies ListCourseRequirementsService returns all requirement fields including
- * confidence and inferred in CourseRequirementView.
+ * Verifies ListCourseRequirementsService returns all requirement fields including confidence and
+ * inferred in CourseRequirementView.
  */
 class ListCourseRequirementsServiceTest {
 

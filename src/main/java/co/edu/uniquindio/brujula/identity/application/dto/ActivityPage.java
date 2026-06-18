@@ -5,8 +5,8 @@ import java.util.List;
 /**
  * Paged result of activity events.
  *
- * <p>Lives in {@code application.dto} (not {@code application.port.in}) to satisfy ARQ-003, which
- * requires all classes in {@code port.in} to be interfaces.
+ * <p>Lives in {@code application.dto} (not {@code application.port.in}) because port.in must
+ * contain interfaces only.
  *
  * @param items the events in the current page
  * @param page zero-based page number

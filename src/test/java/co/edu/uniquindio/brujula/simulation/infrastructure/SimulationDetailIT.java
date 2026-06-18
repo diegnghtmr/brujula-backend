@@ -37,7 +37,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * FIX F1: End-to-end integration tests for SimulationDetail (SIM-003, DET-001..003, STALE-001/002).
+ * End-to-end integration tests for SimulationDetail (staleness detection, credit summary, review).
  *
  * <p>Proves against a REAL PostgreSQL (Testcontainers + Flyway V016/V022/V018) what unit stubs
  * cannot: staleness detection, real creditSummary values, review 200/409 round-trips.
@@ -160,7 +160,7 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // FIX F1-1: REAL creditSummary — 2 selections for the same program
+  // REAL creditSummary — 2 selections for the same program
   // Assert selectedCredits == real sum (NOT 0), programName != UUID, creditLimit == 23
   // ---------------------------------------------------------------------------
 
@@ -217,7 +217,7 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // FIX F1-2: OUTDATED staleness via REAL version bump
+  // OUTDATED staleness via REAL version bump
   // Seed selection with version=0; bump offering.version via JDBC; assert OUTDATED
   // ---------------------------------------------------------------------------
 
@@ -245,9 +245,7 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
         List.of(new SimScheduleSession("MONDAY", LocalTime.of(8, 0), LocalTime.of(10, 0))));
 
     // Bump the offering version directly in DB — simulates what a future offering-edit endpoint
-    // would do
-    // (the staleness detection mechanism must fire even though the edit endpoint is deferred
-    // ADR-F4-003)
+    // would do (staleness detection must fire even though the edit endpoint is deferred)
     jdbcTemplate.update(
         "UPDATE offering.course_offering SET version = version + 1 WHERE id = ?",
         PROG_III_OFFERING_ID);
@@ -340,7 +338,7 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // FIX F1-3: review 200 CURRENT — clean simulation → POST review → 200, snapshot refreshed
+  // Review 200 CURRENT — clean simulation → POST review → 200, snapshot refreshed
   // The student must have the hard prereq passed so no blocking validation notice fires.
   // ---------------------------------------------------------------------------
 
@@ -389,7 +387,7 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CURRENT"));
 
-    // Verify the snapshot was persisted with the refreshed current version (STALE-002)
+    // Verify the snapshot was persisted with the refreshed current version
     Long persistedVersion =
         jdbcTemplate.queryForObject(
             "SELECT selected_offering_version FROM simulation.simulation_selection WHERE id = ?",
@@ -401,7 +399,7 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // FIX F1-4: review 409 — selection on ARCHIVED offering → persistent blocker → 409 problem+json
+  // Review 409 — selection on ARCHIVED offering → persistent blocker → 409 problem+json
   // ---------------------------------------------------------------------------
 
   @Test

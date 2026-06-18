@@ -12,8 +12,7 @@ import java.util.List;
  * Use case implementation: list academic programs with optional status filter and pagination.
  *
  * <p>Status filter is case-sensitive against {@link ProgramStatus#name()}. Pagination is applied
- * in-memory over the filtered set. No Spring annotations — wired via infrastructure configuration
- * (ARQ-002).
+ * in-memory over the filtered set. No Spring annotations — wired via infrastructure configuration.
  */
 public class ListProgramsService implements ListProgramsQuery {
 

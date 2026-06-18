@@ -48,18 +48,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * REST adapter: student simulation endpoints ({@code /me/simulations/**}).
  *
- * <p>Implements the generated {@link SimulationsApi} contract-first interface (ARQ-001).
- * Package-private per ARQ-006b. STUDENT-only.
- *
- * <p>WU3 SCOPE: create, list, get (skeleton), update, delete, duplicate are implemented. WU4a
- * SCOPE: addSelection, removeSelection, listSelections are implemented. The following endpoint
- * returns HTTP 501 until WU5:
- *
- * <ul>
- *   <li>{@code POST .../review} (reviewSimulation) — WU5
- * </ul>
- *
- * <p>Satisfies: SIM-001..006, VAL-001, VAL-010, VAL-011, X-001..004, INV-001..002..004.
+ * <p>Implements the generated {@link SimulationsApi} contract-first interface. Package-private.
+ * STUDENT-only.
  */
 @RestController
 class SimulationController implements SimulationsApi {
@@ -105,7 +95,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST /me/simulations — create (SIM-001, X-001)
+  // POST /me/simulations — create
   // -------------------------------------------------------------------------
 
   @Override
@@ -137,7 +127,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // GET /me/simulations — list (SIM-002)
+  // GET /me/simulations — list
   // -------------------------------------------------------------------------
 
   @Override
@@ -161,7 +151,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // GET /me/simulations/{simulationId} — get full detail (SIM-003, DET-001..003, STALE-001, X-003)
+  // GET /me/simulations/{simulationId} — get full detail
   // -------------------------------------------------------------------------
 
   @Override
@@ -174,7 +164,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // PATCH /me/simulations/{simulationId} — update (SIM-004, X-002, X-003)
+  // PATCH /me/simulations/{simulationId} — update
   // -------------------------------------------------------------------------
 
   @Override
@@ -195,7 +185,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // DELETE /me/simulations/{simulationId} — soft delete (SIM-005, X-003)
+  // DELETE /me/simulations/{simulationId} — soft delete
   // -------------------------------------------------------------------------
 
   @Override
@@ -207,7 +197,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST /me/simulations/{simulationId}/duplications — duplicate (SIM-006, X-001)
+  // POST /me/simulations/{simulationId}/duplications — duplicate
   // -------------------------------------------------------------------------
 
   @Override
@@ -231,7 +221,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST .../selections — addSelection (VAL-001, WU4a)
+  // POST .../selections — addSelection
   // -------------------------------------------------------------------------
 
   @Override
@@ -266,7 +256,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // DELETE .../selections/{selectionId} — removeSelection (VAL-010, WU4a)
+  // DELETE .../selections/{selectionId} — removeSelection
   // -------------------------------------------------------------------------
 
   @Override
@@ -279,7 +269,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // GET .../selections — listSimulationSelections (VAL-011, WU4a)
+  // GET .../selections — listSimulationSelections
   // -------------------------------------------------------------------------
 
   @Override
@@ -293,7 +283,7 @@ class SimulationController implements SimulationsApi {
   }
 
   // -------------------------------------------------------------------------
-  // POST .../review — reviewSimulation (STALE-002, WU5)
+  // POST .../review — reviewSimulation
   // -------------------------------------------------------------------------
 
   @Override

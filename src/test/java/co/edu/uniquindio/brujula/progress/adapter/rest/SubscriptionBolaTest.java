@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * QAL-SEC-002 — BOLA HTTP-layer ownership tests for subscription resources.
+ * BOLA HTTP-layer ownership tests for subscription resources.
  *
  * <p>Uses {@code @SpringBootTest} + Testcontainers PostgreSQL (via {@link
  * AbstractPostgresIntegrationTest}) + {@code spring-security-test} {@code oidcLogin()} with TWO
@@ -35,9 +35,8 @@ import org.springframework.web.context.WebApplicationContext;
  * contract: ownership violation is surfaced as SubscriptionNotFoundException → 404, to avoid
  * revealing resource existence to unauthorised callers).
  *
- * <p>The test asserts the CURRENT domain behavior and must NOT change it to 403. Per DEC-3
- * (design): simulation uses 403 (X-003 spec), subscriptions use 404 (enumeration-safety deliberate
- * design — CROSS-2).
+ * <p>The test asserts the CURRENT domain behavior and must NOT change it to 403. Per design:
+ * simulation uses 403, subscriptions use 404 (enumeration-safety deliberate design).
  *
  * <p>ANTI-FAKE-GREEN: NO {@code @MockitoBean} on GetSubscriptionQuery. The real service + real
  * persistence exercises the ownership guard end-to-end through the HTTP adapter.
@@ -45,10 +44,8 @@ import org.springframework.web.context.WebApplicationContext;
  * <p>Scenarios covered:
  *
  * <ul>
- *   <li>T-WU2.4 — cross-owner GET → 404 (enumeration-safe); no subscription data from B leaked
+ *   <li>Cross-owner GET → 404 (enumeration-safe); no subscription data from B leaked.
  * </ul>
- *
- * <p>Satisfies: QAL-SEC-002, QAL-SEC-002-S1.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SubscriptionBolaTest extends AbstractPostgresIntegrationTest {
@@ -118,18 +115,18 @@ class SubscriptionBolaTest extends AbstractPostgresIntegrationTest {
   }
 
   // -------------------------------------------------------------------------
-  // T-WU2.4 — QAL-SEC-002-S1: cross-owner GET → 404 (enumeration-safe)
+  // Cross-owner GET → 404 (enumeration-safe)
   // -------------------------------------------------------------------------
 
   /**
-   * T-WU2.4: principal-A sends GET on principal-B's subscription.
+   * Principal-A sends GET on principal-B's subscription.
    *
    * <p>Real GetSubscriptionService checks userId equality. When the IDs differ it throws {@link
    * co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException}, which {@code
    * ProgressExceptionHandler} maps to HTTP 404.
    *
    * <p>This is the deliberate BOLA-safe response: 404 does not confirm resource existence,
-   * preventing enumeration attacks (see DEC-3 / QAL-SEC-002).
+   * preventing enumeration attacks.
    *
    * <p>No subscription data from principal-B must appear in the response: the 404 body contains
    * only an error description, never subscription fields (id, programId, planId, etc.).

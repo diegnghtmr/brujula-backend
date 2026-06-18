@@ -10,8 +10,6 @@ import java.util.UUID;
  * administration-scoped port to a domain-type-free contract: each caller owns its own
  * (de)serialization of {@code responseBodyJson}.
  *
- * <p>Design: ADR-F3-001. Satisfies: CROSS-7, CROSS-8.
- *
  * <p>Dependency rule: this port imports only {@code java.*} — no module domain types (sharedkernel
  * {@code allowedDependencies = {}}).
  */

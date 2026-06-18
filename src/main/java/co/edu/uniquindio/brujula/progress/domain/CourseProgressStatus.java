@@ -1,7 +1,7 @@
 package co.edu.uniquindio.brujula.progress.domain;
 
 /**
- * Computed/visual status of a course in the curriculum view (ADR-F3-002).
+ * Computed/visual status of a course in the curriculum view.
  *
  * <p>This is DISTINCT from {@link AttemptStatus} — it is a derived presentation status:
  *

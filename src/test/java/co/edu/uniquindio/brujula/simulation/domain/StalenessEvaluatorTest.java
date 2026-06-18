@@ -6,7 +6,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link StalenessEvaluator} (spec STALE-001, INV-004).
+ * Unit tests for {@link StalenessEvaluator}.
  *
  * <p>Pure Java — no Spring context needed.
  */

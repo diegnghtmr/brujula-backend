@@ -82,7 +82,7 @@ class UploadImportServiceTest {
             MAX_FILE_SIZE);
   }
 
-  /** T3.3 SC-001-A: happy path — STAFF assigned to program → returns VALIDATED summary. */
+  /** T3.3: happy path — STAFF assigned to program → returns VALIDATED summary. */
   @Test
   void happy_path_staff_assigned_returns_validated_summary() {
     UUID staffId = UUID.randomUUID();
@@ -149,7 +149,7 @@ class UploadImportServiceTest {
     verify(idempotencyStorePort).save(any(), anyString(), anyString(), eq(201), anyString());
   }
 
-  /** T3.3 SC-001-B: unsupported file format → UnsupportedFileTypeException (→ 415). */
+  /** T3.3: unsupported file format → UnsupportedFileTypeException (→ 415). */
   @Test
   void wrong_mime_raises_415_exception() {
     UploadImportCommand cmd =
@@ -174,7 +174,7 @@ class UploadImportServiceTest {
     verify(auditRecorder, never()).record(any());
   }
 
-  /** T3.3 SC-001-C: file exceeds size limit → FileSizeExceededException (→ 413). */
+  /** T3.3: file exceeds size limit → FileSizeExceededException (→ 413). */
   @Test
   void file_exceeds_size_limit_raises_413_exception() {
     byte[] largeFile = new byte[(int) MAX_FILE_SIZE + 1];
@@ -194,8 +194,8 @@ class UploadImportServiceTest {
   }
 
   /**
-   * T3.3 SC-001-D / INV-06: STAFF not assigned to program → ImportAccessDeniedException (→ 403). No
-   * batch persisted, no audit.
+   * T3.3: STAFF not assigned to program → ImportAccessDeniedException (→ 403). No batch persisted,
+   * no audit.
    */
   @Test
   void staff_not_assigned_raises_403_exception_before_batch_persisted() {
@@ -218,7 +218,7 @@ class UploadImportServiceTest {
 
     assertThatThrownBy(() -> service.upload(cmd)).isInstanceOf(ImportAccessDeniedException.class);
 
-    // SC-011-C: no audit on 403 rejection
+    // No audit on 403 rejection
     verify(auditRecorder, never()).record(any());
     verify(saveImportBatchPort, never()).save(any());
   }
@@ -265,7 +265,7 @@ class UploadImportServiceTest {
     verify(auditRecorder, never()).record(any());
   }
 
-  /** T3.3 SC-001-E: idempotent retry — same key, same hash → returns stored summary. */
+  /** T3.3: idempotent retry — same key, same hash → returns stored summary. */
   @Test
   void idempotent_retry_same_key_same_hash_returns_stored_summary() {
     UUID idempotencyKey = UUID.randomUUID();
@@ -315,8 +315,7 @@ class UploadImportServiceTest {
   }
 
   /**
-   * T3.3 SC-001-F: idempotent retry — same key, different hash → IdempotencyKeyConflictException (→
-   * 409).
+   * T3.3: idempotent retry — same key, different hash → IdempotencyKeyConflictException (→ 409).
    */
   @Test
   void idempotent_retry_same_key_different_hash_raises_409() {
@@ -346,7 +345,7 @@ class UploadImportServiceTest {
         .isInstanceOf(IdempotencyKeyConflictException.class);
   }
 
-  /** T3.3 SC-001-G: missing planId for COURSES kind → MissingImportParameterException (→ 400). */
+  /** T3.3: missing planId for COURSES kind → MissingImportParameterException (→ 400). */
   @Test
   void missing_plan_id_for_courses_raises_400() {
     UploadImportCommand cmd =
@@ -364,9 +363,7 @@ class UploadImportServiceTest {
         .hasMessageContaining("planId");
   }
 
-  /**
-   * T3.3 SC-001-H: missing periodId for OFFERINGS kind → MissingImportParameterException (→ 400).
-   */
+  /** T3.3: missing periodId for OFFERINGS kind → MissingImportParameterException (→ 400). */
   @Test
   void missing_period_id_for_offerings_raises_400() {
     UploadImportCommand cmd =
@@ -384,7 +381,7 @@ class UploadImportServiceTest {
         .hasMessageContaining("periodId");
   }
 
-  /** T3.3 SC-001-J: ADMIN bypasses assignment check. */
+  /** T3.3: ADMIN bypasses assignment check. */
   @Test
   void admin_bypasses_assignment_check() {
     UUID programId = UUID.randomUUID();
@@ -424,7 +421,7 @@ class UploadImportServiceTest {
     verify(saveImportBatchPort).save(any());
   }
 
-  /** T3.3 SC-011-A: audit recorded on successful upload. */
+  /** T3.3: audit recorded on successful upload. */
   @Test
   void audit_recorded_on_successful_upload() {
     UUID programId = UUID.randomUUID();
@@ -468,7 +465,7 @@ class UploadImportServiceTest {
     assertThat(captor.getValue().action()).isEqualTo("IMPORT_UPLOADED");
   }
 
-  /** T3.3 SC-011-C: no audit on 403 rejection (staff not assigned). */
+  /** T3.3: no audit on 403 rejection (staff not assigned). */
   @Test
   void no_audit_on_403_rejection() {
     UUID staffId = UUID.randomUUID();

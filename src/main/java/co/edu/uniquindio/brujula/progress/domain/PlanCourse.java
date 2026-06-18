@@ -7,8 +7,7 @@ import java.util.UUID;
  * Immutable view of a course within a plan, as consumed by domain services.
  *
  * <p>Input to {@link CourseAvailabilityService} and {@link ProgressSummaryCalculator}. Produced by
- * the application layer from the curriculum published port (ADR-F3-005). No Spring/JPA imports
- * (ARQ-002).
+ * the application layer from the curriculum published port. No Spring/JPA imports.
  *
  * @param courseId the course UUID
  * @param name the course name

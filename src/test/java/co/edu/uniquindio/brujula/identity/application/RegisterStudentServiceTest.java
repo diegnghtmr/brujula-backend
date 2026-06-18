@@ -34,13 +34,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 /**
  * RED → GREEN use case tests for RegisterStudentService.
  *
- * <p>Uses Mockito mocks — zero Spring context (ARQ-002).
+ * <p>Uses Mockito mocks — zero Spring context.
  *
  * <p>Scenarios: happy path, non-institutional email rejected BEFORE Keycloak, duplicate email
  * handling, Keycloak failure → no AppUser persisted, email verification triggered.
- *
- * <p>Satisfies: S2-B-3, Spec §Successful registration stores consent evidence, §Registration
- * rejected for non-institutional email (RN-007, RNF-SEG-006 dual enforcement).
  */
 @ExtendWith(MockitoExtension.class)
 class RegisterStudentServiceTest {
@@ -93,7 +90,7 @@ class RegisterStudentServiceTest {
 
     assertThat(result).isNotNull();
     assertThat(result.email()).isEqualTo("student@uniquindio.edu.co");
-    // RegisterStudentResult.onboardingState is now a String (ARQ-001 compliance)
+    // RegisterStudentResult.onboardingState is now a String
     assertThat(result.onboardingState()).isEqualTo("PENDING_VERIFICATION");
 
     // Keycloak user created
@@ -123,7 +120,7 @@ class RegisterStudentServiceTest {
   }
 
   // -------------------------------------------------------------------------
-  // Non-institutional email rejected BEFORE Keycloak (RN-007 / RNF-SEG-006)
+  // Non-institutional email rejected BEFORE Keycloak
   // -------------------------------------------------------------------------
 
   @Test

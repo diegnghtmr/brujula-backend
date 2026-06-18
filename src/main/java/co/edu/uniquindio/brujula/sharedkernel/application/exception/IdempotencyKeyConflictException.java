@@ -9,10 +9,9 @@ import java.util.UUID;
  * and future modules). Previously duplicated in each module's local package; this canonical copy
  * lives in {@code sharedkernel} so no module-to-module dependency is needed.
  *
- * <p>FIX-S1: consolidates {@code
- * administration.application.service.IdempotencyKeyConflictException} and {@code
- * progress.application.service.ProgressIdempotencyKeyConflictException} into a single shared type.
- * Satisfies: Spec §Idempotent Create, TRD §13.
+ * <p>Consolidates {@code administration.application.service.IdempotencyKeyConflictException} and
+ * {@code progress.application.service.ProgressIdempotencyKeyConflictException} into a single shared
+ * type.
  *
  * <p>No Spring/JPA imports (sharedkernel has {@code allowedDependencies = {}}).
  */

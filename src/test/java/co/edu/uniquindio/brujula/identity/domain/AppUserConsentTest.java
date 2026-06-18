@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 /**
  * RED → GREEN domain unit tests for AppUser consent capture and OnboardingState transitions.
  *
- * <p>Pure JUnit 5 + AssertJ — zero Spring context (ARQ-002).
+ * <p>Pure JUnit 5 + AssertJ — zero Spring context.
  *
  * <p>Invariants tested:
  *
@@ -19,10 +19,8 @@ import org.junit.jupiter.api.Test;
  *   <li>captureConsent validates null inputs
  *   <li>activate() transitions PENDING_VERIFICATION → ACTIVE
  *   <li>activate() on an already-ACTIVE user is idempotent (no-op)
- *   <li>OnboardingState enum covers all spec states
+ *   <li>OnboardingState enum covers all states
  * </ul>
- *
- * <p>Satisfies: S2-B-2, Spec §Successful registration stores consent evidence, Design §2.1.
  */
 class AppUserConsentTest {
 

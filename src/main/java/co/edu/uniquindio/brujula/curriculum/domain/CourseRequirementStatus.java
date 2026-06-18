@@ -5,10 +5,10 @@ package co.edu.uniquindio.brujula.curriculum.domain;
  *
  * <ul>
  *   <li>{@link #ACTIVE} — the requirement is currently enforced.
- *   <li>{@link #ARCHIVED} — soft-deleted; no longer enforced (RN-005).
+ *   <li>{@link #ARCHIVED} — soft-deleted; no longer enforced.
  * </ul>
  *
- * <p>No Spring/JPA imports (ARQ-002).
+ * <p>No Spring/JPA imports.
  */
 public enum CourseRequirementStatus {
   ACTIVE,

@@ -34,14 +34,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
- * WU4-T07 RED: REST integration tests for curriculum and progress summary endpoints.
+ * REST integration tests for curriculum and progress summary endpoints.
  *
  * <p>Scenarios:
  *
  * <ul>
  *   <li>GET curriculum returns 200 with semester buckets and progressStatus.
  *   <li>BOLA returns 404.
- *   <li>CROSS-2 unauth 4xx / STAFF 403.
+ *   <li>Unauthenticated 4xx / STAFF 403.
  *   <li>GET progress returns 200 with summary fields including disclaimer.
  * </ul>
  */
@@ -84,7 +84,7 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -----------------------------------------------------------------------
-  // CROSS-2: unauthenticated → 4xx
+  // Unauthenticated → 4xx
   // -----------------------------------------------------------------------
 
   @Test
@@ -101,7 +101,7 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   // -----------------------------------------------------------------------
-  // CROSS-2: STAFF → 403
+  // STAFF → 403
   // -----------------------------------------------------------------------
 
   @Test
@@ -202,7 +202,7 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
     ProgressSummaryView summary =
         new ProgressSummaryView(
             SUBSCRIPTION_ID,
-            "Ingeniería de Sistemas y Computación", // FIX-W2: programName is now a real field
+            "Ingeniería de Sistemas y Computación", // programName is a real field
             120.0,
             30.0,
             90.0,

@@ -6,9 +6,9 @@ import java.util.Objects;
 /**
  * Immutable notice produced by a validation rule.
  *
- * <p>Pure domain record — no Spring/JPA (ARQ-002).
+ * <p>Pure domain record — no Spring/JPA.
  *
- * @param code machine-readable code (SIMULATION_* prefix per INV-003)
+ * @param code machine-readable code (SIMULATION_* prefix)
  * @param message human-readable description
  * @param metadata optional context map (nullable; may carry clash coordinates, course names, etc.)
  */

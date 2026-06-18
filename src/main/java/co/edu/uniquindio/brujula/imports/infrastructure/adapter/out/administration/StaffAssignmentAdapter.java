@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Anti-corruption adapter: bridges imports' {@link StaffAssignmentPort} to administration's
- * published {@code administration::spi} queries (ADR-F6-005, IMP-010).
+ * published {@code administration::spi} queries.
  *
  * <p>Mirrors the {@code CreditLimitAdapter} pattern in the simulation module.
  *
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
  * ConfirmImportService), NOT by this adapter. This adapter is role-agnostic and purely translates
  * the imports-local port contract to the administration SPI.
  *
- * <p>WARNING-1 closure: {@link #resolveActiveStaffId(String)} delegates to {@link
+ * <p>{@link #resolveActiveStaffId(String)} delegates to {@link
  * ResolveStaffByEmailQuery#resolveActiveStaffId(String)} which filters INACTIVE accounts at the
  * service layer. {@link co.edu.uniquindio.brujula.imports.application.service.UploadImportService}
  * MUST call this method (not {@link #resolveStaffId(String)}) for STAFF role checks.
@@ -47,8 +47,8 @@ class StaffAssignmentAdapter implements StaffAssignmentPort {
   }
 
   /**
-   * WARNING-1 closure: delegates to {@link ResolveStaffByEmailQuery#resolveActiveStaffId(String)}
-   * which returns empty for INACTIVE staff accounts.
+   * Delegates to {@link ResolveStaffByEmailQuery#resolveActiveStaffId(String)} which returns empty
+   * for INACTIVE staff accounts.
    */
   @Override
   public Optional<UUID> resolveActiveStaffId(String email) {

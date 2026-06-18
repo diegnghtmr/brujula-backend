@@ -13,14 +13,10 @@ import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
 /**
  * Use case: update a subscription's plan and/or journey.
  *
- * <p>Enforces: BOLA ownership guard, acknowledgeHistoryImpact gate (ADR-F3-007), optimistic locking
- * (handled by JPA @Version → OptimisticLockingFailureException → 409 in handler).
+ * <p>Enforces: BOLA ownership guard, acknowledgeHistoryImpact gate, optimistic locking (handled by
+ * JPA @Version → OptimisticLockingFailureException → 409 in handler).
  *
- * <p>WU3-SEAM: attempt reclassification (PlanChangeReclassifier) is wired in WU3 when
- * CourseAttemptPersistenceAdapter and the full attempt domain are available. For WU2, the
- * subscription side is updated; attempts are not remapped yet.
- *
- * <p>Satisfies: SUB-3, CROSS-3, CROSS-4. Framework-free.
+ * <p>Framework-free.
  */
 public class UpdateSubscriptionService implements UpdateSubscriptionUseCase {
 
@@ -64,18 +60,17 @@ public class UpdateSubscriptionService implements UpdateSubscriptionUseCase {
       subscription.changePlan(
           command.newPlanId(), newJourney, hasAttempts, command.acknowledgeHistoryImpact());
 
-      // WU3-SEAM: invoke PlanChangeReclassifier here once WU3 is merged.
-      // The reclassifier will load all attempts for this subscription, determine which courseIds
-      // exist in the new plan, and flag the rest as off-plan (computed, not stored in the DB).
+      // TODO: invoke PlanChangeReclassifier here — load all attempts for this subscription,
+      // determine which courseIds exist in the new plan, and flag the rest as off-plan.
 
     } else if (command.newReferenceJourneyCode() != null) {
       subscription.updateReferenceJourney(command.newReferenceJourneyCode());
     }
 
-    // Use the RETURNED domain object — it carries the DB-incremented version (FIX-W4).
+    // Use the RETURNED domain object — it carries the DB-incremented version.
     Subscription saved = saveSubscriptionPort.save(subscription);
 
-    // Audit (CROSS-4: SUBSCRIPTION_UPDATED)
+    // Audit: SUBSCRIPTION_UPDATED
     auditRecorder.record(
         new RecordAuditEventCommand(
             command.actorId(),
@@ -91,7 +86,7 @@ public class UpdateSubscriptionService implements UpdateSubscriptionUseCase {
   }
 
   private SubscriptionView toView(Subscription sub) {
-    // TODO(WU4): resolve program/plan/journey names like GetSubscriptionService
+    // TODO: resolve program/plan/journey names like GetSubscriptionService
     return new SubscriptionView(
         sub.getId().value(),
         sub.getProgramId(),

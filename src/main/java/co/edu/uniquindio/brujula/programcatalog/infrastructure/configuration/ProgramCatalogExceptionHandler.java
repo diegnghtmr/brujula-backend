@@ -13,20 +13,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * Maps programcatalog domain exceptions to HTTP problem responses (RFC 9457).
  *
  * <p>Lives in infrastructure.configuration (not adapter.in.rest) so that it may reference domain
- * exception types without violating ARQ-001, while still being picked up by Spring's
- * {@code @ControllerAdvice} scan. Infrastructure is permitted to depend on domain (ARQ-008).
+ * exception types while still being picked up by Spring's {@code @ControllerAdvice} scan.
+ * Infrastructure is permitted to depend on domain.
  *
  * <p>Handled exceptions:
  *
  * <ul>
- *   <li>{@link ProgramNotFoundException} → 404 Not Found (CAT-001)
- *   <li>{@link StudyPlanNotFoundException} → 404 Not Found (CAT-002)
+ *   <li>{@link ProgramNotFoundException} → 404 Not Found
+ *   <li>{@link StudyPlanNotFoundException} → 404 Not Found
  * </ul>
  *
- * <p>QAL-ADV-001 (WU1): scoped to the programcatalog REST adapter package so that domain exceptions
- * are always resolved by this handler and cannot be intercepted by foreign module advices.
- * Controllers are package-private; {@code basePackages} string is used instead of {@code
- * assignableTypes}. Template from {@code ImportsExceptionHandler}.
+ * <p>Scoped to the programcatalog REST adapter package so that domain exceptions are always
+ * resolved by this handler and cannot be intercepted by foreign module advices. Controllers are
+ * package-private; {@code basePackages} string is used instead of {@code assignableTypes}. Template
+ * from {@code ImportsExceptionHandler}.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(

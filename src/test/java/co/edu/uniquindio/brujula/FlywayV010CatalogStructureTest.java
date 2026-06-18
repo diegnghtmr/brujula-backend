@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * correct columns, constraints, and FK relationships after migration. Fails until the migration
  * file exists.
  *
- * <p>Satisfies: CAT-001, CAT-002, CAT-003, Design §5 V010.
+ * <p>Verifies catalog schema: columns, constraints, and FK relationships.
  */
 @SpringBootTest
 class FlywayV010CatalogStructureTest extends AbstractPostgresIntegrationTest {

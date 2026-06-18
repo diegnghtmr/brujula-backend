@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
  *
  * <p>Implements the {@link ValidatePlanStatusPort} anti-corruption façade so that the {@code
  * progress.application} layer does NOT directly import programcatalog types (Spring Modulith
- * named-interface boundary enforcement — FIX-W3). The programcatalog import is legal here because
- * this class is in {@code progress.infrastructure}, which may depend on programcatalog.
+ * named-interface boundary). The programcatalog import is legal here because this class is in
+ * {@code progress.infrastructure}, which may depend on programcatalog.
  *
- * <p>Package-private per ARQ-006b. Wired by {@link
+ * <p>Package-private. Wired by {@link
  * co.edu.uniquindio.brujula.progress.infrastructure.configuration.ProgressConfiguration}.
  */
 @Component

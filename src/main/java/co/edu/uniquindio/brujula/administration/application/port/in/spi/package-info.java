@@ -16,8 +16,8 @@
  *       — resolve a staff UUID from an institutional email address (actor→StaffAccount seam)
  * </ul>
  *
- * <p>These interfaces use only UUID/primitive/Optional signatures (ARQ-001: no domain types
- * crossing published boundaries).
+ * <p>These interfaces use only UUID/primitive/Optional signatures — no domain types cross published
+ * boundaries.
  *
  * <p>Mirrors {@code audit::spi} pattern. Consumer modules must declare {@code
  * "administration::spi"} in their {@code @ApplicationModule(allowedDependencies)}.

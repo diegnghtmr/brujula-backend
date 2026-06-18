@@ -3,11 +3,11 @@ package co.edu.uniquindio.brujula.simulation.domain;
 import java.util.UUID;
 
 /**
- * Domain value object: one session entry in the weekly schedule grid (spec DET-001).
+ * Domain value object: one session entry in the weekly schedule grid.
  *
  * <p>Produced by {@link WeeklyScheduleAssembler} from the set of active selections. Pure Java, no
- * Spring/JPA (ARQ-002). Not the same as the generated API model — the REST mapper converts these to
- * the generated {@code WeeklyScheduleEntry}.
+ * Spring/JPA. Not the same as the generated API model — the REST mapper converts these to the
+ * generated {@code WeeklyScheduleEntry}.
  *
  * @param day weekday string (e.g. "MONDAY", "WEDNESDAY")
  * @param startsAt session start time HH:mm

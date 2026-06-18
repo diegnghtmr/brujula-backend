@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test;
  * IllegalOfferingTransitionException}; PRELIMINARY/FINAL with zero options throws {@link
  * OfferingNotPublishableException}; ARCHIVED with zero options is OK; publishTo returns new
  * instance (immutability check). Zero Spring — pure domain.
- *
- * <p>Satisfies: OFFW-005, WU3 Phase 1.
  */
 class CourseOfferingPublishTest {
 

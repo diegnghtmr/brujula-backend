@@ -9,6 +9,6 @@ import co.edu.uniquindio.brujula.administration.application.dto.StaffAccountView
  * co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort.StoredRecord};
  * callers (e.g. {@link
  * co.edu.uniquindio.brujula.administration.application.service.CreateStaffService}) own the
- * (de)serialization of the view. ADR-F3-001.
+ * (de)serialization of the view.
  */
 public record IdempotencyReplay(String requestHash, StaffAccountView storedView) {}

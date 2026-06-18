@@ -18,8 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * WU2-2.3 RED: Verifies GetProgramService returns the program when found, and throws
- * ProgramNotFoundException (mapped to 404) when not found.
+ * Verifies GetProgramService returns the program when found, and throws ProgramNotFoundException
+ * (mapped to 404) when not found.
  */
 class GetProgramServiceTest {
 

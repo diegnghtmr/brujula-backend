@@ -10,10 +10,10 @@ import java.util.UUID;
 /**
  * JPA entity mapping to the {@code catalog.academic_program} table (created by Flyway V010).
  *
- * <p>Package-private per ARQ-006. Schema-qualified table annotation follows the Fase-1 identity
- * pattern (verified working with Boot 4.0.3 / Hibernate 6.x).
+ * <p>Package-private. Schema-qualified table annotation (verified working with Boot 4.0.3 /
+ * Hibernate 6.x).
  *
- * <p>Optimistic locking via {@code @Version} on the {@code version} column (DB-006/DT-014).
+ * <p>Optimistic locking via {@code @Version} on the {@code version} column.
  */
 @Entity
 @Table(name = "academic_program", schema = "catalog")

@@ -10,10 +10,10 @@ import java.util.UUID;
  *
  * <p>Implements {@link IsStaffAssignedToProgramQuery} published via {@code administration::spi}.
  *
- * <p>Framework-free: no Spring or JPA dependencies (ARQ-002). Wired via {@code @Bean} in {@link
+ * <p>Framework-free: no Spring or JPA dependencies. Wired via {@code @Bean} in {@link
  * co.edu.uniquindio.brujula.administration.infrastructure.configuration.AdministrationConfiguration}.
  *
- * <p>Only active assignments ({@code active = true}) are considered (IMP-010, SC-010-A..C).
+ * <p>Only active assignments ({@code active = true}) are considered.
  */
 public class IsStaffAssignedToProgramService implements IsStaffAssignedToProgramQuery {
 

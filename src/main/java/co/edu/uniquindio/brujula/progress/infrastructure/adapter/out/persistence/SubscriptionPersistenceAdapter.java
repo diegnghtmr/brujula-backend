@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Driven adapter: JPA-backed persistence for subscriptions.
  *
- * <p>Implements {@link LoadSubscriptionPort} and {@link SaveSubscriptionPort}. Package-private per
- * ARQ-006b. Optimistic locking is handled by JPA {@code @Version}; Spring translates {@code
+ * <p>Implements {@link LoadSubscriptionPort} and {@link SaveSubscriptionPort}. Package-private.
+ * Optimistic locking is handled by JPA {@code @Version}; Spring translates {@code
  * OptimisticLockException} into {@code OptimisticLockingFailureException} which the REST exception
  * handler maps to 409.
  */
@@ -65,7 +65,7 @@ class SubscriptionPersistenceAdapter implements LoadSubscriptionPort, SaveSubscr
   @Override
   @Transactional(readOnly = false)
   public List<Subscription> lockActiveByUserIdForUpdate(UUID userId) {
-    // FIX-W1: acquires SELECT FOR UPDATE on all ACTIVE rows for userId.
+    // Acquires SELECT FOR UPDATE on all ACTIVE rows for userId.
     // The write lock is only effective when held inside an active read-write transaction.
     // The CALLER (CreateSubscriptionService) is responsible for opening that transaction;
     // this adapter method joins it (REQUIRED propagation) but does not create it alone.
@@ -79,7 +79,7 @@ class SubscriptionPersistenceAdapter implements LoadSubscriptionPort, SaveSubscr
     StudentProgramSubscriptionJpaEntity entity = mapper.toJpaEntity(subscription);
     // Use the RETURNED managed entity — JPA increments @Version at flush time.
     // The passed-in entity's version field is stale after an UPDATE; only the returned
-    // managed entity carries the post-increment value (FIX-W4).
+    // managed entity carries the post-increment value.
     StudentProgramSubscriptionJpaEntity managed = jpaRepository.save(entity);
     jpaRepository.flush();
     return mapper.toDomain(managed);

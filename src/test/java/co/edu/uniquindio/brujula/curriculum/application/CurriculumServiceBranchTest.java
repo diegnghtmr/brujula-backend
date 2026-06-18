@@ -47,7 +47,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * DEBT-F7-003: covers uncovered branches in curriculum/application/service classes.
+ * Branch coverage for curriculum/application/service classes.
  *
  * <p>GetCourseService.getCourses: null input and empty input. ListSequentialTracksService: null and
  * blank kindFilter. UpdateCourseService: null recommendedSemesters uses empty list.

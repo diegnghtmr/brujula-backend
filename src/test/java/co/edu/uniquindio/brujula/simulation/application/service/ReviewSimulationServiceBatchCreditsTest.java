@@ -40,15 +40,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * DEBT-F7-001 — Batch-credits regression test for {@link ReviewSimulationService}.
+ * Batch-credits regression test for {@link ReviewSimulationService}.
  *
- * <p>TDD RED: Asserts that {@code coursesCredits(Set<UUID>)} is called <strong>exactly
- * once</strong> for the accumulated-passed-credits computation in the per-selection loop, rather
- * than once per passed course per selection (O(N×S) where S = number of active selections).
+ * <p>Asserts that {@code coursesCredits(Set<UUID>)} is called <strong>exactly once</strong> for the
+ * accumulated-passed-credits computation in the per-selection loop, rather than once per passed
+ * course per selection (O(N×S) where S = number of active selections).
  *
  * <p>Also asserts credit-sum correctness: 30 passed courses × 3 credits = 90 accumulated credits.
- * The threshold-based assertion confirms the MIN_CREDITS gate fires correctly — mirroring the
- * pattern in {@link GetSimulationServiceQueryCountTest} for WU3b.
+ * The threshold-based assertion confirms the MIN_CREDITS gate fires correctly.
  */
 class ReviewSimulationServiceBatchCreditsTest {
 
@@ -94,14 +93,11 @@ class ReviewSimulationServiceBatchCreditsTest {
   }
 
   /**
-   * DEBT-F7-001-R1: 30 passed courses → batch credits method called exactly once.
+   * 30 passed courses → batch credits method called exactly once.
    *
-   * <p>The current O(N) loop (step 5: "Accumulated passed credits") calls {@code
-   * courseCredits(UUID)} once per passed course per active selection. This test verifies that after
-   * the refactor, {@code coursesCredits(Set<UUID>)} is called ONCE (hoisted before the selection
-   * loop), not {@code N_courses × N_selections} times.
-   *
-   * <p>This test will FAIL (RED) until {@code ReviewSimulationService} is refactored.
+   * <p>The current O(N) loop calls {@code courseCredits(UUID)} once per passed course per active
+   * selection. After refactor, {@code coursesCredits(Set<UUID>)} must be called ONCE (hoisted
+   * before the selection loop), not {@code N_courses × N_selections} times.
    */
   @Test
   void reviewSimulation_withThirtyPassedCourses_callsBatchMethodExactlyOnce() {
@@ -184,7 +180,7 @@ class ReviewSimulationServiceBatchCreditsTest {
   }
 
   /**
-   * DEBT-F7-001-R2: Credit-value correctness — 30 × 3 = 90 accumulated credits.
+   * Credit-value correctness — 30 × 3 = 90 accumulated credits.
    *
    * <p>Seeds 30 passed courses × 3 credits each. Asserts that:
    *

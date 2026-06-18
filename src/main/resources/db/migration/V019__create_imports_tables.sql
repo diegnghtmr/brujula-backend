@@ -1,9 +1,9 @@
 -- V019__create_imports_tables.sql
 -- Forward-only migration. NEVER edit this file after it is committed.
 -- Creates imports module tables. Schema 'imports' was created in V001__create_schemas.sql.
--- Design: ADR-F6-002 (JSONB via @JdbcTypeCode), ADR-F6-006 (no cross-schema FK, UUID refs).
--- INV-01: CONFIRMED batch cannot be re-confirmed (enforced at domain layer).
--- INV-02: INVALID batch cannot be confirmed (enforced at domain layer).
+-- JSONB payloads use @JdbcTypeCode. No cross-schema FK; cross-schema refs are opaque UUIDs.
+-- CONFIRMED batch cannot be re-confirmed (enforced at domain layer).
+-- INVALID batch cannot be confirmed (enforced at domain layer).
 
 -- ---------------------------------------------------------------------------
 -- imports.import_batch
@@ -23,16 +23,16 @@ CREATE TABLE imports.import_batch (
                                     CHECK (status IN ('VALIDATED', 'INVALID', 'CONFIRMED')),
     total_rows          INT         NOT NULL,
     valid_rows          INT         NOT NULL,
-    -- JSONB payload: serialized List<ImportRow> for confirm replay (ADR-F6-002)
+    -- JSONB payload: serialized List<ImportRow> for confirm replay
     validated_rows_json JSONB       NOT NULL DEFAULT '[]',
     -- JSONB payload: serialized List<ImportIssue>
     issues_json         JSONB       NOT NULL DEFAULT '[]',
-    -- Schema version guard: must match ImportBatch.CURRENT_SCHEMA_VERSION at confirm time (NFR-006)
+    -- Schema version guard: must match ImportBatch.CURRENT_SCHEMA_VERSION at confirm time
     schema_version      INT         NOT NULL DEFAULT 1,
-    -- Idempotency support (populated by UploadImportService / WU3)
+    -- Idempotency support (populated by UploadImportService)
     idempotency_key     UUID,
     idempotency_hash    VARCHAR(64),
-    -- Optimistic locking (@Version — must match entity version field) (ADR-010)
+    -- Optimistic locking (@Version — must match entity version field)
     version             BIGINT      NOT NULL DEFAULT 0,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 

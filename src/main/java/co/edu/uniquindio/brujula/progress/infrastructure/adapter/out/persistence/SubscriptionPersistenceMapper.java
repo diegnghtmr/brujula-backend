@@ -7,7 +7,7 @@ import co.edu.uniquindio.brujula.progress.domain.SubscriptionStatus;
 /**
  * Mapper: {@link StudentProgramSubscriptionJpaEntity} ↔ {@link Subscription} domain aggregate.
  *
- * <p>Package-private per ARQ-006b. Pure translation — no business logic.
+ * <p>Package-private. Pure translation — no business logic.
  */
 class SubscriptionPersistenceMapper {
 

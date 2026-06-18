@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * WU3 application unit tests for {@link DeleteSimulationService}.
+ * Application unit tests for {@link DeleteSimulationService}.
  *
  * <p>Covers: happy path soft-delete, non-owner → 403, not-found → 404.
  */

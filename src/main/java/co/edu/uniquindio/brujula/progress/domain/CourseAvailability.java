@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * Computed availability result for a single course in the curriculum view.
  *
- * <p>Output of {@link CourseAvailabilityService}. No Spring/JPA imports (ARQ-002).
+ * <p>Output of {@link CourseAvailabilityService}. No Spring/JPA imports.
  *
  * @param status the computed {@link CourseProgressStatus} for the course
  * @param unmetRequirements list of unmet prerequisites (blocking or advisory). Non-null; empty when
