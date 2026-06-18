@@ -17,6 +17,7 @@ import co.edu.uniquindio.brujula.identity.domain.Role;
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationPort;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationScopeEntry;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,7 +109,7 @@ class SimulationBolaTest extends AbstractPostgresIntegrationTest {
             principalBUserId,
             "Simulation Owned By B",
             periodId,
-            List.of(programId));
+            List.of(new SimulationScopeEntry(programId, "DIURNA")));
     Simulation saved = saveSimulationPort.save(simOwnedByB);
     ownedSimulationId = saved.getId().value();
   }

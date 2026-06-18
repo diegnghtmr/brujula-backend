@@ -137,6 +137,7 @@ class RemoveSimulationSelectionServiceTest {
         "Test Sim",
         periodId,
         List.of(programId),
+        List.of(),
         SimulationLifecycle.ACTIVE,
         Instant.now(),
         Instant.now(),

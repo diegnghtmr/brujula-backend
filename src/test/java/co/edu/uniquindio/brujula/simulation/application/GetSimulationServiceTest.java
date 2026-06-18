@@ -88,6 +88,7 @@ class GetSimulationServiceTest {
         "Test Sim",
         PERIOD_ID,
         programIds,
+        List.of(),
         SimulationLifecycle.ACTIVE,
         Instant.now(),
         Instant.now(),

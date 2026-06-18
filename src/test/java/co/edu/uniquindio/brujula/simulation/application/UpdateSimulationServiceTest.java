@@ -17,6 +17,7 @@ import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedExcepti
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationLifecycle;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationNotFoundException;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationScopeEntry;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +56,11 @@ class UpdateSimulationServiceTest {
     UUID simulationId = UUID.randomUUID();
     Simulation sim =
         Simulation.create(
-            SimulationId.of(simulationId), ownerId, "Old Name", periodId, List.of(programId));
+            SimulationId.of(simulationId),
+            ownerId,
+            "Old Name",
+            periodId,
+            List.of(new SimulationScopeEntry(programId, "DIURNA")));
 
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(sim));
     when(saveSimulationPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -77,7 +82,11 @@ class UpdateSimulationServiceTest {
     UUID simulationId = UUID.randomUUID();
     Simulation atVersionZero =
         Simulation.create(
-            SimulationId.of(simulationId), ownerId, "Old Name", periodId, List.of(programId));
+            SimulationId.of(simulationId),
+            ownerId,
+            "Old Name",
+            periodId,
+            List.of(new SimulationScopeEntry(programId, "DIURNA")));
     Instant now = Instant.now();
     Simulation flushedAtVersionOne =
         Simulation.reconstitute(
@@ -86,6 +95,7 @@ class UpdateSimulationServiceTest {
             "New Name",
             periodId,
             List.of(programId),
+            List.of(),
             SimulationLifecycle.ACTIVE,
             now,
             now,
@@ -107,7 +117,11 @@ class UpdateSimulationServiceTest {
     UUID simulationId = UUID.randomUUID();
     Simulation sim =
         Simulation.create(
-            SimulationId.of(simulationId), ownerId, "Name", periodId, List.of(programId));
+            SimulationId.of(simulationId),
+            ownerId,
+            "Name",
+            periodId,
+            List.of(new SimulationScopeEntry(programId, "DIURNA")));
 
     when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(sim));
 

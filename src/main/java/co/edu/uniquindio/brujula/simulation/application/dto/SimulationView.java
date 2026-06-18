@@ -10,7 +10,10 @@ import java.util.UUID;
  * <p>{@code status} is the contract-level {@code SimulationStatus} string (CURRENT/OUTDATED),
  * computed at read time — never stored (INV-004).
  *
- * <p>All fields use plain String/UUID.
+ * <p>{@code programIds} is the backward-compatible derived list of distinct program UUIDs. {@code
+ * scopeEntries} carries the full (programId, journeyCode) scope.
+ *
+ * <p>All fields use plain String/UUID (ARQ-001).
  */
 public record SimulationView(
     UUID id,
@@ -18,6 +21,7 @@ public record SimulationView(
     UUID periodId,
     String periodName,
     List<UUID> programIds,
+    List<SimulationScopeEntryDto> scopeEntries,
     String status,
     Instant createdAt,
     Instant updatedAt,

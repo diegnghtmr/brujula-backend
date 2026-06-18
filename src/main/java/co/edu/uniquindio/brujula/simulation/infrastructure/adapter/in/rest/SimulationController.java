@@ -18,6 +18,7 @@ import co.edu.uniquindio.brujula.simulation.application.dto.DuplicateSimulationC
 import co.edu.uniquindio.brujula.simulation.application.dto.ListSimulationsCriteria;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.dto.UpdateSimulationCommand;
@@ -33,7 +34,6 @@ import co.edu.uniquindio.brujula.simulation.application.port.in.ReviewSimulation
 import co.edu.uniquindio.brujula.simulation.application.port.in.UpdateSimulationUseCase;
 import java.net.URI;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
@@ -106,13 +106,18 @@ class SimulationController implements SimulationsApi {
     UUID callerId = resolveCallerId();
     String requestHash = computeHash(simulationCreateRequest);
 
+    List<SimulationScopeEntryDto> scopeEntries =
+        simulationCreateRequest.getSelections().stream()
+            .map(s -> new SimulationScopeEntryDto(s.getProgramId(), s.getJourneyCode()))
+            .toList();
+
     CreateSimulationCommand command =
         new CreateSimulationCommand(
             idempotencyKey,
             callerId,
             simulationCreateRequest.getName(),
             simulationCreateRequest.getPeriodId(),
-            new ArrayList<>(simulationCreateRequest.getProgramIds()),
+            scopeEntries,
             requestHash);
 
     SimulationView view = createSimulationUseCase.createSimulation(command);
@@ -318,15 +323,12 @@ class SimulationController implements SimulationsApi {
 
   private String computeHash(SimulationCreateRequest req) {
     try {
-      String input =
-          req.getName()
-              + "|"
-              + req.getPeriodId()
-              + "|"
-              + req.getProgramIds().stream()
-                  .map(UUID::toString)
-                  .sorted()
-                  .reduce("", (a, b) -> a + b);
+      String selectionsStr =
+          req.getSelections().stream()
+              .map(s -> s.getProgramId() + ":" + s.getJourneyCode())
+              .sorted()
+              .reduce("", (a, b) -> a + b);
+      String input = req.getName() + "|" + req.getPeriodId() + "|" + selectionsStr;
       MessageDigest digest = MessageDigest.getInstance("SHA-256");
       byte[] hash = digest.digest(input.getBytes(java.nio.charset.StandardCharsets.UTF_8));
       return HexFormat.of().formatHex(hash);

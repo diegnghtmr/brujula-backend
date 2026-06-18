@@ -1,5 +1,6 @@
 package co.edu.uniquindio.brujula.simulation.application.service;
 
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.dto.UpdateSimulationCommand;
 import co.edu.uniquindio.brujula.simulation.application.port.in.UpdateSimulationUseCase;
@@ -72,6 +73,9 @@ public class UpdateSimulationService implements UpdateSimulationUseCase {
         saved.getPeriodId(),
         periodName,
         saved.getProgramIds(),
+        saved.getScopeEntries().stream()
+            .map(e -> new SimulationScopeEntryDto(e.programId(), e.journeyCode()))
+            .toList(),
         "CURRENT",
         saved.getCreatedAt(),
         saved.getUpdatedAt(),

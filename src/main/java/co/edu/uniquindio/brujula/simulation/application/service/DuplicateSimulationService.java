@@ -4,6 +4,7 @@ import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyK
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import co.edu.uniquindio.brujula.simulation.application.dto.DuplicateSimulationCommand;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.DuplicateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
@@ -93,7 +94,11 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
     SimulationId newId = SimulationId.generate();
     Simulation duplicate =
         Simulation.create(
-            newId, command.ownerId(), duplicateName, source.getPeriodId(), source.getProgramIds());
+            newId,
+            command.ownerId(),
+            duplicateName,
+            source.getPeriodId(),
+            source.getScopeEntries());
     Simulation saved = saveSimulationPort.save(duplicate);
 
     // 5b. Copy source simulation's selections into the duplicate (WU4b — SIM-006 / Finding F10)
@@ -135,6 +140,9 @@ public class DuplicateSimulationService implements DuplicateSimulationUseCase {
             saved.getPeriodId(),
             periodName,
             saved.getProgramIds(),
+            saved.getScopeEntries().stream()
+                .map(e -> new SimulationScopeEntryDto(e.programId(), e.journeyCode()))
+                .toList(),
             "CURRENT",
             saved.getCreatedAt(),
             saved.getUpdatedAt(),
