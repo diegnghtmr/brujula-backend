@@ -23,9 +23,27 @@ build/generated/
 # ============================================================
 # Secrets and environment files
 # ============================================================
-.env
+.env*
 # .env.example is intentionally tracked
 !.env.example
+
+# ============================================================
+# Local-first DB backups: ignore plaintext dumps & keys,
+# track only .age ciphertext and the backups/README.md log
+# ============================================================
+brujula-key.txt
+*.key
+*.pem
+*.sql
+*.dump
+*.backup
+# Un-ignore Flyway migration SQL (always tracked)
+!src/main/resources/db/migration/*.sql
+# Un-ignore encrypted backup archives (safe ciphertext)
+!backups/*.sql.age
+!backups/*.dump.age
+# Un-ignore the backup log template
+!backups/README.md
 
 # ============================================================
 # IDE files
