@@ -16,7 +16,8 @@ import java.util.UUID;
  * @param name simulation name
  * @param periodId period UUID
  * @param periodName human-readable period name (from offering::api)
- * @param programIds list of program UUIDs
+ * @param programIds backward-compatible list of distinct program UUIDs derived from scopeEntries
+ * @param scopeEntries full (programId, journeyCode) pairs defining the simulation scope
  * @param statusName "CURRENT" or "OUTDATED" (computed at read, INV-004)
  * @param createdAt creation timestamp
  * @param updatedAt last-updated timestamp
@@ -33,6 +34,7 @@ public record SimulationDetailView(
     UUID periodId,
     String periodName,
     List<UUID> programIds,
+    List<SimulationScopeEntryDto> scopeEntries,
     String statusName,
     Instant createdAt,
     Instant updatedAt,

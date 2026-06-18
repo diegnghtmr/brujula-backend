@@ -4,6 +4,7 @@ import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyK
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import co.edu.uniquindio.brujula.simulation.application.dto.CreateSimulationCommand;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.CreateSimulationUseCase;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
@@ -11,7 +12,7 @@ import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPor
 import co.edu.uniquindio.brujula.simulation.application.port.out.SaveSimulationPort;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
-import java.util.ArrayList;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationScopeEntry;
 import java.util.Optional;
 
 /**
@@ -70,7 +71,9 @@ public class CreateSimulationService implements CreateSimulationUseCase {
             command.ownerId(),
             command.name(),
             command.periodId(),
-            new ArrayList<>(command.programIds()));
+            command.scopeEntries().stream()
+                .map(e -> new SimulationScopeEntry(e.programId(), e.journeyCode()))
+                .toList());
     Simulation saved = saveSimulationPort.save(simulation);
 
     // 4. Build view; status is always CURRENT at creation (INV-004)
@@ -91,6 +94,9 @@ public class CreateSimulationService implements CreateSimulationUseCase {
         sim.getPeriodId(),
         periodName,
         sim.getProgramIds(),
+        sim.getScopeEntries().stream()
+            .map(e -> new SimulationScopeEntryDto(e.programId(), e.journeyCode()))
+            .toList(),
         status,
         sim.getCreatedAt(),
         sim.getUpdatedAt(),

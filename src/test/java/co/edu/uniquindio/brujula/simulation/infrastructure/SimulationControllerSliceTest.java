@@ -23,6 +23,7 @@ import co.edu.uniquindio.brujula.identity.domain.Role;
 import co.edu.uniquindio.brujula.simulation.application.dto.ProgramCreditSummaryView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationValidationView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
@@ -146,6 +147,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
             periodId,
             "2026-2",
             List.of(programId),
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
             "CURRENT",
             Instant.now(),
             Instant.now(),
@@ -166,7 +168,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"name":"Mi Sim 2026","periodId":"%s","programIds":["%s"]}
+                    {"name":"Mi Sim 2026","periodId":"%s","selections":[{"programId":"%s","journeyCode":"DIURNA"}]}
                     """
                         .formatted(periodId, programId)))
         .andExpect(status().isCreated())
@@ -196,7 +198,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"name":"Test","periodId":"%s","programIds":["%s"]}
+                    {"name":"Test","periodId":"%s","selections":[{"programId":"%s","journeyCode":"DIURNA"}]}
                     """
                         .formatted(periodId, programId)))
         .andExpect(status().isBadRequest());
@@ -219,6 +221,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
             periodId,
             "2026-2",
             List.of(programId),
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
             "CURRENT",
             Instant.now(),
             Instant.now(),
@@ -262,6 +265,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
             periodId,
             "2026-2",
             List.of(programId),
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
             "CURRENT",
             Instant.now(),
             Instant.now(),
@@ -714,6 +718,7 @@ class SimulationControllerSliceTest extends AbstractPostgresIntegrationTest {
             periodId,
             "2026-2",
             List.of(programId),
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
             "CURRENT",
             Instant.now(),
             Instant.now(),

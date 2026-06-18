@@ -5,6 +5,7 @@ import co.edu.uniquindio.brujula.generated.model.ProgramCreditSummary;
 import co.edu.uniquindio.brujula.generated.model.Simulation;
 import co.edu.uniquindio.brujula.generated.model.SimulationDetail;
 import co.edu.uniquindio.brujula.generated.model.SimulationPage;
+import co.edu.uniquindio.brujula.generated.model.SimulationScopeEntry;
 import co.edu.uniquindio.brujula.generated.model.SimulationSelection;
 import co.edu.uniquindio.brujula.generated.model.SimulationStatus;
 import co.edu.uniquindio.brujula.generated.model.SimulationValidation;
@@ -13,6 +14,7 @@ import co.edu.uniquindio.brujula.generated.model.Weekday;
 import co.edu.uniquindio.brujula.generated.model.WeeklyScheduleEntry;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationDetailView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationSelectionView;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import java.time.OffsetDateTime;
@@ -41,16 +43,34 @@ class SimulationRestMapper {
 
     SimulationStatus status = parseStatus(view.status());
 
-    return new Simulation(
-        view.id(),
-        view.name(),
-        view.periodId(),
-        view.periodName(),
-        view.programIds(),
-        status,
-        createdAt,
-        updatedAt,
-        view.version());
+    List<SimulationScopeEntry> scopeEntries = toScopeEntryDtos(view.scopeEntries());
+
+    Simulation result =
+        new Simulation(
+            view.id(),
+            view.name(),
+            view.periodId(),
+            view.periodName(),
+            view.programIds(),
+            scopeEntries,
+            status,
+            createdAt,
+            updatedAt,
+            view.version());
+    return result;
+  }
+
+  private List<SimulationScopeEntry> toScopeEntryDtos(List<SimulationScopeEntryDto> dtoEntries) {
+    if (dtoEntries == null) return new ArrayList<>();
+    return dtoEntries.stream()
+        .map(
+            e -> {
+              SimulationScopeEntry dto = new SimulationScopeEntry();
+              dto.setProgramId(e.programId());
+              dto.setJourneyCode(e.journeyCode());
+              return dto;
+            })
+        .toList();
   }
 
   SimulationPage toPageDto(SimulationPageView pageView) {
@@ -200,6 +220,8 @@ class SimulationRestMapper {
       validation = new SimulationValidation(new ArrayList<>(), new ArrayList<>());
     }
 
+    List<SimulationScopeEntry> scopeEntries = toScopeEntryDtos(view.scopeEntries());
+
     SimulationDetail detail =
         new SimulationDetail(
             view.id(),
@@ -207,6 +229,7 @@ class SimulationRestMapper {
             view.periodId(),
             view.periodName(),
             view.programIds(),
+            scopeEntries,
             status,
             createdAt,
             updatedAt,

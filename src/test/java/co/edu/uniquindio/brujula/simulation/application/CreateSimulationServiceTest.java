@@ -13,6 +13,7 @@ import co.edu.uniquindio.brujula.sharedkernel.application.exception.IdempotencyK
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import co.edu.uniquindio.brujula.simulation.application.dto.CreateSimulationCommand;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.OfferingReadPort;
@@ -67,7 +68,12 @@ class CreateSimulationServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     CreateSimulationCommand command =
         new CreateSimulationCommand(
-            idempotencyKey, ownerId, "Sim 2026-2", periodId, List.of(programId), "hash1");
+            idempotencyKey,
+            ownerId,
+            "Sim 2026-2",
+            periodId,
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
+            "hash1");
 
     when(idempotencyStorePort.find(idempotencyKey, CreateSimulationService.OPERATION))
         .thenReturn(Optional.empty());
@@ -97,7 +103,12 @@ class CreateSimulationServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     CreateSimulationCommand command =
         new CreateSimulationCommand(
-            idempotencyKey, ownerId, "Sim replay", periodId, List.of(programId), "hash-same");
+            idempotencyKey,
+            ownerId,
+            "Sim replay",
+            periodId,
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
+            "hash-same");
 
     SimulationView stored =
         new SimulationView(
@@ -106,6 +117,7 @@ class CreateSimulationServiceTest {
             periodId,
             "2026-2",
             List.of(programId),
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
             "CURRENT",
             Instant.now(),
             Instant.now(),
@@ -129,7 +141,12 @@ class CreateSimulationServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     CreateSimulationCommand command =
         new CreateSimulationCommand(
-            idempotencyKey, ownerId, "Different name", periodId, List.of(programId), "hash-new");
+            idempotencyKey,
+            ownerId,
+            "Different name",
+            periodId,
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
+            "hash-new");
 
     IdempotencyStorePort.StoredRecord record =
         new IdempotencyStorePort.StoredRecord("hash-original", 201, "{}");

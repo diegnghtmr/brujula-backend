@@ -1,5 +1,6 @@
 package co.edu.uniquindio.brujula.progress.adapter.rest;
 
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -23,7 +24,9 @@ import co.edu.uniquindio.brujula.progress.application.port.in.DeleteSubscription
 import co.edu.uniquindio.brujula.progress.application.port.in.GetSubscriptionQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.ListMySubscriptionsQuery;
 import co.edu.uniquindio.brujula.progress.application.port.in.UpdateSubscriptionUseCase;
+import co.edu.uniquindio.brujula.progress.domain.DuplicateProgramSubscriptionException;
 import co.edu.uniquindio.brujula.progress.domain.HistoryImpactNotAcknowledgedException;
+import co.edu.uniquindio.brujula.progress.domain.InactivePlanException;
 import co.edu.uniquindio.brujula.progress.domain.LastActiveSubscriptionException;
 import co.edu.uniquindio.brujula.progress.domain.MaxSubscriptionsExceededException;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionId;
@@ -447,6 +450,127 @@ class SubscriptionControllerTest extends AbstractPostgresIntegrationTest {
                     {"referenceJourneyCode":"DIURNA","version":0}
                     """))
         .andExpect(status().isConflict());
+  }
+
+  // -------------------------------------------------------------------------
+  // Stable machine-readable code contract (frontend error mapping)
+  // -------------------------------------------------------------------------
+
+  /** SUB-1-CAP: cap=2 exceeded → 409 with code SUBSCRIPTION_PROGRAM_LIMIT_EXCEEDED. */
+  @Test
+  void post_subscription_cap_exceeded_returns_409_with_code() throws Exception {
+    when(createSubscriptionUseCase.createSubscription(any()))
+        .thenThrow(new MaxSubscriptionsExceededException(studentUserId, 2));
+
+    mockMvc
+        .perform(
+            post("/me/subscriptions")
+                .with(csrf())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createRequestBody()))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code", is("SUBSCRIPTION_PROGRAM_LIMIT_EXCEEDED")));
+  }
+
+  /** SUB-1-DUP: duplicate program+jornada → 409 with code SUBSCRIPTION_DUPLICATE_JORNADA. */
+  @Test
+  void post_subscription_duplicate_jornada_returns_409_with_code() throws Exception {
+    when(createSubscriptionUseCase.createSubscription(any()))
+        .thenThrow(new DuplicateProgramSubscriptionException(studentUserId, UUID.randomUUID()));
+
+    mockMvc
+        .perform(
+            post("/me/subscriptions")
+                .with(csrf())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createRequestBody()))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code", is("SUBSCRIPTION_DUPLICATE_JORNADA")));
+  }
+
+  /** SUB-4-DELETE-LAST: delete last active → 409 with code SUBSCRIPTION_LAST_ACTIVE. */
+  @Test
+  void delete_last_subscription_returns_409_with_code() throws Exception {
+    UUID subId = UUID.randomUUID();
+    org.mockito.Mockito.doThrow(new LastActiveSubscriptionException(studentUserId))
+        .when(deleteSubscriptionUseCase)
+        .deleteSubscription(eq(subId), any());
+
+    mockMvc
+        .perform(
+            delete("/me/subscriptions/" + subId)
+                .with(csrf())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("X-XSRF-TOKEN", "csrf-token"))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code", is("SUBSCRIPTION_LAST_ACTIVE")));
+  }
+
+  /** SUB-1-INACTIVE-PLAN: inactive/archived plan → 422 with code SUBSCRIPTION_PLAN_INACTIVE. */
+  @Test
+  void post_subscription_inactive_plan_returns_422_with_code() throws Exception {
+    UUID planId = UUID.randomUUID();
+    when(createSubscriptionUseCase.createSubscription(any()))
+        .thenThrow(new InactivePlanException(planId, "ARCHIVED"));
+
+    mockMvc
+        .perform(
+            post("/me/subscriptions")
+                .with(csrf())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("Idempotency-Key", UUID.randomUUID().toString())
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(createRequestBody()))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code", is("SUBSCRIPTION_PLAN_INACTIVE")));
+  }
+
+  /**
+   * SUB-3-PLAN-NO-ACK: plan change without history ack → 422 with code
+   * SUBSCRIPTION_HISTORY_IMPACT_NOT_ACKNOWLEDGED.
+   */
+  @Test
+  void patch_subscription_plan_change_without_ack_returns_422_with_code() throws Exception {
+    UUID subId = UUID.randomUUID();
+    when(updateSubscriptionUseCase.updateSubscription(any()))
+        .thenThrow(new HistoryImpactNotAcknowledgedException(SubscriptionId.of(subId)));
+
+    mockMvc
+        .perform(
+            patch("/me/subscriptions/" + subId)
+                .with(csrf())
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSub))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT")))
+                .header("X-XSRF-TOKEN", "csrf-token")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"planId":"%s","version":0}
+                    """
+                        .formatted(UUID.randomUUID())))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code", is("SUBSCRIPTION_HISTORY_IMPACT_NOT_ACKNOWLEDGED")));
   }
 
   // -------------------------------------------------------------------------

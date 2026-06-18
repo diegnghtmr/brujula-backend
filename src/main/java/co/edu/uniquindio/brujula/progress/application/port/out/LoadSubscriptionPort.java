@@ -33,8 +33,8 @@ public interface LoadSubscriptionPort {
    *
    * <p>Note: cap=2 enforcement in {@code CreateSubscriptionService} is NOT done via this method.
    * Cap enforcement uses {@link #lockActiveByUserIdForUpdate} (distinct programId set) to hold a
-   * write lock across the check-and-insert. This method is used by {@code DeleteSubscriptionService}
-   * to determine whether the last active subscription is being removed.
+   * write lock across the check-and-insert. This method is used by {@code
+   * DeleteSubscriptionService} to determine whether the last active subscription is being removed.
    *
    * @param userId the student user ID
    * @return count of active subscriptions

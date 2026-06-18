@@ -19,6 +19,7 @@ import co.edu.uniquindio.brujula.simulation.domain.CandidateSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimScheduleSession;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationScopeEntry;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
 import java.time.LocalTime;
@@ -38,19 +39,18 @@ import org.springframework.web.context.WebApplicationContext;
 /**
  * FIX F1: End-to-end integration tests for SimulationDetail (SIM-003, DET-001..003, STALE-001/002).
  *
- * <p>Proves against a REAL PostgreSQL (Testcontainers + Flyway V016/V017/V018) what unit stubs
+ * <p>Proves against a REAL PostgreSQL (Testcontainers + Flyway V016/V022/V018) what unit stubs
  * cannot: staleness detection, real creditSummary values, review 200/409 round-trips.
  *
- * <p>V017 fixture UUIDs used:
+ * <p>V022 real offering UUIDs used:
  *
  * <ul>
  *   <li>Period 2026-2: {@code 00000001-0000-4000-a000-000000000001}
- *   <li>Programación III (ISC, 3 cr, FINAL): offering {@code 00000002-0000-4001-a000-000000000001},
- *       DIURNA option {@code 00000002-0000-4002-a000-000000000001}
- *   <li>Estadística (ISC, 3 cr, FINAL): offering {@code 00000003-0000-4001-a000-000000000001},
- *       DIURNA option {@code 00000003-0000-4002-a000-000000000001}
- *   <li>Programación II (ARCHIVED): offering {@code 00000007-0000-4001-a000-000000000001}, option
- *       {@code 00000007-0000-4002-a000-000000000001}
+ *   <li>Programación III (Elixir) (ISC, 3 cr, FINAL): offering {@code
+ *       02200044-0000-4001-a000-000000000044}, DIURNA option {@code
+ *       02200044-0000-4002-a000-000000000044}
+ *   <li>Estadística (ISC, 3 cr, FINAL): offering {@code 02200051-0000-4001-a000-000000000051},
+ *       DIURNA option {@code 02200051-0000-4002-a000-000000000051}
  * </ul>
  *
  * <p>ISC program: {@code 11111111-0000-4000-a000-000000000001}
@@ -64,33 +64,29 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   @Autowired private SaveSimulationSelectionPort saveSimulationSelectionPort;
   @Autowired private JdbcTemplate jdbcTemplate;
 
-  // V017 seed UUIDs
+  // V022 real 2026-2 offering UUIDs
   static final UUID PERIOD_ID = UUID.fromString("00000001-0000-4000-a000-000000000001");
 
   // ISC program
   static final UUID ISC_PROGRAM_ID = UUID.fromString("11111111-0000-4000-a000-000000000001");
 
-  // Programación III (FINAL, 3 cr, DIURNA Mon 08:00-10:00 / Wed 10:00-12:00)
-  static final UUID PROG_III_OFFERING_ID = UUID.fromString("00000002-0000-4001-a000-000000000001");
+  // Programación III (Elixir), FINAL, 3 cr, DIURNA
+  static final UUID PROG_III_OFFERING_ID = UUID.fromString("02200044-0000-4001-a000-000000000044");
   static final UUID PROG_III_OPTION_DIURNA =
-      UUID.fromString("00000002-0000-4002-a000-000000000001");
+      UUID.fromString("02200044-0000-4002-a000-000000000044");
   static final UUID PROG_III_COURSE_ID = UUID.fromString("c0040000-0000-4000-a000-000000000004");
 
   // Estadística y Probabilidad (FINAL, 3 cr, DIURNA Tue 10:00-12:00 / Thu 10:00-12:00)
   // Note: requires c0030000-0000-4000-a000-000000000001 (hard prereq); use with passed prereq
   static final UUID ESTADISTICA_OFFERING_ID =
-      UUID.fromString("00000003-0000-4001-a000-000000000001");
+      UUID.fromString("02200051-0000-4001-a000-000000000051");
   static final UUID ESTADISTICA_OPTION_DIURNA =
-      UUID.fromString("00000003-0000-4002-a000-000000000001");
+      UUID.fromString("02200051-0000-4002-a000-000000000051");
   static final UUID ESTADISTICA_COURSE_ID = UUID.fromString("c0050000-0000-4000-a000-000000000001");
   // Estadística's prereq (Algoritmos II — V012 c0030000-...-001) — must be PASSED for clean review
   static final UUID ESTADISTICA_PREREQ_COURSE_ID =
       UUID.fromString("c0030000-0000-4000-a000-000000000001");
 
-  // Programación II — ARCHIVED (V017 fixture d)
-  static final UUID PROG_II_OFFERING_ID = UUID.fromString("00000007-0000-4001-a000-000000000001");
-  static final UUID PROG_II_OPTION_NOCTURNA =
-      UUID.fromString("00000007-0000-4002-a000-000000000001");
   static final UUID PROG_II_COURSE_ID = UUID.fromString("c0030000-0000-4000-a000-000000000005");
 
   private MockMvc mockMvc;
@@ -122,8 +118,11 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   // ---------------------------------------------------------------------------
 
   private Simulation createSimulation(List<UUID> programIds) {
+    List<SimulationScopeEntry> scopeEntries =
+        programIds.stream().map(id -> new SimulationScopeEntry(id, "DIURNA")).toList();
     Simulation sim =
-        Simulation.create(SimulationId.generate(), studentUserId, "IT Sim", PERIOD_ID, programIds);
+        Simulation.create(
+            SimulationId.generate(), studentUserId, "IT Sim", PERIOD_ID, scopeEntries);
     return saveSimulationPort.save(sim);
   }
 
@@ -226,7 +225,8 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   void getSimulation_offeringVersionBumpedViaJdbc_statusIsOutdated() throws Exception {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
-    // Seed selection with selectedOfferingVersion = current version (0, from V017 seed)
+    // Seed selection with selectedOfferingVersion = current version from the V022 real catalog
+    // seed.
     long initialVersion =
         jdbcTemplate.queryForObject(
             "SELECT version FROM offering.course_offering WHERE id = ?",
@@ -308,6 +308,37 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
         periodId);
   }
 
+  private record ArchivedOfferingSeed(UUID offeringId, UUID optionId) {}
+
+  private ArchivedOfferingSeed insertArchivedOfferingForReviewTest() {
+    UUID offeringId = UUID.randomUUID();
+    UUID optionId = UUID.randomUUID();
+    jdbcTemplate.update(
+        """
+        INSERT INTO offering.course_offering
+            (id, course_id, course_name, program_id, period_id, status, notes, version)
+        VALUES (?, ?, 'Programación II', ?, ?, 'ARCHIVED', 'Archived offering generated by SimulationDetailIT', 0)
+        """,
+        offeringId,
+        PROG_II_COURSE_ID,
+        ISC_PROGRAM_ID,
+        PERIOD_ID);
+    jdbcTemplate.update(
+        """
+        INSERT INTO offering.schedule_option (id, offering_id, label, journey_code, version)
+        VALUES (?, ?, 'Archived IT option', 'NOCTURNA', 0)
+        """,
+        optionId,
+        offeringId);
+    jdbcTemplate.update(
+        """
+        INSERT INTO offering.schedule_session (id, schedule_option_id, day, starts_at, ends_at)
+        VALUES (gen_random_uuid(), ?, 'FRIDAY', '19:00', '22:00')
+        """,
+        optionId);
+    return new ArchivedOfferingSeed(offeringId, optionId);
+  }
+
   // ---------------------------------------------------------------------------
   // FIX F1-3: review 200 CURRENT — clean simulation → POST review → 200, snapshot refreshed
   // The student must have the hard prereq passed so no blocking validation notice fires.
@@ -318,7 +349,7 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
       throws Exception {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
-    // Get current offering version from DB (V017 seeds version=0)
+    // Get current offering version from DB (V022 seeds version=0)
     long currentVersion =
         jdbcTemplate.queryForObject(
             "SELECT version FROM offering.course_offering WHERE id = ?",
@@ -377,12 +408,14 @@ class SimulationDetailIT extends AbstractPostgresIntegrationTest {
   void reviewSimulation_archivedOffering_returns409WithSimulationBlockedCode() throws Exception {
     Simulation sim = createSimulation(List.of(ISC_PROGRAM_ID));
 
-    // Seed a selection on the ARCHIVED offering (V017 fixture d: Programación II)
+    ArchivedOfferingSeed archivedOffering = insertArchivedOfferingForReviewTest();
+
+    // Seed a selection on a fresh ARCHIVED offering instead of relying on old V017 test fixtures.
     // This is a persistent blocker: ArchivedOfferingRule fires because offering.status = ARCHIVED
     seedSelection(
         sim.getId().value(),
-        PROG_II_OFFERING_ID,
-        PROG_II_OPTION_NOCTURNA,
+        archivedOffering.offeringId(),
+        archivedOffering.optionId(),
         PROG_II_COURSE_ID,
         "Programación II",
         3.0,

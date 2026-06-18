@@ -19,9 +19,7 @@ class SubscriptionCapTest {
     UUID userId = UUID.randomUUID();
     MaxSubscriptionsExceededException ex = new MaxSubscriptionsExceededException(userId, 2);
 
-    assertThat(ex.getMessage())
-        .contains("2")
-        .contains("distinct");
+    assertThat(ex.getMessage()).contains("2").contains("distinct");
     assertThat(ex.getUserId()).isEqualTo(userId);
     assertThat(ex.getActiveCount()).isEqualTo(2);
   }

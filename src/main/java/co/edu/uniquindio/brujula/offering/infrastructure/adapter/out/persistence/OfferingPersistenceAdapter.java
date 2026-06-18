@@ -14,6 +14,7 @@ import co.edu.uniquindio.brujula.offering.domain.CourseOffering;
 import co.edu.uniquindio.brujula.offering.domain.CourseOfferingId;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOption;
 import co.edu.uniquindio.brujula.offering.domain.ScheduleOptionId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -113,9 +114,17 @@ class OfferingPersistenceAdapter
     PageRequest pageRequest = PageRequest.of(criteria.page(), criteria.size());
     // Pass status filter if present (e.g. DRAFT); null means all non-ARCHIVED
     String statusFilter = criteria.status();
+    boolean journeyFilterDisabled = criteria.isJourneyFilterDisabled();
+    Collection<String> journeyCodes =
+        journeyFilterDisabled ? List.of("_placeholder_") : criteria.journeyCodes();
     Page<CourseOfferingJpaEntity> page =
         offeringRepository.findForStaff(
-            criteria.periodId(), criteria.programId(), statusFilter, pageRequest);
+            criteria.periodId(),
+            criteria.programId(),
+            statusFilter,
+            journeyFilterDisabled,
+            journeyCodes,
+            pageRequest);
 
     List<OfferingSummaryView> content =
         page.getContent().stream()
@@ -139,8 +148,16 @@ class OfferingPersistenceAdapter
   @Transactional(readOnly = true)
   public OfferingPageView findPublished(ListOfferingsCriteria criteria) {
     PageRequest pageRequest = PageRequest.of(criteria.page(), criteria.size());
+    boolean journeyFilterDisabled = criteria.isJourneyFilterDisabled();
+    Collection<String> journeyCodes =
+        journeyFilterDisabled ? List.of("_placeholder_") : criteria.journeyCodes();
     Page<CourseOfferingJpaEntity> page =
-        offeringRepository.findPublished(criteria.periodId(), criteria.programId(), pageRequest);
+        offeringRepository.findPublished(
+            criteria.periodId(),
+            criteria.programId(),
+            journeyFilterDisabled,
+            journeyCodes,
+            pageRequest);
 
     List<OfferingSummaryView> content =
         page.getContent().stream()

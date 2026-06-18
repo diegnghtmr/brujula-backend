@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.IdempotencyStorePort;
 import co.edu.uniquindio.brujula.sharedkernel.application.port.out.JsonCodecPort;
 import co.edu.uniquindio.brujula.simulation.application.dto.DuplicateSimulationCommand;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationSelectionPort;
@@ -21,6 +22,7 @@ import co.edu.uniquindio.brujula.simulation.application.service.DuplicateSimulat
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationAccessDeniedException;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationScopeEntry;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
 import java.time.Instant;
@@ -79,7 +81,11 @@ class DuplicateSimulationServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     Simulation source =
         Simulation.create(
-            SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(programId));
+            SimulationId.of(simulationId),
+            ownerId,
+            "Original",
+            periodId,
+            List.of(new SimulationScopeEntry(programId, "DIURNA")));
 
     when(idempotencyStorePort.find(idempotencyKey, DuplicateSimulationService.OPERATION))
         .thenReturn(Optional.empty());
@@ -104,7 +110,11 @@ class DuplicateSimulationServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     Simulation source =
         Simulation.create(
-            SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(programId));
+            SimulationId.of(simulationId),
+            ownerId,
+            "Original",
+            periodId,
+            List.of(new SimulationScopeEntry(programId, "DIURNA")));
 
     when(idempotencyStorePort.find(idempotencyKey, DuplicateSimulationService.OPERATION))
         .thenReturn(Optional.empty());
@@ -134,6 +144,7 @@ class DuplicateSimulationServiceTest {
             periodId,
             "2026-2",
             List.of(programId),
+            List.of(new SimulationScopeEntryDto(programId, "DIURNA")),
             "CURRENT",
             Instant.now(),
             Instant.now(),
@@ -160,7 +171,11 @@ class DuplicateSimulationServiceTest {
     UUID idempotencyKey = UUID.randomUUID();
     Simulation source =
         Simulation.create(
-            SimulationId.of(simulationId), ownerId, "Owner's sim", periodId, List.of(programId));
+            SimulationId.of(simulationId),
+            ownerId,
+            "Owner's sim",
+            periodId,
+            List.of(new SimulationScopeEntry(programId, "DIURNA")));
 
     when(idempotencyStorePort.find(idempotencyKey, DuplicateSimulationService.OPERATION))
         .thenReturn(Optional.empty());
@@ -197,7 +212,11 @@ class DuplicateSimulationServiceTest {
 
     Simulation source =
         Simulation.create(
-            SimulationId.of(simulationId), ownerId, "Original", periodId, List.of(sourceProgramId));
+            SimulationId.of(simulationId),
+            ownerId,
+            "Original",
+            periodId,
+            List.of(new SimulationScopeEntry(sourceProgramId, "DIURNA")));
 
     // One existing selection in the source simulation — 4.0 credits (real value, not 0)
     SimulationSelection sourceSelection =
