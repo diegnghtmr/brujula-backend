@@ -246,10 +246,15 @@ tasks.named("check") {
 tasks.register<Test>("roundTripTest") {
     description = "Runs @Tag(\"requires-age\") round-trip backup/restore integration tests. Requires age, pg_dump, psql, and Docker on PATH."
     group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
     useJUnitPlatform {
         includeTags("requires-age")
     }
     shouldRunAfter(tasks.test)
+    // Pass Docker socket to forked JVM for Testcontainers
+    environment("DOCKER_HOST", System.getenv("DOCKER_HOST") ?: "unix:///var/run/docker.sock")
+    environment("TESTCONTAINERS_RYUK_DISABLED", System.getenv("TESTCONTAINERS_RYUK_DISABLED") ?: "false")
 }
 
 tasks.test {
