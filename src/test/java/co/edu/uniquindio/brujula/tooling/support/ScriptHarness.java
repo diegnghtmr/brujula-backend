@@ -139,7 +139,7 @@ public final class ScriptHarness {
         base.binDir.resolve("psql"),
         """
         #!/usr/bin/env bash
-        printf '%s\\n' "$@" >> "$ARGV_LOG"
+        printf '%%s\\n' "$@" >> "$ARGV_LOG"
         exit %d
         """
             .formatted(psqlExitCode));
