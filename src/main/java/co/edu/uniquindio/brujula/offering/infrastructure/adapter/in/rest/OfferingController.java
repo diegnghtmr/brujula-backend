@@ -102,6 +102,7 @@ class OfferingController implements OfferingsApi {
       @Nullable UUID programId,
       @Nullable UUID courseId,
       @Nullable OfferingStatus status,
+      @Nullable List<String> journeyCode,
       Integer page,
       Integer size,
       @Nullable List<String> sort) {
@@ -115,7 +116,8 @@ class OfferingController implements OfferingsApi {
             status != null ? status.name() : null,
             page == null ? 0 : page,
             size == null ? 20 : size,
-            callerRole);
+            callerRole,
+            journeyCode);
     OfferingPageView pageView = listOfferingsQuery.listOfferings(criteria);
     return ResponseEntity.ok(restMapper.toContractPage(pageView));
   }

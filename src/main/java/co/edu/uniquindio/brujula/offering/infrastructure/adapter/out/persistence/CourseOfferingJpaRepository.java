@@ -1,5 +1,6 @@
 package co.edu.uniquindio.brujula.offering.infrastructure.adapter.out.persistence;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -17,7 +18,13 @@ interface CourseOfferingJpaRepository extends JpaRepository<CourseOfferingJpaEnt
 
   /**
    * Returns a page of published offerings (PRELIMINARY or FINAL) for a given period, optionally
-   * filtered by programId. No eager fetch needed for summary projection.
+   * filtered by programId and/or journeyCodes. No eager fetch needed for summary projection.
+   *
+   * <p>Journey filter: when {@code journeyFilterDisabled} is {@code true} no journey restriction is
+   * applied. When {@code false}, only offerings that have at least one schedule option whose {@code
+   * journeyCode} is in {@code journeyCodes} are returned. The {@code journeyCodes} parameter must
+   * always be a non-null, non-empty collection when {@code journeyFilterDisabled = false} to avoid
+   * an invalid JPQL {@code IN ()} clause.
    */
   @Query(
       """
@@ -25,9 +32,17 @@ interface CourseOfferingJpaRepository extends JpaRepository<CourseOfferingJpaEnt
       WHERE o.periodId = :periodId
         AND o.status IN ('PRELIMINARY', 'FINAL')
         AND (:programId IS NULL OR o.programId = :programId)
+        AND (:journeyFilterDisabled = true
+             OR EXISTS (SELECT 1 FROM ScheduleOptionJpaEntity so
+                        WHERE so.offering = o
+                          AND so.journeyCode IN :journeyCodes))
       """)
   Page<CourseOfferingJpaEntity> findPublished(
-      @Param("periodId") UUID periodId, @Param("programId") UUID programId, Pageable pageable);
+      @Param("periodId") UUID periodId,
+      @Param("programId") UUID programId,
+      @Param("journeyFilterDisabled") boolean journeyFilterDisabled,
+      @Param("journeyCodes") Collection<String> journeyCodes,
+      Pageable pageable);
 
   /**
    * Returns the offering with its schedule options and sessions eagerly loaded. Uses JOIN FETCH to
@@ -45,7 +60,9 @@ interface CourseOfferingJpaRepository extends JpaRepository<CourseOfferingJpaEnt
   /**
    * Returns a page of offerings for privileged callers (STAFF/ADMIN). Includes DRAFT, PRELIMINARY,
    * and FINAL statuses. When {@code statusFilter} is provided, only that status is returned.
-   * ARCHIVED is always excluded from staff listing.
+   * ARCHIVED is always excluded from staff listing. Optionally filtered by journeyCodes.
+   *
+   * <p>Journey filter: same contract as {@link #findPublished}.
    *
    * <p>Satisfies: OFFW-007.
    */
@@ -56,10 +73,16 @@ interface CourseOfferingJpaRepository extends JpaRepository<CourseOfferingJpaEnt
         AND o.status != 'ARCHIVED'
         AND (:programId IS NULL OR o.programId = :programId)
         AND (:statusFilter IS NULL OR o.status = :statusFilter)
+        AND (:journeyFilterDisabled = true
+             OR EXISTS (SELECT 1 FROM ScheduleOptionJpaEntity so
+                        WHERE so.offering = o
+                          AND so.journeyCode IN :journeyCodes))
       """)
   Page<CourseOfferingJpaEntity> findForStaff(
       @Param("periodId") UUID periodId,
       @Param("programId") UUID programId,
       @Param("statusFilter") String statusFilter,
+      @Param("journeyFilterDisabled") boolean journeyFilterDisabled,
+      @Param("journeyCodes") Collection<String> journeyCodes,
       Pageable pageable);
 }

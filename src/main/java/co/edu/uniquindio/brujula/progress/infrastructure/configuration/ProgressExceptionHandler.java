@@ -73,30 +73,43 @@ class ProgressExceptionHandler {
 
   @ExceptionHandler(MaxSubscriptionsExceededException.class)
   ProblemDetail handleMaxSubscriptionsExceeded(MaxSubscriptionsExceededException ex) {
-    return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    problem.setProperty("code", "SUBSCRIPTION_PROGRAM_LIMIT_EXCEEDED");
+    return problem;
   }
 
   @ExceptionHandler(DuplicateProgramSubscriptionException.class)
   ProblemDetail handleDuplicateProgram(DuplicateProgramSubscriptionException ex) {
-    return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    problem.setProperty("code", "SUBSCRIPTION_DUPLICATE_JORNADA");
+    return problem;
   }
 
   @ExceptionHandler(HistoryImpactNotAcknowledgedException.class)
   ProblemDetail handleHistoryImpactNotAcknowledged(HistoryImpactNotAcknowledgedException ex) {
-    // 422 Unprocessable Entity, not 409: 409 is reserved for version (optimistic-lock) conflicts;
-    // 422 signals a semantic validation failure (missing acknowledgment field).
-    return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    // FIX-W2: spec SUB-3-PLAN-NO-ACK requires 422 Unprocessable Entity, not 409.
+    // 409 is reserved for version (optimistic-lock) conflicts; 422 signals a semantic validation
+    // failure (missing acknowledgment field) which is distinct from a version collision.
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    problem.setProperty("code", "SUBSCRIPTION_HISTORY_IMPACT_NOT_ACKNOWLEDGED");
+    return problem;
   }
 
   @ExceptionHandler(InactivePlanException.class)
   ProblemDetail handleInactivePlan(InactivePlanException ex) {
-    // 422 for ARCHIVED/non-ACTIVE plan — same semantic: unprocessable due to plan state.
-    return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    // FIX-W3: spec SUB-1-INACTIVE-PLAN requires 422 for ARCHIVED/non-ACTIVE plan.
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    problem.setProperty("code", "SUBSCRIPTION_PLAN_INACTIVE");
+    return problem;
   }
 
   @ExceptionHandler(LastActiveSubscriptionException.class)
   ProblemDetail handleLastActiveSubscription(LastActiveSubscriptionException ex) {
-    return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    problem.setProperty("code", "SUBSCRIPTION_LAST_ACTIVE");
+    return problem;
   }
 
   @ExceptionHandler(IdempotencyKeyConflictException.class)

@@ -28,6 +28,7 @@ import co.edu.uniquindio.brujula.simulation.domain.CandidateSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimScheduleSession;
 import co.edu.uniquindio.brujula.simulation.domain.Simulation;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationId;
+import co.edu.uniquindio.brujula.simulation.domain.SimulationScopeEntry;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelection;
 import co.edu.uniquindio.brujula.simulation.domain.SimulationSelectionId;
 import java.time.LocalTime;
@@ -73,15 +74,16 @@ import org.springframework.web.context.WebApplicationContext;
  * because the {@code assertThat(version).isGreaterThan(initialVersion)} guard fires BEFORE the
  * MockMvc assertion.
  *
- * <p>Test isolation: Scenario 1 uses V017 fixture {@code PROG_III_OFFERING_ID} (FINAL) and only
- * updates its notes — the offering stays FINAL. Scenarios 2 and 3 each create a BRAND-NEW offering
- * (random UUID) that is NOT a V017 fixture, so no shared state is corrupted.
+ * <p>Test isolation: Scenario 1 uses the V022 real 2026-2 catalog row {@code PROG_III_OFFERING_ID}
+ * (FINAL) and only updates its notes — the offering stays FINAL. Scenarios 2 and 3 each create a
+ * BRAND-NEW offering (random UUID) that is NOT a shared seed row, so no shared state is corrupted.
  *
- * <p>V017 fixture UUIDs used:
+ * <p>V022 real offering UUIDs used:
  *
  * <ul>
- *   <li>Programación III (FINAL, 3 cr): offering {@code 00000002-0000-4001-a000-000000000001},
- *       DIURNA option {@code 00000002-0000-4002-a000-000000000001}
+ *   <li>Programación III (Elixir) (FINAL, 3 cr): offering {@code
+ *       02200044-0000-4001-a000-000000000044}, DIURNA option {@code
+ *       02200044-0000-4002-a000-000000000044}
  *   <li>Period 2026-2: {@code 00000001-0000-4000-a000-000000000001}
  *   <li>ISC program: {@code 11111111-0000-4000-a000-000000000001}
  * </ul>
@@ -98,14 +100,14 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   @Autowired private PublishOfferingUseCase publishOfferingUseCase;
   @Autowired private JdbcTemplate jdbcTemplate;
 
-  // V017 seed UUIDs
+  // V022 real 2026-2 offering UUIDs
   static final UUID PERIOD_ID = UUID.fromString("00000001-0000-4000-a000-000000000001");
   static final UUID ISC_PROGRAM_ID = UUID.fromString("11111111-0000-4000-a000-000000000001");
 
-  // Programación III (FINAL, 3 cr, DIURNA Mon 08:00-10:00 / Wed 10:00-12:00) — used ONLY for update
-  static final UUID PROG_III_OFFERING_ID = UUID.fromString("00000002-0000-4001-a000-000000000001");
+  // Programación III (Elixir), FINAL, 3 cr, DIURNA — used ONLY for update
+  static final UUID PROG_III_OFFERING_ID = UUID.fromString("02200044-0000-4001-a000-000000000044");
   static final UUID PROG_III_OPTION_DIURNA =
-      UUID.fromString("00000002-0000-4002-a000-000000000001");
+      UUID.fromString("02200044-0000-4002-a000-000000000044");
   static final UUID PROG_III_COURSE_ID = UUID.fromString("c0040000-0000-4000-a000-000000000004");
 
   private MockMvc mockMvc;
@@ -151,9 +153,11 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   // ---------------------------------------------------------------------------
 
   private Simulation createSimulation(List<UUID> programIds) {
+    List<SimulationScopeEntry> scopeEntries =
+        programIds.stream().map(id -> new SimulationScopeEntry(id, "DIURNA")).toList();
     Simulation sim =
         Simulation.create(
-            SimulationId.generate(), studentUserId, "Staleness IT Sim", PERIOD_ID, programIds);
+            SimulationId.generate(), studentUserId, "Staleness IT Sim", PERIOD_ID, scopeEntries);
     return saveSimulationPort.save(sim);
   }
 
@@ -191,12 +195,13 @@ class OfferingStalenessIT extends AbstractPostgresIntegrationTest {
   }
 
   // ---------------------------------------------------------------------------
-  // Scenario 1:
-  //   Seed selection at version N on V017 PROG_III (FINAL).
+  // DEBT-F4-003 / scenario 1:
+  //   Seed selection at version N on V022 PROG_III (FINAL).
   //   Bump offering version through UpdateOfferingUseCase (REAL service, NOT JDBC).
   //   Assert DB version > N AND simulation status = OUTDATED.
   //
-  //   Isolation guarantee: notes update keeps offering at FINAL — V017 fixture is NOT mutated
+  //   Isolation guarantee: notes update keeps offering at FINAL — the shared V022 row is NOT
+  // mutated
   //   in a way that would affect other tests (still FINAL, just different notes).
   // ---------------------------------------------------------------------------
 

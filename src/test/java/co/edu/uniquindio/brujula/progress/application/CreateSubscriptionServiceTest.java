@@ -34,8 +34,8 @@ import org.junit.jupiter.api.Test;
 /**
  * Use case unit tests for {@link CreateSubscriptionService}.
  *
- * <p>Covers: happy path, cap, duplicate, idempotency, idempotency conflict, duplicate journey,
- * different journey allowed, cap on distinct programs.
+ * <p>Covers: SUB-1-HP, SUB-1-CAP, SUB-1-DUP, SUB-1-IDEM, SUB-1-IDEM-CONFLICT, SUB-1-JORNADA-DUP,
+ * SUB-1-JORNADA-DIFF-ALLOWED, SUB-1-CAP-DISTINCT-PROGRAMS.
  */
 class CreateSubscriptionServiceTest {
 

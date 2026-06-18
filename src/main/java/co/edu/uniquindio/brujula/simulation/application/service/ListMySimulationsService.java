@@ -2,6 +2,7 @@ package co.edu.uniquindio.brujula.simulation.application.service;
 
 import co.edu.uniquindio.brujula.simulation.application.dto.ListSimulationsCriteria;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationPageView;
+import co.edu.uniquindio.brujula.simulation.application.dto.SimulationScopeEntryDto;
 import co.edu.uniquindio.brujula.simulation.application.dto.SimulationView;
 import co.edu.uniquindio.brujula.simulation.application.port.in.ListMySimulationsQuery;
 import co.edu.uniquindio.brujula.simulation.application.port.out.LoadSimulationPort;
@@ -66,6 +67,9 @@ public class ListMySimulationsService implements ListMySimulationsQuery {
         sim.getPeriodId(),
         periodName,
         sim.getProgramIds(),
+        sim.getScopeEntries().stream()
+            .map(e -> new SimulationScopeEntryDto(e.programId(), e.journeyCode()))
+            .toList(),
         "CURRENT",
         sim.getCreatedAt(),
         sim.getUpdatedAt(),

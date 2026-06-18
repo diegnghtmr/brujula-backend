@@ -1,5 +1,6 @@
 package co.edu.uniquindio.brujula.offering.application.dto;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -13,6 +14,8 @@ import java.util.UUID;
  * @param page zero-based page number (≥ 0)
  * @param size page size (1–100)
  * @param callerRole optional — role of the caller (STAFF/ADMIN see DRAFT; STUDENT does not)
+ * @param journeyCodes optional — when present, only offerings with at least one schedule option
+ *     whose journey_code is in this set are returned. Null or empty means no journey filter.
  */
 public record ListOfferingsCriteria(
     UUID periodId,
@@ -21,12 +24,25 @@ public record ListOfferingsCriteria(
     String status,
     int page,
     int size,
-    String callerRole) {
+    String callerRole,
+    List<String> journeyCodes) {
 
-  /** Backward-compatible constructor without callerRole (defaults to null = student-visible). */
+  /** Backward-compatible constructor without callerRole and journeyCodes (defaults to null). */
   public ListOfferingsCriteria(
       UUID periodId, UUID programId, UUID courseId, String status, int page, int size) {
-    this(periodId, programId, courseId, status, page, size, null);
+    this(periodId, programId, courseId, status, page, size, null, null);
+  }
+
+  /** Backward-compatible constructor without journeyCodes (defaults to null). */
+  public ListOfferingsCriteria(
+      UUID periodId,
+      UUID programId,
+      UUID courseId,
+      String status,
+      int page,
+      int size,
+      String callerRole) {
+    this(periodId, programId, courseId, status, page, size, callerRole, null);
   }
 
   public ListOfferingsCriteria {
@@ -42,5 +58,10 @@ public record ListOfferingsCriteria(
   /** Returns {@code true} when the caller has privileged (STAFF/ADMIN) access. */
   public boolean isPrivilegedCaller() {
     return "STAFF".equals(callerRole) || "ADMIN".equals(callerRole);
+  }
+
+  /** Returns {@code true} when no journey filter is active. */
+  public boolean isJourneyFilterDisabled() {
+    return journeyCodes == null || journeyCodes.isEmpty();
   }
 }
