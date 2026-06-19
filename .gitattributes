@@ -1,0 +1,6 @@
+# Force LF on the Gradle wrapper and POSIX shell scripts so the repo builds
+# in Docker/Linux even when cloned on Windows. Without this, core.autocrlf
+# checks them out with CRLF and the Docker build fails with:
+#   /bin/sh: 1: ./gradlew: not found   (the shebang becomes "#!/bin/sh\r")
+gradlew text eol=lf
+*.sh    text eol=lf
