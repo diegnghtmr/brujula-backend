@@ -80,8 +80,11 @@ public class GetSubscriptionProgressService implements GetSubscriptionProgressQu
         assemblePlanMallaQuery.assemblePlanMalla(
             subscription.getPlanId(), subscription.getReferenceJourneyCode());
 
-    // --- Bulk-load 2: All attempts (ONE call, no N+1) ---
-    List<CourseAttempt> attempts = loadCourseAttemptPort.loadBySubscriptionId(subscriptionId);
+    // --- Bulk-load 2: Attempts across ALL the student's active subscriptions for this program ---
+    // (shared academic history: a grade belongs to the program, not the journey)
+    List<CourseAttempt> attempts =
+        loadCourseAttemptPort.loadByUserIdAndProgramId(
+            subscription.getUserId(), subscription.getProgramId());
 
     // Build plan courses list
     List<PlanCourse> planCourses = new ArrayList<>();

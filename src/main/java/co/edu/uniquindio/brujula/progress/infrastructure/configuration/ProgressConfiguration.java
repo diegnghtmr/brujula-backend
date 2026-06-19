@@ -2,6 +2,7 @@ package co.edu.uniquindio.brujula.progress.infrastructure.configuration;
 
 import co.edu.uniquindio.brujula.audit.application.port.in.AuditRecorder;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMallaQuery;
+import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetStudyPlanQuery;
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.ListJourneysQuery;
@@ -148,8 +149,12 @@ class ProgressConfiguration {
    */
   @Bean
   GetCourseAttemptService getCourseAttemptService(
-      LoadCourseAttemptPort loadCourseAttemptPort, LoadSubscriptionPort loadSubscriptionPort) {
-    return new GetCourseAttemptService(loadCourseAttemptPort, loadSubscriptionPort);
+      LoadCourseAttemptPort loadCourseAttemptPort,
+      LoadSubscriptionPort loadSubscriptionPort,
+      AssemblePlanMallaQuery assemblePlanMallaQuery,
+      ListPeriodsQuery listPeriodsQuery) {
+    return new GetCourseAttemptService(
+        loadCourseAttemptPort, loadSubscriptionPort, assemblePlanMallaQuery, listPeriodsQuery);
   }
 
   @Bean

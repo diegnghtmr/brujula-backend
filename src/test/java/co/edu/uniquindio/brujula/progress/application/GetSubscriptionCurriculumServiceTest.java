@@ -129,7 +129,8 @@ class GetSubscriptionCurriculumServiceTest {
             "DIURNA",
             Instant.now(),
             0L);
-    when(loadCourseAttemptPort.loadBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(List.of(attempt));
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(List.of(attempt));
 
     CurriculumViewData result = sut.getSubscriptionCurriculum(SUBSCRIPTION_ID, STUDENT_ID);
 
@@ -167,13 +168,14 @@ class GetSubscriptionCurriculumServiceTest {
     Subscription sub = buildSubscription(SUBSCRIPTION_ID, STUDENT_ID);
     when(loadSubscriptionPort.loadById(SUBSCRIPTION_ID)).thenReturn(Optional.of(sub));
     when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any())).thenReturn(buildMalla());
-    when(loadCourseAttemptPort.loadBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(List.of());
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(List.of());
 
     sut.getSubscriptionCurriculum(SUBSCRIPTION_ID, STUDENT_ID);
 
     // Exactly ONE call to curriculum port — no N+1
     verify(assemblePlanMallaQuery, times(1)).assemblePlanMalla(any(), any());
-    verify(loadCourseAttemptPort, times(1)).loadBySubscriptionId(any());
+    verify(loadCourseAttemptPort, times(1)).loadByUserIdAndProgramId(any(), any());
   }
 
   // -----------------------------------------------------------------------

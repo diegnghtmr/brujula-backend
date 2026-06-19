@@ -63,6 +63,32 @@ class CourseAttemptPersistenceAdapter implements LoadCourseAttemptPort, SaveCour
   }
 
   @Override
+  @Transactional(readOnly = true)
+  public List<CourseAttempt> loadByUserIdAndProgramId(UUID userId, UUID programId) {
+    return jpaRepository.findByUserIdAndProgramId(userId, programId).stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<CourseAttempt> loadByUserIdAndProgramIdAndCourseId(
+      UUID userId, UUID programId, UUID courseId, int page, int size) {
+    return jpaRepository
+        .findByUserIdAndProgramIdAndOptionalCourseId(
+            userId, programId, courseId, PageRequest.of(page, size))
+        .stream()
+        .map(mapper::toDomain)
+        .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public long countByUserIdAndProgramIdAndCourseId(UUID userId, UUID programId, UUID courseId) {
+    return jpaRepository.countByUserIdAndProgramIdAndOptionalCourseId(userId, programId, courseId);
+  }
+
+  @Override
   public CourseAttempt save(CourseAttempt attempt) {
     CourseAttemptJpaEntity entity = mapper.toJpaEntity(attempt);
     // Use the RETURNED managed entity — JPA increments @Version at flush time.
