@@ -202,8 +202,13 @@ class ProgressConfiguration {
       LoadSubscriptionPort loadSubscriptionPort,
       LoadCourseAttemptPort loadCourseAttemptPort,
       AssemblePlanMallaQuery assemblePlanMallaQuery,
-      GetProgramQuery getProgramQuery) {
+      GetProgramQuery getProgramQuery,
+      ListPeriodsQuery listPeriodsQuery) {
     return new GetSubscriptionProgressService(
-        loadSubscriptionPort, loadCourseAttemptPort, assemblePlanMallaQuery, getProgramQuery);
+        loadSubscriptionPort,
+        loadCourseAttemptPort,
+        assemblePlanMallaQuery,
+        getProgramQuery,
+        listPeriodsQuery);
   }
 }
