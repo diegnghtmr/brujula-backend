@@ -259,6 +259,35 @@ class CourseAttemptControllerTest extends AbstractPostgresIntegrationTest {
   }
 
   @Test
+  void get_attempt_response_includes_resolved_period_name() throws Exception {
+    UUID attemptId = UUID.randomUUID();
+    CourseAttemptView view =
+        new CourseAttemptView(
+            attemptId,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            "Programación I",
+            UUID.fromString("00000004-0000-4000-a000-000000000001"),
+            "2024-1",
+            "DIURNA",
+            "PASSED",
+            new BigDecimal("4.2"),
+            Instant.now(),
+            0L);
+    when(getCourseAttemptQuery.getCourseAttempt(any(), any())).thenReturn(view);
+
+    mockMvc
+        .perform(
+            get("/me/course-attempts/" + attemptId)
+                .with(
+                    oidcLogin()
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                        .idToken(t -> t.subject(studentSubject))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.periodName").value("2024-1"));
+  }
+
+  @Test
   void delete_attempt_returns_204() throws Exception {
     UUID attemptId = UUID.randomUUID();
 
