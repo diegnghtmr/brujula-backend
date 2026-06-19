@@ -375,6 +375,8 @@ class CourseAttemptController implements ProgressApi {
 
     Double finalGrade = view.finalGrade() != null ? view.finalGrade().doubleValue() : null;
 
+    // periodName is an optional display field resolved by the service; a null value falls
+    // back to the raw period id in the frontend.
     return new CourseAttempt(
             view.id(),
             view.subscriptionId(),
@@ -385,7 +387,8 @@ class CourseAttemptController implements ProgressApi {
             contractStatus,
             registeredAt,
             view.version())
-        .finalGrade(finalGrade);
+        .finalGrade(finalGrade)
+        .periodName(view.periodName());
   }
 
   // -------------------------------------------------------------------------
