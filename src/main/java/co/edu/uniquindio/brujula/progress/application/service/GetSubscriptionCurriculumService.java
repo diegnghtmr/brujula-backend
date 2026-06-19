@@ -79,8 +79,11 @@ public class GetSubscriptionCurriculumService implements GetSubscriptionCurricul
         assemblePlanMallaQuery.assemblePlanMalla(
             subscription.getPlanId(), subscription.getReferenceJourneyCode());
 
-    // --- Bulk-load 2: All attempts for this subscription (ONE call, no N+1) ---
-    List<CourseAttempt> attempts = loadCourseAttemptPort.loadBySubscriptionId(subscriptionId);
+    // --- Bulk-load 2: Attempts across ALL the student's active subscriptions for this program ---
+    // (shared academic history: a grade belongs to the program, not the journey)
+    List<CourseAttempt> attempts =
+        loadCourseAttemptPort.loadByUserIdAndProgramId(
+            subscription.getUserId(), subscription.getProgramId());
 
     // Build attempt groups by courseId for effective-status resolution
     Map<UUID, List<CourseAttempt>> attemptsByCourse = new HashMap<>();

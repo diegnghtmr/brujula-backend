@@ -96,7 +96,8 @@ class GetSubscriptionProgressServiceTest {
     Subscription sub = buildSubscription(STUDENT_ID);
     when(loadSubscriptionPort.loadById(SUBSCRIPTION_ID)).thenReturn(Optional.of(sub));
     when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any())).thenReturn(buildMalla());
-    when(loadCourseAttemptPort.loadBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(List.of());
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(List.of());
 
     ProgressSummaryView result = sut.getSubscriptionProgress(SUBSCRIPTION_ID, STUDENT_ID);
 
@@ -142,7 +143,7 @@ class GetSubscriptionProgressServiceTest {
             "DIURNA",
             Instant.now(),
             0L);
-    when(loadCourseAttemptPort.loadBySubscriptionId(SUBSCRIPTION_ID))
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
         .thenReturn(List.of(passed, failed));
 
     ProgressSummaryView result = sut.getSubscriptionProgress(SUBSCRIPTION_ID, STUDENT_ID);
@@ -164,7 +165,8 @@ class GetSubscriptionProgressServiceTest {
     Subscription sub = buildSubscription(STUDENT_ID);
     when(loadSubscriptionPort.loadById(SUBSCRIPTION_ID)).thenReturn(Optional.of(sub));
     when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any())).thenReturn(buildMalla());
-    when(loadCourseAttemptPort.loadBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(List.of());
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(List.of());
 
     ProgressSummaryView result = sut.getSubscriptionProgress(SUBSCRIPTION_ID, STUDENT_ID);
 
@@ -180,12 +182,13 @@ class GetSubscriptionProgressServiceTest {
     Subscription sub = buildSubscription(STUDENT_ID);
     when(loadSubscriptionPort.loadById(SUBSCRIPTION_ID)).thenReturn(Optional.of(sub));
     when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any())).thenReturn(buildMalla());
-    when(loadCourseAttemptPort.loadBySubscriptionId(SUBSCRIPTION_ID)).thenReturn(List.of());
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(List.of());
 
     sut.getSubscriptionProgress(SUBSCRIPTION_ID, STUDENT_ID);
 
     verify(assemblePlanMallaQuery, times(1)).assemblePlanMalla(any(), any());
-    verify(loadCourseAttemptPort, times(1)).loadBySubscriptionId(any());
+    verify(loadCourseAttemptPort, times(1)).loadByUserIdAndProgramId(any(), any());
   }
 
   // -----------------------------------------------------------------------
