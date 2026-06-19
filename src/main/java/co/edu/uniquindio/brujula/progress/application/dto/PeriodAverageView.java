@@ -10,6 +10,7 @@ import java.util.UUID;
  * domain types. Maps from {@link co.edu.uniquindio.brujula.progress.domain.PeriodAverageData}.
  *
  * @param periodId period UUID
+ * @param periodName human-readable period name (e.g. "2023-1"); nullable when not resolvable
  * @param estimatedAverage mean grade for graded attempts in this period
  */
-public record PeriodAverageView(UUID periodId, BigDecimal estimatedAverage) {}
+public record PeriodAverageView(UUID periodId, String periodName, BigDecimal estimatedAverage) {}

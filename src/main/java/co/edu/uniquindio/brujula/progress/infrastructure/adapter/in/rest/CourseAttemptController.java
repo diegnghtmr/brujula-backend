@@ -60,8 +60,8 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>{@code ProgressSummary.programName} is resolved via {@code GetSubscriptionProgressService}
  * which calls the programcatalog published port.
  *
- * <p>Known gap: {@code PeriodAverage.periodName} still uses {@code periodId.toString()} as
- * placeholder until a period catalog lookup port is implemented.
+ * <p>{@code PeriodAverage.periodName} is resolved via the offering period catalog ({@code
+ * ListPeriodsQuery}), falling back to the raw period id only when the catalog has no match.
  */
 @RestController
 class CourseAttemptController implements ProgressApi {
@@ -314,8 +314,7 @@ class CourseAttemptController implements ProgressApi {
    *
    * <p>{@code programName} is resolved from the application view (programcatalog port).
    *
-   * <p>Known gap: {@code PeriodAverage.periodName} uses {@code periodId.toString()} as placeholder
-   * until a period catalog lookup port is implemented.
+   * <p>{@code PeriodAverage.periodName} is resolved from the application view (offering port).
    */
   private ProgressSummary toProgressSummaryDto(UUID subscriptionId, ProgressSummaryView view) {
     // programName is the human-readable name resolved from programcatalog
@@ -346,8 +345,12 @@ class CourseAttemptController implements ProgressApi {
   }
 
   private PeriodAverage toPeriodAverageDto(PeriodAverageView periodView) {
-    // TODO: periodName is periodId.toString() — known gap; requires a period catalog lookup port.
-    String periodName = periodView.periodId().toString();
+    // Resolve the human-readable period name; fall back to the raw id when the catalog
+    // lookup yielded nothing (periodName is a required field in the contract).
+    String periodName =
+        periodView.periodName() != null
+            ? periodView.periodName()
+            : periodView.periodId().toString();
     return new PeriodAverage(
         periodView.periodId(), periodName, periodView.estimatedAverage().doubleValue());
   }

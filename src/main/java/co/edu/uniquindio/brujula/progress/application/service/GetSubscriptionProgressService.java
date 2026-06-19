@@ -2,6 +2,8 @@ package co.edu.uniquindio.brujula.progress.application.service;
 
 import co.edu.uniquindio.brujula.curriculum.application.dto.PlanMallaView;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMallaQuery;
+import co.edu.uniquindio.brujula.offering.application.dto.AcademicPeriodView;
+import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
 import co.edu.uniquindio.brujula.progress.application.dto.PeriodAverageView;
 import co.edu.uniquindio.brujula.progress.application.dto.ProgressSummaryView;
@@ -47,6 +49,7 @@ public class GetSubscriptionProgressService implements GetSubscriptionProgressQu
   private final LoadCourseAttemptPort loadCourseAttemptPort;
   private final AssemblePlanMallaQuery assemblePlanMallaQuery;
   private final GetProgramQuery getProgramQuery;
+  private final ListPeriodsQuery listPeriodsQuery;
   private final EffectiveAttemptResolver effectiveAttemptResolver;
   private final ProgressSummaryCalculator progressSummaryCalculator;
 
@@ -54,11 +57,13 @@ public class GetSubscriptionProgressService implements GetSubscriptionProgressQu
       LoadSubscriptionPort loadSubscriptionPort,
       LoadCourseAttemptPort loadCourseAttemptPort,
       AssemblePlanMallaQuery assemblePlanMallaQuery,
-      GetProgramQuery getProgramQuery) {
+      GetProgramQuery getProgramQuery,
+      ListPeriodsQuery listPeriodsQuery) {
     this.loadSubscriptionPort = loadSubscriptionPort;
     this.loadCourseAttemptPort = loadCourseAttemptPort;
     this.assemblePlanMallaQuery = assemblePlanMallaQuery;
     this.getProgramQuery = getProgramQuery;
+    this.listPeriodsQuery = listPeriodsQuery;
     this.effectiveAttemptResolver = new EffectiveAttemptResolver();
     this.progressSummaryCalculator = new ProgressSummaryCalculator();
   }
@@ -142,12 +147,18 @@ public class GetSubscriptionProgressService implements GetSubscriptionProgressQu
 
   private ProgressSummaryView toView(
       UUID subscriptionId, String programName, ProgressSummaryData data) {
-    List<PeriodAverageView> periodAverages =
-        data.averagesByPeriod() != null
-            ? data.averagesByPeriod().stream()
-                .map(p -> new PeriodAverageView(p.periodId(), p.estimatedAverage()))
-                .toList()
-            : List.of();
+    List<PeriodAverageView> periodAverages = List.of();
+    if (data.averagesByPeriod() != null && !data.averagesByPeriod().isEmpty()) {
+      // Resolve period names once (no N+1) — only when there are per-period averages to map.
+      Map<UUID, String> periodNames = periodNames();
+      periodAverages =
+          data.averagesByPeriod().stream()
+              .map(
+                  p ->
+                      new PeriodAverageView(
+                          p.periodId(), periodNames.get(p.periodId()), p.estimatedAverage()))
+              .toList();
+    }
 
     return new ProgressSummaryView(
         subscriptionId,
@@ -179,5 +190,14 @@ public class GetSubscriptionProgressService implements GetSubscriptionProgressQu
       // Defensive fallback: programId as string if catalog lookup fails
       return programId.toString();
     }
+  }
+
+  /** Builds a {@code periodId -> name} map from the offering period catalog (one call). */
+  private Map<UUID, String> periodNames() {
+    Map<UUID, String> names = new HashMap<>();
+    for (AcademicPeriodView period : listPeriodsQuery.listPeriods(null)) {
+      names.put(period.id(), period.name());
+    }
+    return names;
   }
 }

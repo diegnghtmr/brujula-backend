@@ -210,7 +210,7 @@ class AvailabilityControllerTest extends AbstractPostgresIntegrationTest {
             3,
             1,
             new BigDecimal("3.5"),
-            List.of(new PeriodAverageView(UUID.randomUUID(), new BigDecimal("3.5"))),
+            List.of(new PeriodAverageView(UUID.randomUUID(), "2026-1", new BigDecimal("3.5"))),
             "Los datos son autodeclarados y no son oficiales.");
 
     when(getSubscriptionProgressQuery.getSubscriptionProgress(any(), any())).thenReturn(summary);
