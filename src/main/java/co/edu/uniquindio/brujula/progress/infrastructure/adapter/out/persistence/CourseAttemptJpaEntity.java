@@ -35,7 +35,7 @@ class CourseAttemptJpaEntity {
   @Column(name = "status", nullable = false)
   private String status;
 
-  @Column(name = "final_grade")
+  @Column(name = "final_grade", precision = 3, scale = 2)
   private BigDecimal finalGrade; // nullable
 
   @Column(name = "period_id")
