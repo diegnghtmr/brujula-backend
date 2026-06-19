@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import co.edu.uniquindio.brujula.curriculum.application.dto.PlanMallaView;
 import co.edu.uniquindio.brujula.curriculum.application.port.in.AssemblePlanMallaQuery;
+import co.edu.uniquindio.brujula.offering.application.dto.AcademicPeriodView;
+import co.edu.uniquindio.brujula.offering.application.port.in.ListPeriodsQuery;
 import co.edu.uniquindio.brujula.programcatalog.application.dto.ProgramView;
 import co.edu.uniquindio.brujula.programcatalog.application.port.in.GetProgramQuery;
 import co.edu.uniquindio.brujula.progress.application.dto.ProgressSummaryView;
@@ -27,6 +29,7 @@ import co.edu.uniquindio.brujula.progress.domain.SubscriptionNotFoundException;
 import co.edu.uniquindio.brujula.progress.domain.SubscriptionStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +49,7 @@ class GetSubscriptionProgressServiceTest {
   private LoadCourseAttemptPort loadCourseAttemptPort;
   private AssemblePlanMallaQuery assemblePlanMallaQuery;
   private GetProgramQuery getProgramQuery;
+  private ListPeriodsQuery listPeriodsQuery;
   private GetSubscriptionProgressService sut;
 
   private static final UUID STUDENT_ID = UUID.randomUUID();
@@ -64,6 +68,9 @@ class GetSubscriptionProgressServiceTest {
     loadCourseAttemptPort = mock(LoadCourseAttemptPort.class);
     assemblePlanMallaQuery = mock(AssemblePlanMallaQuery.class);
     getProgramQuery = mock(GetProgramQuery.class);
+    listPeriodsQuery = mock(ListPeriodsQuery.class);
+    // Default: empty period catalog so name resolution is a no-op unless a test overrides it.
+    when(listPeriodsQuery.listPeriods(null)).thenReturn(List.of());
 
     // Stub program name resolution
     when(getProgramQuery.getProgram(PROGRAM_ID))
@@ -71,7 +78,11 @@ class GetSubscriptionProgressServiceTest {
 
     sut =
         new GetSubscriptionProgressService(
-            loadSubscriptionPort, loadCourseAttemptPort, assemblePlanMallaQuery, getProgramQuery);
+            loadSubscriptionPort,
+            loadCourseAttemptPort,
+            assemblePlanMallaQuery,
+            getProgramQuery,
+            listPeriodsQuery);
   }
 
   // -----------------------------------------------------------------------
@@ -154,6 +165,48 @@ class GetSubscriptionProgressServiceTest {
     assertThat(result.passedCourses()).isEqualTo(1);
     assertThat(result.pendingFailedCourses()).isEqualTo(1);
     assertThat(result.disclaimer()).isNotBlank();
+  }
+
+  // -----------------------------------------------------------------------
+  // Per-period averages carry the human-readable period name (not the UUID)
+  // -----------------------------------------------------------------------
+
+  @Test
+  void period_averages_resolve_human_readable_period_names() {
+    UUID periodId = UUID.fromString("00000004-0000-4000-a000-000000000001");
+    Subscription sub = buildSubscription(STUDENT_ID);
+    when(loadSubscriptionPort.loadById(SUBSCRIPTION_ID)).thenReturn(Optional.of(sub));
+    when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any())).thenReturn(buildMalla());
+    when(listPeriodsQuery.listPeriods(null))
+        .thenReturn(
+            List.of(
+                new AcademicPeriodView(
+                    periodId,
+                    "2024-1",
+                    LocalDate.of(2024, 1, 15),
+                    LocalDate.of(2024, 6, 7),
+                    "CLOSED",
+                    0L)));
+
+    CourseAttempt passed =
+        CourseAttempt.reconstitute(
+            AttemptId.generate(),
+            new SubscriptionId(SUBSCRIPTION_ID),
+            COURSE_1,
+            AttemptStatus.PASSED,
+            new Grade(new BigDecimal("4.0")),
+            periodId,
+            "DIURNA",
+            Instant.now(),
+            0L);
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(List.of(passed));
+
+    ProgressSummaryView result = sut.getSubscriptionProgress(SUBSCRIPTION_ID, STUDENT_ID);
+
+    assertThat(result.averagesByPeriod()).isNotEmpty();
+    assertThat(result.averagesByPeriod().get(0).periodId()).isEqualTo(periodId);
+    assertThat(result.averagesByPeriod().get(0).periodName()).isEqualTo("2024-1");
   }
 
   // -----------------------------------------------------------------------
