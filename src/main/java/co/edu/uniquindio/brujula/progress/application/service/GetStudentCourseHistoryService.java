@@ -6,9 +6,7 @@ import co.edu.uniquindio.brujula.progress.application.port.out.LoadSubscriptionP
 import co.edu.uniquindio.brujula.progress.domain.AttemptStatus;
 import co.edu.uniquindio.brujula.progress.domain.CourseAttempt;
 import co.edu.uniquindio.brujula.progress.domain.EffectiveAttemptResolver;
-import co.edu.uniquindio.brujula.progress.domain.Subscription;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -19,14 +17,9 @@ import java.util.stream.Collectors;
  * <p>Reuses {@link EffectiveAttemptResolver} and the existing {@link LoadCourseAttemptPort} and
  * {@link LoadSubscriptionPort} — ZERO change to progress domain behavior.
  *
- * <p>Algorithm:
- *
- * <ol>
- *   <li>Load all active subscriptions for the student.
- *   <li>Filter to the subscription matching the requested programId.
- *   <li>Load all course attempts for that subscription.
- *   <li>Group by courseId and resolve the effective status per course.
- * </ol>
+ * <p>Academic history is SHARED across journeys: attempts are aggregated across ALL active
+ * subscriptions of the same (student, program), so a course passed in any journey (DIURNA/NOCTURNA)
+ * counts for the program. A grade belongs to the program, not the journey.
  *
  * <p>Framework-free: no Spring or JPA dependencies. Wired via {@code @Bean} in {@link
  * co.edu.uniquindio.brujula.progress.infrastructure.configuration.ProgressConfiguration}.
@@ -48,15 +41,7 @@ public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQu
 
   @Override
   public Set<UUID> passedCourseIds(UUID ownerId, UUID programId) {
-    Optional<Subscription> subscription = findSubscription(ownerId, programId);
-    if (subscription.isEmpty()) {
-      return Set.of();
-    }
-
-    List<CourseAttempt> attempts =
-        loadCourseAttemptPort.loadBySubscriptionId(subscription.get().getId().value());
-
-    return attempts.stream()
+    return attemptsForProgram(ownerId, programId).stream()
         .collect(Collectors.groupingBy(CourseAttempt::getCourseId))
         .entrySet()
         .stream()
@@ -68,16 +53,10 @@ public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQu
 
   @Override
   public String effectiveStatus(UUID ownerId, UUID programId, UUID courseId) {
-    Optional<Subscription> subscription = findSubscription(ownerId, programId);
-    if (subscription.isEmpty()) {
-      return NONE_SENTINEL;
-    }
-
-    List<CourseAttempt> allAttempts =
-        loadCourseAttemptPort.loadBySubscriptionId(subscription.get().getId().value());
-
     List<CourseAttempt> attemptsForCourse =
-        allAttempts.stream().filter(a -> courseId.equals(a.getCourseId())).toList();
+        attemptsForProgram(ownerId, programId).stream()
+            .filter(a -> courseId.equals(a.getCourseId()))
+            .toList();
 
     return resolver.resolve(attemptsForCourse).map(AttemptStatus::name).orElse(NONE_SENTINEL);
   }
@@ -86,9 +65,14 @@ public class GetStudentCourseHistoryService implements GetStudentCourseHistoryQu
   // Private helpers
   // -------------------------------------------------------------------------
 
-  private Optional<Subscription> findSubscription(UUID ownerId, UUID programId) {
+  /**
+   * Aggregates attempts across ALL active subscriptions of (owner, program), so academic history is
+   * shared across journeys (e.g. DIURNA + NOCTURNA) of the same program.
+   */
+  private List<CourseAttempt> attemptsForProgram(UUID ownerId, UUID programId) {
     return loadSubscriptionPort.loadActiveByUserId(ownerId).stream()
         .filter(s -> programId.equals(s.getProgramId()))
-        .findFirst();
+        .flatMap(s -> loadCourseAttemptPort.loadBySubscriptionId(s.getId().value()).stream())
+        .toList();
   }
 }

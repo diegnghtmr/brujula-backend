@@ -37,4 +37,45 @@ interface CourseAttemptJpaRepository extends JpaRepository<CourseAttemptJpaEntit
           + "AND (:courseId IS NULL OR a.courseId = :courseId)")
   long countBySubscriptionIdAndOptionalCourseId(
       @Param("subscriptionId") UUID subscriptionId, @Param("courseId") UUID courseId);
+
+  // ---------------------------------------------------------------------------
+  // Program-level (cross-journey) reads: aggregate attempts across all ACTIVE
+  // subscriptions of the same (user, program). Academic history is shared across
+  // journeys (DIURNA/NOCTURNA) because a grade belongs to the program, not the journey.
+  // ---------------------------------------------------------------------------
+
+  /** Load all attempts across the student's ACTIVE subscriptions for a program. */
+  @Query(
+      "SELECT a FROM CourseAttemptJpaEntity a "
+          + "WHERE a.subscriptionId IN ("
+          + "SELECT s.id FROM StudentProgramSubscriptionJpaEntity s "
+          + "WHERE s.userId = :userId AND s.programId = :programId AND s.status = 'ACTIVE')")
+  List<CourseAttemptJpaEntity> findByUserIdAndProgramId(
+      @Param("userId") UUID userId, @Param("programId") UUID programId);
+
+  /** Paged load across the student's ACTIVE subscriptions for a program, optional courseId. */
+  @Query(
+      "SELECT a FROM CourseAttemptJpaEntity a "
+          + "WHERE a.subscriptionId IN ("
+          + "SELECT s.id FROM StudentProgramSubscriptionJpaEntity s "
+          + "WHERE s.userId = :userId AND s.programId = :programId AND s.status = 'ACTIVE') "
+          + "AND (:courseId IS NULL OR a.courseId = :courseId) "
+          + "ORDER BY a.registeredAt DESC")
+  List<CourseAttemptJpaEntity> findByUserIdAndProgramIdAndOptionalCourseId(
+      @Param("userId") UUID userId,
+      @Param("programId") UUID programId,
+      @Param("courseId") UUID courseId,
+      Pageable pageable);
+
+  /** Count across the student's ACTIVE subscriptions for a program, optional courseId. */
+  @Query(
+      "SELECT COUNT(a) FROM CourseAttemptJpaEntity a "
+          + "WHERE a.subscriptionId IN ("
+          + "SELECT s.id FROM StudentProgramSubscriptionJpaEntity s "
+          + "WHERE s.userId = :userId AND s.programId = :programId AND s.status = 'ACTIVE') "
+          + "AND (:courseId IS NULL OR a.courseId = :courseId)")
+  long countByUserIdAndProgramIdAndOptionalCourseId(
+      @Param("userId") UUID userId,
+      @Param("programId") UUID programId,
+      @Param("courseId") UUID courseId);
 }

@@ -175,6 +175,52 @@ class CourseAttemptPersistenceAdapterTest extends AbstractPostgresIntegrationTes
     assertThat(loaded.get().getPeriodId()).isEqualTo(opaquePeriodId);
   }
 
+  @Test
+  void load_by_user_and_program_aggregates_attempts_across_journeys() {
+    // Two ACTIVE subscriptions for the SAME (user, program), different journeys → shared history.
+    Subscription diurna =
+        saveSubscriptionPort.save(
+            Subscription.create(SubscriptionId.generate(), userId, programId, planId, "DIURNA"));
+    Subscription nocturna =
+        saveSubscriptionPort.save(
+            Subscription.create(SubscriptionId.generate(), userId, programId, planId, "NOCTURNA"));
+
+    UUID courseA = UUID.randomUUID();
+    UUID courseB = UUID.randomUUID();
+    saveCourseAttemptPort.save(
+        CourseAttempt.register(
+            AttemptId.generate(),
+            diurna.getId(),
+            courseA,
+            AttemptStatus.PASSED,
+            new Grade(new BigDecimal("4.0")),
+            testPeriodId,
+            "DIURNA"));
+    saveCourseAttemptPort.save(
+        CourseAttempt.register(
+            AttemptId.generate(),
+            nocturna.getId(),
+            courseB,
+            AttemptStatus.PASSED,
+            new Grade(new BigDecimal("3.5")),
+            testPeriodId,
+            "NOCTURNA"));
+
+    // Aggregated load by (user, program) sees attempts from BOTH journeys.
+    List<CourseAttempt> all = loadCourseAttemptPort.loadByUserIdAndProgramId(userId, programId);
+    assertThat(all).anyMatch(a -> a.getCourseId().equals(courseA));
+    assertThat(all).anyMatch(a -> a.getCourseId().equals(courseB));
+
+    // Count and paged-by-course variants are program-scoped too.
+    assertThat(loadCourseAttemptPort.countByUserIdAndProgramIdAndCourseId(userId, programId, null))
+        .isGreaterThanOrEqualTo(2);
+    List<CourseAttempt> pagedCourseA =
+        loadCourseAttemptPort.loadByUserIdAndProgramIdAndCourseId(
+            userId, programId, courseA, 0, 10);
+    assertThat(pagedCourseA).isNotEmpty();
+    assertThat(pagedCourseA).allMatch(a -> a.getCourseId().equals(courseA));
+  }
+
   // -------------------------------------------------------------------------
   // Helper
   // -------------------------------------------------------------------------
