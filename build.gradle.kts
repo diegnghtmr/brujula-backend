@@ -85,7 +85,7 @@ dependencies {
 openApiGenerate {
     generatorName.set("spring")
     library.set("spring-boot")
-    inputSpec.set("$projectDir/openapi/brujula-api.v1.yaml")
+    inputSpec.set(file("$projectDir/openapi/brujula-api.v1.yaml").toURI().toString())
     outputDir.set(layout.buildDirectory.dir("generated/openapi").get().asFile.absolutePath)
     apiPackage.set("co.edu.uniquindio.brujula.generated.api")
     modelPackage.set("co.edu.uniquindio.brujula.generated.model")
@@ -116,7 +116,7 @@ openApiGenerate {
 // We wire it so 'check' always validates the contract first.
 // ============================================================
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.ValidateTask>("openApiValidateContract") {
-    inputSpec.set("$projectDir/openapi/brujula-api.v1.yaml")
+    inputSpec.set(file("$projectDir/openapi/brujula-api.v1.yaml").toURI().toString())
     recommend.set(true)
 }
 

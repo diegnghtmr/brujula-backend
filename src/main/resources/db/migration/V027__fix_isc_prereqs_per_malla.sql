@@ -55,7 +55,7 @@
 -- 1a. INACTIVAR: Inteligencia Artificial ← Administración de Proyectos
 -- ---------------------------------------------------------------------------
 UPDATE curriculum.course_requirement
-   SET status = 'INACTIVE'
+   SET status = 'ARCHIVED'
  WHERE target_course_id   = 'c0090000-0000-4000-a000-000000000002'::uuid  -- Inteligencia Artificial
    AND required_course_id = 'c0090000-0000-4000-a000-000000000001'::uuid  -- Administración de Proyectos
    AND type               = 'COURSE_PASSED'
@@ -79,7 +79,7 @@ SELECT gen_random_uuid(),
 -- 2a. INACTIVAR: Bases de Datos II ← Programación Avanzada
 -- ---------------------------------------------------------------------------
 UPDATE curriculum.course_requirement
-   SET status = 'INACTIVE'
+   SET status = 'ARCHIVED'
  WHERE target_course_id   = 'c0070000-0000-4000-a000-000000000004'::uuid  -- Bases de Datos II
    AND required_course_id = 'c0060000-0000-4000-a000-000000000004'::uuid  -- Programación Avanzada
    AND type               = 'COURSE_PASSED'
