@@ -129,7 +129,9 @@ public class CreateCourseRequirementService implements CreateCourseRequirementUs
                   command.requiredCredits());
           case CONFIGURABLE ->
               CourseRequirement.configurable(
-                  CourseRequirementId.generate(), command.targetCourseId());
+                  CourseRequirementId.generate(),
+                  command.targetCourseId(),
+                  command.requiredCredits());
         };
 
     // 4. Persist

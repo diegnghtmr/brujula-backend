@@ -126,6 +126,80 @@ class DuplicateSelectionRuleTest {
   }
 
   // -------------------------------------------------------------------------
+  // PROP-001 (REQ-3, design D4): profundización electives are now distinct real courses
+  // (V028 pool ids c0dee000-...-001..008), not the 4 shared slot ids. Confirms this rule
+  // needs NO change: distinctness is already courseId-based.
+  // -------------------------------------------------------------------------
+
+  private static final UUID ELECTIVE_DISENO_CENTRADO =
+      UUID.fromString("c0dee000-0000-4000-a000-000000000001");
+  private static final UUID ELECTIVE_COMPUTACION_NUBE =
+      UUID.fromString("c0dee000-0000-4000-a000-000000000004");
+
+  @Test
+  void twoDistinctProfundizacionElectives_bothAccepted() {
+    // Existing selection already holds one real elective id
+    ExistingSelection existing =
+        new ExistingSelection(
+            UUID.randomUUID(),
+            ELECTIVE_DISENO_CENTRADO,
+            "Diseño Centrado en el Usuario",
+            programId,
+            3.0,
+            List.of());
+
+    // Candidate is a DIFFERENT real elective id — must be accepted (no duplicate)
+    CandidateSelection candidate =
+        new CandidateSelection(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            ELECTIVE_COMPUTACION_NUBE,
+            "Computación en la Nube",
+            programId,
+            3.0,
+            "DIURNA",
+            "FINAL",
+            1L,
+            List.of());
+
+    Optional<ValidationNotice> result = rule.evaluate(candidate, List.of(existing));
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void sameProfundizacionElectiveTwice_blocked() {
+    // Existing selection already holds a real elective id
+    ExistingSelection existing =
+        new ExistingSelection(
+            UUID.randomUUID(),
+            ELECTIVE_COMPUTACION_NUBE,
+            "Computación en la Nube",
+            programId,
+            3.0,
+            List.of());
+
+    // Candidate resolves to the SAME real elective id — must be blocked
+    CandidateSelection candidate =
+        new CandidateSelection(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            ELECTIVE_COMPUTACION_NUBE,
+            "Computación en la Nube",
+            programId,
+            3.0,
+            "DIURNA",
+            "FINAL",
+            1L,
+            List.of());
+
+    Optional<ValidationNotice> result = rule.evaluate(candidate, List.of(existing));
+
+    assertThat(result).isPresent();
+    assertThat(result.get().code()).isEqualTo("SIMULATION_DUPLICATE_SELECTION");
+  }
+
+  // -------------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------------
 

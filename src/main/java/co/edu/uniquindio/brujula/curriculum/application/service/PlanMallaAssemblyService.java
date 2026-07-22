@@ -7,6 +7,7 @@ import co.edu.uniquindio.brujula.curriculum.application.port.out.LoadCourseRequi
 import co.edu.uniquindio.brujula.curriculum.domain.Course;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseRequirement;
 import co.edu.uniquindio.brujula.curriculum.domain.CourseStatus;
+import co.edu.uniquindio.brujula.curriculum.domain.CourseType;
 import co.edu.uniquindio.brujula.curriculum.domain.RecommendedSemester;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,7 +99,21 @@ public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
             .map(e -> new PlanMallaView.SemesterBucket(e.getKey(), List.copyOf(e.getValue())))
             .toList();
 
-    return new PlanMallaView(planId, journeyCode, buckets, GRADUATION_REQUIREMENTS_ADVISORY);
+    // Pool courses (PROP-001 design D1/D2): ACTIVE DEEPENING courses with NO recommended-semester
+    // row for ANY journey. These are invisible to every malla grid (unlike the 4 legacy slot
+    // anchors, which DO carry a semester row and therefore already appear in `buckets` above), yet
+    // still need to be identified as pool members by the progress module (e.g. for the
+    // CONFIGURABLE thesis-gate count). No hardcoded course ids — purely structural.
+    List<PlanMallaView.CourseSummary> poolCourses =
+        allCourses.stream()
+            .filter(c -> c.status() == CourseStatus.ACTIVE)
+            .filter(c -> c.type() == CourseType.DEEPENING)
+            .filter(c -> c.recommendedSemesters().isEmpty())
+            .map(c -> toCourseSummary(c, List.of()))
+            .toList();
+
+    return new PlanMallaView(
+        planId, journeyCode, buckets, GRADUATION_REQUIREMENTS_ADVISORY, poolCourses);
   }
 
   // ---------------------------------------------------------------------------
@@ -124,6 +139,7 @@ public class PlanMallaAssemblyService implements AssemblePlanMallaQuery {
         req.requiredCourseId(),
         req.confidence() != null ? req.confidence().name() : null,
         req.inferred(),
-        req.simultaneityAllowed());
+        req.simultaneityAllowed(),
+        req.requiredCredits());
   }
 }
