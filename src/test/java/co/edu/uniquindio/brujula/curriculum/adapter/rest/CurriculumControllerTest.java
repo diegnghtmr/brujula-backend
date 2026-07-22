@@ -268,6 +268,33 @@ class CurriculumControllerTest extends AbstractPostgresIntegrationTest {
                 .value(false));
   }
 
+  /**
+   * PROP-001 PR3 task 4.1/4.2: the malla HTTP JSON must expose the CONFIGURABLE pool-gate's {@code
+   * requiredCredits} threshold. Uses the real V028-seeded CONFIGURABLE requirement on Trabajo de
+   * Grado ({@code required_credits = 4}, "≥ 4 distinct passed pool electives").
+   */
+  @Test
+  void get_plan_malla_seeded_sistemas_exposes_configurable_pool_gate_required_credits()
+      throws Exception {
+    // Sistemas plan seeded by V012/V028 — fixed UUID, no @Transactional (read-only against real
+    // seed)
+    String sistemasPlanId = "33333333-0000-4000-a000-000000000001";
+
+    mockMvc
+        .perform(
+            get("/plans/{planId}/malla", sistemasPlanId)
+                .param("journeyCode", "DIURNA")
+                .with(oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+        .andExpect(status().isOk())
+        // Trabajo de Grado (Sem 10 DIURNA) carries the CONFIGURABLE pool-gate requirement
+        .andExpect(
+            jsonPath(
+                    "$.semesterBuckets[?(@.recommendedSemester == 10)].courses"
+                        + "[?(@.officialCode == 'ISC-S10-TRABAJODEGRADO')]"
+                        + ".requirements[?(@.type == 'CONFIGURABLE')].requiredCredits")
+                .value(org.hamcrest.Matchers.hasItem(4)));
+  }
+
   // ---------------------------------------------------------------------------
   // SQL insert helpers
   // ---------------------------------------------------------------------------

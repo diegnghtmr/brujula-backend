@@ -306,7 +306,8 @@ class CourseAttemptController implements ProgressApi {
             courseType,
             progressStatus)
         .officialCode(courseData.officialCode())
-        .unmetRequirements(courseData.unmetRequirements());
+        .unmetRequirements(courseData.unmetRequirements())
+        .filledElectiveName(courseData.filledElectiveName());
   }
 
   /**
