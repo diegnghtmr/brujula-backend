@@ -30,7 +30,7 @@ COPY . .
 # dependency integrity check (ERR_PNPM_IGNORED_BUILDS) that fires because
 # pnpm install ran with --ignore-scripts. The build itself does not need
 # postinstall scripts (esbuild/msw are pre-compiled for this platform).
-RUN pnpm exec tsc -b && pnpm exec vite build
+RUN pnpm run build
 
 # ----------------------------------------------------------------
 FROM node:24.3.0-alpine3.22 AS runtime
