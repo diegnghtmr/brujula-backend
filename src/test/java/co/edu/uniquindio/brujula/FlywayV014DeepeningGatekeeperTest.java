@@ -2,21 +2,26 @@ package co.edu.uniquindio.brujula;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
- * Asserts that after V014 Flyway migration has run:
+ * Asserts the final (post-migration-chain) state of {@code curriculum.sequential_track}'s
+ * gatekeeper column:
  *
  * <ul>
- *   <li>The {@code gatekeeper_course_id} column exists on {@code curriculum.sequential_track}
- *   <li>The 3 ISC DEEPENING tracks each point to their correct per-line gatekeeper course (Ing.
- *       Software+HCI → IS I; Infra TI → Admin Infra TI; Gestión Información → BD I)
+ *   <li>The {@code gatekeeper_course_id} column exists (added by V014)
  *   <li>The PERSONAL_ELECTIVE track (Electivas de Formación Personal) has NULL gatekeeper
+ *   <li><strong>V028 CORRECTION</strong> (PROP-001-profundizacion-elective-pool, design §0,
+ *       2026-07-22, supersedes V014's original seed): the 3 ISC DEEPENING line tracks (Ing.
+ *       Software+HCI, Infra T.I., Gestión Información) no longer carry a gatekeeper on the track
+ *       itself — each line's prerequisite is now modeled as a {@code COURSE_PASSED} edge on every
+ *       elective belonging to that line (see {@code FlywayV028CurriculumProfundizacionPoolTest}).
+ *       V014 originally seeded a non-null, distinct gatekeeper per track; V028 relocates that logic
+ *       and NULLs the 3 columns.
  * </ul>
  */
 @SpringBootTest
@@ -49,111 +54,76 @@ class FlywayV014DeepeningGatekeeperTest extends AbstractPostgresIntegrationTest 
   }
 
   // ---------------------------------------------------------------------------
-  // Gatekeeper: Línea Ingeniería del Software y HCI → Ingeniería de Software I
+  // V028 CORRECTION: the 3 ISC DEEPENING line tracks now have NULL gatekeeper
+  // (relocated onto per-elective COURSE_PASSED edges — design §0, supersedes V014's seed)
   // ---------------------------------------------------------------------------
 
   @Test
-  void deepening_track_software_hci_gatekeeper_is_ingenieria_de_software_i() {
-    String gatekeeperName =
+  void deepening_track_software_hci_gatekeeper_is_null_after_v028_relocation() {
+    assertTrackGatekeeperIsNull("%Ingeniería del Software y HCI%");
+  }
+
+  @Test
+  void deepening_track_infra_ti_gatekeeper_is_null_after_v028_relocation() {
+    assertTrackGatekeeperIsNull("%Infraestructura de T.I.%");
+  }
+
+  @Test
+  void deepening_track_gestion_informacion_gatekeeper_is_null_after_v028_relocation() {
+    assertTrackGatekeeperIsNull("%Gestión de la Información%");
+  }
+
+  private void assertTrackGatekeeperIsNull(String labelPattern) {
+    UUID gatekeeperCourseId =
         jdbc.queryForObject(
             """
-            SELECT c.name
+            SELECT st.gatekeeper_course_id
             FROM curriculum.sequential_track st
-            JOIN curriculum.course c ON st.gatekeeper_course_id = c.id
             JOIN catalog.study_plan sp ON st.plan_id = sp.id
             JOIN catalog.academic_program ap ON sp.program_id = ap.id
             WHERE ap.name = ?
               AND st.kind = 'DEEPENING'
-              AND st.label LIKE '%Ingeniería del Software y HCI%'
+              AND st.label LIKE ?
             """,
-            String.class, PROGRAM_NAME);
+            (rs, n) -> {
+              String id = rs.getString("gatekeeper_course_id");
+              return id != null ? UUID.fromString(id) : null;
+            },
+            PROGRAM_NAME,
+            labelPattern);
 
-    assertThat(gatekeeperName)
+    assertThat(gatekeeperCourseId)
         .as(
-            "Línea Ingeniería del Software y HCI gatekeeper must be 'Ingeniería de Software I' (PDF oficial)")
-        .isEqualTo("Ingeniería de Software I");
+            "V028 must NULL the gatekeeper for DEEPENING track matching '%s' (relocated onto"
+                + " per-elective COURSE_PASSED edges)".formatted(labelPattern))
+        .isNull();
   }
 
   // ---------------------------------------------------------------------------
-  // Gatekeeper: Línea Infraestructura de T.I. → Administración de Infraestructura de TI
+  // All 3 ISC DEEPENING tracks must have NULL gatekeeper after V028 relocation
   // ---------------------------------------------------------------------------
 
   @Test
-  void deepening_track_infra_ti_gatekeeper_is_administracion_de_infraestructura_de_ti() {
-    String gatekeeperName =
+  void three_isc_deepening_tracks_have_null_gatekeeper_after_v028_relocation() {
+    Integer nonNullCount =
         jdbc.queryForObject(
             """
-            SELECT c.name
+            SELECT COUNT(*)
             FROM curriculum.sequential_track st
-            JOIN curriculum.course c ON st.gatekeeper_course_id = c.id
             JOIN catalog.study_plan sp ON st.plan_id = sp.id
             JOIN catalog.academic_program ap ON sp.program_id = ap.id
             WHERE ap.name = ?
               AND st.kind = 'DEEPENING'
-              AND st.label LIKE '%Infraestructura de T.I.%'
+              AND st.gatekeeper_course_id IS NOT NULL
             """,
-            String.class, PROGRAM_NAME);
-
-    assertThat(gatekeeperName)
-        .as(
-            "Línea Infraestructura de T.I. gatekeeper must be 'Administración de Infraestructura de TI' (PDF oficial)")
-        .isEqualTo("Administración de Infraestructura de TI");
-  }
-
-  // ---------------------------------------------------------------------------
-  // Gatekeeper: Línea Gestión de la Información y el Conocimiento → Bases de Datos I
-  // ---------------------------------------------------------------------------
-
-  @Test
-  void deepening_track_gestion_informacion_gatekeeper_is_bases_de_datos_i() {
-    String gatekeeperName =
-        jdbc.queryForObject(
-            """
-            SELECT c.name
-            FROM curriculum.sequential_track st
-            JOIN curriculum.course c ON st.gatekeeper_course_id = c.id
-            JOIN catalog.study_plan sp ON st.plan_id = sp.id
-            JOIN catalog.academic_program ap ON sp.program_id = ap.id
-            WHERE ap.name = ?
-              AND st.kind = 'DEEPENING'
-              AND st.label LIKE '%Gestión de la Información%'
-            """,
-            String.class, PROGRAM_NAME);
-
-    assertThat(gatekeeperName)
-        .as("Línea Gestión de la Información gatekeeper must be 'Bases de Datos I' (PDF oficial)")
-        .isEqualTo("Bases de Datos I");
-  }
-
-  // ---------------------------------------------------------------------------
-  // Each of the 3 ISC DEEPENING tracks must have a DISTINCT gatekeeper
-  // ---------------------------------------------------------------------------
-
-  @Test
-  void three_isc_deepening_tracks_have_distinct_gatekeepers() {
-    List<Map<String, Object>> rows =
-        jdbc.queryForList(
-            """
-            SELECT st.label, c.name AS gatekeeper_name, c.official_code AS gatekeeper_code
-            FROM curriculum.sequential_track st
-            JOIN curriculum.course c ON st.gatekeeper_course_id = c.id
-            JOIN catalog.study_plan sp ON st.plan_id = sp.id
-            JOIN catalog.academic_program ap ON sp.program_id = ap.id
-            WHERE ap.name = ?
-              AND st.kind = 'DEEPENING'
-            ORDER BY st.label
-            """,
+            Integer.class,
             PROGRAM_NAME);
 
-    assertThat(rows)
+    assertThat(nonNullCount)
         .as(
-            "All 3 ISC DEEPENING tracks must have a non-null gatekeeper (gatekeeper_course_id IS NOT NULL)")
-        .hasSize(3);
-
-    List<Object> gatekeeperNames = rows.stream().map(r -> r.get("gatekeeper_name")).toList();
-    assertThat(gatekeeperNames)
-        .as("Each of the 3 ISC DEEPENING tracks must have a DISTINCT gatekeeper course")
-        .doesNotHaveDuplicates();
+            "All 3 ISC DEEPENING tracks must have NULL gatekeeper_course_id after V028"
+                + " (relocated onto per-elective edges, design §0 CORRECTION)")
+        .isEqualTo(0);
   }
 
   // ---------------------------------------------------------------------------

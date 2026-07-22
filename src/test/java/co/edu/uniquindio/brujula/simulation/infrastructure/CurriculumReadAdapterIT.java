@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
- * FIX S1 integration test: proves {@link CurriculumReadAdapterIT} resolves the real V014
- * sequential-track gatekeeper data end-to-end against a live PostgreSQL database.
+ * FIX S1 integration test: proves {@link CurriculumReadAdapterIT} resolves real sequential-track
+ * gatekeeper data end-to-end against a live PostgreSQL database.
  *
  * <p>Data provenance:
  *
@@ -21,18 +21,22 @@ import org.springframework.boot.test.context.SpringBootTest;
  *       e0a20000-0000-4000-a000-000000000001) with level-option courses (Profundización I:
  *       c0080000-0000-4000-a000-000000000004, Profundización II:
  *       c0080000-0000-4000-a000-000000000005).
- *   <li>V014: sets {@code gatekeeper_course_id = c0050000-0000-4000-a000-000000000005} (Ingeniería
- *       de Software I) on track e0a20000-0000-4000-a000-000000000001.
+ *   <li>V014: originally sets {@code gatekeeper_course_id = c0050000-0000-4000-a000-000000000005}
+ *       (Ingeniería de Software I) on track e0a20000-0000-4000-a000-000000000001.
+ *   <li><strong>V028 CORRECTION</strong> (PROP-001-profundizacion-elective-pool, design §0,
+ *       2026-07-22, supersedes the V014 seed): the per-line gatekeeper is relocated off {@code
+ *       sequential_track.gatekeeper_course_id} onto a {@code COURSE_PASSED} edge on every elective
+ *       belonging to that line. The 4 slot courses (Profundización I-IV) are kept only as ACTIVE
+ *       malla display anchors and carry no per-elective edge themselves, so {@code
+ *       sequentialPredecessor} now resolves NO predecessor for them.
  * </ul>
  *
  * <p>Traversal path exercised: {@code sequentialPredecessor(courseId, null)} → {@code
  * getCourse(courseId).type()} = "DEEPENING" → {@code getCourse(courseId).planId()} = ISC plan →
- * {@code listSequentialTracks(planId, null)} → find track containing courseId → return gatekeeper.
+ * {@code listSequentialTracks(planId, null)} → find track containing courseId → return gatekeeper
+ * (now NULL post-V028).
  *
- * <p>If this test returns empty (no predecessor), the traversal is broken — that is a REAL bug to
- * surface, not to mask with a softer assertion.
- *
- * <p>Uses Testcontainers PostgreSQL + Flyway V011..V018 (shared via
+ * <p>Uses Testcontainers PostgreSQL + Flyway (full migration chain, shared via
  * AbstractPostgresIntegrationTest).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -45,27 +49,21 @@ class CurriculumReadAdapterIT extends AbstractPostgresIntegrationTest {
   static final UUID PROFUNDIZACION_I_COURSE_ID =
       UUID.fromString("c0080000-0000-4000-a000-000000000004");
 
-  // Expected gatekeeper set by V014: Ingeniería de Software I
-  // (ISC-S5-INGENIERIADESOFTWAREI, track e0a20000-0000-4000-a000-000000000001)
-  static final UUID EXPECTED_GATEKEEPER_ID =
-      UUID.fromString("c0050000-0000-4000-a000-000000000005");
-
   // V012 planId for ISC Plan 21
   static final UUID ISC_PLAN_ID = UUID.fromString("33333333-0000-4000-a000-000000000001");
 
   // -------------------------------------------------------------------------
-  // S1: sequentialPredecessor resolves real V014 gatekeeper (traversal proof)
+  // S1: sequentialPredecessor resolves NULL gatekeeper post-V028 (relocation proof)
   // -------------------------------------------------------------------------
 
   /**
-   * Proves the full getCourse→planId→listSequentialTracks→gatekeeper traversal returns the
-   * V014-seeded gatekeeper for a DEEPENING course in the ISC Línea de Software y HCI track.
-   *
-   * <p>If this assertion fails with {@code predecessorCourseId == null}, the traversal is broken
-   * and the bug must be fixed — do NOT relax the assertion.
+   * Proves the full getCourse→planId→listSequentialTracks→gatekeeper traversal returns NO
+   * predecessor for Profundización I after V028 NULLs the track's gatekeeper_course_id (the
+   * per-line prerequisite is now carried by the elective's own COURSE_PASSED edge instead — see
+   * {@code FlywayV028CurriculumProfundizacionPoolTest}).
    */
   @Test
-  void sequentialPredecessor_deepeningCourseInSoftwareLine_resolvesV014Gatekeeper() {
+  void sequentialPredecessor_deepeningSlotCourse_hasNoPredecessorAfterV028Relocation() {
     // ACT: resolve predecessor for Profundización I (DEEPENING, level 1 of Línea SW+HCI)
     SequentialPredecessor result =
         curriculumReadPort.sequentialPredecessor(PROFUNDIZACION_I_COURSE_ID, null);
@@ -80,21 +78,16 @@ class CurriculumReadAdapterIT extends AbstractPostgresIntegrationTest {
         .as("isSequentialTrackKind() must be true for DEEPENING")
         .isTrue();
 
-    // ASSERT: hasPredecessor() must return true — V014 sets a gatekeeper
+    // ASSERT: hasPredecessor() must now return false — V028 NULLs the track gatekeeper
     assertThat(result.hasPredecessor())
-        .as("Track e0a20000 has gatekeeper_course_id set by V014 — hasPredecessor() must be true")
-        .isTrue();
-
-    // ASSERT: the gatekeeper must be Ingeniería de Software I (V014 source of truth)
-    assertThat(result.predecessorCourseId())
         .as(
-            "V014 gatekeeper for Línea SW+HCI track must be c0050000-...-5 (Ingeniería de Software I)")
-        .isEqualTo(EXPECTED_GATEKEEPER_ID);
+            "Track e0a20000 has gatekeeper_course_id NULLed by V028 (relocated onto per-elective"
+                + " edges) — hasPredecessor() must be false")
+        .isFalse();
 
-    // ASSERT: predecessor name must be non-null and non-blank
-    assertThat(result.predecessorCourseName())
-        .as("Gatekeeper course name must be resolved via getCourse")
-        .isNotBlank();
+    // ASSERT: no predecessor id/name is resolved
+    assertThat(result.predecessorCourseId()).isNull();
+    assertThat(result.predecessorCourseName()).isNull();
   }
 
   /**

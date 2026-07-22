@@ -31,11 +31,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * constraints:
  *
  * <ul>
- *   <li>Exactly 57 courses seeded for the Sistemas plan
+ *   <li>Exactly 65 courses seeded for the Sistemas plan (57 original + 8 DEEPENING pool electives
+ *       from V028, PROP-001-profundizacion-elective-pool)
  *   <li>study_plan.total_credits = 163
  *   <li>Journeys DIURNA (10 sem) and NOCTURNA (11 sem) exist for Sistemas
  *   <li>Exactly 3 degree_work_modality rows for Sistemas
- *   <li>All 57 courses have a non-null official_code
+ *   <li>All 65 courses have a non-null official_code
  *   <li>No cycle in the Sistemas course_requirement graph
  *   <li>No forward-semester dependency for DIURNA journey
  *   <li>No forward-semester dependency for NOCTURNA journey
@@ -78,7 +79,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
   // ---------------------------------------------------------------------------
 
   @Test
-  void sistemas_plan_has_exactly_57_courses() {
+  void sistemas_plan_has_exactly_65_courses() {
     Integer count =
         jdbc.queryForObject(
             """
@@ -92,8 +93,10 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(count)
-        .as("Sistemas plan must have exactly 57 courses (Plan 21, malla diurna)")
-        .isEqualTo(57);
+        .as(
+            "Sistemas plan must have exactly 65 courses (57 Plan 21 malla diurna + 8 DEEPENING"
+                + " pool electives from V028)")
+        .isEqualTo(65);
   }
 
   // ---------------------------------------------------------------------------
@@ -275,7 +278,7 @@ class FlywayV012SistemasSeedTest extends AbstractPostgresIntegrationTest {
             PROGRAM_NAME);
 
     assertThat(distinctCodes)
-        .as("All 57 Sistemas official_codes must be unique per program (V011 UNIQUE constraint)")
+        .as("All 65 Sistemas official_codes must be unique per program (V011 UNIQUE constraint)")
         .isEqualTo(totalCourses);
   }
 
