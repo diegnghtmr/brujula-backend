@@ -111,6 +111,28 @@ class CourseRequirementTest {
   }
 
   // -------------------------------------------------------------------------
+  // CONFIGURABLE — F1 (design §11): a CONFIGURABLE requirement must be able to carry a pool
+  // threshold (e.g. "4 distinct passed pool members" for the profundización thesis gate).
+  // Before the fix, the only configurable(...) factory silently dropped requiredCredits.
+  // -------------------------------------------------------------------------
+
+  @Test
+  void configurableWithThreshold_carriesRequiredCredits() {
+    CourseRequirement req = CourseRequirement.configurable(reqId, targetCourseId, 4);
+
+    assertThat(req.type()).isEqualTo(RequirementType.CONFIGURABLE);
+    assertThat(req.requiredCourseId()).isNull();
+    assertThat(req.requiredCredits()).isEqualTo(4);
+  }
+
+  @Test
+  void configurableWithThreshold_null_behavesLikeNoThreshold() {
+    CourseRequirement req = CourseRequirement.configurable(reqId, targetCourseId, null);
+
+    assertThat(req.requiredCredits()).isNull();
+  }
+
+  // -------------------------------------------------------------------------
   // Common fields
   // -------------------------------------------------------------------------
 

@@ -215,6 +215,41 @@ class GetStudentCourseHistoryServiceTest {
   }
 
   // -------------------------------------------------------------------------
+  // PROP-001 (REQ-6, regression guard): distinct profundización elective courseIds must NOT
+  // collapse into one PASSED entry. Before V028+V029 repointed offerings, all profundización
+  // attempts shared one of 4 slot ids; a student passing 4 distinct electives would incorrectly
+  // resolve to only 1-4 collapsed ids. With real per-elective ids, distinctness is a property of
+  // the Set<UUID> return type — no code change needed here, only real ids upstream.
+  // -------------------------------------------------------------------------
+
+  @Test
+  void fourDistinctProfundizacionElectivesPassed_allFourRemainDistinctInPassedSet() {
+    UUID subscriptionId = UUID.randomUUID();
+    Subscription sub = subscriptionWith(subscriptionId, ownerId, programId);
+    when(loadSubscriptionPort.loadActiveByUserId(ownerId)).thenReturn(List.of(sub));
+
+    UUID electiveDiseno = UUID.fromString("c0dee000-0000-4000-a000-000000000001");
+    UUID electiveMoviles = UUID.fromString("c0dee000-0000-4000-a000-000000000002");
+    UUID electiveUsabilidad = UUID.fromString("c0dee000-0000-4000-a000-000000000003");
+    UUID electiveNube = UUID.fromString("c0dee000-0000-4000-a000-000000000004");
+
+    when(loadCourseAttemptPort.loadBySubscriptionId(subscriptionId))
+        .thenReturn(
+            List.of(
+                passedAttempt(subscriptionId, electiveDiseno),
+                passedAttempt(subscriptionId, electiveMoviles),
+                passedAttempt(subscriptionId, electiveUsabilidad),
+                passedAttempt(subscriptionId, electiveNube)));
+
+    Set<UUID> result = service.passedCourseIds(ownerId, programId);
+
+    // No collapse: all 4 distinct real elective ids are present
+    assertThat(result)
+        .containsExactlyInAnyOrder(
+            electiveDiseno, electiveMoviles, electiveUsabilidad, electiveNube);
+  }
+
+  // -------------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------------
 

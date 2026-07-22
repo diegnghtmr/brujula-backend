@@ -151,15 +151,29 @@ public final class CourseRequirement {
 
   /**
    * Create a CONFIGURABLE requirement: custom rule evaluated externally (future simulator logic).
+   *
+   * <p>Equivalent to {@link #configurable(CourseRequirementId, UUID, Integer)} with a {@code null}
+   * threshold.
    */
   public static CourseRequirement configurable(CourseRequirementId id, UUID targetCourseId) {
+    return configurable(id, targetCourseId, null);
+  }
+
+  /**
+   * Create a CONFIGURABLE requirement carrying an externally-evaluated threshold in {@code
+   * requiredCredits} (e.g. "N distinct passed pool members" for a pool-gate rule such as the
+   * profundización thesis gate — design PROP-001 D1/F1). {@code requiredCredits} is nullable: a
+   * CONFIGURABLE row with no threshold is still valid (custom rule with no numeric parameter).
+   */
+  public static CourseRequirement configurable(
+      CourseRequirementId id, UUID targetCourseId, Integer requiredCredits) {
     requireNotNull(id, targetCourseId);
     return new CourseRequirement(
         id,
         targetCourseId,
         RequirementType.CONFIGURABLE,
         null,
-        null,
+        requiredCredits,
         null,
         null,
         null,

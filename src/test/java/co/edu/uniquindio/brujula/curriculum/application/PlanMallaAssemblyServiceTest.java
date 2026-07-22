@@ -314,6 +314,109 @@ class PlanMallaAssemblyServiceTest {
   }
 
   // ---------------------------------------------------------------------------
+  // PROP-001 (design D1/D2/§6): pool courses (ACTIVE DEEPENING, no semester row for any
+  // journey) are surfaced via a separate poolCourses list, never inside semesterBuckets.
+  // ---------------------------------------------------------------------------
+
+  @Test
+  void assemble_active_deepening_course_with_no_semester_row_is_a_pool_course() {
+    UUID planId = UUID.randomUUID();
+    UUID slotAnchorId = UUID.randomUUID();
+    UUID electiveId = UUID.randomUUID();
+
+    // Slot anchor: DEEPENING, has a semester row → rendered in the malla grid, NOT a pool course
+    Course slotAnchor =
+        Course.reconstitute(
+            new CourseId(slotAnchorId),
+            planId,
+            UUID.randomUUID(),
+            "ISC-S8-PROFUNDIZACIONI",
+            "Profundización I",
+            CourseType.DEEPENING,
+            3,
+            4,
+            List.of(new RecommendedSemester("DIURNA", 8)),
+            CourseStatus.ACTIVE,
+            0L);
+
+    // Elective: DEEPENING, NO semester row at all → pool course, invisible to the malla grid
+    Course elective =
+        Course.reconstitute(
+            new CourseId(electiveId),
+            planId,
+            UUID.randomUUID(),
+            "ISC-DEEP-COMPUTACIONENLANUBE",
+            "Computación en la Nube",
+            CourseType.DEEPENING,
+            3,
+            4,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
+
+    when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(slotAnchor, elective));
+    when(loadCourseRequirementPort.loadByTargetCourseIds(anyList())).thenReturn(List.of());
+
+    PlanMallaView result = assemblePlanMallaQuery.assemblePlanMalla(planId, "DIURNA");
+
+    // Slot anchor renders in the malla grid, NOT in poolCourses
+    assertThat(extractCourseIds(result)).containsExactly(slotAnchorId);
+    // Elective is a pool course, NOT rendered in the malla grid
+    assertThat(result.poolCourses())
+        .extracting(PlanMallaView.CourseSummary::id)
+        .containsExactly(electiveId);
+  }
+
+  @Test
+  void assemble_non_deepening_course_with_no_semester_row_is_not_a_pool_course() {
+    UUID planId = UUID.randomUUID();
+    UUID courseId = UUID.randomUUID();
+
+    Course requiredNoSemester =
+        Course.reconstitute(
+            new CourseId(courseId),
+            planId,
+            UUID.randomUUID(),
+            "ISC-XXX",
+            "Curso administrativo",
+            CourseType.REQUIRED,
+            0,
+            0,
+            List.of(),
+            CourseStatus.ACTIVE,
+            0L);
+
+    when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(requiredNoSemester));
+    when(loadCourseRequirementPort.loadByTargetCourseIds(anyList())).thenReturn(List.of());
+
+    PlanMallaView result = assemblePlanMallaQuery.assemblePlanMalla(planId, "DIURNA");
+
+    assertThat(result.poolCourses()).isEmpty();
+  }
+
+  @Test
+  void assemble_requirement_summary_carries_required_credits_for_configurable_edge() {
+    UUID planId = UUID.randomUUID();
+    UUID tdgId = UUID.randomUUID();
+    UUID reqId = UUID.randomUUID();
+
+    Course tdg = makeCourse(tdgId, planId, "Trabajo de Grado", 10, "DIURNA", CourseStatus.ACTIVE);
+    CourseRequirement configurableGate =
+        CourseRequirement.configurable(new CourseRequirementId(reqId), tdgId, 4);
+
+    when(loadCoursePort.loadByPlanId(planId)).thenReturn(List.of(tdg));
+    when(loadCourseRequirementPort.loadByTargetCourseIds(anyList()))
+        .thenReturn(List.of(configurableGate));
+
+    PlanMallaView result = assemblePlanMallaQuery.assemblePlanMalla(planId, "DIURNA");
+
+    PlanMallaView.RequirementSummary rs =
+        result.semesterBuckets().get(0).courses().get(0).requirements().get(0);
+    assertThat(rs.type()).isEqualTo("CONFIGURABLE");
+    assertThat(rs.requiredCredits()).isEqualTo(4);
+  }
+
+  // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 

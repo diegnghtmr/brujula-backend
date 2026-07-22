@@ -680,6 +680,191 @@ class AddSimulationSelectionServiceTest {
   }
 
   // -------------------------------------------------------------------------
+  // PROP-001 (REQ-2, design §0 CORRECTION): profundización electives keep their LINE's
+  // COURSE_PASSED gatekeeper (relocated from the old per-slot track gatekeeper). Interchangeable
+  // across numbered slots — PrerequisiteEvaluator needs no code change, only real elective/
+  // gatekeeper ids flowing through the same COURSE_PASSED channel.
+  // -------------------------------------------------------------------------
+
+  private static final UUID ELECTIVE_COMPUTACION_NUBE =
+      UUID.fromString("c0dee000-0000-4000-a000-000000000004");
+  private static final UUID GATEKEEPER_ADMIN_INFRA_TI =
+      UUID.fromString(
+          "a0000000-0000-4000-a000-000000000007"); // ISC-S7-ADMINISTRACIONDEINFRAESTRUCTURADETI
+
+  @Test
+  void addSelection_profundizacionElective_lineGatekeeperUnmet_throwsBlockedException() {
+    UUID idempotencyKey = UUID.randomUUID();
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "line-gk-unmet");
+
+    co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement lineGatekeeperReq =
+        new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
+            ELECTIVE_COMPUTACION_NUBE,
+            GATEKEEPER_ADMIN_INFRA_TI,
+            "COURSE_PASSED",
+            "HIGH",
+            false,
+            "Administración de Infraestructura de T.I.");
+
+    Simulation simulation = buildSimulation();
+    when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
+    when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
+        .thenReturn(
+            buildElectiveResolutionView(ELECTIVE_COMPUTACION_NUBE, "Computación en la Nube"));
+    when(curriculumReadPort.courseCredits(ELECTIVE_COMPUTACION_NUBE)).thenReturn(3);
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
+    // Gatekeeper NOT passed
+    when(progressReadPort.passedCourseIds(ownerId, programId)).thenReturn(Set.of());
+    when(curriculumReadPort.requirementsForCourse(ELECTIVE_COMPUTACION_NUBE))
+        .thenReturn(List.of(lineGatekeeperReq));
+    when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
+    when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
+    when(curriculumReadPort.sequentialPredecessor(ELECTIVE_COMPUTACION_NUBE, null))
+        .thenReturn(new SequentialPredecessor(ELECTIVE_COMPUTACION_NUBE, "DEEPENING", null, null));
+
+    assertThatThrownBy(() -> sut.addSelection(command))
+        .isInstanceOf(SimulationValidationBlockedException.class)
+        .satisfies(
+            ex -> {
+              SimulationValidationBlockedException blocked =
+                  (SimulationValidationBlockedException) ex;
+              assertThat(blocked.primaryNotice().code())
+                  .isEqualTo("SIMULATION_PREREQUISITE_NOT_MET");
+            });
+
+    verify(saveSimulationSelectionPort, never()).save(any());
+  }
+
+  @Test
+  void addSelection_profundizacionElective_lineGatekeeperMet_acceptedRegardlessOfNumberedSlot() {
+    UUID idempotencyKey = UUID.randomUUID();
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "line-gk-met");
+
+    co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement lineGatekeeperReq =
+        new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
+            ELECTIVE_COMPUTACION_NUBE,
+            GATEKEEPER_ADMIN_INFRA_TI,
+            "COURSE_PASSED",
+            "HIGH",
+            false,
+            "Administración de Infraestructura de T.I.");
+
+    Simulation simulation = buildSimulation();
+    when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
+    when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
+        .thenReturn(
+            buildElectiveResolutionView(ELECTIVE_COMPUTACION_NUBE, "Computación en la Nube"));
+    when(curriculumReadPort.courseCredits(ELECTIVE_COMPUTACION_NUBE)).thenReturn(3);
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId)).thenReturn(List.of());
+    // Gatekeeper IS passed — no ordinal/slot check exists, only the line prerequisite
+    when(progressReadPort.passedCourseIds(ownerId, programId))
+        .thenReturn(Set.of(GATEKEEPER_ADMIN_INFRA_TI));
+    when(curriculumReadPort.requirementsForCourse(ELECTIVE_COMPUTACION_NUBE))
+        .thenReturn(List.of(lineGatekeeperReq));
+    when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
+    when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
+    when(curriculumReadPort.sequentialPredecessor(ELECTIVE_COMPUTACION_NUBE, null))
+        .thenReturn(new SequentialPredecessor(ELECTIVE_COMPUTACION_NUBE, "DEEPENING", null, null));
+    when(saveSimulationSelectionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(jsonCodecPort.toJson(any())).thenReturn("{}");
+
+    SimulationSelectionView view = sut.addSelection(command);
+
+    assertThat(view).isNotNull();
+    assertThat(view.courseId()).isEqualTo(ELECTIVE_COMPUTACION_NUBE);
+    verify(saveSimulationSelectionPort).save(any(SimulationSelection.class));
+  }
+
+  // -------------------------------------------------------------------------
+  // PROP-001 (REQ-4, design D3/A1): two distinct profundización electives selected within the
+  // SAME simulation period must both be accepted — simultaneity, no ordinal slot enforcement.
+  // -------------------------------------------------------------------------
+
+  private static final UUID ELECTIVE_DISENO_CENTRADO =
+      UUID.fromString("c0dee000-0000-4000-a000-000000000001");
+  private static final UUID GATEKEEPER_ING_SOFTWARE_I =
+      UUID.fromString("a0000000-0000-4000-a000-000000000005"); // ISC-S5-INGENIERIADESOFTWAREI
+
+  @Test
+  void addSelection_secondDistinctElective_samePeriod_accepted() {
+    UUID idempotencyKey = UUID.randomUUID();
+    AddSelectionCommand command =
+        new AddSelectionCommand(
+            idempotencyKey, simulationId, ownerId, scheduleOptionId, false, "simultaneity-hash");
+
+    // Existing selection: elective A already added to this same simulation (same periodId,
+    // since a Simulation carries exactly one periodId)
+    SimulationSelection existingElectiveA =
+        buildPersistedSelection(ELECTIVE_DISENO_CENTRADO, programId, 3.0);
+
+    // Candidate: elective B (different line, gatekeeper already met) — must be accepted alongside A
+    co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement lineGatekeeperReq =
+        new co.edu.uniquindio.brujula.simulation.domain.PrereqRequirement(
+            ELECTIVE_COMPUTACION_NUBE,
+            GATEKEEPER_ADMIN_INFRA_TI,
+            "COURSE_PASSED",
+            "HIGH",
+            false,
+            "Administración de Infraestructura de T.I.");
+
+    Simulation simulation = buildSimulation();
+    when(idempotencyStorePort.find(idempotencyKey, AddSimulationSelectionService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(loadSimulationPort.loadById(simulationId)).thenReturn(Optional.of(simulation));
+    when(offeringReadPort.resolveScheduleOption(scheduleOptionId))
+        .thenReturn(
+            buildElectiveResolutionView(ELECTIVE_COMPUTACION_NUBE, "Computación en la Nube"));
+    when(curriculumReadPort.courseCredits(ELECTIVE_COMPUTACION_NUBE)).thenReturn(3);
+    // Elective A is already an active selection in this same simulation/period
+    when(loadSimulationSelectionPort.loadActiveBySimulationId(simulationId))
+        .thenReturn(List.of(existingElectiveA));
+    when(progressReadPort.passedCourseIds(ownerId, programId))
+        .thenReturn(Set.of(GATEKEEPER_ADMIN_INFRA_TI));
+    when(curriculumReadPort.requirementsForCourse(ELECTIVE_COMPUTACION_NUBE))
+        .thenReturn(List.of(lineGatekeeperReq));
+    when(creditLimitPort.creditLimit(programId, periodId)).thenReturn(30);
+    when(programNameReadPort.programName(programId)).thenReturn("Systems Engineering");
+    when(curriculumReadPort.sequentialPredecessor(ELECTIVE_COMPUTACION_NUBE, null))
+        .thenReturn(new SequentialPredecessor(ELECTIVE_COMPUTACION_NUBE, "DEEPENING", null, null));
+    when(saveSimulationSelectionPort.save(any())).thenAnswer(inv -> inv.getArgument(0));
+    when(jsonCodecPort.toJson(any())).thenReturn("{}");
+
+    // Both A (already added) and B (candidate) coexist in the same period — no block
+    SimulationSelectionView view = sut.addSelection(command);
+
+    assertThat(view).isNotNull();
+    assertThat(view.courseId()).isEqualTo(ELECTIVE_COMPUTACION_NUBE);
+    verify(saveSimulationSelectionPort).save(any(SimulationSelection.class));
+  }
+
+  private ScheduleOptionResolutionView buildElectiveResolutionView(
+      UUID electiveCourseId, String courseName) {
+    ScheduleOptionResolutionView.SessionSlot slot =
+        new ScheduleOptionResolutionView.SessionSlot(
+            "TUESDAY", LocalTime.of(10, 0), LocalTime.of(12, 0));
+    return new ScheduleOptionResolutionView(
+        scheduleOptionId,
+        UUID.randomUUID(),
+        electiveCourseId,
+        courseName,
+        programId,
+        periodId,
+        "A",
+        3.0,
+        "PUBLISHED",
+        1L,
+        List.of(slot));
+  }
+
+  // -------------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------------
 

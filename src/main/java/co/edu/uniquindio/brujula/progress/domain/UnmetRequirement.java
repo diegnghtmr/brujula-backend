@@ -8,15 +8,15 @@ import java.util.UUID;
  *
  * <p>Used by {@link CourseAvailabilityService}. No Spring/JPA imports.
  *
- * @param requiredCourseId the prerequisite course UUID
- * @param type the requirement type (e.g. COURSE_PASSED, SEQUENCE)
+ * @param requiredCourseId the prerequisite course UUID; {@code null} for a pool-gate requirement
+ *     (CONFIGURABLE, PROP-001 design D1) that has no single required course
+ * @param type the requirement type (e.g. COURSE_PASSED, SEQUENCE, CONFIGURABLE)
  * @param advisory true if this is a soft/advisory warning (inferred + MEDIUM/LOW confidence); false
  *     if this is a blocking requirement (HARD edge)
  */
 public record UnmetRequirement(UUID requiredCourseId, String type, boolean advisory) {
 
   public UnmetRequirement {
-    Objects.requireNonNull(requiredCourseId, "requiredCourseId must not be null");
     Objects.requireNonNull(type, "type must not be null");
   }
 }
