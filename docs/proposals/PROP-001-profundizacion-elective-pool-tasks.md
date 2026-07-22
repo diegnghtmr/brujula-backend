@@ -53,11 +53,11 @@ Base: `feature/PROP-001-profundizacion-elective-pool` (tracker branch)
 
 Base: PR1a branch
 
-- [ ] 2.1 RED (new `OfferingRepointV029IT`): assert every 2026-2 profundización `course_offering.course_id` resolves to one of the 8 elective ids via the normalized-name map (design §3 table); assert zero unmapped offerings → GREEN: `V029__repoint_2026_2_profundizacion_offerings.sql`, idempotent by offering id, fails loudly on any unmatched offering. [REQ-7, design D6, §11 R-offering-map]
-- [ ] 2.2 RED (new `SimulationSelectionBackfillV030IT`): assert existing `simulation.simulation_selection` rows on old shared-slot ids remap to the correct elective id by normalized `course_name`, with a legacy/unknown fallback for unmatched rows → GREEN: `V030__backfill_simulation_selection_electives.sql`. [design D6, §11 R1]
-- [ ] 2.3 Update offering-adapter test fixtures still referencing shared slot ids as `course_id`.
-- [ ] 2.4 Re-run root seed `seed-diego-simulacros-2026-2.sql`; verify the 32-selection assertion still holds (manual/seed run, not gradlew). [design D6]
-- [ ] 2.5 Verify: `./gradlew spotlessApply spotlessCheck test --tests "*OfferingRepointV029IT*" --tests "*SimulationSelectionBackfillV030IT*"`.
+- [x] 2.1 RED (new `OfferingRepointV029IT`): assert every 2026-2 profundización `course_offering.course_id` resolves to one of the 8 elective ids via the normalized-name map (design §3 table); assert zero unmapped offerings → GREEN: `V029__repoint_2026_2_profundizacion_offerings.sql`, idempotent by offering id, fails loudly on any unmatched offering. [REQ-7, design D6, §11 R-offering-map]
+- [x] 2.2 RED (new `SimulationSelectionBackfillV030IT`): assert existing `simulation.simulation_selection` rows on old shared-slot ids remap to the correct elective id by normalized `course_name`, with a legacy/unknown fallback for unmatched rows → GREEN: `V030__backfill_simulation_selection_electives.sql`. [design D6, §11 R1]
+- [x] 2.3 Update offering-adapter test fixtures still referencing shared slot ids as `course_id`. **Deviation**: only `FlywayV022OfferingSeedFromXlsxTest` needed updating (it asserted 18 offerings on the shared slot ids by construction) — `CurriculumReadAdapterIT`'s use of the same UUID constant is a `curriculum.course` id (the slot course, kept ACTIVE as a display anchor per design D2), not an `offering.course_offering.course_id`, so it is unaffected by V029 and needed no change.
+- [ ] 2.4 Re-run root seed `seed-diego-simulacros-2026-2.sql`; verify the 32-selection assertion still holds (manual/seed run, not gradlew). [design D6] — **DEFERRED to orchestrator** (dev-DB apply + seed verification is out of scope for this apply batch per explicit instruction; not run against the dev DB by this agent).
+- [x] 2.5 Verify: `./gradlew spotlessApply spotlessCheck test --tests "*OfferingRepointV029IT*" --tests "*SimulationSelectionBackfillV030IT*"` → BUILD SUCCESSFUL, all GREEN. Full `./gradlew test --offline` also run — BUILD SUCCESSFUL, 1517 tests, 0 failures, 0 errors, 14 pre-existing skips (unrelated shell-script contract tests).
 
 ## PR2 — Domain Rules Regression + Progress Pool Gate
 

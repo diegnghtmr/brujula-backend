@@ -93,8 +93,9 @@ class FlywayV022OfferingSeedFromXlsxTest extends AbstractPostgresIntegrationTest
   }
 
   @Test
-  void v022_maps_named_deepening_offerings_without_inventing_course_ids() {
-    Integer mappedDeepeningRows =
+  void
+      v022_maps_named_deepening_offerings_originally_to_generic_slot_ids_later_repointed_by_v029() {
+    Integer namedDeepeningRows =
         jdbc.queryForObject(
             """
             SELECT COUNT(*)
@@ -103,6 +104,28 @@ class FlywayV022OfferingSeedFromXlsxTest extends AbstractPostgresIntegrationTest
             WHERE ap.name = '2026-2'
               AND co.course_name ILIKE 'Profundización%'
               AND co.notes ILIKE '%generic Profundización%'
+            """,
+            Integer.class);
+
+    // V022 inserts 18 named deepening offerings (14 mapped to the Profundización I
+    // slot, 4 to Profundización III), each originally reusing an existing generic
+    // course_id as an interim measure. The header comment on line 6 also matches
+    // 'generic Profundización' in the file but is never persisted, so the row count in
+    // the table is 18, not 19. This count (by name/notes pattern, independent of
+    // course_id) is unaffected by V029 and must remain 18.
+    assertThat(namedDeepeningRows).isEqualTo(18);
+
+    // PROP-001-profundizacion-elective-pool PR1b: V029 re-points every one of these 18
+    // rows off the two shared generic slot ids onto its specific elective course_id
+    // (see OfferingRepointV029IT). This originally-generic mapping must NOT survive.
+    Integer stillOnSharedSlotIds =
+        jdbc.queryForObject(
+            """
+            SELECT COUNT(*)
+            FROM offering.course_offering co
+            JOIN offering.academic_period ap ON ap.id = co.period_id
+            WHERE ap.name = '2026-2'
+              AND co.course_name ILIKE 'Profundización%'
               AND co.course_id IN (
                   'c0080000-0000-4000-a000-000000000004'::uuid,
                   'c0090000-0000-4000-a000-000000000004'::uuid
@@ -110,11 +133,9 @@ class FlywayV022OfferingSeedFromXlsxTest extends AbstractPostgresIntegrationTest
             """,
             Integer.class);
 
-    // V022 inserts 18 named deepening offerings (14 mapped to the Profundización I
-    // slot, 4 to Profundización III), each reusing an existing generic course_id.
-    // The header comment on line 6 also matches 'generic Profundización' in the file
-    // but is never persisted, so the row count in the table is 18, not 19.
-    assertThat(mappedDeepeningRows).isEqualTo(18);
+    assertThat(stillOnSharedSlotIds)
+        .as("V029 (PR1b) must re-point every profundización offering off the shared slot ids")
+        .isZero();
   }
 
   @Test
