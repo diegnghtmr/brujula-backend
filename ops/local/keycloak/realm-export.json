@@ -107,6 +107,9 @@
       "webOrigins": [
         "http://localhost:8080"
       ],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:5173/login##http://localhost:5174/login"
+      },
       "protocol": "openid-connect",
       "fullScopeAllowed": true,
       "protocolMappers": [
