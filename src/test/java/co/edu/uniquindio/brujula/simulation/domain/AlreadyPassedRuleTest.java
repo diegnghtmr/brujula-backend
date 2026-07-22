@@ -51,6 +51,45 @@ class AlreadyPassedRuleTest {
   }
 
   // -------------------------------------------------------------------------
+  // PROP-001 (REQ-5, design D4): profundización electives are distinct real courses (V028 pool
+  // ids). Confirms this rule needs NO change: already-passed detection is courseId-based.
+  // -------------------------------------------------------------------------
+
+  private static final UUID ELECTIVE_DISENO_CENTRADO =
+      UUID.fromString("c0dee000-0000-4000-a000-000000000001");
+  private static final UUID ELECTIVE_COMPUTACION_NUBE =
+      UUID.fromString("c0dee000-0000-4000-a000-000000000004");
+
+  @Test
+  void passedOneElective_selectingDistinctElective_allowed() {
+    // Student passed elective A (Diseño Centrado en el Usuario)
+    PassedCourseSet passed = new PassedCourseSet(Set.of(ELECTIVE_DISENO_CENTRADO));
+
+    // Candidate is a DIFFERENT real elective (Computación en la Nube) — must be allowed
+    CandidateSelection candidate =
+        buildCandidate(ELECTIVE_COMPUTACION_NUBE, "Computación en la Nube");
+
+    Optional<ValidationNotice> result = rule.evaluate(candidate, passed);
+
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void passedOneElective_reselectingSameElective_blocked() {
+    // Student passed elective A (Diseño Centrado en el Usuario)
+    PassedCourseSet passed = new PassedCourseSet(Set.of(ELECTIVE_DISENO_CENTRADO));
+
+    // Candidate resolves to the SAME real elective already passed — must be blocked
+    CandidateSelection candidate =
+        buildCandidate(ELECTIVE_DISENO_CENTRADO, "Diseño Centrado en el Usuario");
+
+    Optional<ValidationNotice> result = rule.evaluate(candidate, passed);
+
+    assertThat(result).isPresent();
+    assertThat(result.get().code()).isEqualTo("SIMULATION_COURSE_ALREADY_PASSED");
+  }
+
+  // -------------------------------------------------------------------------
   // Helpers
   // -------------------------------------------------------------------------
 

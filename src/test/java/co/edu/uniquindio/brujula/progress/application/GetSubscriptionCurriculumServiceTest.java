@@ -179,6 +179,210 @@ class GetSubscriptionCurriculumServiceTest {
   }
 
   // -----------------------------------------------------------------------
+  // PROP-001 (REQ-6, design D5): 4 distinct passed pool electives → 4 named entries, no
+  // collapse; the k-th passed pool elective (ordered by periodId, then registeredAt) maps to
+  // the k-th numbered display slot, showing that elective's name.
+  // -----------------------------------------------------------------------
+
+  private static final UUID SLOT_I = UUID.randomUUID();
+  private static final UUID SLOT_II = UUID.randomUUID();
+  private static final UUID SLOT_III = UUID.randomUUID();
+  private static final UUID SLOT_IV = UUID.randomUUID();
+  private static final UUID ELECTIVE_DISENO = UUID.randomUUID();
+  private static final UUID ELECTIVE_MOVILES = UUID.randomUUID();
+  private static final UUID ELECTIVE_USABILIDAD = UUID.randomUUID();
+  private static final UUID ELECTIVE_NUBE = UUID.randomUUID();
+  private static final UUID PERIOD_1 = UUID.fromString("00000000-0000-4000-a000-000000000001");
+  private static final UUID PERIOD_2 = UUID.fromString("00000000-0000-4000-a000-000000000002");
+  private static final UUID PERIOD_3 = UUID.fromString("00000000-0000-4000-a000-000000000003");
+  private static final UUID PERIOD_4 = UUID.fromString("00000000-0000-4000-a000-000000000004");
+
+  @Test
+  void fourDistinctPassedElectives_fourNamedEntries_mappedToNumberedSlotsInPassOrder() {
+    Subscription sub = buildSubscription(SUBSCRIPTION_ID, STUDENT_ID);
+    when(loadSubscriptionPort.loadById(SUBSCRIPTION_ID)).thenReturn(Optional.of(sub));
+    when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any()))
+        .thenReturn(buildMallaWithPoolElectives());
+
+    // Passed in this chronological order: Diseño (p1), Móviles (p2), Usabilidad (p3), Nube (p4)
+    List<CourseAttempt> attempts =
+        List.of(
+            passedAttempt(ELECTIVE_DISENO, PERIOD_1, Instant.parse("2025-01-01T00:00:00Z")),
+            passedAttempt(ELECTIVE_MOVILES, PERIOD_2, Instant.parse("2025-06-01T00:00:00Z")),
+            passedAttempt(ELECTIVE_USABILIDAD, PERIOD_3, Instant.parse("2025-11-01T00:00:00Z")),
+            passedAttempt(ELECTIVE_NUBE, PERIOD_4, Instant.parse("2026-06-01T00:00:00Z")));
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(attempts);
+
+    CurriculumViewData result = sut.getSubscriptionCurriculum(SUBSCRIPTION_ID, STUDENT_ID);
+
+    var allCourses = result.semesters().stream().flatMap(s -> s.courses().stream()).toList();
+
+    // 4 distinct named entries — no collapse onto a single shared slot
+    var slotI = findByCourseId(allCourses, SLOT_I);
+    var slotII = findByCourseId(allCourses, SLOT_II);
+    var slotIII = findByCourseId(allCourses, SLOT_III);
+    var slotIV = findByCourseId(allCourses, SLOT_IV);
+
+    assertThat(slotI.progressStatus()).isEqualTo("PASSED");
+    assertThat(slotI.filledElectiveName()).isEqualTo("Diseño Centrado en el Usuario");
+
+    assertThat(slotII.progressStatus()).isEqualTo("PASSED");
+    assertThat(slotII.filledElectiveName())
+        .isEqualTo("Desarrollo de Aplicaciones para Dispositivos Móviles");
+
+    assertThat(slotIII.progressStatus()).isEqualTo("PASSED");
+    assertThat(slotIII.filledElectiveName()).isEqualTo("Usabilidad y Experiencia de Usuario");
+
+    assertThat(slotIV.progressStatus()).isEqualTo("PASSED");
+    assertThat(slotIV.filledElectiveName()).isEqualTo("Computación en la Nube");
+  }
+
+  @Test
+  void thesisGate_blockedWithZeroPassedElectives_describesUnmetWithoutThrowing() {
+    // Regression guard: a CONFIGURABLE pool-gate unmet requirement has requiredCourseId == null
+    // by construction (no single required course). describeUnmet() must handle that gracefully
+    // instead of NPE-ing on requiredCourseId().toString().
+    Subscription sub = buildSubscription(SUBSCRIPTION_ID, STUDENT_ID);
+    when(loadSubscriptionPort.loadById(SUBSCRIPTION_ID)).thenReturn(Optional.of(sub));
+    when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any()))
+        .thenReturn(buildMallaWithPoolElectivesAndThesisGate());
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(List.of()); // zero passed electives — thesis gate unmet
+
+    CurriculumViewData result = sut.getSubscriptionCurriculum(SUBSCRIPTION_ID, STUDENT_ID);
+
+    var allCourses = result.semesters().stream().flatMap(s -> s.courses().stream()).toList();
+    var thesis = findByCourseId(allCourses, TDG_ID);
+
+    assertThat(thesis.progressStatus()).isEqualTo("BLOCKED");
+    assertThat(thesis.unmetRequirements()).isNotEmpty();
+  }
+
+  @Test
+  void thesisGate_availableOnceFourDistinctElectivesPassed() {
+    Subscription sub = buildSubscription(SUBSCRIPTION_ID, STUDENT_ID);
+    when(loadSubscriptionPort.loadById(SUBSCRIPTION_ID)).thenReturn(Optional.of(sub));
+    when(assemblePlanMallaQuery.assemblePlanMalla(eq(PLAN_ID), any()))
+        .thenReturn(buildMallaWithPoolElectivesAndThesisGate());
+
+    List<CourseAttempt> attempts =
+        List.of(
+            passedAttempt(ELECTIVE_DISENO, PERIOD_1, Instant.parse("2025-01-01T00:00:00Z")),
+            passedAttempt(ELECTIVE_MOVILES, PERIOD_2, Instant.parse("2025-06-01T00:00:00Z")),
+            passedAttempt(ELECTIVE_USABILIDAD, PERIOD_3, Instant.parse("2025-11-01T00:00:00Z")),
+            passedAttempt(ELECTIVE_NUBE, PERIOD_4, Instant.parse("2026-06-01T00:00:00Z")));
+    when(loadCourseAttemptPort.loadByUserIdAndProgramId(STUDENT_ID, PROGRAM_ID))
+        .thenReturn(attempts);
+
+    CurriculumViewData result = sut.getSubscriptionCurriculum(SUBSCRIPTION_ID, STUDENT_ID);
+
+    var allCourses = result.semesters().stream().flatMap(s -> s.courses().stream()).toList();
+    var thesis = findByCourseId(allCourses, TDG_ID);
+
+    assertThat(thesis.progressStatus()).isEqualTo("AVAILABLE");
+  }
+
+  private static final UUID TDG_ID = UUID.randomUUID();
+
+  private co.edu.uniquindio.brujula.progress.application.dto.CurriculumCourseData findByCourseId(
+      List<co.edu.uniquindio.brujula.progress.application.dto.CurriculumCourseData> courses,
+      UUID courseId) {
+    return courses.stream().filter(c -> c.courseId().equals(courseId)).findFirst().orElseThrow();
+  }
+
+  private CourseAttempt passedAttempt(UUID courseId, UUID periodId, Instant registeredAt) {
+    return CourseAttempt.reconstitute(
+        AttemptId.generate(),
+        new SubscriptionId(SUBSCRIPTION_ID),
+        courseId,
+        AttemptStatus.PASSED,
+        new Grade(new BigDecimal("4.0")),
+        periodId,
+        "DIURNA",
+        registeredAt,
+        0L);
+  }
+
+  private PlanMallaView buildMallaWithPoolElectives() {
+    var slot1 =
+        new PlanMallaView.CourseSummary(
+            SLOT_I, "ISC-S8-PROFUNDIZACIONI", "Profundización I", "DEEPENING", 3, List.of());
+    var slot2 =
+        new PlanMallaView.CourseSummary(
+            SLOT_II, "ISC-S8-PROFUNDIZACIONII", "Profundización II", "DEEPENING", 3, List.of());
+    var slot3 =
+        new PlanMallaView.CourseSummary(
+            SLOT_III, "ISC-S9-PROFUNDIZACIONIII", "Profundización III", "DEEPENING", 3, List.of());
+    var slot4 =
+        new PlanMallaView.CourseSummary(
+            SLOT_IV, "ISC-S9-PROFUNDIZACIONIV", "Profundización IV", "DEEPENING", 3, List.of());
+    var bucket8 = new PlanMallaView.SemesterBucket(8, List.of(slot1, slot2));
+    var bucket9 = new PlanMallaView.SemesterBucket(9, List.of(slot3, slot4));
+
+    var poolElectiveDiseno =
+        new PlanMallaView.CourseSummary(
+            ELECTIVE_DISENO,
+            "ISC-DEEP-DISENOCENTRADOENELUSUARIO",
+            "Diseño Centrado en el Usuario",
+            "DEEPENING",
+            3,
+            List.of());
+    var poolElectiveMoviles =
+        new PlanMallaView.CourseSummary(
+            ELECTIVE_MOVILES,
+            "ISC-DEEP-DESARROLLODEAPLICACIONESPARADISPOSITIVOSMOVILES",
+            "Desarrollo de Aplicaciones para Dispositivos Móviles",
+            "DEEPENING",
+            3,
+            List.of());
+    var poolElectiveUsabilidad =
+        new PlanMallaView.CourseSummary(
+            ELECTIVE_USABILIDAD,
+            "ISC-DEEP-USABILIDADYEXPERIENCIADEUSUARIO",
+            "Usabilidad y Experiencia de Usuario",
+            "DEEPENING",
+            3,
+            List.of());
+    var poolElectiveNube =
+        new PlanMallaView.CourseSummary(
+            ELECTIVE_NUBE,
+            "ISC-DEEP-COMPUTACIONENLANUBE",
+            "Computación en la Nube",
+            "DEEPENING",
+            3,
+            List.of());
+
+    return new PlanMallaView(
+        PLAN_ID,
+        "DIURNA",
+        List.of(bucket8, bucket9),
+        "Graduation requirements.",
+        List.of(poolElectiveDiseno, poolElectiveMoviles, poolElectiveUsabilidad, poolElectiveNube));
+  }
+
+  private PlanMallaView buildMallaWithPoolElectivesAndThesisGate() {
+    PlanMallaView base = buildMallaWithPoolElectives();
+    var thesisRequirement =
+        new PlanMallaView.RequirementSummary("CONFIGURABLE", null, null, null, null, 4);
+    var thesis =
+        new PlanMallaView.CourseSummary(
+            TDG_ID,
+            "ISC-S10-TRABAJODEGRADO",
+            "Trabajo de Grado",
+            "DEGREE_WORK",
+            6,
+            List.of(thesisRequirement));
+    var bucket10 = new PlanMallaView.SemesterBucket(10, List.of(thesis));
+
+    List<PlanMallaView.SemesterBucket> buckets = new java.util.ArrayList<>(base.semesterBuckets());
+    buckets.add(bucket10);
+
+    return new PlanMallaView(
+        PLAN_ID, "DIURNA", buckets, base.graduationRequirements(), base.poolCourses());
+  }
+
+  // -----------------------------------------------------------------------
   // Helpers
   // -----------------------------------------------------------------------
 

@@ -36,7 +36,9 @@ import java.util.stream.Collectors;
 public class CourseAvailabilityService {
 
   /**
-   * Compute per-course availability.
+   * Compute per-course availability. Equivalent to {@link #compute(List, List, Map, Set)} with an
+   * empty pool-member set — any CONFIGURABLE pool-gate edge is therefore always unmet (0 distinct
+   * passed members). Preserved for callers that never deal with pool-gate requirements.
    *
    * @param planCourses the full set of courses in the plan (bulk-loaded by the application layer)
    * @param requirements all requirement edges for this plan's courses (bulk-loaded by the
@@ -49,10 +51,35 @@ public class CourseAvailabilityService {
       List<PlanCourse> planCourses,
       List<CourseRequirementEdge> requirements,
       Map<UUID, CourseProgressStatus> effectiveByCourse) {
+    return compute(planCourses, requirements, effectiveByCourse, Set.of());
+  }
+
+  /**
+   * Compute per-course availability, including CONFIGURABLE pool-gate evaluation (PROP-001 design
+   * D1 — e.g. the profundización thesis gate: "≥ N distinct passed pool electives").
+   *
+   * @param planCourses the full set of courses in the plan (bulk-loaded by the application layer)
+   * @param requirements all requirement edges for this plan's courses (bulk-loaded by the
+   *     application layer — no N+1)
+   * @param effectiveByCourse effective declared status per courseId (from {@link
+   *     EffectiveAttemptResolver})
+   * @param poolMemberCourseIds the set of courseIds eligible to count toward a CONFIGURABLE
+   *     pool-gate requirement (e.g. the ACTIVE DEEPENING electives, excluding legacy display-only
+   *     slot anchors). Supplied by the application layer — this service never hardcodes specific
+   *     course identities.
+   * @return map of courseId → {@link CourseAvailability}; never null; one entry per plan course
+   */
+  public Map<UUID, CourseAvailability> compute(
+      List<PlanCourse> planCourses,
+      List<CourseRequirementEdge> requirements,
+      Map<UUID, CourseProgressStatus> effectiveByCourse,
+      Set<UUID> poolMemberCourseIds) {
 
     if (planCourses == null || planCourses.isEmpty()) {
       return Map.of();
     }
+
+    Set<UUID> poolMembers = poolMemberCourseIds != null ? poolMemberCourseIds : Set.of();
 
     // Build a lookup: targetCourseId → list of edges targeting that course
     Map<UUID, List<CourseRequirementEdge>> edgesByTarget = new HashMap<>();
@@ -86,9 +113,24 @@ public class CourseAvailabilityService {
       for (CourseRequirementEdge edge : courseEdges) {
         UUID requiredCourseId = edge.requiredCourseId();
         if (requiredCourseId == null) {
-          // TODO: MINIMUM_CREDITS and CONFIGURABLE edges with no specific requiredCourseId are
-          // silently skipped. A future implementation should evaluate credit totals against the
-          // threshold value stored in the edge.
+          if ("CONFIGURABLE".equalsIgnoreCase(edge.type()) && edge.requiredCredits() != null) {
+            // Pool gate (PROP-001 design D1): satisfied iff COUNT(DISTINCT passed pool-member
+            // courseId) >= edge.requiredCredits(). Pool membership is supplied by the caller
+            // (poolMembers) — this service never hardcodes specific course identities.
+            long distinctPassedPoolMembers =
+                poolMembers.stream()
+                    .filter(id -> CourseProgressStatus.PASSED.equals(effectiveByCourse.get(id)))
+                    .count();
+            boolean gateSatisfied = distinctPassedPoolMembers >= edge.requiredCredits();
+            if (!gateSatisfied) {
+              unmet.add(new UnmetRequirement(null, edge.type(), false));
+              blocked = true;
+            }
+            continue;
+          }
+          // TODO: MINIMUM_CREDITS edges (and CONFIGURABLE edges with no requiredCredits
+          // threshold) are silently skipped. A future implementation should evaluate credit
+          // totals against the threshold value stored in the edge.
           continue;
         }
 

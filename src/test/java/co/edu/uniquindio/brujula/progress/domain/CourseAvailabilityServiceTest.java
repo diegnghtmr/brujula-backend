@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -208,6 +209,114 @@ class CourseAvailabilityServiceTest {
   void empty_plan_returns_empty_result() {
     Map<UUID, CourseAvailability> result = sut.compute(List.of(), List.of(), Map.of());
     assertThat(result).isEmpty();
+  }
+
+  // -----------------------------------------------------------------------
+  // PROP-001 (REQ-8, design D1): CONFIGURABLE pool gate on Trabajo de Grado.
+  // Pool members = ACTIVE DEEPENING electives supplied explicitly by the application layer
+  // (poolMemberCourseIds) — the 4 legacy slot anchors are simply never part of that set.
+  // Gate satisfied iff COUNT(DISTINCT passed pool-member courseId) >= edge.requiredCredits().
+  // -----------------------------------------------------------------------
+
+  @Test
+  void thesisGate_blockedWithFewerThanRequiredDistinctPassedPoolMembers() {
+    UUID tdg = UUID.randomUUID();
+    UUID elective1 = UUID.randomUUID();
+    UUID elective2 = UUID.randomUUID();
+    UUID elective3 = UUID.randomUUID();
+    UUID elective4 = UUID.randomUUID();
+
+    List<PlanCourse> courses =
+        List.of(new PlanCourse(tdg, "Trabajo de Grado", 6, "DEGREE_WORK", 10));
+
+    // CONFIGURABLE pool gate: no single requiredCourseId, threshold = 4 distinct passed pool
+    // members
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(tdg, null, "CONFIGURABLE", null, null, 4));
+
+    // Only 3 of the 4 pool electives are PASSED — below threshold
+    Map<UUID, CourseProgressStatus> effectiveByCourse =
+        Map.of(
+            elective1, CourseProgressStatus.PASSED,
+            elective2, CourseProgressStatus.PASSED,
+            elective3, CourseProgressStatus.PASSED);
+    Set<UUID> poolMemberCourseIds = Set.of(elective1, elective2, elective3, elective4);
+
+    Map<UUID, CourseAvailability> result =
+        sut.compute(courses, requirements, effectiveByCourse, poolMemberCourseIds);
+
+    assertThat(result.get(tdg).status()).isEqualTo(CourseProgressStatus.BLOCKED);
+  }
+
+  @Test
+  void thesisGate_availableWithAtLeastRequiredDistinctPassedPoolMembers() {
+    UUID tdg = UUID.randomUUID();
+    UUID elective1 = UUID.randomUUID();
+    UUID elective2 = UUID.randomUUID();
+    UUID elective3 = UUID.randomUUID();
+    UUID elective4 = UUID.randomUUID();
+
+    List<PlanCourse> courses =
+        List.of(new PlanCourse(tdg, "Trabajo de Grado", 6, "DEGREE_WORK", 10));
+
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(tdg, null, "CONFIGURABLE", null, null, 4));
+
+    // All 4 pool electives PASSED — meets threshold exactly
+    Map<UUID, CourseProgressStatus> effectiveByCourse =
+        Map.of(
+            elective1, CourseProgressStatus.PASSED,
+            elective2, CourseProgressStatus.PASSED,
+            elective3, CourseProgressStatus.PASSED,
+            elective4, CourseProgressStatus.PASSED);
+    Set<UUID> poolMemberCourseIds = Set.of(elective1, elective2, elective3, elective4);
+
+    Map<UUID, CourseAvailability> result =
+        sut.compute(courses, requirements, effectiveByCourse, poolMemberCourseIds);
+
+    assertThat(result.get(tdg).status()).isEqualTo(CourseProgressStatus.AVAILABLE);
+    assertThat(result.get(tdg).unmetRequirements()).isEmpty();
+  }
+
+  @Test
+  void thesisGate_passedElectivesOutsidePoolSet_doNotCountTowardThreshold() {
+    UUID tdg = UUID.randomUUID();
+    UUID poolElective = UUID.randomUUID();
+    // A slot-anchor-like course that is PASSED but NOT in the supplied pool set — must not count
+    UUID nonPoolCourse = UUID.randomUUID();
+
+    List<PlanCourse> courses =
+        List.of(new PlanCourse(tdg, "Trabajo de Grado", 6, "DEGREE_WORK", 10));
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(tdg, null, "CONFIGURABLE", null, null, 4));
+
+    Map<UUID, CourseProgressStatus> effectiveByCourse =
+        Map.of(
+            poolElective, CourseProgressStatus.PASSED,
+            nonPoolCourse, CourseProgressStatus.PASSED);
+    // Only poolElective is a real pool member; nonPoolCourse is excluded (e.g. a slot anchor)
+    Set<UUID> poolMemberCourseIds = Set.of(poolElective);
+
+    Map<UUID, CourseAvailability> result =
+        sut.compute(courses, requirements, effectiveByCourse, poolMemberCourseIds);
+
+    // 1 distinct passed pool member < 4 → still BLOCKED, even though 2 courses are PASSED overall
+    assertThat(result.get(tdg).status()).isEqualTo(CourseProgressStatus.BLOCKED);
+  }
+
+  @Test
+  void thesisGate_withoutPoolMemberIds_threeArgOverload_backwardCompatibleAndBlocked() {
+    // The original 3-arg compute() must keep working for all existing (non-CONFIGURABLE) callers.
+    // For a CONFIGURABLE gate specifically, no pool set means 0 distinct passed → always BLOCKED.
+    UUID tdg = UUID.randomUUID();
+    List<PlanCourse> courses =
+        List.of(new PlanCourse(tdg, "Trabajo de Grado", 6, "DEGREE_WORK", 10));
+    List<CourseRequirementEdge> requirements =
+        List.of(new CourseRequirementEdge(tdg, null, "CONFIGURABLE", null, null, 4));
+
+    Map<UUID, CourseAvailability> result = sut.compute(courses, requirements, Map.of());
+
+    assertThat(result.get(tdg).status()).isEqualTo(CourseProgressStatus.BLOCKED);
   }
 
   // -----------------------------------------------------------------------

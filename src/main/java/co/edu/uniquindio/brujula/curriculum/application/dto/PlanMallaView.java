@@ -19,12 +19,29 @@ import java.util.UUID;
  * @param graduationRequirements static advisory text describing graduation gates for this plan
  *     (e.g. language proficiency, interdisciplinary seminar). Informational only — not a modelled
  *     entity.
+ * @param poolCourses ACTIVE courses that belong to a pool-membership requirement (PROP-001 design
+ *     D1) but carry NO recommended-semester row for any journey, so they never appear in {@code
+ *     semesterBuckets} (e.g. the profundización electives, as opposed to the 4 legacy slot anchors
+ *     which DO have a semester row and therefore show up in the buckets). Never null; may be empty.
  */
 public record PlanMallaView(
     UUID planId,
     String journeyCode,
     List<SemesterBucket> semesterBuckets,
-    String graduationRequirements) {
+    String graduationRequirements,
+    List<CourseSummary> poolCourses) {
+
+  /**
+   * Convenience constructor preserving the original 4-arg shape (no pool courses). Backward
+   * compatible with all pre-PROP-001 call sites.
+   */
+  public PlanMallaView(
+      UUID planId,
+      String journeyCode,
+      List<SemesterBucket> semesterBuckets,
+      String graduationRequirements) {
+    this(planId, journeyCode, semesterBuckets, graduationRequirements, List.of());
+  }
 
   /**
    * A single semester bucket grouping all active courses recommended for that semester.
@@ -61,11 +78,29 @@ public record PlanMallaView(
    * @param confidence confidence level of this edge (HIGH/MEDIUM/LOW; nullable)
    * @param inferred whether this edge was inferred rather than officially documented (nullable)
    * @param simultaneityAllowed whether simultaneous enrollment is allowed (nullable)
+   * @param requiredCredits threshold value for CONFIGURABLE/MINIMUM_CREDITS edges (nullable). For a
+   *     CONFIGURABLE pool-gate edge (PROP-001 design D1), reinterpreted as "distinct completions
+   *     required".
    */
   public record RequirementSummary(
       String type,
       UUID requiredCourseId,
       String confidence,
       Boolean inferred,
-      Boolean simultaneityAllowed) {}
+      Boolean simultaneityAllowed,
+      Integer requiredCredits) {
+
+    /**
+     * Convenience constructor preserving the original 5-arg shape (no {@code requiredCredits}).
+     * Backward compatible with all pre-PROP-001 call sites.
+     */
+    public RequirementSummary(
+        String type,
+        UUID requiredCourseId,
+        String confidence,
+        Boolean inferred,
+        Boolean simultaneityAllowed) {
+      this(type, requiredCourseId, confidence, inferred, simultaneityAllowed, null);
+    }
+  }
 }

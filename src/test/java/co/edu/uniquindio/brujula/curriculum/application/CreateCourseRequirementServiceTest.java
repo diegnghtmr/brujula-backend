@@ -165,6 +165,40 @@ class CreateCourseRequirementServiceTest {
     verify(auditRecorder, never()).record(any());
   }
 
+  // -------------------------------------------------------------------------
+  // CONFIGURABLE — F1 (design §11): requiredCredits must reach the saved aggregate, not be
+  // silently dropped by CourseRequirement.configurable(...).
+  // -------------------------------------------------------------------------
+
+  @Test
+  void configurable_withRequiredCredits_persistsThreshold() {
+    when(idempotencyStorePort.find(idempotencyKey, CreateCourseRequirementService.OPERATION))
+        .thenReturn(Optional.empty());
+    when(jsonCodecPort.toJson(any())).thenReturn("{\"id\":\"x\"}");
+    when(saveRequirementPort.save(any(CourseRequirement.class)))
+        .thenAnswer(inv -> inv.getArgument(0));
+
+    CreateCourseRequirementCommand command =
+        new CreateCourseRequirementCommand(
+            idempotencyKey,
+            requestHash,
+            actorId,
+            targetCourseId,
+            planId,
+            "CONFIGURABLE",
+            null,
+            4,
+            null);
+
+    CourseRequirementView result = service.createCourseRequirement(command);
+
+    assertThat(result.type()).isEqualTo("CONFIGURABLE");
+    assertThat(result.requiredCourseId()).isNull();
+    assertThat(result.requiredCredits()).isEqualTo(4);
+    verify(saveRequirementPort)
+        .save(argThat(req -> req.requiredCredits() != null && req.requiredCredits() == 4));
+  }
+
   @Test
   void idempotency_replay_returns_stored_view() {
     CourseRequirementView storedView =
