@@ -17,6 +17,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.util.AntPathMatcher;
 
 /**
@@ -56,6 +57,17 @@ public class SecurityConfiguration {
    */
   @Value("${brujula.frontend.base-url}")
   private String frontendBaseUrl;
+
+  /**
+   * Keycloak login client id injected from {@code
+   * spring.security.oauth2.client.registration.keycloak.client-id} (value {@code brujula-backend}).
+   *
+   * <p>Sent as the {@code client_id} query parameter on the Keycloak RP-initiated logout URL —
+   * belt-and-suspenders for Keycloak's post-logout redirect validation. Reuses the same property
+   * that configures the OIDC login registration so there is a single source of truth.
+   */
+  @Value("${spring.security.oauth2.client.registration.keycloak.client-id}")
+  private String keycloakClientId;
 
   /**
    * OIDC user service — wired from identity module (WU-B, S1-B-5). Triggers user provisioning on
@@ -178,9 +190,11 @@ public class SecurityConfiguration {
         .sessionManagement(session -> session.sessionFixation(fixation -> fixation.newSession()))
 
         // ----------------------------------------------------------------
-        // Logout — POST /auth/logout (G2 RESOLUTION)
+        // Logout — POST /auth/logout (G2 RESOLUTION) + RP-initiated single logout (RF-AUT-003)
         // Spring Security handles this BEFORE DispatcherServlet.
-        // No explicit controller needed for WU-A; WU-B may add a thin shim.
+        // Session invalidation + SESSION cookie deletion stay here; the success handler keeps the
+        // 204 contract and adds the X-Logout-Redirect header (Keycloak end_session URL) so the SPA
+        // can end the Keycloak SSO session too (not just the local backend session).
         // ----------------------------------------------------------------
         .logout(
             logout ->
@@ -188,8 +202,7 @@ public class SecurityConfiguration {
                     .logoutUrl("/auth/logout")
                     .invalidateHttpSession(true)
                     .deleteCookies("SESSION")
-                    .logoutSuccessHandler(
-                        (request, response, authentication) -> response.setStatus(204)));
+                    .logoutSuccessHandler(oidcLogoutSuccessHandler()));
 
     return http.build();
   }
@@ -215,6 +228,32 @@ public class SecurityConfiguration {
         new SimpleUrlAuthenticationSuccessHandler(frontendBaseUrl);
     handler.setAlwaysUseDefaultTargetUrl(true);
     return handler;
+  }
+
+  /**
+   * RP-initiated (single) logout success handler — RF-AUT-003.
+   *
+   * <p>On a successful {@code POST /auth/logout} it keeps the {@code 204} contract and adds the
+   * Keycloak {@code end_session} URL as the {@code X-Logout-Redirect} response header so the SPA
+   * can redirect the browser to Keycloak and end the SSO session (a local-only logout lets Keycloak
+   * silently re-authenticate the user via SSO).
+   *
+   * <p>The {@code post_logout_redirect_uri} is the SPA {@code /login} page derived from {@code
+   * brujula.frontend.base-url} (single source of truth for the SPA host). A trailing slash on the
+   * base URL is normalized so the redirect never becomes {@code //login}. The end-session host
+   * itself is taken from the ID token issuer inside the handler — see {@link
+   * KeycloakRpInitiatedLogoutSuccessHandler} for why {@code brujula.keycloak.auth-server-url} (the
+   * Docker-internal Admin API URL) must NOT be used for a browser redirect.
+   *
+   * <p>Exposed as a {@code @Bean} for testability, matching {@link #oauthSuccessHandler()}.
+   */
+  @Bean
+  public LogoutSuccessHandler oidcLogoutSuccessHandler() {
+    String base =
+        frontendBaseUrl.endsWith("/")
+            ? frontendBaseUrl.substring(0, frontendBaseUrl.length() - 1)
+            : frontendBaseUrl;
+    return new KeycloakRpInitiatedLogoutSuccessHandler(keycloakClientId, base + "/login");
   }
 
   /**
