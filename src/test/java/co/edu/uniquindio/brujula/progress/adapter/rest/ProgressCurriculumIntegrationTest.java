@@ -68,6 +68,13 @@ class ProgressCurriculumIntegrationTest extends AbstractPostgresIntegrationTest 
   private static final UUID MATEMATICAS_GENERALES =
       UUID.fromString("c0010000-0000-4000-a000-000000000001"); // Sem1, no prereqs→PASSED scenario
 
+  // PROP-001 PR3: pool elective (V028) and its numbered display slot (V012 anchor, DIURNA)
+  private static final UUID DISENO_CENTRADO_ELECTIVE =
+      UUID.fromString("c0dee000-0000-4000-a000-000000000001"); // "Diseño Centrado en el Usuario"
+  private static final UUID PROFUNDIZACION_I_SLOT =
+      UUID.fromString(
+          "c0080000-0000-4000-a000-000000000004"); // Sem8 DIURNA, ISC-S8-PROFUNDIZACIONI
+
   private MockMvc mockMvc;
   private String studentSubject;
 
@@ -205,6 +212,52 @@ class ProgressCurriculumIntegrationTest extends AbstractPostgresIntegrationTest 
                     "$.semesters[?(@.recommendedSemester == 1)].courses"
                         + "[?(@.courseId == '"
                         + MATEMATICAS_GENERALES
+                        + "')].progressStatus")
+                .value("PASSED"));
+  }
+
+  // -----------------------------------------------------------------------
+  // PROP-001 PR3 scenario (d): pool elective PASSED → filledElectiveName on numbered slot
+  // -----------------------------------------------------------------------
+
+  /**
+   * PROP-001 design D5/REQ-6, PR3 task 4.2: a PASSED pool elective (V028) must appear in the HTTP
+   * response as the {@code filledElectiveName} of its mapped numbered display slot (V012 anchor).
+   * With exactly ONE passed pool elective, the mapping is deterministic regardless of
+   * periodId/registeredAt ordering: it is the only candidate, so it fills the first numbered slot
+   * by (recommendedSemester, officialCode) — "Profundización I" (Sem 8 DIURNA).
+   *
+   * <p>The slot's own {@code progressStatus} defers to PASSED once filled (pre-existing PR2
+   * behavior); the new assertion here is {@code filledElectiveName} itself, which requires the PR3
+   * contract field + REST mapper wiring (previously computed by the application layer but dropped
+   * by the controller's DTO→generated-model mapping).
+   */
+  @Test
+  void profundizacion_pool_elective_passed_fills_profundizacion_i_slot_name() throws Exception {
+    UUID subscriptionId = insertSubscription(studentSubject, SISTEMAS_PLAN_ID);
+
+    insertCourseAttempt(subscriptionId, DISENO_CENTRADO_ELECTIVE, "PASSED", 4.0);
+
+    mockMvc
+        .perform(
+            get("/me/subscriptions/{id}/curriculum", subscriptionId)
+                .with(
+                    oidcLogin()
+                        .idToken(t -> t.subject(studentSubject))
+                        .authorities(new SimpleGrantedAuthority("ROLE_STUDENT"))))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                    "$.semesters[?(@.recommendedSemester == 8)].courses"
+                        + "[?(@.courseId == '"
+                        + PROFUNDIZACION_I_SLOT
+                        + "')].filledElectiveName")
+                .value("Diseño Centrado en el Usuario"))
+        .andExpect(
+            jsonPath(
+                    "$.semesters[?(@.recommendedSemester == 8)].courses"
+                        + "[?(@.courseId == '"
+                        + PROFUNDIZACION_I_SLOT
                         + "')].progressStatus")
                 .value("PASSED"));
   }

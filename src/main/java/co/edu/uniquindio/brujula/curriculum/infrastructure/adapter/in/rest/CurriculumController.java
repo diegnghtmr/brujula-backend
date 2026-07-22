@@ -561,6 +561,7 @@ class CurriculumController implements CurriculumApi {
             : null);
     mr.setInferred(rs.inferred());
     mr.setSimultaneityAllowed(rs.simultaneityAllowed());
+    mr.setRequiredCredits(rs.requiredCredits());
     return mr;
   }
 
