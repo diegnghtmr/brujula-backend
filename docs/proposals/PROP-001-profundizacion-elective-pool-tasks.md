@@ -41,13 +41,13 @@ Chain strategy: feature-branch-chain
 
 Base: `feature/PROP-001-profundizacion-elective-pool` (tracker branch)
 
-- [ ] 1.1 RED (`CurriculumReadAdapterIT`, new case): assert 8 DEEPENING elective courses exist with stable slugs (design §3 table) → GREEN: `V028__curriculum_profundizacion_pool.sql`, idempotent `WHERE NOT EXISTS` insert of the 8 electives (type=DEEPENING, credits=3, plan `33333333-…-001`). [REQ-1, design §3/§5]
-- [ ] 1.2 RED (`CurriculumReadAdapterIT`): assert slot→slot edges (Prof III←I, IV←II) + 2 thesis-slot edges are `status=ARCHIVED` → GREEN: same V028 sets those 6 rows to ARCHIVED (`V012:733-746`). [REQ-4, design D3]
-- [ ] 1.3 RED (`CurriculumReadAdapterIT`): assert one `CONFIGURABLE` `course_requirement` row on Trabajo de Grado, `required_credits=4`, `required_course_id=NULL` → GREEN: same V028 inserts the pool-gate row. [REQ-8, design D1]
-- [ ] 1.4 RED (`CurriculumReadAdapterIT`): assert 8 `COURSE_PASSED` edges (elective → line gatekeeper per design §0 table) exist, and the 3 V014 track gatekeepers are NULL → GREEN: same V028 inserts the 8 edges and NULLs `sequential_track.gatekeeper_course_id`. [REQ-2, design §0 CORRECTION]
-- [ ] 1.5 RED/GREEN: update the ISC course-count assertion from 57→65 (wherever it currently asserts 57) — becomes true once V028 lands, no prod code. [design §7]
-- [ ] 1.6 Update `SequentialTrackEvaluatorTest`: add a NULL-gatekeeper case; confirm all existing assertions stay green (no evaluator code change expected). [design D3]
-- [ ] 1.7 Verify: `./gradlew spotlessApply spotlessCheck test --tests "*CurriculumReadAdapterIT*" --tests "*SequentialTrackEvaluatorTest*"`.
+- [x] 1.1 RED (new `FlywayV028CurriculumProfundizacionPoolTest`): assert 8 DEEPENING elective courses exist with stable official_codes (design §3 table) → GREEN: `V028__curriculum_profundizacion_pool.sql`, idempotent `WHERE NOT EXISTS` insert of the 8 electives (type=DEEPENING, credits=3, plan `33333333-…-001`). [REQ-1, design §3/§5]
+- [x] 1.2 RED (new `FlywayV028CurriculumProfundizacionPoolTest`): assert the 4 superseded ordering edges — slot→slot (Prof III←I, IV←II) + 2 thesis-slot edges (TdG←III, TdG←IV) — are `status=ARCHIVED` → GREEN: same V028 sets those 4 rows to ARCHIVED (`V012:733-746`). **Deviation**: ground-truth V012 has exactly 4 course_requirement rows in that range (2 slot→slot + 2 thesis-slot), not 6 — verified directly against V012:732-746; task text's "6 archived edges" phrasing overcounted. [REQ-4, design D3]
+- [x] 1.3 RED (new `FlywayV028CurriculumProfundizacionPoolTest`): assert one `CONFIGURABLE` `course_requirement` row on Trabajo de Grado, `required_credits=4`, `required_course_id=NULL` → GREEN: same V028 inserts the pool-gate row. [REQ-8, design D1]
+- [x] 1.4 RED (new `FlywayV028CurriculumProfundizacionPoolTest` + updated `FlywayV014DeepeningGatekeeperTest` + updated `CurriculumReadAdapterIT`): assert 8 `COURSE_PASSED` edges (elective → line gatekeeper per design §0 table) exist, and the 3 V014 track gatekeepers are NULL → GREEN: same V028 inserts the 8 edges and NULLs `sequential_track.gatekeeper_course_id`. [REQ-2, design §0 CORRECTION]
+- [x] 1.5 RED/GREEN: updated `FlywayV012SistemasSeedTest` ISC course-count assertion from 57→65 — true once V028 lands, no prod code. [design §7]
+- [x] 1.6 Verified `SequentialTrackEvaluatorTest`: `deepeningCourse_noGatekeeperDefined_returnsEmpty()` already covers the NULL-gatekeeper case pre-existing this change; confirmed still green, no evaluator code change needed. [design D3]
+- [x] 1.7 Verify: `./gradlew spotlessApply spotlessCheck test --tests "*CurriculumReadAdapterIT*" --tests "*SequentialTrackEvaluatorTest*" --tests "*FlywayV028CurriculumProfundizacionPoolTest*" --tests "*FlywayV014DeepeningGatekeeperTest*" --tests "*FlywayV012SistemasSeedTest*"` → BUILD SUCCESSFUL, all GREEN. Full `./gradlew test` suite also run — BUILD SUCCESSFUL, no regressions.
 
 ## PR1b — Offering Re-point (V029) + Selection Backfill (V030) + Seed Verify
 
