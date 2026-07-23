@@ -9,6 +9,7 @@ CLAUDE.md
 .claude/
 .opencode/
 .engram/
+.codegraph/
 docs/internal/
 *.notes.md
 
