@@ -107,7 +107,7 @@ flowchart LR
 ./gradlew jacocoTestCoverageVerification
 ```
 
-[CI](.github/workflows/ci.yml) runs these steps; Docker is required for the PostgreSQL integration tests. The coverage gate checks domain and application service packages. `./gradlew check` also includes OpenAPI validation. Tests cover module boundaries, course progress, prerequisites, and timetable conflicts.
+[CI](.github/workflows/ci.yml) runs these steps; Docker is required for the PostgreSQL integration tests. The coverage gate checks domain and application service packages. `./gradlew check` combines OpenAPI validation, tests, Spotless, and JaCoCo coverage verification. Tests cover module boundaries, course progress, prerequisites, and timetable conflicts.
 
 ## Project structure
 
@@ -118,6 +118,12 @@ src/test/                                Unit, architecture, and integration tes
 openapi/                                 Backend API contract
 ops/local/                               Supporting services and full-stack Compose
 ```
+
+## Documentation
+
+- [OpenAPI contract](openapi/brujula-api.v1.yaml) — source for Spring interfaces and the frontend's generated Axios client.
+- [Architecture decisions](docs/architecture/adr/) — module boundaries, HTTP contract, and identity.
+- [Database setup and move guide](docs/database/change-pc-guide.md) — host environment, database, and backup setup.
 
 ## Related repositories
 
